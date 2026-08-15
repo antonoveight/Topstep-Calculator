@@ -1,0 +1,5 @@
+# Temporary & extraction files
+*.tmp
+~$*
+extracted_doc.txt
+*.docx
