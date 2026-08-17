@@ -142,11 +142,28 @@
 
             <!-- Position Calculator -->
             <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
-                <h3 class="text-xs font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
-                    <span class="text-amber-400">⚡</span> CALCULATOR KHỐI LƯỢNG AN TOÀN THEO STOP LOSS
-                </h3>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800/80 pb-2">
+                    <h3 class="text-xs font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
+                        <span class="text-amber-400">⚡</span> CALCULATOR KHỐI LƯỢNG VỊ THẾ THEO SẢN PHẨM & STOP LOSS
+                    </h3>
+                    <span id="calcSpecBadge" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-cyan-300 font-mono font-medium">
+                        1 Tick MGC = 0.10 pt ($1.00/micro)
+                    </span>
+                </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                    <div>
+                        <label for="calcSymbol" class="block text-[11px] font-semibold text-slate-400 mb-1">Sản Phẩm Topstep:</label>
+                        <select id="calcSymbol" onchange="onCalcSymbolChange()" class="w-full bg-slate-950 border border-slate-700 p-1.5 rounded-lg text-cyan-300 font-bold text-xs focus:outline-none focus:border-cyan-500">
+                            <option value="MGC">Vàng (MGC / GC)</option>
+                            <option value="MNQ">Nasdaq (MNQ / NQ)</option>
+                            <option value="MES">S&P 500 (MES / ES)</option>
+                            <option value="MCL">Dầu Thô (MCL / CL)</option>
+                            <option value="MYM">Dow Jones (MYM / YM)</option>
+                            <option value="M2K">Russell 2000 (M2K / RTY)</option>
+                        </select>
+                    </div>
+
                     <div>
                         <label for="stopLossInput" class="block text-[11px] font-semibold text-slate-400 mb-1">Mức Cắt Lỗ ($ USD):</label>
                         <div class="relative">
@@ -157,19 +174,28 @@
                     </div>
 
                     <div>
-                        <label for="ticksInput" class="block text-[11px] font-semibold text-slate-400 mb-1">Khoảng Stop Loss (Ticks):</label>
-                        <input id="ticksInput" type="number" value="20" min="1" step="1" oninput="calculateTradeRisk()" 
+                        <div class="flex justify-between items-center mb-1">
+                            <label id="slDistanceLabel" for="ticksInput" class="text-[11px] font-semibold text-slate-400">Khoảng SL (Ticks):</label>
+                            <button type="button" onclick="toggleSlUnitMode()" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold underline">
+                                <span id="slUnitToggleText">🔄 Nhập Theo Giá (Pts)</span>
+                            </button>
+                        </div>
+                        <input id="ticksInput" type="number" value="20" min="0.01" step="any" oninput="calculateTradeRisk()" 
                                class="w-full bg-slate-950 border border-slate-700 px-2 py-1.5 rounded-lg text-blue-300 font-bold text-xs focus:outline-none focus:border-blue-500">
                     </div>
 
-                    <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 flex justify-around text-center">
+                    <div class="bg-slate-950 p-2 rounded-lg border border-slate-800 flex justify-around text-center">
                         <div>
-                            <span class="text-[10px] text-slate-400 block">Lot Micro Khuyên Dùng</span>
-                            <span id="calcMicroLots" class="text-sm font-black text-cyan-400">6 Micros</span>
+                            <span class="text-[9px] text-slate-400 block uppercase font-semibold">Lot Micro</span>
+                            <span id="calcMicroLots" class="text-sm font-black text-cyan-400">7 Micros</span>
                         </div>
-                        <div class="border-l border-slate-800 pl-3">
-                            <span class="text-[10px] text-slate-400 block">Lot Mini Tương Đương</span>
-                            <span id="calcMiniLots" class="text-sm font-black text-indigo-400">0.6 Mini</span>
+                        <div class="border-l border-slate-800 pl-2">
+                            <span class="text-[9px] text-slate-400 block uppercase font-semibold">Lot Mini</span>
+                            <span id="calcMiniLots" class="text-sm font-black text-indigo-400">0.7 Mini</span>
+                        </div>
+                        <div class="border-l border-slate-800 pl-2">
+                            <span class="text-[9px] text-slate-400 block uppercase font-semibold">Thua Thực Tế</span>
+                            <span id="calcActualRisk" class="text-sm font-black text-emerald-400">$140.00</span>
                         </div>
                     </div>
                 </div>
@@ -970,6 +996,17 @@
             }
         }
 
+        const symbolSpecs = {
+            "MGC": { name: "Vàng (MGC / GC)", tickSize: 0.10, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Vàng", defaultSlPts: 2.0, defaultTicks: 20 },
+            "MNQ": { name: "Nasdaq (MNQ / NQ)", tickSize: 0.25, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá NQ", defaultSlPts: 20.0, defaultTicks: 80 },
+            "MES": { name: "S&P 500 (MES / ES)", tickSize: 0.25, microTickVal: 1.25, miniTickVal: 12.50, unitName: "giá ES", defaultSlPts: 5.0, defaultTicks: 20 },
+            "MCL": { name: "Dầu Thô (MCL / CL)", tickSize: 0.01, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Dầu ($)", defaultSlPts: 0.30, defaultTicks: 30 },
+            "MYM": { name: "Dow Jones (MYM / YM)", tickSize: 1.00, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá YM", defaultSlPts: 30.0, defaultTicks: 30 },
+            "M2K": { name: "Russell 2000 (M2K / RTY)", tickSize: 0.10, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá RTY", defaultSlPts: 3.0, defaultTicks: 30 }
+        };
+
+        let slInputMode = "ticks"; // "ticks" or "points"
+
         function formatDateVN(dateStr) {
             if (!dateStr) return "";
             let parts = dateStr.split("-");
@@ -977,25 +1014,95 @@
             return dateStr;
         }
 
+        function toggleSlUnitMode() {
+            slInputMode = (slInputMode === "ticks") ? "points" : "ticks";
+            const symbol = document.getElementById("calcSymbol") ? document.getElementById("calcSymbol").value : "MGC";
+            const spec = symbolSpecs[symbol] || symbolSpecs["MGC"];
+            const valInput = document.getElementById("ticksInput");
+
+            if (slInputMode === "points") {
+                document.getElementById("slDistanceLabel").innerText = `Khoảng SL (${spec.unitName}):`;
+                document.getElementById("slUnitToggleText").innerText = "🔄 Nhập Theo Ticks";
+                let currentTicks = parseFloat(valInput.value) || spec.defaultTicks;
+                let currentPts = (currentTicks * spec.tickSize).toFixed(2);
+                valInput.value = parseFloat(currentPts);
+            } else {
+                document.getElementById("slDistanceLabel").innerText = "Khoảng SL (Ticks):";
+                document.getElementById("slUnitToggleText").innerText = "🔄 Nhập Theo Giá (Pts)";
+                let currentPts = parseFloat(valInput.value) || spec.defaultSlPts;
+                let currentTicks = Math.round(currentPts / spec.tickSize);
+                valInput.value = currentTicks;
+            }
+            calculateTradeRisk();
+        }
+
+        function onCalcSymbolChange() {
+            const symbolSelect = document.getElementById("calcSymbol");
+            if (!symbolSelect) return;
+            const symbol = symbolSelect.value;
+            const spec = symbolSpecs[symbol] || symbolSpecs["MGC"];
+
+            // Sync with EOD form inputSymbol if available
+            const eodSymbolSelect = document.getElementById("inputSymbol");
+            if (eodSymbolSelect) {
+                let matchingOpt = Array.from(eodSymbolSelect.options).find(o => o.value === symbol || o.value.startsWith(symbol));
+                if (matchingOpt) eodSymbolSelect.value = matchingOpt.value;
+            }
+
+            const badgeEl = document.getElementById("calcSpecBadge");
+            if (badgeEl) {
+                badgeEl.innerText = `1 Tick ${symbol} = ${spec.tickSize} pt ($${spec.microTickVal.toFixed(2)}/micro)`;
+            }
+
+            if (slInputMode === "points") {
+                document.getElementById("slDistanceLabel").innerText = `Khoảng SL (${spec.unitName}):`;
+                document.getElementById("ticksInput").value = spec.defaultSlPts;
+            } else {
+                document.getElementById("slDistanceLabel").innerText = "Khoảng SL (Ticks):";
+                document.getElementById("ticksInput").value = spec.defaultTicks;
+            }
+            calculateTradeRisk();
+        }
+
         function calculateTradeRisk() {
             const acc = getActiveAccount();
             const data = accountData[acc.size];
             
+            const symbolSelect = document.getElementById("calcSymbol");
+            const symbol = symbolSelect ? symbolSelect.value : "MGC";
+            const spec = symbolSpecs[symbol] || symbolSpecs["MGC"];
+
             const stopLossUsd = parseFloat(document.getElementById("stopLossInput").value) || 0;
-            const ticks = parseFloat(document.getElementById("ticksInput").value) || 1;
+            const distanceVal = parseFloat(document.getElementById("ticksInput").value) || 0;
 
-            if (stopLossUsd <= 0 || ticks <= 0) return;
+            if (stopLossUsd <= 0 || distanceVal <= 0) return;
 
-            const riskPerMicroUnit = (stopLossUsd / ticks) / 1.25;
-            let microLots = Math.floor(riskPerMicroUnit);
+            let ticks = 0;
+            if (slInputMode === "points") {
+                ticks = distanceVal / spec.tickSize;
+            } else {
+                ticks = distanceVal;
+            }
+
+            if (ticks <= 0) return;
+
+            let riskPerMicroLot = ticks * spec.microTickVal;
+            if (riskPerMicroLot <= 0) return;
+
+            let microLots = Math.floor(stopLossUsd / riskPerMicroLot);
 
             if (microLots < 1) microLots = 1;
             if (microLots > data.maxMicros) microLots = data.maxMicros;
 
-            const miniLots = (microLots / 10).toFixed(1);
+            let actualLossUsd = microLots * riskPerMicroLot;
+            let miniLots = (microLots / 10).toFixed(1);
 
             document.getElementById("calcMicroLots").innerText = `${microLots} Micros`;
             document.getElementById("calcMiniLots").innerText = `${miniLots} Mini`;
+            const actualRiskEl = document.getElementById("calcActualRisk");
+            if (actualRiskEl) {
+                actualRiskEl.innerText = `$${actualLossUsd.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            }
         }
 
         function addJournalEntry(event) {
