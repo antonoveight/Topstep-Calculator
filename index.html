@@ -155,12 +155,13 @@
                     <div>
                         <label for="calcSymbol" class="block text-[11px] font-semibold text-slate-400 mb-1">Sản Phẩm Topstep:</label>
                         <select id="calcSymbol" onchange="onCalcSymbolChange()" class="w-full bg-slate-950 border border-slate-700 p-1.5 rounded-lg text-cyan-300 font-bold text-xs focus:outline-none focus:border-cyan-500">
-                            <option value="MGC">Vàng (MGC / GC)</option>
-                            <option value="MNQ">Nasdaq (MNQ / NQ)</option>
-                            <option value="MES">S&P 500 (MES / ES)</option>
-                            <option value="MCL">Dầu Thô (MCL / CL)</option>
-                            <option value="MYM">Dow Jones (MYM / YM)</option>
-                            <option value="M2K">Russell 2000 (M2K / RTY)</option>
+                            <option value="MGC">MGC / GC (Vàng Gold)</option>
+                            <option value="MNQ">MNQ / NQ (Nasdaq-100)</option>
+                            <option value="MES">MES / ES (S&P 500)</option>
+                            <option value="MCL">MCL / CL (Dầu Thô Oil)</option>
+                            <option value="MYM">MYM / YM (Dow Jones)</option>
+                            <option value="M2K">M2K / RTY (Russell 2000)</option>
+                            <option value="MBT">MBT / BTC (Bitcoin)</option>
                         </select>
                     </div>
 
@@ -318,13 +319,19 @@
                     </div>
                     <div>
                         <label for="inputSymbol" class="block text-slate-400 mb-1 text-[11px] truncate">Sản Phẩm TopstepX:</label>
-                        <select id="inputSymbol" class="w-full bg-slate-950 border border-slate-700 p-1.5 rounded text-slate-200 font-bold text-xs">
+                        <select id="inputSymbol" onchange="onEodSymbolChange()" class="w-full bg-slate-950 border border-slate-700 p-1.5 rounded text-cyan-300 font-bold text-xs">
                             <option value="MGC">MGC (Micro Gold)</option>
                             <option value="GC">GC (Gold Mini/Full)</option>
                             <option value="MNQ">MNQ (Micro Nasdaq)</option>
                             <option value="NQ">NQ (E-mini Nasdaq)</option>
                             <option value="MES">MES (Micro S&P 500)</option>
                             <option value="ES">ES (E-mini S&P 500)</option>
+                            <option value="MCL">MCL (Micro Crude Oil)</option>
+                            <option value="CL">CL (Crude Oil Mini/Full)</option>
+                            <option value="MYM">MYM (Micro Dow Jones)</option>
+                            <option value="YM">YM (E-mini Dow Jones)</option>
+                            <option value="M2K">M2K (Micro Russell 2000)</option>
+                            <option value="RTY">RTY (E-mini Russell 2000)</option>
                             <option value="MBT">MBT (Micro Bitcoin)</option>
                             <option value="BTC">BTC (Bitcoin Futures)</option>
                         </select>
@@ -997,12 +1004,26 @@
         }
 
         const symbolSpecs = {
-            "MGC": { name: "Vàng (MGC / GC)", tickSize: 0.10, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Vàng", defaultSlPts: 2.0, defaultTicks: 20 },
-            "MNQ": { name: "Nasdaq (MNQ / NQ)", tickSize: 0.25, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá NQ", defaultSlPts: 20.0, defaultTicks: 80 },
-            "MES": { name: "S&P 500 (MES / ES)", tickSize: 0.25, microTickVal: 1.25, miniTickVal: 12.50, unitName: "giá ES", defaultSlPts: 5.0, defaultTicks: 20 },
-            "MCL": { name: "Dầu Thô (MCL / CL)", tickSize: 0.01, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Dầu ($)", defaultSlPts: 0.30, defaultTicks: 30 },
-            "MYM": { name: "Dow Jones (MYM / YM)", tickSize: 1.00, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá YM", defaultSlPts: 30.0, defaultTicks: 30 },
-            "M2K": { name: "Russell 2000 (M2K / RTY)", tickSize: 0.10, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá RTY", defaultSlPts: 3.0, defaultTicks: 30 }
+            "MGC": { name: "Micro Gold (MGC)", tickSize: 0.10, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Vàng", defaultSlPts: 2.0, defaultTicks: 20 },
+            "GC":  { name: "Gold Full (GC)", tickSize: 0.10, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Vàng", defaultSlPts: 2.0, defaultTicks: 20 },
+
+            "MNQ": { name: "Micro Nasdaq (MNQ)", tickSize: 0.25, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá NQ", defaultSlPts: 20.0, defaultTicks: 80 },
+            "NQ":  { name: "E-mini Nasdaq (NQ)", tickSize: 0.25, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá NQ", defaultSlPts: 20.0, defaultTicks: 80 },
+
+            "MES": { name: "Micro S&P 500 (MES)", tickSize: 0.25, microTickVal: 1.25, miniTickVal: 12.50, unitName: "giá ES", defaultSlPts: 5.0, defaultTicks: 20 },
+            "ES":  { name: "E-mini S&P 500 (ES)", tickSize: 0.25, microTickVal: 1.25, miniTickVal: 12.50, unitName: "giá ES", defaultSlPts: 5.0, defaultTicks: 20 },
+
+            "MCL": { name: "Micro Crude Oil (MCL)", tickSize: 0.01, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Dầu ($)", defaultSlPts: 0.30, defaultTicks: 30 },
+            "CL":  { name: "Crude Oil (CL)", tickSize: 0.01, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Dầu ($)", defaultSlPts: 0.30, defaultTicks: 30 },
+
+            "MYM": { name: "Micro Dow Jones (MYM)", tickSize: 1.00, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá YM", defaultSlPts: 30.0, defaultTicks: 30 },
+            "YM":  { name: "E-mini Dow Jones (YM)", tickSize: 1.00, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá YM", defaultSlPts: 30.0, defaultTicks: 30 },
+
+            "M2K": { name: "Micro Russell (M2K)", tickSize: 0.10, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá RTY", defaultSlPts: 3.0, defaultTicks: 30 },
+            "RTY": { name: "E-mini Russell (RTY)", tickSize: 0.10, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá RTY", defaultSlPts: 3.0, defaultTicks: 30 },
+
+            "MBT": { name: "Micro Bitcoin (MBT)", tickSize: 5.00, microTickVal: 0.50, miniTickVal: 25.00, unitName: "giá BTC ($)", defaultSlPts: 200.0, defaultTicks: 40 },
+            "BTC": { name: "Bitcoin Futures (BTC)", tickSize: 5.00, microTickVal: 0.50, miniTickVal: 25.00, unitName: "giá BTC ($)", defaultSlPts: 200.0, defaultTicks: 40 }
         };
 
         let slInputMode = "ticks"; // "ticks" or "points"
@@ -1036,17 +1057,18 @@
             calculateTradeRisk();
         }
 
-        function onCalcSymbolChange() {
+        function onCalcSymbolChange(syncEod = true) {
             const symbolSelect = document.getElementById("calcSymbol");
             if (!symbolSelect) return;
             const symbol = symbolSelect.value;
             const spec = symbolSpecs[symbol] || symbolSpecs["MGC"];
 
-            // Sync with EOD form inputSymbol if available
-            const eodSymbolSelect = document.getElementById("inputSymbol");
-            if (eodSymbolSelect) {
-                let matchingOpt = Array.from(eodSymbolSelect.options).find(o => o.value === symbol || o.value.startsWith(symbol));
-                if (matchingOpt) eodSymbolSelect.value = matchingOpt.value;
+            if (syncEod) {
+                const eodSymbolSelect = document.getElementById("inputSymbol");
+                if (eodSymbolSelect) {
+                    let matchingOpt = Array.from(eodSymbolSelect.options).find(o => o.value === symbol || o.value.startsWith(symbol) || symbol.startsWith(o.value));
+                    if (matchingOpt) eodSymbolSelect.value = matchingOpt.value;
+                }
             }
 
             const badgeEl = document.getElementById("calcSpecBadge");
@@ -1062,6 +1084,20 @@
                 document.getElementById("ticksInput").value = spec.defaultTicks;
             }
             calculateTradeRisk();
+        }
+
+        function onEodSymbolChange() {
+            const eodSymbolSelect = document.getElementById("inputSymbol");
+            if (!eodSymbolSelect) return;
+            const eodVal = eodSymbolSelect.value;
+            const calcSymbolSelect = document.getElementById("calcSymbol");
+            if (calcSymbolSelect) {
+                let matchingOpt = Array.from(calcSymbolSelect.options).find(o => o.value === eodVal || eodVal.startsWith(o.value) || o.value.startsWith(eodVal));
+                if (matchingOpt) {
+                    calcSymbolSelect.value = matchingOpt.value;
+                    onCalcSymbolChange(false);
+                }
+            }
         }
 
         function calculateTradeRisk() {
