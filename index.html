@@ -1444,11 +1444,10 @@
 
                 document.getElementById("trackerKpi4Label").innerText = "Trạng Thái Đỗ Combine";
 
-                let nextUnloggedDate = getNextUnloggedTradeDate(acc);
-                let currentDateInput = document.getElementById("inputDate").value || nextUnloggedDate;
+                let activeTradeDate = getActiveTopstepTradeDate();
+                let currentDateInput = document.getElementById("inputDate").value || activeTradeDate;
                 
-                let isAlreadyLoggedDate = journalEntries.some(e => e.date === currentDateInput);
-                let evalDate = isAlreadyLoggedDate ? nextUnloggedDate : currentDateInput;
+                let evalDate = currentDateInput;
                 let evalDateDisplay = formatDateVN(evalDate);
 
                 document.getElementById("smartBannerTitle").innerText = `🎯 MỤC TIÊU PNL PHIÊN GIAO DỊCH (${evalDateDisplay}):`;
@@ -1483,30 +1482,30 @@
                     statusTagEl.className = "px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold";
                 } else {
                     let datePnlSoFar = dailyPnlMap[evalDate] || 0;
-                    let isSameSession = !isAlreadyLoggedDate && (datePnlSoFar !== 0);
+                    let priorPnl = totalPnl - datePnlSoFar;
 
-                    if (isSameSession) {
-                        let maxSafeSingleDayLimit = Math.floor(adjustedTarget * 0.495);
-                        let totalTargetIfFinishToday = datePnlSoFar + remainingPnlNeeded;
-                        let isSafeToFinishRemainingToday = (totalTargetIfFinishToday / (totalPnl + remainingPnlNeeded)) < 0.5 && (totalTargetIfFinishToday * 2 <= adjustedTarget);
+                    if (datePnlSoFar > 0) {
+                        // Ongoing/logged trade today
+                        let maxSafeDayTotal = Math.max(datePnlSoFar, priorPnl - 1);
+                        let remainingSafeRoomToday = Math.max(0, maxSafeDayTotal - datePnlSoFar);
+                        let totalProjectedIfRoomUsed = totalPnl + remainingSafeRoomToday;
+                        let nextSessionNeeded = Math.max(0, adjustedTarget - totalProjectedIfRoomUsed);
 
-                        let safeCapToday = isSafeToFinishRemainingToday ? totalTargetIfFinishToday : maxSafeSingleDayLimit;
-                        let remainingSafeRoomToday = Math.max(0, safeCapToday - datePnlSoFar);
-
-                        if (datePnlSoFar >= safeCapToday) {
-                            todayTargetEl.innerText = `+$0.00 (Dừng Phiên)`;
+                        if (remainingSafeRoomToday <= 0) {
+                            todayTargetEl.innerText = `+$0.00 (Đã Đạt Trần)`;
                             todayTargetEl.className = "text-lg font-black text-rose-400";
-                            todayDescEl.innerText = `Phiên (${evalDateDisplay}) đã có +$${datePnlSoFar.toLocaleString()} (≥ 50% Target). Nên DỪNG giao dịch để tránh Target Scaling.`;
+                            todayDescEl.innerText = `Phiên (${evalDateDisplay}) đã có +$${datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2})}. Đã đạt trần an toàn hôm nay, nên DỪNG giao dịch để tránh Target Scaling!`;
                             statusTagEl.innerText = "Đã Đạt Trần An Toàn";
                             statusTagEl.className = "px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px] font-bold";
                         } else {
                             todayTargetEl.innerText = `+$${remainingSafeRoomToday.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                             todayTargetEl.className = "text-xl font-black text-amber-400";
-                            todayDescEl.innerText = `Phiên (${evalDateDisplay}) đã có +$${datePnlSoFar.toLocaleString()}. Dư địa lãi tối đa còn lại hôm nay: +$${remainingSafeRoomToday.toLocaleString('en-US', {minimumFractionDigits: 2})}.`;
-                            statusTagEl.innerText = isSafeToFinishRemainingToday ? "Dư Địa Chốt Đỗ Combine" : "Trần Lãi Ăn Thêm";
+                            todayDescEl.innerText = `Phiên (${evalDateDisplay}) đã có +$${datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2})}. Dư địa ăn thêm tối đa hôm nay: +$${remainingSafeRoomToday.toLocaleString('en-US', {minimumFractionDigits: 2})} (tổng ngày ≤ +$${maxSafeDayTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}). Phiên tới chốt +$${nextSessionNeeded.toLocaleString('en-US', {minimumFractionDigits: 2})} là đỗ Combine!`;
+                            statusTagEl.innerText = "Dư Địa Ăn Thêm Hôm Nay";
                             statusTagEl.className = "px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold";
                         }
                     } else {
+                        // New session / no trades yet today
                         let potentialTotal = totalPnl + remainingPnlNeeded;
                         let potentialBestDay = Math.max(bestDayPnl, remainingPnlNeeded);
                         let isSafeToFinishToday = (potentialBestDay / potentialTotal) < 0.5 && (potentialBestDay * 2 <= adjustedTarget);
