@@ -1609,8 +1609,7 @@ function setupTopstepTracker() {
         }
 
         window.onload = function() {
-            const acc = getActiveAccount();
-            document.getElementById("inputDate").value = getNextUnloggedTradeDate(acc);
+            document.getElementById("inputDate").value = getActiveTopstepTradeDate();
             document.getElementById("inputDate").addEventListener("change", renderTrackerTable);
             loadActiveAccountState();
         };
