@@ -290,19 +290,44 @@
                 </div>
             </div>
 
-            <!-- Smart Target Banner -->
-            <div id="smartTargetBanner" class="p-3.5 bg-slate-900/90 rounded-xl border border-emerald-500/40 shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div class="space-y-0.5">
+            <!-- Smart Target & Risk Banner -->
+            <div id="smartTargetBanner" class="p-4 bg-slate-900/90 rounded-xl border border-emerald-500/40 shadow-lg space-y-3">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-2.5">
                     <div class="flex items-center gap-2">
-                        <span id="smartBannerTitle" class="text-xs font-black text-emerald-400 uppercase tracking-wider">🎯 MỤC TIÊU PNL PHIÊN HÔM NAY:</span>
+                        <span id="smartBannerTitle" class="text-xs font-black text-emerald-400 uppercase tracking-wider">🎯 MỤC TIÊU PNL & GIỚI HẠN RỦI RO PHIÊN HÔM NAY:</span>
                         <span id="suggestionStatusTag" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">Tính Dựa Trên Nhật Ký</span>
                     </div>
-                    <p id="targetDynamicDesc" class="text-xs text-slate-300 leading-snug">Mức lãi ngày an toàn giúp đỗ Combine không bị nâng Target Scaling.</p>
+                    <p id="targetDynamicDesc" class="text-xs text-slate-300 leading-snug">Mức lãi ngày an toàn & quản trị rủi ro cắt lỗ bảo vệ tài khoản.</p>
                 </div>
 
-                <div id="smartBannerActionBox" class="bg-slate-950 px-4 py-2 rounded-xl border border-emerald-500/30 text-right shrink-0 w-full sm:w-auto">
-                    <span id="smartBannerValLabel" class="text-[9px] text-slate-400 block uppercase font-semibold">PnL Cần Đạt Hôm Nay</span>
-                    <span id="todayTargetPnl" class="text-xl font-black text-emerald-400">+$1,494.20</span>
+                <!-- Dynamic 3-Column Risk & Profit Stats -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-0.5">
+                    <!-- Box 1: Target Profit -->
+                    <div class="bg-slate-950 p-3 rounded-xl border border-emerald-500/30 flex flex-col justify-between">
+                        <span id="smartBannerValLabel" class="text-[10px] text-slate-400 block uppercase font-bold">🟢 LÃI TỐI ĐA NÊN CHỐT HÔM NAY</span>
+                        <div class="mt-1">
+                            <span id="todayTargetPnl" class="text-xl font-black text-emerald-400">+$601.30</span>
+                            <span id="todayTargetSubtext" class="text-[10px] text-emerald-300/80 block font-medium">Bảo vệ 50% Consistency Rule</span>
+                        </div>
+                    </div>
+
+                    <!-- Box 2: Recommended Max Loss -->
+                    <div class="bg-slate-950 p-3 rounded-xl border border-rose-500/30 flex flex-col justify-between">
+                        <span class="text-[10px] text-slate-400 block uppercase font-bold">🔴 LỖ TỐI ĐA CHO PHÉP HÔM NAY</span>
+                        <div class="mt-1">
+                            <span id="todayMaxLossBudget" class="text-xl font-black text-rose-400">-$1,000.00</span>
+                            <span id="todayLossBudgetSubtext" class="text-[10px] text-rose-300/80 block font-medium">Bảo vệ DLL Soft Rule & MLL Buffer</span>
+                        </div>
+                    </div>
+
+                    <!-- Box 3: MLL Buffer & Limit -->
+                    <div class="bg-slate-950 p-3 rounded-xl border border-amber-500/30 flex flex-col justify-between">
+                        <span class="text-[10px] text-slate-400 block uppercase font-bold">🛡️ ĐỆM MLL AN TOÀN HIỆN CÓ</span>
+                        <div class="mt-1">
+                            <span id="todayMllBufferVal" class="text-xl font-black text-amber-400">$2,000.00</span>
+                            <span id="todayMllLimitSubtext" class="text-[10px] text-amber-300/80 block font-medium">Ngưỡng MLL khóa tại <strong id="bannerMllThresholdText" class="text-rose-400">$49,773.72</strong></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1379,6 +1404,43 @@
             document.getElementById("trackerTotalPnl").innerText = `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             document.getElementById("trackerTotalPnl").className = `text-base font-black ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
 
+            // Common MLL Buffer & Safe Loss Budget calculation for both stages
+            let mllBuffer = Math.max(0, netAccountBal - trailingMll);
+            let rawDllVal = data.dllVal;
+            let safeDailyLossBudgetVal = Math.min(rawDllVal, Math.floor(mllBuffer * 0.5));
+            if (safeDailyLossBudgetVal < 100) safeDailyLossBudgetVal = Math.min(rawDllVal, mllBuffer);
+
+            let activeTradeDate = getActiveTopstepTradeDate();
+            let currentDateInput = document.getElementById("inputDate").value || activeTradeDate;
+            let evalDate = currentDateInput;
+            let evalDateDisplay = formatDateVN(evalDate);
+
+            let datePnlSoFar = dailyPnlMap[evalDate] || 0;
+            let remainingLossBudgetToday = safeDailyLossBudgetVal;
+            if (datePnlSoFar < 0) {
+                remainingLossBudgetToday = Math.max(0, safeDailyLossBudgetVal - Math.abs(datePnlSoFar));
+            }
+
+            const maxLossBudgetEl = document.getElementById("todayMaxLossBudget");
+            const maxLossSubtextEl = document.getElementById("todayLossBudgetSubtext");
+            if (maxLossBudgetEl) {
+                maxLossBudgetEl.innerText = `-$${remainingLossBudgetToday.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                if (mllBuffer < rawDllVal * 1.5) {
+                    maxLossSubtextEl.innerText = `⚠️ Đệm MLL mỏng ($${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}) -> Khuyên cắt lỗ sớm!`;
+                } else {
+                    maxLossSubtextEl.innerText = `Bảo vệ DLL (-$${rawDllVal.toLocaleString()}) & Trailing MLL`;
+                }
+            }
+
+            const mllBufferValEl = document.getElementById("todayMllBufferVal");
+            const mllThresholdTextEl = document.getElementById("bannerMllThresholdText");
+            if (mllBufferValEl) {
+                mllBufferValEl.innerText = `$${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            }
+            if (mllThresholdTextEl) {
+                mllThresholdTextEl.innerText = `$${trailingMll.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            }
+
             if (acc.stage === "xfa") {
                 document.getElementById("trackerKpi2Label").innerText = "Tổng Payout Đã Rút";
                 document.getElementById("trackerAdjustedTarget").innerText = `$${totalPayouts.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
@@ -1412,7 +1474,7 @@
                     }
                 }
 
-                document.getElementById("smartBannerTitle").innerText = "💰 HẠN MỨC PAYOUT ĐƯỢC RÚT ĐỢT NÀY:";
+                document.getElementById("smartBannerTitle").innerText = `💰 HẠN MỨC PAYOUT & BẢO VỆ TÀI KHOẢN XFA (${evalDateDisplay}):`;
                 document.getElementById("smartBannerTitle").className = "text-xs font-black text-purple-300 uppercase tracking-wider";
 
                 let xfaCapVal = (acc.xfaPath === 'standard_payout') ? data.xfaStdCapVal : data.xfaConCapVal;
@@ -1444,13 +1506,7 @@
 
                 document.getElementById("trackerKpi4Label").innerText = "Trạng Thái Đỗ Combine";
 
-                let activeTradeDate = getActiveTopstepTradeDate();
-                let currentDateInput = document.getElementById("inputDate").value || activeTradeDate;
-                
-                let evalDate = currentDateInput;
-                let evalDateDisplay = formatDateVN(evalDate);
-
-                document.getElementById("smartBannerTitle").innerText = `🎯 MỤC TIÊU PNL PHIÊN GIAO DỊCH (${evalDateDisplay}):`;
+                document.getElementById("smartBannerTitle").innerText = `🎯 MỤC TIÊU PNL & GIỚI HẠN RỦI RO PHIÊN (${evalDateDisplay}):`;
                 document.getElementById("smartBannerTitle").className = "text-xs font-black text-emerald-400 uppercase tracking-wider";
 
                 let uniqueDates = Object.keys(dailyPnlMap);
