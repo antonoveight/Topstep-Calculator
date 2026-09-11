@@ -1542,7 +1542,12 @@
 
                     if (datePnlSoFar > 0) {
                         // Ongoing/logged trade today
-                        let maxSafeDayTotal = Math.max(datePnlSoFar, priorPnl - 1);
+                        let maxSafeDayTotal;
+                        if (priorPnl > 0) {
+                            maxSafeDayTotal = Math.max(datePnlSoFar, Math.min(maxSafeSingleDay, priorPnl - 1));
+                        } else {
+                            maxSafeDayTotal = Math.max(datePnlSoFar, maxSafeSingleDay);
+                        }
                         let remainingSafeRoomToday = Math.max(0, maxSafeDayTotal - datePnlSoFar);
                         let totalProjectedIfRoomUsed = totalPnl + remainingSafeRoomToday;
                         let nextSessionNeeded = Math.max(0, adjustedTarget - totalProjectedIfRoomUsed);
