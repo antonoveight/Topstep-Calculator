@@ -1,512 +1,936 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Topstep® Dashboard</title>
+<title>Topstep® Pro Trading Desk · Giản Hạ Thủy (Mệnh Thủy)</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* ── GIẢN HẠ THỦY · MỆNH THỦY · 08/11/1997 ── */
+/* ── MỆNH THỦY · GIẢN HẠ THỦY · 08/11/1997 · ĐINH SỬU ── */
 :root {
-    --bg:       #0B1222;
-    --surface:  #111827;
-    --card:     #1A2235;
-    --card2:    #1E2A40;
-    --border:   #263148;
-    --border2:  #2E3A52;
-    --blue:     #2563EB;
-    --blue-l:   #3B82F6;
-    --blue-ll:  #93C5FD;
-    --cyan:     #06B6D4;
-    --cyan-l:   #67E8F9;
-    --txt:      #F0F4FF;
-    --txt2:     #94A3B8;
-    --txt3:     #64748B;
-    --profit:   #10B981;
-    --loss:     #EF4444;
-    --warn:     #F59E0B;
+    --bg-main:       #060913;
+    --bg-surface:    #0a1122;
+    --bg-card:       rgba(13, 22, 40, 0.78);
+    --bg-card-elev:  rgba(17, 28, 52, 0.85);
+    --bg-inner:      rgba(9, 15, 29, 0.75);
+    --border-subtle: rgba(56, 189, 248, 0.12);
+    --border-card:   rgba(148, 163, 184, 0.14);
+    --border-glow:   rgba(56, 189, 248, 0.35);
+    
+    --water-blue:    #2563EB;
+    --water-cyan:    #06B6D4;
+    --cyan-bright:   #38BDF8;
+    --cyan-glow:     rgba(56, 189, 248, 0.2);
+    --metal-white:   #F8FAFC;
+    --metal-silver:  #E2E8F0;
+    --text-slate:    #94A3B8;
+    --text-dim:      #64748B;
+    
+    --profit-green:  #10B981;
+    --profit-glow:   rgba(16, 185, 129, 0.18);
+    --loss-rose:     #F43F5E;
+    --loss-glow:     rgba(244, 63, 94, 0.18);
+    --warn-amber:    #F59E0B;
+    --warn-glow:     rgba(245, 158, 11, 0.18);
+    --purple-xfa:    #8B5CF6;
 }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-    font-family: 'Inter', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--txt);
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-main);
+    background-image: 
+        radial-gradient(1200px circle at 50% -5%, rgba(14, 165, 233, 0.14), transparent 65%),
+        radial-gradient(900px circle at 95% 15%, rgba(37, 99, 235, 0.09), transparent 55%),
+        radial-gradient(1000px circle at 5% 55%, rgba(6, 182, 212, 0.07), transparent 60%);
+    background-attachment: fixed;
+    color: var(--metal-silver);
     min-height: 100vh;
     font-size: 13px;
     line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
-/* Cards */
-.card  { background: var(--card);  border: 1px solid var(--border);  border-radius: 8px; }
-.card2 { background: var(--card2); border: 1px solid var(--border2); border-radius: 6px; }
-/* Inputs */
+
+/* Glassmorphic Fintech Containers */
+.fin-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-card);
+    border-radius: 16px;
+    box-shadow: 0 10px 32px -4px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.03);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.fin-card:hover {
+    border-color: rgba(56, 189, 248, 0.25);
+    box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.55), 0 0 24px rgba(14, 165, 233, 0.08);
+}
+.fin-inner {
+    background: var(--bg-inner);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+.fin-inner:hover {
+    border-color: rgba(56, 189, 248, 0.22);
+}
+
+/* Stat Cards */
+.stat-box {
+    background: linear-gradient(180deg, rgba(16, 26, 48, 0.75) 0%, rgba(10, 17, 32, 0.9) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.12);
+    border-radius: 12px;
+    padding: 13px 15px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.4), transparent);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.stat-box:hover {
+    transform: translateY(-2px);
+    border-color: rgba(56, 189, 248, 0.32);
+    box-shadow: 0 8px 24px -4px rgba(6, 182, 212, 0.15);
+}
+.stat-box:hover::before {
+    opacity: 1;
+}
+
+/* Inputs & Form Controls */
 input, select {
-    background: var(--bg);
-    border: 1px solid var(--border2);
-    border-radius: 5px;
-    padding: 5px 9px;
-    font-size: 12px;
-    color: var(--txt);
-    font-family: inherit;
+    background: rgba(8, 14, 28, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 8px;
+    padding: 7px 11px;
+    color: #F8FAFC;
+    font-size: 12.5px;
     font-weight: 600;
+    font-family: inherit;
     outline: none;
-    width: 100%;
-    transition: border-color .15s;
+    transition: all 0.2s ease;
 }
-input:focus, select:focus { border-color: var(--blue-l); }
-select option { background: var(--surface); }
+input:focus, select:focus {
+    border-color: var(--cyan-bright);
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.22);
+    background: rgba(10, 18, 36, 0.95);
+}
+select option {
+    background: #0D172A;
+    color: #F8FAFC;
+}
+
 /* Buttons */
-.btn  { display:inline-flex; align-items:center; gap:5px; border:none; border-radius:5px; font-size:11px; font-weight:700; padding:6px 12px; cursor:pointer; transition:opacity .15s; font-family:inherit; }
-.btn:hover { opacity:.85; }
-.btn-blue  { background: var(--blue);   color: #fff; }
-.btn-cyan  { background: var(--cyan);   color: #0B1222; }
-.btn-ghost { background: var(--card2);  color: var(--txt2); border:1px solid var(--border2); }
-.btn-red   { background: #7F1D1D;       color: #FCA5A5; border:1px solid #B91C1C; }
-/* Table */
-.tbl { width:100%; border-collapse:collapse; font-size:11px; }
-.tbl thead th { background:var(--surface); color:var(--txt2); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:8px 10px; text-align:left; border-bottom:1px solid var(--border2); white-space:nowrap; }
-.tbl tbody tr { border-bottom:1px solid var(--border); }
-.tbl tbody tr:hover { background:var(--card2); }
-.tbl tbody td { padding:7px 10px; vertical-align:middle; color:var(--txt); }
-/* Label */
-.lbl { font-size:10px; font-weight:600; color:var(--txt3); text-transform:uppercase; letter-spacing:.05em; display:block; margin-bottom:3px; }
-/* KPI */
-.kpi { font-size:18px; font-weight:900; display:block; line-height:1.1; }
-.kpi-sm { font-size:14px; font-weight:800; display:block; line-height:1.2; }
-/* Badge */
-.badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:700; letter-spacing:.03em; }
-.b-blue { background:rgba(37,99,235,.2); color:var(--blue-ll); border:1px solid rgba(37,99,235,.4); }
-.b-cyan { background:rgba(6,182,212,.15); color:var(--cyan-l); border:1px solid rgba(6,182,212,.35); }
-.b-dim  { background:rgba(100,116,139,.15); color:var(--txt2); border:1px solid var(--border2); }
-/* Profit/Loss */
-.c-profit { color: var(--profit); }
-.c-loss   { color: var(--loss); }
-.c-warn   { color: var(--warn); }
-.c-blue   { color: var(--blue-l); }
-.c-cyan   { color: var(--cyan); }
-.c-dim    { color: var(--txt2); }
+.btn-fin-primary {
+    background: linear-gradient(135deg, #0284C7 0%, #06B6D4 100%);
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 12px;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 8px;
+    padding: 7px 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 14px rgba(6, 182, 212, 0.25);
+    transition: all 0.2s ease;
+}
+.btn-fin-primary:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.38);
+}
+.btn-fin-secondary {
+    background: rgba(18, 29, 54, 0.7);
+    color: var(--metal-silver);
+    font-weight: 600;
+    font-size: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+.btn-fin-secondary:hover {
+    background: rgba(24, 38, 70, 0.95);
+    border-color: rgba(56, 189, 248, 0.35);
+    color: #FFFFFF;
+}
+.btn-fin-purple {
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 12px;
+    border: 1px solid rgba(167, 139, 250, 0.4);
+    border-radius: 8px;
+    padding: 7px 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 14px rgba(139, 92, 246, 0.25);
+    transition: all 0.2s ease;
+}
+.btn-fin-purple:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.38);
+}
+.btn-fin-danger {
+    background: rgba(127, 29, 29, 0.25);
+    color: #FCA5A5;
+    font-weight: 600;
+    font-size: 12px;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+.btn-fin-danger:hover {
+    background: rgba(153, 27, 27, 0.45);
+    border-color: #EF4444;
+    color: #FFFFFF;
+}
+
+/* Badges */
+.badge-water {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: rgba(37, 99, 235, 0.16);
+    color: #93C5FD;
+    border: 1px solid rgba(37, 99, 235, 0.35);
+}
+.badge-cyan {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: rgba(6, 182, 212, 0.16);
+    color: #67E8F9;
+    border: 1px solid rgba(6, 182, 212, 0.35);
+}
+.badge-purple {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: rgba(139, 92, 246, 0.16);
+    color: #C4B5FD;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+}
+.badge-dim {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(148, 163, 184, 0.1);
+    color: #94A3B8;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* Finance Table */
+.fin-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12px;
+}
+.fin-table thead th {
+    background: rgba(10, 16, 31, 0.9);
+    color: #94A3B8;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 11px 12px;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+    white-space: nowrap;
+    text-align: left;
+}
+.fin-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.15s ease;
+}
+.fin-table tbody tr:hover {
+    background: rgba(30, 48, 86, 0.3);
+}
+.fin-table tbody td {
+    padding: 10px 12px;
+    color: #E2E8F0;
+    vertical-align: middle;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Modals */
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(3, 7, 18, 0.78);
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+}
+.modal.hidden {
+    display: none !important;
+}
+.modal-box {
+    background: #0B1325;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 16px;
+    max-width: 440px;
+    width: 100%;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(14, 165, 233, 0.12);
+}
+.modal-box.wide {
+    max-width: 540px;
+}
+.modal-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: none;
+    border: none;
+    color: #64748B;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+.modal-close:hover {
+    color: var(--loss-rose);
+}
+
 /* Scrollbar */
-::-webkit-scrollbar { width:4px; height:4px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius:4px; }
-/* Modal */
-.modal { position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(3px); z-index:50; display:flex; align-items:center; justify-content:center; padding:16px; }
-.modal.hidden { display:none !important; }
-.mbox { background:var(--surface); border:1px solid var(--border2); border-radius:10px; max-width:420px; width:100%; padding:20px; position:relative; }
-.mbox.wide { max-width:520px; }
-.mtitle { font-size:13px; font-weight:800; color:var(--txt); border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:14px; }
-.mclose { position:absolute; top:14px; right:14px; background:none; border:none; color:var(--txt3); font-size:18px; cursor:pointer; line-height:1; }
-.mclose:hover { color:var(--loss); }
-.fl { display:flex; }
-.fl-col { flex-direction:column; }
-.hidden { display:none !important; }
-/* Section divider */
-.sec-bar { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:12px; }
-.sec-title { font-size:11px; font-weight:800; color:var(--txt); text-transform:uppercase; letter-spacing:.06em; display:flex; align-items:center; gap:6px; }
-/* Accent line */
-.acc-left { border-left:3px solid var(--blue); padding-left:10px; }
-.acc-cyan  { border-left:3px solid var(--cyan); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.25); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.45); }
+
+/* Utility */
+.tabular-nums { font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div style="background:var(--surface); border-bottom:2px solid var(--blue); position:sticky; top:0; z-index:40;">
-    <div style="max-width:1100px; margin:0 auto; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-        <div>
-            <div style="display:flex; gap:6px; align-items:center; margin-bottom:3px;">
-                <span class="badge b-blue">TOPSTEP® RISK</span>
-                <span class="badge b-dim">XFA® PAYOUT</span>
+<!-- ① TOP NAVIGATION / HEADER -->
+<header style="background: rgba(8, 14, 28, 0.88); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(56, 189, 248, 0.15); position: sticky; top: 0; z-index: 50;">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <!-- Brand identity -->
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #0284C7, #06B6D4); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 16px rgba(6, 182, 212, 0.4); flex-shrink: 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
             </div>
-            <h1 style="font-size:16px; font-weight:900; color:var(--txt); letter-spacing:.01em;">MULTI-ACCOUNT DASHBOARD</h1>
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <h1 style="font-size: 16px; font-weight: 800; color: #FFFFFF; letter-spacing: 0.02em;">TOPSTEP® TRADING DESK</h1>
+                    <span class="badge-cyan" style="font-size: 10px; padding: 1px 7px;">Multi-Account Pro</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 1px;">
+                    <span style="font-size: 11px; color: var(--text-slate);">Hệ Thống Quản Trị Rủi Ro &amp; Bàn Giao Dịch Đa Tài Khoản</span>
+                    <span style="font-size: 10px; color: #38BDF8; display: flex; align-items: center; gap: 4px;">
+                        <span>●</span> 🌊 Giản Hạ Thủy (1997)
+                    </span>
+                </div>
+            </div>
         </div>
-        <div style="display:flex; gap:8px; align-items:center;">
-            <button onclick="openGoogleSheetModal()" class="btn btn-blue">
-                <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
-                Google Sheets
+
+        <!-- Quick actions -->
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button onclick="openGoogleSheetModal()" class="btn-fin-secondary" style="font-size: 11.5px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Google Sheets Sync
             </button>
-            <a href="https://www.topstep.com" target="_blank" class="btn btn-ghost" style="text-decoration:none;">Topstep® ↗</a>
-        </div>
-    </div>
-</div>
-
-<div style="max-width:1100px; margin:0 auto; padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
-
-<!-- ① ACCOUNT SELECTOR -->
-<div class="card" style="padding:12px 16px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <span class="badge b-blue" id="activeStageBadge">Combine</span>
-            <div>
-                <span style="font-size:10px; color:var(--txt3);">TÀI KHOẢN</span>
-                <h2 id="displayAccountTitle" style="font-size:14px; font-weight:800; color:var(--txt);">TS-50K-001</h2>
+            <a href="https://www.topstep.com" target="_blank" rel="noopener noreferrer" class="btn-fin-secondary" style="text-decoration: none; font-size: 11.5px;">
+                Topstep® Portal ↗
+            </a>
+            <div style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25);">
+                <span style="width: 7px; height: 7px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px #10B981;"></span>
+                <span style="font-size: 11px; font-weight: 700; color: #34D399;">Live Engine</span>
             </div>
         </div>
-        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-            <select id="accountDropdown" onchange="onAccountDropdownChange()" style="min-width:160px; width:auto; background:var(--bg); border-color:var(--blue); color:var(--blue-ll); font-weight:700;"></select>
-            <button onclick="openAddAccountModal()" class="btn btn-blue">+ Tạo Acc</button>
-            <button onclick="toggleAccountStage()" id="btnToggleStage" class="btn btn-cyan">⚡ → XFA</button>
-            <button onclick="openEditAccountModal()" class="btn btn-ghost">⚙️</button>
-        </div>
     </div>
-</div>
+</header>
 
-<!-- ② RISK PARAMETERS -->
-<div class="card" style="padding:14px 16px;">
-    <div class="sec-bar">
-        <span class="sec-title acc-left">Risk Parameters</span>
-        <div style="display:flex; gap:6px; align-items:center;">
-            <span id="infoAccSizeTag" class="badge b-blue">$50K</span>
-            <span id="infoPricingTag" class="badge b-dim">Standard</span>
-            <button onclick="openEditAccountModal()" style="font-size:11px; color:var(--blue-l); background:none; border:none; cursor:pointer; text-decoration:underline;">Đổi</button>
-        </div>
-    </div>
+<main style="max-width: 1240px; margin: 0 auto; padding: 20px 20px 60px; display: flex; flex-direction: column; gap: 16px;">
 
-    <!-- KPI Row -->
-    <div class="grid grid-cols-2 md:grid-cols-5" style="gap:8px; margin-bottom:12px;">
-        <div class="card2" style="padding:10px 12px;">
-            <span class="lbl">Phí / Tháng</span>
-            <span id="monthlyFee" class="kpi-sm" style="color:var(--txt);">$49</span>
-            <span id="activationFeeNote" style="font-size:10px; color:var(--txt3); display:block; margin-top:2px;">+$149 kích hoạt</span>
-        </div>
-        <div class="card2" style="padding:10px 12px;">
-            <span id="card2Label" class="lbl">Target</span>
-            <span id="profitTarget" class="kpi-sm c-profit">$3,000</span>
-            <span id="card2Note" style="font-size:10px; color:var(--txt3); display:block; margin-top:2px;">Combine</span>
-        </div>
-        <div class="card2" style="padding:10px 12px;">
-            <span class="lbl">MLL</span>
-            <span id="maxLoss" class="kpi-sm c-loss">$2,000</span>
-            <span id="mllLockInfo" style="font-size:10px; color:var(--loss); opacity:.8; display:block; margin-top:2px;">Khóa $50K</span>
-        </div>
-        <div class="card2" style="padding:10px 12px;">
-            <span class="lbl">DLL (Soft)</span>
-            <span id="dailyLoss" class="kpi-sm c-warn">$1,000</span>
-        </div>
-        <div class="card2" style="padding:10px 12px; grid-column:span 1;">
-            <span class="lbl">Vị Thế Tối Đa</span>
-            <span id="maxContracts" class="kpi-sm" style="color:var(--cyan); font-size:12px;">5 Mini / 50 Micro</span>
-        </div>
-    </div>
-
-    <!-- Calculator -->
-    <div style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:12px 14px; margin-bottom:12px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span class="sec-title" style="font-size:10px;">⚡ Lot Calculator</span>
-            <span id="calcSpecBadge" style="font-family:monospace; font-size:10px; color:var(--cyan); font-weight:600;">1T MGC = 0.10pt · $1/micro</span>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1.2fr; gap:8px; align-items:end;">
-            <div>
-                <label for="calcSymbol" class="lbl">Sản Phẩm</label>
-                <select id="calcSymbol" onchange="onCalcSymbolChange()">
-                    <option value="MGC">MGC / GC (Vàng)</option>
-                    <option value="MNQ">MNQ / NQ (Nasdaq)</option>
-                    <option value="MES">MES / ES (S&P 500)</option>
-                    <option value="MCL">MCL / CL (Oil)</option>
-                    <option value="MYM">MYM / YM (Dow)</option>
-                    <option value="M2K">M2K / RTY (Russell)</option>
-                    <option value="MBT">MBT / BTC (Bitcoin)</option>
-                </select>
-            </div>
-            <div>
-                <label for="stopLossInput" class="lbl">Stop Loss ($)</label>
-                <div style="position:relative;">
-                    <span style="position:absolute; left:8px; top:50%; transform:translateY(-50%); color:var(--txt3); font-size:12px;">$</span>
-                    <input id="stopLossInput" type="number" value="150" min="10" step="10" oninput="calculateTradeRisk()" style="padding-left:18px;">
-                </div>
-            </div>
-            <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-                    <label id="slDistanceLabel" for="ticksInput" class="lbl" style="margin:0;">SL Ticks</label>
-                    <button type="button" onclick="toggleSlUnitMode()" style="font-size:10px; color:var(--blue-l); background:none; border:none; cursor:pointer;"><span id="slUnitToggleText">→ Pts</span></button>
-                </div>
-                <input id="ticksInput" type="number" value="20" min="0.01" step="any" oninput="calculateTradeRisk()">
-            </div>
-            <div style="background:var(--card2); border:1px solid var(--border2); border-radius:6px; padding:8px 10px; display:flex; justify-content:space-around; text-align:center;">
+    <!-- ② ACTIVE ACCOUNT SELECTOR HUB -->
+    <div class="fin-card" style="padding: 16px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="badge-water" id="activeStageBadge" style="font-size: 12px; padding: 4px 12px;">Vòng Combine</span>
                 <div>
-                    <span class="lbl">Micro</span>
-                    <span id="calcMicroLots" style="font-size:14px; font-weight:900; color:var(--cyan);">7</span>
-                </div>
-                <div style="border-left:1px solid var(--border); padding-left:8px;">
-                    <span class="lbl">Mini</span>
-                    <span id="calcMiniLots" style="font-size:14px; font-weight:900; color:var(--blue-l);">0.7</span>
-                </div>
-                <div style="border-left:1px solid var(--border); padding-left:8px;">
-                    <span class="lbl">Rủi Ro</span>
-                    <span id="calcActualRisk" style="font-size:14px; font-weight:900; color:var(--profit);">$140</span>
+                    <span style="font-size: 10.5px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; display: block;">TÀI KHOẢN ĐANG KÍCH HOẠT</span>
+                    <h2 id="displayAccountTitle" style="font-size: 16px; font-weight: 800; color: #FFFFFF; letter-spacing: 0.01em;">TS-50K-001</h2>
                 </div>
             </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <select id="accountDropdown" onchange="onAccountDropdownChange()" style="min-width: 180px; background: rgba(10, 18, 36, 0.9); border-color: rgba(56, 189, 248, 0.35); color: #38BDF8; font-weight: 700;"></select>
+                <button onclick="openAddAccountModal()" class="btn-fin-primary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    + Tạo Tài Khoản
+                </button>
+                <button onclick="toggleAccountStage()" id="btnToggleStage" class="btn-fin-purple">
+                    <span>⚡ Chuyển Sang XFA</span>
+                </button>
+                <button onclick="openEditAccountModal()" class="btn-fin-secondary" title="Cấu hình tài khoản">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Cài Đặt Gói
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Combine & XFA Info -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-        <div style="background:var(--bg); border:1px solid var(--border); border-left:2px solid var(--blue); border-radius:6px; padding:10px 12px;">
-            <div style="font-size:10px; font-weight:800; color:var(--blue-ll); margin-bottom:6px;">🎯 COMBINE®</div>
-            <div style="font-size:11px; color:var(--txt2); display:grid; grid-template-columns:1fr 1fr; gap:4px 8px;">
-                <span>Target: <strong id="combineProfitTarget" class="c-profit">$3,000</strong></span>
-                <span>Min Days: <strong style="color:var(--txt);">≥ 2</strong></span>
-                <span>Cap/Ngày: <strong id="safeDailyProfit" class="c-warn">$1,499</strong></span>
-                <span>MLL: <span id="combineMllRule" class="c-loss">Khóa $50K</span></span>
-            </div>
-        </div>
-        <div style="background:var(--bg); border:1px solid var(--border); border-left:2px solid var(--cyan); border-radius:6px; padding:10px 12px;">
-            <div style="font-size:10px; font-weight:800; color:var(--cyan-l); margin-bottom:6px;">💰 XFA® PAYOUT</div>
-            <div style="font-size:11px; color:var(--txt2);">
-                <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
-                    <span id="xfaPathTitle" style="font-weight:700; color:var(--cyan);">Standard Path</span>
-                    <span class="c-profit" style="font-weight:700;">90/10 split</span>
+    <!-- ③ RISK PARAMETERS & SPECIFICATIONS CARD -->
+    <div class="fin-card" style="padding: 18px 20px;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 12px; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 13px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.04em;">THÔNG SỐ RỦI RO &amp; QUY TẮC VỐN TOPSTEP®</span>
+                    <span id="infoAccSizeTag" class="badge-water">$50,000</span>
+                    <span id="infoPricingTag" class="badge-dim">Standard Path</span>
                 </div>
-                <p id="xfaPathDesc" style="font-size:10px; color:var(--txt3); margin-bottom:4px;">≥5 ngày thắng (≥$150 EOD). Rút ≤50% số dư.</p>
-                <div style="display:flex; justify-content:space-between;">
-                    <span>Payout Cap:</span>
-                    <strong id="xfaPayoutCap" class="c-cyan">$2,000</strong>
+                <p style="font-size: 11px; color: var(--text-slate); margin-top: 2px;">Các giới hạn rút vốn, ngưỡng vi phạm MLL và quy định vị thế được áp dụng tự động cho tài khoản này.</p>
+            </div>
+            <button onclick="openEditAccountModal()" style="font-size: 11.5px; color: #38BDF8; background: none; border: none; cursor: pointer; text-decoration: underline; font-weight: 600;">
+                Thay đổi gói tài khoản ↗
+            </button>
+        </div>
+
+        <!-- KPI 5 Metric Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+            <!-- Card 1: Fee -->
+            <div class="stat-box">
+                <span style="font-size: 10.5px; font-weight: 700; color: var(--text-slate); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px;">PHÍ HÀNG THÁNG</span>
+                <span id="monthlyFee" class="tabular-nums" style="font-size: 19px; font-weight: 800; color: #FFFFFF; display: block;">$49 / tháng</span>
+                <span id="activationFeeNote" style="font-size: 10.5px; color: var(--text-slate); margin-top: 4px; display: block;">+$149 Phí kích hoạt một lần</span>
+            </div>
+
+            <!-- Card 2: Target -->
+            <div class="stat-box">
+                <span id="card2Label" style="font-size: 10.5px; font-weight: 700; color: var(--text-slate); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px;">MỤC TIÊU LỢI NHUẬN</span>
+                <span id="profitTarget" class="tabular-nums" style="font-size: 19px; font-weight: 800; color: #34D399; display: block;">$3,000</span>
+                <span id="card2Note" style="font-size: 10.5px; color: #34D399; opacity: 0.85; margin-top: 4px; display: block;">Combine Stage · Consistency ≤50%</span>
+            </div>
+
+            <!-- Card 3: MLL -->
+            <div class="stat-box">
+                <span style="font-size: 10.5px; font-weight: 700; color: var(--text-slate); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px;">MAX LOSS LIMIT (MLL)</span>
+                <span id="maxLoss" class="tabular-nums" style="font-size: 19px; font-weight: 800; color: #FB7185; display: block;">$2,000</span>
+                <span id="mllLockInfo" style="font-size: 10.5px; color: #FB7185; opacity: 0.85; margin-top: 4px; display: block;">Trailing EOD · Khóa tại $50K vốn gốc</span>
+            </div>
+
+            <!-- Card 4: DLL -->
+            <div class="stat-box">
+                <span style="font-size: 10.5px; font-weight: 700; color: var(--text-slate); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px;">DAILY LOSS LIMIT (DLL)</span>
+                <span id="dailyLoss" class="tabular-nums" style="font-size: 19px; font-weight: 800; color: #FBBF24; display: block;">$1,000</span>
+                <span style="font-size: 10.5px; color: #FBBF24; opacity: 0.85; margin-top: 4px; display: block;">Soft Rule: Khóa phiên, bảo lưu tài khoản</span>
+            </div>
+
+            <!-- Card 5: Max Contracts -->
+            <div class="stat-box">
+                <span style="font-size: 10.5px; font-weight: 700; color: var(--text-slate); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px;">VỊ THẾ TỐI ĐA</span>
+                <span id="maxContracts" style="font-size: 15px; font-weight: 800; color: #38BDF8; display: block;">5 Minis / 50 Micros</span>
+                <span style="font-size: 10.5px; color: var(--text-slate); margin-top: 4px; display: block;">Quy đổi: 1 Mini = 10 Micros</span>
+            </div>
+        </div>
+
+        <!-- Position Sizer & Lot Calculator Pro Widget -->
+        <div class="fin-inner" style="padding: 14px 16px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 12px; font-weight: 800; color: #38BDF8; text-transform: uppercase; letter-spacing: 0.04em;">⚡ BỘ TÍNH KHỐI LƯỢNG HỢP ĐỒNG (POSITION SIZER)</span>
+                    <span style="font-size: 10.5px; color: var(--text-slate);">Quản trị rủi ro trên từng lệnh</span>
+                </div>
+                <span id="calcSpecBadge" style="font-family: monospace; font-size: 11px; color: #38BDF8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 2px 8px; font-weight: 700;">
+                    1T MGC = 0.10pt · $1/micro
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                <div>
+                    <label for="calcSymbol" style="font-size: 11px; font-weight: 700; color: var(--text-slate); display: block; margin-bottom: 4px;">Sản Phẩm Giao Dịch</label>
+                    <select id="calcSymbol" onchange="onCalcSymbolChange()" style="width: 100%;">
+                        <option value="MGC">MGC / GC (Vàng - Gold)</option>
+                        <option value="MNQ">MNQ / NQ (Nasdaq 100)</option>
+                        <option value="MES">MES / ES (S&amp;P 500)</option>
+                        <option value="MCL">MCL / CL (Dầu Thô - Oil)</option>
+                        <option value="MYM">MYM / YM (Dow Jones)</option>
+                        <option value="M2K">M2K / RTY (Russell 2000)</option>
+                        <option value="MBT">MBT / BTC (Bitcoin Futures)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="stopLossInput" style="font-size: 11px; font-weight: 700; color: var(--text-slate); display: block; margin-bottom: 4px;">Mức Dừng Lỗ Tối Đa ($ USD)</label>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-weight: 700; font-size: 13px;">$</span>
+                        <input id="stopLossInput" type="number" value="150" min="10" step="10" oninput="calculateTradeRisk()" style="width: 100%; padding-left: 24px;">
+                    </div>
+                </div>
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label id="slDistanceLabel" for="ticksInput" style="font-size: 11px; font-weight: 700; color: var(--text-slate); margin: 0;">Khoảng Cách SL (Ticks)</label>
+                        <button type="button" onclick="toggleSlUnitMode()" style="font-size: 10.5px; color: #38BDF8; background: none; border: none; cursor: pointer; font-weight: 700;">
+                            <span id="slUnitToggleText">→ Đổi sang Points</span>
+                        </button>
+                    </div>
+                    <input id="ticksInput" type="number" value="20" min="0.01" step="any" oninput="calculateTradeRisk()" style="width: 100%;">
+                </div>
+
+                <!-- Result pill cards -->
+                <div style="background: rgba(14, 23, 44, 0.85); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 7px 12px; display: flex; justify-content: space-around; align-items: center; text-align: center;">
+                    <div>
+                        <span style="font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; display: block;">MICRO LOTS</span>
+                        <span id="calcMicroLots" class="tabular-nums" style="font-size: 17px; font-weight: 900; color: #38BDF8;">7</span>
+                    </div>
+                    <div style="width: 1px; height: 26px; background: rgba(255, 255, 255, 0.1);"></div>
+                    <div>
+                        <span style="font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; display: block;">MINI LOTS</span>
+                        <span id="calcMiniLots" class="tabular-nums" style="font-size: 17px; font-weight: 900; color: #60A5FA;">0.7</span>
+                    </div>
+                    <div style="width: 1px; height: 26px; background: rgba(255, 255, 255, 0.1);"></div>
+                    <div>
+                        <span style="font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; display: block;">RỦI RO THỰC</span>
+                        <span id="calcActualRisk" class="tabular-nums" style="font-size: 17px; font-weight: 900; color: #34D399;">$140</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Combine & XFA Side-by-Side Comparison -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="fin-inner" style="border-left: 3px solid #2563EB; padding: 12px 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="font-size: 11.5px; font-weight: 800; color: #93C5FD; display: flex; align-items: center; gap: 6px;">
+                        <span>🎯 QUY TẮC VÒNG COMBINE® (THI THỬ THÁCH)</span>
+                    </div>
+                    <span class="badge-water" style="font-size: 10px;">Pass lên Quỹ</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 11.5px; color: var(--text-slate);">
+                    <div>Mục tiêu PnL: <strong id="combineProfitTarget" class="tabular-nums" style="color: #34D399; font-size: 12.5px;">$3,000</strong></div>
+                    <div>Số ngày tối thiểu: <strong style="color: #FFFFFF;">≥ 2 ngày giao dịch</strong></div>
+                    <div>Lãi tối đa / ngày: <strong id="safeDailyProfit" class="tabular-nums" style="color: #FBBF24;">≤ $1,499</strong> <span style="font-size: 10px; opacity: 0.8;">(≤50%)</span></div>
+                    <div>Quy tắc MLL Trailing: <span id="combineMllRule" style="color: #FB7185; font-weight: 700;">Khóa cố định tại vốn $50K</span></div>
+                </div>
+            </div>
+
+            <div class="fin-inner" style="border-left: 3px solid #06B6D4; padding: 12px 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="font-size: 11.5px; font-weight: 800; color: #67E8F9; display: flex; align-items: center; gap: 6px;">
+                        <span>💰 CHÍNH SÁCH RÚT TIỀN XFA® (QUỸ CẤP VỐN)</span>
+                    </div>
+                    <span class="badge-cyan" style="font-size: 10px;">Tỷ lệ chia 90/10</span>
+                </div>
+                <div style="font-size: 11.5px; color: var(--text-slate);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span>Lộ trình thanh toán: <strong id="xfaPathTitle" style="color: #38BDF8;">Standard Path</strong></span>
+                        <span style="color: #34D399; font-weight: 700;">Nhận 90% Lợi Nhuận</span>
+                    </div>
+                    <p id="xfaPathDesc" style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px;">Cần ≥5 ngày thắng (mỗi ngày lãi ≥$150 EOD). Rút tối đa ≤50% số dư.</p>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Hạn mức rút mỗi đợt:</span>
+                        <strong id="xfaPayoutCap" class="tabular-nums" style="color: #67E8F9; font-size: 12.5px;">$2,000 / đợt</strong>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- ③ EOD JOURNAL -->
-<div class="card" style="padding:14px 16px;">
-    <div class="sec-bar">
-        <span class="sec-title acc-left">EOD Journal &amp; Tracker</span>
-        <div style="display:flex; gap:6px; align-items:center;">
-            <span id="trackerAccountIdTag" class="badge b-dim">TS-50K-001</span>
-            <button onclick="exportTrackerCSV()" class="btn btn-blue" style="font-size:10px; padding:5px 9px;">↓ CSV</button>
-            <button onclick="clearTrackerData()" class="btn btn-ghost" style="font-size:10px; padding:5px 9px; color:var(--loss); border-color:#7F1D1D;">Xóa</button>
-        </div>
-    </div>
-
-    <!-- Badges -->
-    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; align-items:center; justify-content:space-between;">
-        <div style="display:flex; gap:5px; flex-wrap:wrap;">
-            <span id="trackerAccBadge" class="badge b-blue">$50K</span>
-            <span id="trackerStageBadge" class="badge b-dim">Combine</span>
-            <span id="trackerFeeBadge" class="badge b-dim">Standard</span>
-            <span id="trackerXfaBadge" class="badge b-dim">Std Payout</span>
-        </div>
-        <span style="font-size:10px; color:var(--txt3);">Vị thế: <strong id="trackerMaxContractsBadge" class="c-cyan">5 Mini / 50 Micro</strong></span>
-    </div>
-
-    <!-- KPI Banner -->
-    <div class="grid grid-cols-2 md:grid-cols-4" style="gap:8px; margin-bottom:12px;">
-        <div class="card2" style="padding:10px 12px;">
-            <span class="lbl">Tổng PnL</span>
-            <span id="trackerTotalPnl" class="kpi" style="font-size:16px; color:var(--txt);">$0.00</span>
-        </div>
-        <div class="card2" style="padding:10px 12px;">
-            <span id="trackerKpi2Label" class="lbl">Target</span>
-            <span id="trackerAdjustedTarget" class="kpi c-profit" style="font-size:16px;">$3,000</span>
-        </div>
-        <div class="card2" style="padding:10px 12px;">
-            <span id="trackerKpi3Label" class="lbl">MLL EOD</span>
-            <span id="trackerCurrentMll" class="kpi c-loss" style="font-size:16px;">$48,000</span>
-        </div>
-        <div class="card2" style="padding:10px 12px;">
-            <span id="trackerKpi4Label" class="lbl">Trạng Thái</span>
-            <span id="trackerConsistencyBadge" class="badge b-dim" style="margin-top:4px; font-size:10px;">🟢 CHỜ DỮ LIỆU</span>
-        </div>
-    </div>
-
-    <!-- Smart Banner -->
-    <div id="smartTargetBanner" style="background:rgba(37,99,235,.08); border:1px solid rgba(37,99,235,.3); border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span id="smartBannerTitle" style="font-size:10px; font-weight:800; color:var(--blue-l); text-transform:uppercase; letter-spacing:.06em;">🎯 Mục Tiêu Hôm Nay</span>
-                <span id="suggestionStatusTag" class="badge b-blue" style="font-size:9px;">Live</span>
-            </div>
-            <p id="targetDynamicDesc" style="font-size:10px; color:var(--txt3);"></p>
-        </div>
-        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
-            <div style="background:rgba(16,185,129,.08); border:1px solid rgba(16,185,129,.25); border-radius:6px; padding:10px 12px;">
-                <span id="smartBannerValLabel" style="font-size:9px; font-weight:700; color:var(--txt3); text-transform:uppercase; display:block; margin-bottom:3px;">🟢 Lãi Tối Đa Nên Chốt</span>
-                <span id="todayTargetPnl" style="font-size:18px; font-weight:900; color:var(--profit); display:block;">+$601</span>
-                <span id="todayTargetSubtext" style="font-size:10px; color:var(--profit); opacity:.8; display:block;">Consistency ≤50%</span>
-            </div>
-            <div style="background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.25); border-radius:6px; padding:10px 12px;">
-                <span style="font-size:9px; font-weight:700; color:var(--txt3); text-transform:uppercase; display:block; margin-bottom:3px;">🔴 Lỗ Tối Đa Hôm Nay</span>
-                <span id="todayMaxLossBudget" style="font-size:18px; font-weight:900; color:var(--loss); display:block;">-$1,000</span>
-                <span id="todayLossBudgetSubtext" style="font-size:10px; color:var(--loss); opacity:.8; display:block;">DLL Soft Rule</span>
-            </div>
-            <div style="background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.25); border-radius:6px; padding:10px 12px;">
-                <span style="font-size:9px; font-weight:700; color:var(--txt3); text-transform:uppercase; display:block; margin-bottom:3px;">🛡️ Đệm MLL</span>
-                <span id="todayMllBufferVal" style="font-size:18px; font-weight:900; color:var(--warn); display:block;">$2,000</span>
-                <span id="todayMllLimitSubtext" style="font-size:10px; color:var(--warn); opacity:.8; display:block;">Khóa: <strong id="bannerMllThresholdText" class="c-loss">$49,773</strong></span>
-            </div>
-        </div>
-    </div>
-
-    <!-- EOD Form -->
-    <div style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:12px 14px; margin-bottom:12px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <span style="font-size:10px; font-weight:800; color:var(--txt); text-transform:uppercase; letter-spacing:.05em;">Thêm EOD Log</span>
-            <span style="font-size:10px; color:var(--warn);">⚠ Mỗi dòng = 1 ngày</span>
-        </div>
-        <form id="tradeForm" onsubmit="addJournalEntry(event)" class="grid grid-cols-2 md:grid-cols-6" style="gap:8px; align-items:end;">
+    <!-- ④ EOD JOURNAL & PERFORMANCE TRACKER -->
+    <div class="fin-card" style="padding: 18px 20px;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.15); padding-bottom: 12px; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
             <div>
-                <label for="inputDate" class="lbl">Ngày</label>
-                <input id="inputDate" type="date" required>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 13px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.04em;">NHẬT KÝ &amp; THEO DÕI HIỆU SUẤT GIAO DỊCH (EOD TRACKER)</span>
+                    <span id="trackerAccountIdTag" class="badge-dim">TS-50K-001</span>
+                </div>
+                <p style="font-size: 11px; color: var(--text-slate); margin-top: 2px;">Kiểm soát số dư, giám sát Trailing MLL, phát hiện vi phạm DLL và cảnh báo quy tắc nhất quán 50%.</p>
             </div>
-            <div>
-                <label for="inputSymbol" class="lbl">Sản Phẩm</label>
-                <select id="inputSymbol" onchange="onEodSymbolChange()">
-                    <option value="MGC">MGC (Micro Gold)</option>
-                    <option value="GC">GC (Gold Full)</option>
-                    <option value="MNQ">MNQ (Micro Nasdaq)</option>
-                    <option value="NQ">NQ (E-mini Nasdaq)</option>
-                    <option value="MES">MES (Micro S&P)</option>
-                    <option value="ES">ES (E-mini S&P)</option>
-                    <option value="MCL">MCL (Micro Oil)</option>
-                    <option value="CL">CL (Crude Oil)</option>
-                    <option value="MYM">MYM (Micro Dow)</option>
-                    <option value="YM">YM (E-mini Dow)</option>
-                    <option value="M2K">M2K (Micro Russell)</option>
-                    <option value="RTY">RTY (E-mini Russell)</option>
-                    <option value="MBT">MBT (Micro BTC)</option>
-                    <option value="BTC">BTC (Bitcoin Fut.)</option>
-                </select>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button onclick="exportTrackerCSV()" class="btn-fin-secondary" style="font-size: 11.5px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Xuất File CSV
+                </button>
+                <button onclick="clearTrackerData()" class="btn-fin-danger" style="font-size: 11.5px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    Xóa Nhật Ký
+                </button>
             </div>
-            <div>
-                <label for="inputContracts" class="lbl">Contracts</label>
-                <input id="inputContracts" type="number" min="1" value="5" required style="color:var(--cyan);">
-            </div>
-            <div>
-                <label for="inputTrades" class="lbl">Lệnh</label>
-                <input id="inputTrades" type="number" min="1" value="3" required>
-            </div>
-            <div>
-                <label for="inputPnl" class="lbl">PnL EOD ($)</label>
-                <input id="inputPnl" type="number" step="0.01" value="350" required style="color:var(--profit); font-weight:800;">
-            </div>
-            <div>
-                <button type="submit" class="btn btn-blue" style="white-space:nowrap; padding:6px 14px;">+ Thêm</button>
-            </div>
-        </form>
-    </div>
-
-    <!-- EOD Table -->
-    <div style="overflow-x:auto; border:1px solid var(--border); border-radius:6px;">
-        <table class="tbl" style="min-width:700px;">
-            <thead>
-                <tr>
-                    <th>Ngày</th>
-                    <th>Sản Phẩm</th>
-                    <th>HĐ</th>
-                    <th>Lệnh</th>
-                    <th>PnL EOD</th>
-                    <th>Số Dư</th>
-                    <th style="color:var(--loss);">MLL</th>
-                    <th style="color:var(--profit);">Đệm MLL</th>
-                    <th>DLL</th>
-                    <th>Consistency</th>
-                    <th style="text-align:right;">×</th>
-                </tr>
-            </thead>
-            <tbody id="trackerTableBody"></tbody>
-        </table>
-    </div>
-
-    <!-- XFA Payout Section -->
-    <div id="xfaPayoutSection" class="hidden" style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span class="sec-title" style="color:var(--cyan);">💰 Lịch Sử Rút Payout (XFA)</span>
-            <button onclick="openPayoutModal()" class="btn btn-cyan">+ Rút Payout</button>
         </div>
-        <div style="overflow-x:auto; border:1px solid var(--border); border-radius:6px;">
-            <table class="tbl" style="min-width:500px;">
+
+        <!-- Badges summary row -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                <span id="trackerAccBadge" class="badge-water">$50,000</span>
+                <span id="trackerStageBadge" class="badge-dim">Vòng Combine</span>
+                <span id="trackerFeeBadge" class="badge-dim">Standard Path ($49)</span>
+                <span id="trackerXfaBadge" class="badge-dim">Standard Payout</span>
+            </div>
+            <div style="font-size: 11.5px; color: var(--text-slate);">
+                Giới hạn vị thế tối đa: <strong id="trackerMaxContractsBadge" style="color: #38BDF8;">5 Minis / 50 Micros</strong>
+            </div>
+        </div>
+
+        <!-- 4 Master KPI Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div class="stat-box">
+                <span style="font-size: 10.5px; font-weight: 700; color: var(--text-slate); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px;">TỔNG PNL LŨY KẾ</span>
+                <span id="trackerTotalPnl" class="tabular-nums" style="font-size: 20px; font-weight: 900; color: #F8FAFC; display: block;">$0.00</span>
+                <span style="font-size: 10.5px; color: var(--text-dim); margin-top: 3px; display: block;">Tổng lãi/lỗ tất cả các phiên</span>
+            </div>
+            <div class="stat-box">
+                <span id="trackerKpi2Label" style="font-size: 10.5px; font-weight: 700; color: var(--text-slate); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px;">TARGET ĐIỀU CHỈNH</span>
+                <span id="trackerAdjustedTarget" class="tabular-nums" style="font-size: 20px; font-weight: 900; color: #34D399; display: block;">$3,000</span>
+                <span style="font-size: 10.5px; color: #34D399; opacity: 0.85; margin-top: 3px; display: block;">Quy tắc Consistency ≤50%</span>
+            </div>
+            <div class="stat-box">
+                <span id="trackerKpi3Label" style="font-size: 10.5px; font-weight: 700; color: var(--text-slate); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px;">NGƯỠNG MLL EOD</span>
+                <span id="trackerCurrentMll" class="tabular-nums" style="font-size: 20px; font-weight: 900; color: #FB7185; display: block;">$48,000</span>
+                <span style="font-size: 10.5px; color: #FB7185; opacity: 0.85; margin-top: 3px; display: block;">Mức số dư vi phạm thanh lý</span>
+            </div>
+            <div class="stat-box">
+                <span id="trackerKpi4Label" style="font-size: 10.5px; font-weight: 700; color: var(--text-slate); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px;">TRẠNG THÁI VÒNG THI</span>
+                <div style="margin-top: 3px;">
+                    <span id="trackerConsistencyBadge" class="badge-dim" style="font-size: 11px; padding: 4px 10px;">🟢 CHỜ DỮ LIỆU</span>
+                </div>
+                <span style="font-size: 10.5px; color: var(--text-dim); margin-top: 4px; display: block;">Cập nhật theo nhật ký EOD</span>
+            </div>
+        </div>
+
+        <!-- Master Institutional Strategic Banner: Today's Target & Risk Plan -->
+        <div id="smartTargetBanner" style="background: linear-gradient(135deg, rgba(14, 26, 52, 0.85) 0%, rgba(10, 18, 38, 0.95) 100%); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="smartBannerTitle" style="font-size: 12.5px; font-weight: 800; color: #38BDF8; text-transform: uppercase; letter-spacing: 0.05em;">
+                        🎯 BẢN ĐỒ CHIẾN LƯỢC &amp; MỤC TIÊU PHIÊN HÔM NAY:
+                    </span>
+                    <span id="suggestionStatusTag" class="badge-cyan" style="font-size: 10.5px;">Live Tracking</span>
+                </div>
+                <p id="targetDynamicDesc" style="font-size: 11.5px; color: var(--text-slate); max-width: 650px;"></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <!-- Col 1: Max Profit to Take -->
+                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.28); border-radius: 10px; padding: 12px 14px;">
+                    <span id="smartBannerValLabel" style="font-size: 10.5px; font-weight: 700; color: #34D399; text-transform: uppercase; letter-spacing: 0.03em; display: block; margin-bottom: 4px;">
+                        🟢 LÃI TỐI ĐA NÊN CHỐT HÔM NAY
+                    </span>
+                    <span id="todayTargetPnl" class="tabular-nums" style="font-size: 22px; font-weight: 900; color: #34D399; display: block; line-height: 1.2;">+$601.00</span>
+                    <span id="todayTargetSubtext" style="font-size: 11px; color: #34D399; opacity: 0.85; display: block; margin-top: 3px;">
+                        Đảm bảo quy tắc Consistency ≤50%
+                    </span>
+                </div>
+
+                <!-- Col 2: Max Loss Budget -->
+                <div style="background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.28); border-radius: 10px; padding: 12px 14px;">
+                    <span style="font-size: 10.5px; font-weight: 700; color: #FB7185; text-transform: uppercase; letter-spacing: 0.03em; display: block; margin-bottom: 4px;">
+                        🔴 HẠN MỨC LỖ TỐI ĐA HÔM NAY
+                    </span>
+                    <span id="todayMaxLossBudget" class="tabular-nums" style="font-size: 22px; font-weight: 900; color: #FB7185; display: block; line-height: 1.2;">-$1,000.00</span>
+                    <span id="todayLossBudgetSubtext" style="font-size: 11px; color: #FB7185; opacity: 0.85; display: block; margin-top: 3px;">
+                        Bảo vệ DLL (-$1,000) &amp; Trailing MLL
+                    </span>
+                </div>
+
+                <!-- Col 3: MLL Buffer -->
+                <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.28); border-radius: 10px; padding: 12px 14px;">
+                    <span style="font-size: 10.5px; font-weight: 700; color: #FBBF24; text-transform: uppercase; letter-spacing: 0.03em; display: block; margin-bottom: 4px;">
+                        🛡️ ĐỆM AN TOÀN MLL HIỆN TẠI
+                    </span>
+                    <span id="todayMllBufferVal" class="tabular-nums" style="font-size: 22px; font-weight: 900; color: #FBBF24; display: block; line-height: 1.2;">$2,000.00</span>
+                    <span id="todayMllLimitSubtext" style="font-size: 11px; color: #FBBF24; opacity: 0.85; display: block; margin-top: 3px;">
+                        Khóa thanh lý: <strong id="bannerMllThresholdText" style="color: #FB7185;">$48,000</strong>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- EOD Form: Add Journal Entry -->
+        <div class="fin-inner" style="padding: 14px 16px; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 12px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.04em;">GHI NHẬN KẾT QUẢ CHỐT PHIÊN (EOD LOG)</span>
+                    <span style="font-size: 11px; color: var(--text-dim);">💡 Mỗi dòng dữ liệu tương ứng với 1 ngày giao dịch hoàn tất</span>
+                </div>
+                <span style="font-size: 11px; color: #FBBF24;">⚠ Cập nhật chính xác sau giờ đóng thị trường (3:10 PM CT)</span>
+            </div>
+
+            <form id="tradeForm" onsubmit="addJournalEntry(event)" class="grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
+                <div>
+                    <label for="inputDate" style="font-size: 11px; font-weight: 700; color: var(--text-slate); display: block; margin-bottom: 4px;">Ngày Giao Dịch</label>
+                    <input id="inputDate" type="date" required style="width: 100%;">
+                </div>
+                <div>
+                    <label for="inputSymbol" style="font-size: 11px; font-weight: 700; color: var(--text-slate); display: block; margin-bottom: 4px;">Sản Phẩm (Symbol)</label>
+                    <select id="inputSymbol" onchange="onEodSymbolChange()" style="width: 100%;">
+                        <option value="MGC">MGC (Micro Gold)</option>
+                        <option value="GC">GC (Gold Standard)</option>
+                        <option value="MNQ">MNQ (Micro Nasdaq)</option>
+                        <option value="NQ">NQ (E-mini Nasdaq)</option>
+                        <option value="MES">MES (Micro S&amp;P 500)</option>
+                        <option value="ES">ES (E-mini S&amp;P 500)</option>
+                        <option value="MCL">MCL (Micro Crude Oil)</option>
+                        <option value="CL">CL (Crude Oil)</option>
+                        <option value="MYM">MYM (Micro Dow Jones)</option>
+                        <option value="YM">YM (E-mini Dow Jones)</option>
+                        <option value="M2K">M2K (Micro Russell)</option>
+                        <option value="RTY">RTY (E-mini Russell)</option>
+                        <option value="MBT">MBT (Micro Bitcoin)</option>
+                        <option value="BTC">BTC (Bitcoin Futures)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="inputContracts" style="font-size: 11px; font-weight: 700; color: var(--text-slate); display: block; margin-bottom: 4px;">Hợp Đồng (Contracts)</label>
+                    <input id="inputContracts" type="number" min="1" value="5" required style="width: 100%; color: #38BDF8; font-weight: 700;">
+                </div>
+                <div>
+                    <label for="inputTrades" style="font-size: 11px; font-weight: 700; color: var(--text-slate); display: block; margin-bottom: 4px;">Số Lệnh (Trades)</label>
+                    <input id="inputTrades" type="number" min="1" value="3" required style="width: 100%;">
+                </div>
+                <div>
+                    <label for="inputPnl" style="font-size: 11px; font-weight: 700; color: var(--text-slate); display: block; margin-bottom: 4px;">PnL Chốt Ngày ($ USD)</label>
+                    <input id="inputPnl" type="number" step="0.01" value="350" required style="width: 100%; color: #34D399; font-weight: 800;">
+                </div>
+                <div>
+                    <button type="submit" class="btn-fin-primary" style="width: 100%; justify-content: center; padding: 8px 14px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        + Lưu Nhật Ký
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- EOD Data Table -->
+        <div style="overflow-x: auto; border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 12px; background: rgba(9, 15, 29, 0.7);">
+            <table class="fin-table">
                 <thead>
-                    <tr style="background:rgba(6,182,212,.08);">
-                        <th style="color:var(--cyan);">Ngày Rút</th>
-                        <th style="color:var(--cyan);">Số Tiền</th>
-                        <th style="color:var(--cyan);">Thực Nhận (90%)</th>
-                        <th style="color:var(--cyan);">Số Dư Còn</th>
-                        <th style="text-align:right; color:var(--cyan);">×</th>
+                    <tr>
+                        <th>Ngày Giao Dịch</th>
+                        <th>Sản Phẩm</th>
+                        <th>Số HĐ</th>
+                        <th>Số Lệnh</th>
+                        <th>PnL Chốt Ngày ($)</th>
+                        <th>Số Dư Tài Khoản</th>
+                        <th style="color: #FB7185;">Ngưỡng MLL EOD</th>
+                        <th style="color: #34D399;">Đệm An Toàn MLL</th>
+                        <th>Trạng Thái DLL</th>
+                        <th>Consistency (≤50%)</th>
+                        <th style="text-align: right;">Thao Tác</th>
                     </tr>
                 </thead>
-                <tbody id="payoutTableBody"></tbody>
+                <tbody id="trackerTableBody"></tbody>
             </table>
         </div>
-    </div>
-</div>
 
-<!-- ④ THAM KHẢO QUY TẮC -->
-<div class="card" style="padding:12px 16px;">
-    <details>
-        <summary style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; list-style:none; user-select:none; font-size:10px; font-weight:800; color:var(--txt2); text-transform:uppercase; letter-spacing:.06em;">
-            <span>📌 Quy Tắc &amp; Bảng So Sánh Gói</span>
-            <span style="color:var(--txt3);">▾</span>
-        </summary>
-        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:10px;">
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
-                <div class="card2" style="padding:10px 12px;">
-                    <strong style="font-size:10px; color:var(--loss); display:block; margin-bottom:3px;">MLL Trailing EOD</strong>
-                    <p style="font-size:10px; color:var(--txt3);">Nâng theo số dư EOD. Khóa tại vốn gốc (Combine) hoặc $0 (XFA).</p>
+        <!-- XFA Payout Section (Dynamically shown if XFA Stage) -->
+        <div id="xfaPayoutSection" class="hidden" style="margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(56, 189, 248, 0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <div style="font-size: 13px; font-weight: 800; color: #C4B5FD; display: flex; align-items: center; gap: 6px;">
+                        <span>💰 LỊCH SỬ RÚT LỢI NHUẬN (PAYOUT HISTORY - XFA)</span>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-slate); margin-top: 2px;">Tỷ lệ chia lợi nhuận: Trader nhận 90%, Topstep giữ 10%.</p>
                 </div>
-                <div class="card2" style="padding:10px 12px;">
-                    <strong style="font-size:10px; color:var(--warn); display:block; margin-bottom:3px;">DLL – Soft Rule</strong>
-                    <p style="font-size:10px; color:var(--txt3);">Vi phạm: tạm khóa phiên, không ảnh hưởng tài khoản.</p>
-                </div>
-                <div class="card2" style="padding:10px 12px;">
-                    <strong style="font-size:10px; color:var(--cyan); display:block; margin-bottom:3px;">Đóng Lệnh</strong>
-                    <p style="font-size:10px; color:var(--txt3);">Trước 3:10 PM CT = 3:10 AM VN hôm sau.</p>
-                </div>
+                <button onclick="openPayoutModal()" class="btn-fin-purple">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    + Yêu Cầu Rút Payout
+                </button>
             </div>
-            <div style="overflow-x:auto; border:1px solid var(--border); border-radius:6px;">
-                <table class="tbl" style="min-width:600px;">
+
+            <div style="overflow-x: auto; border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; background: rgba(14, 20, 38, 0.7);">
+                <table class="fin-table">
                     <thead>
-                        <tr>
-                            <th>Hạng Mục</th>
-                            <th style="color:var(--blue-ll);">$50,000</th>
-                            <th style="color:var(--cyan-l);">$100,000</th>
-                            <th style="color:var(--profit);">$150,000</th>
+                        <tr style="background: rgba(139, 92, 246, 0.1);">
+                            <th style="color: #C4B5FD;">Ngày Yêu Cầu</th>
+                            <th style="color: #C4B5FD;">Số Tiền Rút ($)</th>
+                            <th style="color: #34D399;">Thực Nhận (90% Split)</th>
+                            <th style="color: #E2E8F0;">Số Dư Còn Lại ($)</th>
+                            <th style="text-align: right; color: #C4B5FD;">Thao Tác</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr><td class="c-dim">Phí (Std / No-Act)</td><td>$49 / $95</td><td>$99 / $149</td><td>$199 / $229</td></tr>
-                        <tr><td class="c-dim">Target / MLL</td><td class="c-profit">$3K / $2K</td><td class="c-profit">$6K / $3K</td><td class="c-profit">$9K / $4.5K</td></tr>
-                        <tr><td class="c-dim">Giới Hạn HĐ</td><td class="c-cyan">5M / 50μ</td><td class="c-cyan">10M / 100μ</td><td class="c-cyan">15M / 150μ</td></tr>
-                        <tr><td class="c-dim">Payout Cap (Std/Con)</td><td class="c-blue">$2K / $3K</td><td class="c-blue">$3K / $4K</td><td class="c-blue">$5K / $6K</td></tr>
-                    </tbody>
+                    <tbody id="payoutTableBody"></tbody>
                 </table>
             </div>
         </div>
-    </details>
-</div>
+    </div>
 
-<!-- Footer -->
-<div style="text-align:center; font-size:10px; color:var(--txt3); padding:6px 0 12px; border-top:1px solid var(--border);">
-    Topstep® Multi-Account Dashboard · Giản Hạ Thủy · Sep 2026
-</div>
+    <!-- ⑤ TOPSTEP RULES GUIDE & PLAN COMPARISON ACCORDION -->
+    <div class="fin-card" style="padding: 14px 20px;">
+        <details>
+            <summary style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; list-style: none; user-select: none; font-size: 12px; font-weight: 800; color: #E2E8F0; text-transform: uppercase; letter-spacing: 0.05em;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>📌 HƯỚNG DẪN QUY TẮC TOPSTEP® &amp; BẢNG SO SÁNH CÁC GÓI TÀI KHOẢN</span>
+                </div>
+                <span style="color: #38BDF8; font-size: 14px;">▾</span>
+            </summary>
 
-</div><!-- /container -->
+            <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(56, 189, 248, 0.15); display: flex; flex-direction: column; gap: 12px;">
+                <!-- 3 Quick Rule Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="stat-box" style="border-left: 3px solid #FB7185;">
+                        <strong style="font-size: 11.5px; color: #FB7185; display: block; margin-bottom: 4px;">MLL Trailing EOD Rule</strong>
+                        <p style="font-size: 11px; color: var(--text-slate); line-height: 1.4;">
+                            MLL chỉ nâng lên sau khi đóng phiên (EOD) nếu số dư đạt đỉnh cao mới. Khi đạt vốn gốc ($50K / $100K / $150K), MLL sẽ bị KHÓA CỐ ĐỊNH, không kéo lên nữa.
+                        </p>
+                    </div>
+                    <div class="stat-box" style="border-left: 3px solid #FBBF24;">
+                        <strong style="font-size: 11.5px; color: #FBBF24; display: block; margin-bottom: 4px;">DLL (Daily Loss) – Soft Rule</strong>
+                        <p style="font-size: 11px; color: var(--text-slate); line-height: 1.4;">
+                            Nếu chạm mức lỗ ngày, hệ thống sẽ tự động đóng vị thế và tạm khóa giao dịch trong ngày đó. Bạn KHÔNG bị mất tài khoản và có thể trade lại vào phiên kế tiếp.
+                        </p>
+                    </div>
+                    <div class="stat-box" style="border-left: 3px solid #38BDF8;">
+                        <strong style="font-size: 11.5px; color: #38BDF8; display: block; margin-bottom: 4px;">Thời Gian Đóng Lệnh Bắt Buộc</strong>
+                        <p style="font-size: 11px; color: var(--text-slate); line-height: 1.4;">
+                            Mọi vị thế phải đóng trước 3:10 PM CT (tức 3:10 AM giờ Việt Nam sáng hôm sau). Không được giữ lệnh qua đêm (No Overnight Holding).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Comparison Table -->
+                <div style="overflow-x: auto; border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 10px;">
+                    <table class="fin-table">
+                        <thead>
+                            <tr>
+                                <th>Hạng Mục So Sánh</th>
+                                <th style="color: #93C5FD;">Gói $50,000</th>
+                                <th style="color: #67E8F9;">Gói $100,000</th>
+                                <th style="color: #34D399;">Gói $150,000</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="color: var(--text-dim); font-weight: 700;">Phí / Tháng (Standard vs No-Activation)</td>
+                                <td>$49 / $95</td>
+                                <td>$99 / $149</td>
+                                <td>$199 / $229</td>
+                            </tr>
+                            <tr>
+                                <td style="color: var(--text-dim); font-weight: 700;">Target Lợi Nhuận / Trailing MLL</td>
+                                <td style="color: #34D399; font-weight: 700;">$3,000 / $2,000</td>
+                                <td style="color: #34D399; font-weight: 700;">$6,000 / $3,000</td>
+                                <td style="color: #34D399; font-weight: 700;">$9,000 / $4,500</td>
+                            </tr>
+                            <tr>
+                                <td style="color: var(--text-dim); font-weight: 700;">Giới Hạn Vị Thế Hợp Đồng</td>
+                                <td style="color: #38BDF8; font-weight: 700;">5 Mini / 50 Micro</td>
+                                <td style="color: #38BDF8; font-weight: 700;">10 Mini / 100 Micro</td>
+                                <td style="color: #38BDF8; font-weight: 700;">15 Mini / 150 Micro</td>
+                            </tr>
+                            <tr>
+                                <td style="color: var(--text-dim); font-weight: 700;">Hạn Mức Rút Payout (Standard vs Consistency)</td>
+                                <td style="color: #C4B5FD; font-weight: 700;">$2,000 / $3,000</td>
+                                <td style="color: #C4B5FD; font-weight: 700;">$3,000 / $4,000</td>
+                                <td style="color: #C4B5FD; font-weight: 700;">$5,000 / $6,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- Footer -->
+    <footer style="text-align: center; font-size: 11px; color: var(--text-dim); padding: 12px 0; border-top: 1px solid rgba(56, 189, 248, 0.1);">
+        Topstep® Multi-Account Trading Desk · Phong Thủy Giản Hạ Thủy (Mệnh Thủy 08/11/1997) · Thuận Phong Tụ Khí
+    </footer>
+
+</main>
 
 <!-- MODAL: ADD ACCOUNT -->
 <div id="addAccountModal" class="modal hidden">
-    <div class="mbox">
-        <button onclick="closeAddAccountModal()" class="mclose">&times;</button>
-        <div class="mtitle">+ Thêm Tài Khoản</div>
-        <form onsubmit="submitNewAccount(event)" style="display:flex; flex-direction:column; gap:10px;">
-            <div><label class="lbl" style="margin-bottom:4px;">Mã Tài Khoản (ID)</label><input id="newAccId" type="text" placeholder="VD: TS-50K-001" required style="color:var(--blue-l); font-weight:800;"></div>
-            <div><label class="lbl" style="margin-bottom:4px;">Tên Gợi Nhớ</label><input id="newAccName" type="text" placeholder="VD: Main Account" required></div>
-            <div><label class="lbl" style="margin-bottom:4px;">Gói Tài Khoản</label>
-                <select id="newAccSize" style="font-weight:700;">
-                    <option value="50">$50,000</option><option value="100">$100,000</option><option value="150">$150,000</option>
+    <div class="modal-box">
+        <button onclick="closeAddAccountModal()" class="modal-close">&times;</button>
+        <h3 style="font-size: 15px; font-weight: 800; color: #FFFFFF; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 12px; margin-bottom: 16px;">
+            + Thêm Tài Khoản Giao Dịch Mới
+        </h3>
+        <form onsubmit="submitNewAccount(event)" style="display: flex; flex-direction: column; gap: 12px;">
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1">Mã Tài Khoản (ID)</label>
+                <input id="newAccId" type="text" placeholder="VD: TS-50K-002" required style="width: 100%; color: #38BDF8; font-weight: 800;">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1">Tên Gợi Nhớ</label>
+                <input id="newAccName" type="text" placeholder="VD: Quỹ Combine Số 2" required style="width: 100%;">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1">Gói Tài Khoản</label>
+                <select id="newAccSize" style="width: 100%; font-weight: 700;">
+                    <option value="50">Gói $50,000 (Target $3K · MLL $2K)</option>
+                    <option value="100">Gói $100,000 (Target $6K · MLL $3K)</option>
+                    <option value="150">Gói $150,000 (Target $9K · MLL $4.5K)</option>
                 </select>
             </div>
-            <div><label class="lbl" style="margin-bottom:4px;">Vòng Thi</label>
-                <select id="newAccStage" style="font-weight:700; color:var(--blue-l);">
-                    <option value="combine">Combine®</option><option value="xfa">Express Funded (XFA)</option>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1">Vòng Thi Hiện Tại</label>
+                <select id="newAccStage" style="width: 100%; font-weight: 700; color: #38BDF8;">
+                    <option value="combine">Combine® (Thi Thử Thách)</option>
+                    <option value="xfa">Express Funded Account (XFA® Cấp Vốn)</option>
                 </select>
             </div>
-            <div><label class="lbl" style="margin-bottom:4px;">Lộ Trình Phí</label>
-                <select id="newAccPricing">
-                    <option value="standard">Standard ($49/tháng)</option><option value="no_activation">No Activation ($95/tháng)</option>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1">Lộ Trình Phí</label>
+                <select id="newAccPricing" style="width: 100%;">
+                    <option value="standard">Standard ($49/tháng + Phí Kích Hoạt khi đỗ)</option>
+                    <option value="no_activation">No Activation Fee ($95/tháng - Miễn Phí Kích Hoạt)</option>
                 </select>
             </div>
-            <div style="display:flex; justify-content:flex-end; gap:8px; padding-top:4px;">
-                <button type="button" onclick="closeAddAccountModal()" class="btn btn-ghost">Hủy</button>
-                <button type="submit" class="btn btn-blue">Tạo Tài Khoản</button>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                <button type="button" onclick="closeAddAccountModal()" class="btn-fin-secondary">Hủy Bỏ</button>
+                <button type="submit" class="btn-fin-primary">+ Tạo Tài Khoản</button>
             </div>
         </form>
     </div>
@@ -514,32 +938,43 @@ select option { background: var(--surface); }
 
 <!-- MODAL: EDIT ACCOUNT -->
 <div id="editAccountModal" class="modal hidden">
-    <div class="mbox">
-        <button onclick="closeEditAccountModal()" class="mclose">&times;</button>
-        <div class="mtitle">⚙️ Cấu Hình Tài Khoản</div>
-        <form onsubmit="submitEditAccount(event)" style="display:flex; flex-direction:column; gap:10px;">
-            <div><label class="lbl" style="margin-bottom:4px;">Tên Gợi Nhớ</label><input id="editAccName" type="text" required></div>
-            <div><label class="lbl" style="margin-bottom:4px;">Gói Tài Khoản</label>
-                <select id="editAccSize" style="font-weight:700;">
-                    <option value="50">$50,000</option><option value="100">$100,000</option><option value="150">$150,000</option>
+    <div class="modal-box">
+        <button onclick="closeEditAccountModal()" class="modal-close">&times;</button>
+        <h3 style="font-size: 15px; font-weight: 800; color: #FFFFFF; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 12px; margin-bottom: 16px;">
+            ⚙️ Cấu Hình &amp; Đổi Gói Tài Khoản
+        </h3>
+        <form onsubmit="submitEditAccount(event)" style="display: flex; flex-direction: column; gap: 12px;">
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1">Tên Gợi Nhớ Tài Khoản</label>
+                <input id="editAccName" type="text" required style="width: 100%;">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1">Gói Tài Khoản</label>
+                <select id="editAccSize" style="width: 100%; font-weight: 700;">
+                    <option value="50">Gói $50,000 (Target $3K · MLL $2K)</option>
+                    <option value="100">Gói $100,000 (Target $6K · MLL $3K)</option>
+                    <option value="150">Gói $150,000 (Target $9K · MLL $4.5K)</option>
                 </select>
             </div>
-            <div><label class="lbl" style="margin-bottom:4px;">Lộ Trình Phí</label>
-                <select id="editAccPricing">
-                    <option value="standard">Standard ($49/tháng)</option><option value="no_activation">No Activation ($95/tháng)</option>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1">Lộ Trình Phí</label>
+                <select id="editAccPricing" style="width: 100%;">
+                    <option value="standard">Standard ($49/tháng + Phí Kích Hoạt khi đỗ)</option>
+                    <option value="no_activation">No Activation Fee ($95/tháng - Miễn Phí Kích Hoạt)</option>
                 </select>
             </div>
-            <div><label class="lbl" style="margin-bottom:4px;">Payout Path (XFA)</label>
-                <select id="editAccXfa" style="color:var(--cyan);">
-                    <option value="standard_payout">Standard (≥5 ngày thắng, ≥$150)</option>
-                    <option value="consistency_payout">Consistency (≥3 ngày, ≤40%)</option>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1">Lộ Trình Rút Payout (Giai đoạn XFA)</label>
+                <select id="editAccXfa" style="width: 100%; color: #38BDF8;">
+                    <option value="standard_payout">Standard Path (≥5 ngày thắng ≥$150, trần $2K/đợt)</option>
+                    <option value="consistency_payout">Consistency Path (≥3 ngày trade, consistency ≤40%, trần $3K/đợt)</option>
                 </select>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px solid var(--border);">
-                <button type="button" onclick="deleteCurrentAccount()" class="btn btn-red">Xóa Tài Khoản</button>
-                <div style="display:flex; gap:8px;">
-                    <button type="button" onclick="closeEditAccountModal()" class="btn btn-ghost">Hủy</button>
-                    <button type="submit" class="btn btn-blue">Lưu</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                <button type="button" onclick="deleteCurrentAccount()" class="btn-fin-danger">Xóa Tài Khoản</button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" onclick="closeEditAccountModal()" class="btn-fin-secondary">Hủy</button>
+                    <button type="submit" class="btn-fin-primary">Lưu Cấu Hình</button>
                 </div>
             </div>
         </form>
@@ -548,22 +983,27 @@ select option { background: var(--surface); }
 
 <!-- MODAL: PAYOUT -->
 <div id="payoutModal" class="modal hidden">
-    <div class="mbox">
-        <button onclick="closePayoutModal()" class="mclose">&times;</button>
-        <div class="mtitle" style="color:var(--cyan);">💰 Rút Payout (XFA)</div>
-        <form onsubmit="submitPayoutRequest(event)" style="display:flex; flex-direction:column; gap:10px;">
-            <div><label class="lbl" style="margin-bottom:4px;">Ngày Rút</label><input id="payoutDate" type="date" required></div>
+    <div class="modal-box">
+        <button onclick="closePayoutModal()" class="modal-close">&times;</button>
+        <h3 style="font-size: 15px; font-weight: 800; color: #C4B5FD; border-bottom: 1px solid rgba(139, 92, 246, 0.25); padding-bottom: 12px; margin-bottom: 16px;">
+            💰 Yêu Cầu Rút Lợi Nhuận Quỹ XFA®
+        </h3>
+        <form onsubmit="submitPayoutRequest(event)" style="display: flex; flex-direction: column; gap: 12px;">
             <div>
-                <label class="lbl" style="margin-bottom:4px;">Số Tiền Rút ($)</label>
-                <input id="payoutAmount" type="number" step="0.01" required min="100" placeholder="1500" style="font-size:15px; font-weight:800; color:var(--cyan);">
-                <span id="payoutMaxHint" style="font-size:10px; color:var(--txt3); display:block; margin-top:3px;">Hạn mức: $0.00</span>
+                <label class="block text-xs font-bold text-slate-400 mb-1">Ngày Yêu Cầu Rút</label>
+                <input id="payoutDate" type="date" required style="width: 100%;">
             </div>
-            <div style="background:rgba(6,182,212,.08); border:1px solid rgba(6,182,212,.25); border-radius:5px; padding:8px 10px; font-size:11px; color:var(--txt2);">
-                Thực nhận: <strong class="c-cyan">90%</strong> số tiền yêu cầu.
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1">Số Tiền Yêu Cầu Rút ($ USD)</label>
+                <input id="payoutAmount" type="number" step="0.01" required min="100" placeholder="VD: 1500" style="width: 100%; font-size: 16px; font-weight: 800; color: #34D399;">
+                <span id="payoutMaxHint" style="font-size: 11px; color: var(--text-slate); display: block; margin-top: 4px;">Hạn mức tối đa được rút: $0.00</span>
             </div>
-            <div style="display:flex; justify-content:flex-end; gap:8px;">
-                <button type="button" onclick="closePayoutModal()" class="btn btn-ghost">Hủy</button>
-                <button type="submit" class="btn btn-cyan">Xác Nhận Rút</button>
+            <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 8px; padding: 10px 12px; font-size: 11.5px; color: #E2E8F0;">
+                Quy tắc chia 90/10: Trader nhận <strong style="color: #34D399;">90%</strong> số tiền rút. Số tiền thực nhận sẽ được tự động ghi nhận vào sổ theo dõi.
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                <button type="button" onclick="closePayoutModal()" class="btn-fin-secondary">Hủy Bỏ</button>
+                <button type="submit" class="btn-fin-purple">Xác Nhận Rút Tiền</button>
             </div>
         </form>
     </div>
@@ -571,34 +1011,44 @@ select option { background: var(--surface); }
 
 <!-- MODAL: GOOGLE SHEETS -->
 <div id="gsModal" class="modal hidden">
-    <div class="mbox wide">
-        <button onclick="closeGoogleSheetModal()" class="mclose">&times;</button>
-        <div class="mtitle" style="color:var(--profit);">📊 Mẫu Google Sheets EOD</div>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-            <div style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:12px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+    <div class="modal-box wide">
+        <button onclick="closeGoogleSheetModal()" class="modal-close">&times;</button>
+        <h3 style="font-size: 15px; font-weight: 800; color: #34D399; border-bottom: 1px solid rgba(16, 185, 129, 0.25); padding-bottom: 12px; margin-bottom: 16px;">
+            📊 Đồng Bộ Google Sheets &amp; Quản Lý Nhật Ký EOD
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="background: rgba(8, 14, 28, 0.85); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
                 <div>
-                    <strong style="font-size:12px; display:block; margin-bottom:3px;">Cách 1: Tải Mẫu CSV</strong>
-                    <span style="font-size:11px; color:var(--txt3);">File mẫu có công thức MLL & Consistency.</span>
+                    <strong style="font-size: 12.5px; color: #FFFFFF; display: block; margin-bottom: 2px;">Cách 1: Tải Mẫu CSV Đồng Bộ Chuẩn</strong>
+                    <span style="font-size: 11px; color: var(--text-slate);">File CSV có cấu trúc chuẩn cột PnL, MLL, DLL và Consistency cho Google Sheets hoặc Excel.</span>
                 </div>
-                <a href="topstep_tracker_template.csv" download class="btn btn-blue" style="text-decoration:none; flex-shrink:0;">↓ CSV</a>
+                <a href="topstep_tracker_template.csv" download class="btn-fin-primary" style="text-decoration: none; flex-shrink: 0;">
+                    ↓ Tải File CSV
+                </a>
             </div>
-            <div style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <strong style="font-size:12px;">Cách 2: Apps Script</strong>
-                    <button onclick="copyAppsScriptCode()" class="btn btn-blue" style="font-size:11px;">Copy Script</button>
+
+            <div style="background: rgba(8, 14, 28, 0.85); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <strong style="font-size: 12.5px; color: #FFFFFF;">Cách 2: Tự Động Hóa Bằng Google Apps Script</strong>
+                    <button onclick="copyAppsScriptCode()" class="btn-fin-secondary" style="font-size: 11px;">
+                        Copy Apps Script Code
+                    </button>
                 </div>
-                <span style="font-size:11px; color:var(--txt3);">Dán vào <a href="https://sheets.new" target="_blank" class="c-cyan">sheets.new</a> → Apps Script → Chạy.</span>
+                <span style="font-size: 11px; color: var(--text-slate);">
+                    Tạo bảng tính mới tại <a href="https://sheets.new" target="_blank" rel="noopener noreferrer" style="color: #38BDF8; font-weight: 700;">sheets.new</a> → Mở Tiện ích mở rộng → Apps Script → Dán mã và nhấn Run.
+                </span>
             </div>
         </div>
-        <div style="display:flex; justify-content:flex-end; margin-top:14px;">
-            <button onclick="closeGoogleSheetModal()" class="btn btn-ghost">Đóng</button>
+        <div style="display: flex; justify-content: flex-end; margin-top: 16px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+            <button onclick="closeGoogleSheetModal()" class="btn-fin-secondary">Đóng Cửa Sổ</button>
         </div>
     </div>
 </div>
 
-    <!-- JavaScript Engine -->
-    <script>    <script>
-        const accountData = {
+<!-- JavaScript Engine -->
+<script>
+
+const accountData = {
             "50": {
                 stdFee: "$49 / tháng",
                 noActFee: "$95 / tháng",
@@ -1597,7 +2047,7 @@ function setupTopstepTracker() {
             document.getElementById("inputDate").addEventListener("change", renderTrackerTable);
             loadActiveAccountState();
         };
-    </script>
+    
+</script>
 </body>
 </html>
-
