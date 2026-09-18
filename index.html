@@ -1,23 +1,34 @@
 ﻿<!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard | Finance Management · Topstep® Cockpit</title>
+<script>
+    /* Immediate theme initialization to prevent flash */
+    (function() {
+        const saved = localStorage.getItem('topstep_theme_mode') || 'dark';
+        document.documentElement.setAttribute('data-theme', saved);
+    })();
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* ── BEHANCE FINANCE MANAGEMENT DASHBOARD SYSTEM ── */
-/* Palettes extracted from Behance project: Primary #11121E, Card #1D1D29, Accent #4578F9, Green #43B430, Gold #FFBC11, Purple #CB3EFF */
-:root {
+/* ── BEHANCE FINANCE MANAGEMENT THEME SYSTEM ── */
+/* Extracted from Kristi Kamlykova Behance project: Light & Dark Theme palettes */
+:root, [data-theme="dark"] {
     --bg-app:        #11121E;
     --bg-sidebar:    #0D0E18;
+    --bg-header:     #11121E;
     --bg-card:       #1D1D29;
     --bg-card-inner: #252636;
     --bg-input:      #161724;
-    --border-card:   rgba(255, 255, 255, 0.07);
+    --bg-modal:      #1D1D29;
+    
+    --border-card:   rgba(255, 255, 255, 0.08);
+    --border-inner:  rgba(255, 255, 255, 0.05);
     --border-active: rgba(69, 120, 249, 0.4);
     
     --color-primary: #4578F9;
@@ -26,9 +37,43 @@
     --color-purple:  #CB3EFF;
     --color-red:     #F43F5E;
     
-    --text-white:    #FFFFFF;
+    --text-primary:  #FFFFFF;
     --text-muted:    #7B7B7B;
     --text-slate:    #9E9EA7;
+    
+    --table-header:  rgba(22, 23, 36, 0.95);
+    --table-hover:   rgba(255, 255, 255, 0.03);
+    --stat-icon-bg:  rgba(255, 255, 255, 0.06);
+    --shadow-card:   none;
+}
+
+[data-theme="light"] {
+    --bg-app:        #F4F5F9;
+    --bg-sidebar:    #FFFFFF;
+    --bg-header:     #FFFFFF;
+    --bg-card:       #FFFFFF;
+    --bg-card-inner: #F8F9FD;
+    --bg-input:      #FFFFFF;
+    --bg-modal:      #FFFFFF;
+    
+    --border-card:   #E5E7EB;
+    --border-inner:  #EDEFF5;
+    --border-active: rgba(69, 120, 249, 0.5);
+    
+    --color-primary: #3B72F6;
+    --color-green:   #16A34A;
+    --color-gold:    #D97706;
+    --color-purple:  #9333EA;
+    --color-red:     #E11D48;
+    
+    --text-primary:  #11121E;
+    --text-muted:    #6B7280;
+    --text-slate:    #4B5563;
+    
+    --table-header:  #F9FAFB;
+    --table-hover:   rgba(69, 120, 249, 0.05);
+    --stat-icon-bg:  rgba(69, 120, 249, 0.08);
+    --shadow-card:   0 4px 20px -2px rgba(0, 0, 0, 0.06), 0 0 1px 1px rgba(0, 0, 0, 0.03);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,14 +81,15 @@
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background-color: var(--bg-app);
-    color: var(--text-white);
+    color: var(--text-primary);
     min-height: 100vh;
     font-size: 13px;
     line-height: 1.5;
+    transition: background-color 0.25s ease, color 0.25s ease;
     -webkit-font-smoothing: antialiased;
 }
 
-/* Sidebar Styling */
+/* Sidebar */
 .behance-sidebar {
     width: 250px;
     background-color: var(--bg-sidebar);
@@ -53,6 +99,7 @@ body {
     justify-content: space-between;
     padding: 24px 18px;
     flex-shrink: 0;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 .sidebar-link {
     display: flex;
@@ -68,31 +115,33 @@ body {
     cursor: pointer;
 }
 .sidebar-link:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-white);
+    background: rgba(69, 120, 249, 0.08);
+    color: var(--color-primary);
 }
 .sidebar-link.active {
     background: var(--color-primary);
-    color: var(--text-white);
+    color: #FFFFFF !important;
     font-weight: 600;
     box-shadow: 0 4px 14px rgba(69, 120, 249, 0.35);
 }
 
-/* Behance Card Components */
+/* Cards */
 .b-card {
     background: var(--bg-card);
     border: 1px solid var(--border-card);
     border-radius: 18px;
     padding: 20px 22px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--shadow-card);
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 .b-card:hover {
-    border-color: rgba(255, 255, 255, 0.12);
+    border-color: var(--border-active);
 }
 .b-card-inner {
     background: var(--bg-card-inner);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-inner);
     border-radius: 14px;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 /* Stat Box (Behance Metric Card) */
@@ -104,43 +153,44 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease, border-color 0.25s ease;
 }
 .b-stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.4);
+    border-color: var(--border-active);
 }
 .stat-icon-wrapper {
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--stat-icon-bg);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-white);
+    color: var(--color-primary);
 }
 
 /* Inputs & Form Controls */
 input, select {
     background: var(--bg-input);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-card);
     border-radius: 10px;
     padding: 9px 13px;
-    color: #FFFFFF;
+    color: var(--text-primary);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease;
 }
 input:focus, select:focus {
     border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(69, 120, 249, 0.2);
 }
 select option {
-    background: #1D1D29;
-    color: #FFFFFF;
+    background: var(--bg-card);
+    color: var(--text-primary);
 }
 
 /* Buttons */
@@ -160,15 +210,15 @@ select option {
     transition: all 0.2s ease;
 }
 .b-btn-primary:hover {
-    background: #3567e4;
+    filter: brightness(1.1);
     transform: translateY(-1px);
 }
 .b-btn-secondary {
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--text-white);
+    background: var(--bg-card-inner);
+    color: var(--text-primary);
     font-weight: 500;
     font-size: 12.5px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-card);
     border-radius: 10px;
     padding: 8px 14px;
     cursor: pointer;
@@ -178,7 +228,7 @@ select option {
     transition: all 0.2s ease;
 }
 .b-btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--color-primary);
 }
 .b-btn-purple {
     background: var(--color-purple);
@@ -196,15 +246,15 @@ select option {
     transition: all 0.2s ease;
 }
 .b-btn-purple:hover {
-    background: #b529eb;
+    filter: brightness(1.1);
     transform: translateY(-1px);
 }
 .b-btn-danger {
-    background: rgba(244, 63, 94, 0.15);
-    color: #FDA4AF;
+    background: rgba(244, 63, 94, 0.12);
+    color: var(--color-red);
     font-weight: 600;
     font-size: 12.5px;
-    border: 1px solid rgba(244, 63, 94, 0.3);
+    border: 1px solid rgba(244, 63, 94, 0.25);
     border-radius: 10px;
     padding: 8px 14px;
     cursor: pointer;
@@ -214,7 +264,7 @@ select option {
     transition: all 0.2s ease;
 }
 .b-btn-danger:hover {
-    background: rgba(244, 63, 94, 0.25);
+    background: rgba(244, 63, 94, 0.22);
 }
 
 /* Badges */
@@ -228,11 +278,11 @@ select option {
     font-weight: 600;
     letter-spacing: 0.02em;
 }
-.b-badge-blue { background: rgba(69, 120, 249, 0.16); color: #82A5FF; }
-.b-badge-green { background: rgba(67, 180, 48, 0.16); color: #6BE856; }
-.b-badge-gold { background: rgba(255, 188, 17, 0.16); color: #FFD25E; }
-.b-badge-purple { background: rgba(203, 62, 255, 0.16); color: #E38FFF; }
-.b-badge-dim { background: rgba(255, 255, 255, 0.07); color: var(--text-slate); }
+.b-badge-blue { background: rgba(69, 120, 249, 0.14); color: var(--color-primary); }
+.b-badge-green { background: rgba(67, 180, 48, 0.14); color: var(--color-green); }
+.b-badge-gold { background: rgba(255, 188, 17, 0.16); color: var(--color-gold); }
+.b-badge-purple { background: rgba(203, 62, 255, 0.14); color: var(--color-purple); }
+.b-badge-dim { background: var(--bg-card-inner); color: var(--text-slate); border: 1px solid var(--border-card); }
 
 /* Table */
 .b-table {
@@ -242,7 +292,7 @@ select option {
     font-size: 12.5px;
 }
 .b-table thead th {
-    background: rgba(22, 23, 36, 0.95);
+    background: var(--table-header);
     color: var(--text-slate);
     font-size: 11px;
     font-weight: 600;
@@ -254,17 +304,68 @@ select option {
     text-align: left;
 }
 .b-table tbody tr {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    transition: background 0.15s ease;
+    border-bottom: 1px solid var(--border-card);
+    transition: background-color 0.15s ease;
 }
 .b-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background-color: var(--table-hover);
 }
 .b-table tbody td {
     padding: 12px 14px;
-    color: #E2E8F0;
+    color: var(--text-primary);
     vertical-align: middle;
     font-variant-numeric: tabular-nums;
+}
+
+/* Theme Switcher Dual Pill (Behance style) */
+.theme-switch-container {
+    display: inline-flex;
+    align-items: center;
+    background: var(--bg-card-inner);
+    border: 1px solid var(--border-card);
+    border-radius: 9999px;
+    padding: 3px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+.theme-switch-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+/* Light Theme Adjustments for dynamic rows */
+[data-theme="light"] .text-slate-300,
+[data-theme="light"] .text-slate-200 {
+    color: #1F2937 !important;
+}
+[data-theme="light"] .text-slate-400,
+[data-theme="light"] .text-slate-500 {
+    color: #4B5563 !important;
+}
+[data-theme="light"] .text-emerald-400 {
+    color: #16A34A !important;
+}
+[data-theme="light"] .text-rose-400 {
+    color: #E11D48 !important;
+}
+[data-theme="light"] .text-cyan-300,
+[data-theme="light"] .text-cyan-400 {
+    color: #0284C7 !important;
+}
+[data-theme="light"] .text-amber-300,
+[data-theme="light"] .text-amber-400 {
+    color: #D97706 !important;
+}
+[data-theme="light"] .text-purple-300,
+[data-theme="light"] .text-purple-400 {
+    color: #9333EA !important;
 }
 
 /* Modals */
@@ -276,20 +377,20 @@ select option {
     align-items: center;
     justify-content: center;
     padding: 16px;
-    background: rgba(9, 10, 17, 0.82);
-    backdrop-filter: blur(10px);
+    background: rgba(9, 10, 17, 0.7);
+    backdrop-filter: blur(8px);
     transition: all 0.2s ease;
 }
 .modal.hidden { display: none !important; }
 .modal-box {
-    background: #1D1D29;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--bg-modal);
+    border: 1px solid var(--border-card);
     border-radius: 20px;
     max-width: 460px;
     width: 100%;
     padding: 24px 26px;
     position: relative;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
 }
 .modal-box.wide { max-width: 560px; }
 .modal-close {
@@ -308,15 +409,15 @@ select option {
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-app); }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.35); }
 
 .tabular-nums { font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body style="display: flex; min-height: 100vh;">
 
-<!-- ── LEFT SIDEBAR (EXACT BEHANCE BUSINESS DASHBOARD STYLE) ── -->
+<!-- ── LEFT SIDEBAR (BEHANCE BUSINESS DASHBOARD STYLE) ── -->
 <aside class="behance-sidebar hidden lg:flex">
     <div>
         <!-- Brand Logo: Multi-color butterfly/crystal icon matching Behance reference -->
@@ -330,7 +431,7 @@ select option {
                 </div>
             </div>
             <div>
-                <span style="font-size: 16px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">Topstep Desk</span>
+                <span style="font-size: 16px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em;">Topstep Desk</span>
                 <span style="font-size: 10px; color: var(--text-muted); display: block; margin-top: -2px;">Finance Management</span>
             </div>
         </div>
@@ -365,11 +466,11 @@ select option {
     </div>
 
     <!-- Bottom Sidebar Widget (Matching Behance "Need help? Feel free to contact" card) -->
-    <div style="background: rgba(29, 29, 41, 0.85); border: 1px solid var(--border-card); border-radius: 16px; padding: 16px; text-align: center;">
-        <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(69, 120, 249, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: #4578F9;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 16px; padding: 16px; text-align: center; box-shadow: var(--shadow-card);">
+        <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(69, 120, 249, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: var(--color-primary);">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
         </div>
-        <div style="font-size: 12px; font-weight: 700; color: #FFFFFF; margin-bottom: 2px;">Giản Hạ Thủy</div>
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">Giản Hạ Thủy</div>
         <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Đinh Sửu 1997 · Mệnh Thủy</div>
         <a href="https://www.topstep.com" target="_blank" rel="noopener noreferrer" class="b-btn-primary" style="width: 100%; justify-content: center; text-decoration: none; font-size: 11.5px; padding: 7px 10px;">
             Topstep® Portal ↗
@@ -380,29 +481,39 @@ select option {
 <!-- ── MAIN CONTENT AREA (BEHANCE DASHBOARD) ── -->
 <div style="flex: 1; display: flex; flex-direction: column; overflow-y: auto; height: 100vh;">
 
-    <!-- Top Header Bar -->
-    <header style="padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); flex-wrap: wrap; gap: 14px; background: var(--bg-app); position: sticky; top: 0; z-index: 40;">
+    <!-- Top Header Bar with Theme Switcher -->
+    <header style="padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); flex-wrap: wrap; gap: 14px; background: var(--bg-header); position: sticky; top: 0; z-index: 40; transition: background-color 0.25s ease;">
         <div>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <h1 style="font-size: 24px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.02em;">Analytics</h1>
+                <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">Analytics</h1>
                 <span class="b-badge b-badge-blue" id="activeStageBadge">Vòng Combine</span>
                 <span id="trackerAccountIdTag" class="b-badge b-badge-dim">TS-50K-001</span>
             </div>
             <span style="font-size: 12px; color: var(--text-muted); margin-top: 2px; display: block;">
-                Tài khoản: <strong id="displayAccountTitle" style="color: #FFFFFF;">TS-50K-001</strong>
+                Tài khoản: <strong id="displayAccountTitle" style="color: var(--text-primary);">TS-50K-001</strong>
             </span>
         </div>
 
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <!-- THEME SWITCHER TOGGLE (Light / Dark Mode Switcher) -->
+            <div class="theme-switch-container" onclick="toggleTheme()" title="Bật / Tắt Giao Diện Sáng & Tối">
+                <div id="themeDarkIndicator" class="theme-switch-btn" style="background: var(--color-primary); color: #FFFFFF; box-shadow: 0 2px 8px rgba(69, 120, 249, 0.35);">
+                    <span>🌙</span> Dark
+                </div>
+                <div id="themeLightIndicator" class="theme-switch-btn" style="background: transparent; color: var(--text-muted);">
+                    <span>☀️</span> Light
+                </div>
+            </div>
+
             <!-- Date Filter Pill (Behance style: 01.08.2022 - 31.08.2022 📅) -->
-            <div onclick="document.getElementById('inputDate').focus()" style="display: flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 7px 14px; cursor: pointer;">
+            <div onclick="document.getElementById('inputDate').focus()" style="display: flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 7px 14px; cursor: pointer; box-shadow: var(--shadow-card);">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-slate);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 <span style="font-size: 12px; font-weight: 500; color: var(--text-slate);">Phiên:</span>
-                <span id="headerTradeDatePill" style="color: #FFFFFF; font-weight: 600; font-size: 12.5px;">Live EOD</span>
+                <span id="headerTradeDatePill" style="color: var(--text-primary); font-weight: 600; font-size: 12.5px;">Live EOD</span>
             </div>
 
             <!-- Account Selector Dropdown -->
-            <select id="accountDropdown" onchange="onAccountDropdownChange()" style="min-width: 170px; background: var(--bg-card); font-weight: 600; border-color: rgba(69, 120, 249, 0.35); color: #82A5FF;"></select>
+            <select id="accountDropdown" onchange="onAccountDropdownChange()" style="min-width: 170px; background: var(--bg-card); font-weight: 600; border-color: rgba(69, 120, 249, 0.35); color: var(--color-primary); box-shadow: var(--shadow-card);"></select>
 
             <!-- Buttons matching Behance palette -->
             <button onclick="openAddAccountModal()" class="b-btn-primary">
@@ -429,7 +540,7 @@ select option {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                     </div>
                 </div>
-                <div id="trackerTotalPnl" class="tabular-nums" style="font-size: 26px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.02em; margin-bottom: 8px;">
+                <div id="trackerTotalPnl" class="tabular-nums" style="font-size: 26px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; margin-bottom: 8px;">
                     $0.00
                 </div>
                 <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-green); font-weight: 500;">
@@ -446,10 +557,10 @@ select option {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
                     </div>
                 </div>
-                <div id="trackerAdjustedTarget" class="tabular-nums" style="font-size: 26px; font-weight: 800; color: #43B430; letter-spacing: -0.02em; margin-bottom: 8px;">
+                <div id="trackerAdjustedTarget" class="tabular-nums" style="font-size: 26px; font-weight: 800; color: var(--color-green); letter-spacing: -0.02em; margin-bottom: 8px;">
                     $3,000
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: #4578F9; font-weight: 500;">
+                <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-primary); font-weight: 500;">
                     <span>🎯</span>
                     <span>Consistency Rule: Lãi ngày ≤ 50%</span>
                 </div>
@@ -463,7 +574,7 @@ select option {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                     </div>
                 </div>
-                <div id="trackerCurrentMll" class="tabular-nums" style="font-size: 26px; font-weight: 800; color: #F43F5E; letter-spacing: -0.02em; margin-bottom: 8px;">
+                <div id="trackerCurrentMll" class="tabular-nums" style="font-size: 26px; font-weight: 800; color: var(--color-red); letter-spacing: -0.02em; margin-bottom: 8px;">
                     $48,000
                 </div>
                 <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-gold); font-weight: 500;">
@@ -475,7 +586,7 @@ select option {
             <!-- Stat Card 4: Combine Status (Like Behance Revenue) -->
             <div class="b-stat-card">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                    <span id="trackerKpi4Label" style="font-size: 13px; font-weight: 600; color: var(--text-slate);">Trạng Thái Đỗ Combine</span>
+                    <span id="trackerKpi4Label" style="font-size: 13px; font-weight: 600; color: var(--text-slate);">Trạng Thái Vòng Thi</span>
                     <div class="stat-icon-wrapper">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                     </div>
@@ -493,7 +604,7 @@ select option {
         <div id="smartTargetBanner" class="b-card" style="border-left: 4px solid var(--color-primary);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <span id="smartBannerTitle" style="font-size: 13px; font-weight: 700; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.04em;">
+                    <span id="smartBannerTitle" style="font-size: 13px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em;">
                         🎯 BẢN ĐỒ CHIẾN LƯỢC &amp; MỤC TIÊU PHIÊN HÔM NAY:
                     </span>
                     <span id="suggestionStatusTag" class="b-badge b-badge-blue">Live Tracking</span>
@@ -543,7 +654,7 @@ select option {
             <div class="b-card xl:col-span-7">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-card); padding-bottom: 12px;">
                     <div>
-                        <div style="font-size: 14px; font-weight: 700; color: #FFFFFF;">Thông Số Rủi Ro &amp; Quy Tắc Vốn</div>
+                        <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Thông Số Rủi Ro &amp; Quy Tắc Vốn</div>
                         <div style="font-size: 11.5px; color: var(--text-muted);">Đồng bộ tự động theo gói tài khoản Topstep®</div>
                     </div>
                     <div style="display: flex; gap: 6px; align-items: center;">
@@ -556,7 +667,7 @@ select option {
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
                     <div class="b-card-inner" style="padding: 12px 14px;">
                         <span style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 2px;">Phí Duy Trì / Tháng</span>
-                        <span id="monthlyFee" class="tabular-nums" style="font-size: 16px; font-weight: 700; color: #FFFFFF; display: block;">$49 / tháng</span>
+                        <span id="monthlyFee" class="tabular-nums" style="font-size: 16px; font-weight: 700; color: var(--text-primary); display: block;">$49 / tháng</span>
                         <span id="activationFeeNote" style="font-size: 10.5px; color: var(--text-slate); margin-top: 2px; display: block;">+$149 Phí kích hoạt</span>
                     </div>
                     <div class="b-card-inner" style="padding: 12px 14px;">
@@ -584,19 +695,19 @@ select option {
                 <!-- Combine & XFA Side-by-Side comparison cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div class="b-card-inner" style="padding: 12px 14px; border-left: 3px solid var(--color-primary);">
-                        <div style="font-size: 11.5px; font-weight: 700; color: #82A5FF; margin-bottom: 6px;">🎯 QUY TẮC VÒNG COMBINE®</div>
+                        <div style="font-size: 11.5px; font-weight: 700; color: var(--color-primary); margin-bottom: 6px;">🎯 QUY TẮC VÒNG COMBINE®</div>
                         <div style="font-size: 11.5px; color: var(--text-slate); display: flex; flex-direction: column; gap: 3px;">
-                            <div>Target: <strong id="combineProfitTarget" class="tabular-nums" style="color: var(--color-green);">$3,000</strong> · Tối thiểu <strong style="color: #FFFFFF;">≥ 2 ngày</strong></div>
+                            <div>Target: <strong id="combineProfitTarget" class="tabular-nums" style="color: var(--color-green);">$3,000</strong> · Tối thiểu <strong style="color: var(--text-primary);">≥ 2 ngày</strong></div>
                             <div>Lãi an toàn / ngày: <strong id="safeDailyProfit" class="tabular-nums" style="color: var(--color-gold);">≤ $1,499</strong> (≤50%)</div>
                             <div>MLL Trailing: <span id="combineMllRule" style="color: var(--color-red); font-weight: 600;">Khóa tại vốn $50K</span></div>
                         </div>
                     </div>
                     <div class="b-card-inner" style="padding: 12px 14px; border-left: 3px solid var(--color-purple);">
-                        <div style="font-size: 11.5px; font-weight: 700; color: #E38FFF; margin-bottom: 6px;">💰 RÚT LỢI NHUẬN XFA® (90/10 SPLIT)</div>
+                        <div style="font-size: 11.5px; font-weight: 700; color: var(--color-purple); margin-bottom: 6px;">💰 RÚT LỢI NHUẬN XFA® (90/10 SPLIT)</div>
                         <div style="font-size: 11.5px; color: var(--text-slate); display: flex; flex-direction: column; gap: 3px;">
-                            <div>Lộ trình: <strong id="xfaPathTitle" style="color: #82A5FF;">Standard Path</strong></div>
+                            <div>Lộ trình: <strong id="xfaPathTitle" style="color: var(--color-primary);">Standard Path</strong></div>
                             <p id="xfaPathDesc" style="font-size: 11px; color: var(--text-muted); margin: 0;">≥5 ngày thắng (mỗi ngày lãi ≥$150 EOD). Rút ≤50% số dư.</p>
-                            <div>Trần rút mỗi đợt: <strong id="xfaPayoutCap" class="tabular-nums" style="color: #E38FFF;">$2,000 / đợt</strong></div>
+                            <div>Trần rút mỗi đợt: <strong id="xfaPayoutCap" class="tabular-nums" style="color: var(--color-purple);">$2,000 / đợt</strong></div>
                         </div>
                     </div>
                 </div>
@@ -606,10 +717,10 @@ select option {
             <div class="b-card xl:col-span-5" id="calculator-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-card); padding-bottom: 12px;">
                     <div>
-                        <div style="font-size: 14px; font-weight: 700; color: #FFFFFF;">Bộ Tính Khối Lượng Hợp Đồng</div>
+                        <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Bộ Tính Khối Lượng Hợp Đồng</div>
                         <div style="font-size: 11.5px; color: var(--text-muted);">Quản trị rủi ro trên từng lệnh (Position Sizer)</div>
                     </div>
-                    <span id="calcSpecBadge" style="font-family: monospace; font-size: 11px; color: #82A5FF; background: rgba(69, 120, 249, 0.15); border: 1px solid rgba(69, 120, 249, 0.3); border-radius: 6px; padding: 2px 7px; font-weight: 600;">
+                    <span id="calcSpecBadge" style="font-family: monospace; font-size: 11px; color: var(--color-primary); background: rgba(69, 120, 249, 0.15); border: 1px solid rgba(69, 120, 249, 0.3); border-radius: 6px; padding: 2px 7px; font-weight: 600;">
                         1T MGC = 0.10pt · $1/micro
                     </span>
                 </div>
@@ -655,7 +766,7 @@ select option {
                         </div>
                         <div class="b-card-inner" style="padding: 10px 8px; text-align: center;">
                             <span style="font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; display: block;">MINI LOTS</span>
-                            <span id="calcMiniLots" class="tabular-nums" style="font-size: 18px; font-weight: 800; color: #82A5FF;">0.7</span>
+                            <span id="calcMiniLots" class="tabular-nums" style="font-size: 18px; font-weight: 800; color: var(--color-primary);">0.7</span>
                         </div>
                         <div class="b-card-inner" style="padding: 10px 8px; text-align: center;">
                             <span style="font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; display: block;">RỦI RO THỰC</span>
@@ -670,7 +781,7 @@ select option {
         <div class="b-card" id="journal-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-card); padding-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                 <div>
-                    <div style="font-size: 15px; font-weight: 700; color: #FFFFFF;">Nhật Ký Giao Dịch &amp; Theo Dõi EOD</div>
+                    <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Nhật Ký Giao Dịch &amp; Theo Dõi EOD</div>
                     <div style="font-size: 11.5px; color: var(--text-muted);">Ghi nhận kết quả chốt phiên, tự động cập nhật Trailing MLL và tính nhất quán 50%</div>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
@@ -701,7 +812,7 @@ select option {
             <!-- Add Entry Form (Behance style inputs) -->
             <div class="b-card-inner" style="padding: 14px 16px; margin-bottom: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #FFFFFF; text-transform: uppercase;">Thêm Dữ Liệu Chốt Ngày (EOD Log)</span>
+                    <span style="font-size: 12px; font-weight: 700; color: var(--text-primary); text-transform: uppercase;">Thêm Dữ Liệu Chốt Ngày (EOD Log)</span>
                     <span style="font-size: 11px; color: var(--color-gold);">💡 Mỗi dòng tương ứng 1 ngày trade sau 3:10 PM CT</span>
                 </div>
 
@@ -731,7 +842,7 @@ select option {
                     </div>
                     <div>
                         <label for="inputContracts" style="font-size: 11px; font-weight: 600; color: var(--text-slate); display: block; margin-bottom: 4px;">Hợp Đồng (Contracts)</label>
-                        <input id="inputContracts" type="number" min="1" value="5" required style="width: 100%; color: #82A5FF; font-weight: 700;">
+                        <input id="inputContracts" type="number" min="1" value="5" required style="width: 100%; color: var(--color-primary); font-weight: 700;">
                     </div>
                     <div>
                         <label for="inputTrades" style="font-size: 11px; font-weight: 600; color: var(--text-slate); display: block; margin-bottom: 4px;">Số Lệnh (Trades)</label>
@@ -775,7 +886,7 @@ select option {
             <div id="xfaPayoutSection" class="hidden" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border-card);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                     <div>
-                        <div style="font-size: 14px; font-weight: 700; color: #E38FFF;">Lịch Sử Rút Lợi Nhuận Quỹ XFA® (Payouts)</div>
+                        <div style="font-size: 14px; font-weight: 700; color: var(--color-purple);">Lịch Sử Rút Lợi Nhuận Quỹ XFA® (Payouts)</div>
                         <div style="font-size: 11.5px; color: var(--text-muted);">Tỷ lệ chia lợi nhuận 90/10: Trader nhận 90%, Topstep giữ 10%</div>
                     </div>
                     <button onclick="openPayoutModal()" class="b-btn-purple">
@@ -787,11 +898,11 @@ select option {
                     <table class="b-table">
                         <thead>
                             <tr style="background: rgba(203, 62, 255, 0.08);">
-                                <th style="color: #E38FFF;">Ngày Yêu Cầu</th>
-                                <th style="color: #E38FFF;">Số Tiền Rút ($)</th>
+                                <th style="color: var(--color-purple);">Ngày Yêu Cầu</th>
+                                <th style="color: var(--color-purple);">Số Tiền Rút ($)</th>
                                 <th style="color: var(--color-green);">Thực Nhận (90% Split)</th>
-                                <th style="color: #FFFFFF;">Số Dư Còn Lại ($)</th>
-                                <th style="text-align: right; color: #E38FFF;">Thao Tác</th>
+                                <th style="color: var(--text-primary);">Số Dư Còn Lại ($)</th>
+                                <th style="text-align: right; color: var(--color-purple);">Thao Tác</th>
                             </tr>
                         </thead>
                         <tbody id="payoutTableBody"></tbody>
@@ -803,7 +914,7 @@ select option {
         <!-- ── ROW 5: RULES GUIDE & ACCOUNT COMPARISON ACCORDION ── -->
         <div class="b-card" id="rules-section">
             <details>
-                <summary style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; list-style: none; user-select: none; font-size: 13px; font-weight: 700; color: #FFFFFF;">
+                <summary style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; list-style: none; user-select: none; font-size: 13px; font-weight: 700; color: var(--text-primary);">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span>📌 HƯỚNG DẪN QUY TẮC TOPSTEP® &amp; BẢNG SO SÁNH GÓI $50K - $100K - $150K</span>
                     </div>
@@ -825,7 +936,7 @@ select option {
                             </p>
                         </div>
                         <div class="b-card-inner" style="padding: 14px; border-left: 3px solid var(--color-primary);">
-                            <strong style="font-size: 12px; color: #82A5FF; display: block; margin-bottom: 4px;">Giờ Đóng Lệnh Bắt Buộc</strong>
+                            <strong style="font-size: 12px; color: var(--color-primary); display: block; margin-bottom: 4px;">Giờ Đóng Lệnh Bắt Buộc</strong>
                             <p style="font-size: 11.5px; color: var(--text-slate); line-height: 1.45;">
                                 Mọi vị thế phải đóng trước 3:10 PM CT (tức 3:10 AM giờ Việt Nam sáng hôm sau). Không được phép giữ lệnh qua đêm (No Overnight).
                             </p>
@@ -837,8 +948,8 @@ select option {
                             <thead>
                                 <tr>
                                     <th>Hạng Mục So Sánh</th>
-                                    <th style="color: #82A5FF;">Gói $50,000</th>
-                                    <th style="color: #6BE856;">Gói $100,000</th>
+                                    <th style="color: var(--color-primary);">Gói $50,000</th>
+                                    <th style="color: var(--color-green);">Gói $100,000</th>
                                     <th style="color: var(--color-gold);">Gói $150,000</th>
                                 </tr>
                             </thead>
@@ -857,15 +968,15 @@ select option {
                                 </tr>
                                 <tr>
                                     <td style="color: var(--text-muted); font-weight: 600;">Giới Hạn Vị Thế Hợp Đồng</td>
-                                    <td style="color: #82A5FF; font-weight: 700;">5 Mini / 50 Micro</td>
-                                    <td style="color: #82A5FF; font-weight: 700;">10 Mini / 100 Micro</td>
-                                    <td style="color: #82A5FF; font-weight: 700;">15 Mini / 150 Micro</td>
+                                    <td style="color: var(--color-primary); font-weight: 700;">5 Mini / 50 Micro</td>
+                                    <td style="color: var(--color-primary); font-weight: 700;">10 Mini / 100 Micro</td>
+                                    <td style="color: var(--color-primary); font-weight: 700;">15 Mini / 150 Micro</td>
                                 </tr>
                                 <tr>
                                     <td style="color: var(--text-muted); font-weight: 600;">Hạn Mức Rút Payout (Standard vs Consistency)</td>
-                                    <td style="color: #E38FFF; font-weight: 700;">$2,000 / $3,000</td>
-                                    <td style="color: #E38FFF; font-weight: 700;">$3,000 / $4,000</td>
-                                    <td style="color: #E38FFF; font-weight: 700;">$5,000 / $6,000</td>
+                                    <td style="color: var(--color-purple); font-weight: 700;">$2,000 / $3,000</td>
+                                    <td style="color: var(--color-purple); font-weight: 700;">$3,000 / $4,000</td>
+                                    <td style="color: var(--color-purple); font-weight: 700;">$5,000 / $6,000</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -887,13 +998,13 @@ select option {
 <div id="addAccountModal" class="modal hidden">
     <div class="modal-box">
         <button onclick="closeAddAccountModal()" class="modal-close">&times;</button>
-        <h3 style="font-size: 16px; font-weight: 700; color: #FFFFFF; border-bottom: 1px solid var(--border-card); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); border-bottom: 1px solid var(--border-card); padding-bottom: 12px; margin-bottom: 16px;">
             + Thêm Tài Khoản Giao Dịch Mới
         </h3>
         <form onsubmit="submitNewAccount(event)" style="display: flex; flex-direction: column; gap: 12px;">
             <div>
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Mã Tài Khoản (ID)</label>
-                <input id="newAccId" type="text" placeholder="VD: TS-50K-002" required style="width: 100%; color: #82A5FF; font-weight: 700;">
+                <input id="newAccId" type="text" placeholder="VD: TS-50K-002" required style="width: 100%; color: var(--color-primary); font-weight: 700;">
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Tên Gợi Nhớ</label>
@@ -909,7 +1020,7 @@ select option {
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Vòng Thi Hiện Tại</label>
-                <select id="newAccStage" style="width: 100%; font-weight: 600; color: #82A5FF;">
+                <select id="newAccStage" style="width: 100%; font-weight: 600; color: var(--color-primary);">
                     <option value="combine">Combine® (Thi Thử Thách)</option>
                     <option value="xfa">Express Funded Account (XFA® Cấp Vốn)</option>
                 </select>
@@ -933,7 +1044,7 @@ select option {
 <div id="editAccountModal" class="modal hidden">
     <div class="modal-box">
         <button onclick="closeEditAccountModal()" class="modal-close">&times;</button>
-        <h3 style="font-size: 16px; font-weight: 700; color: #FFFFFF; border-bottom: 1px solid var(--border-card); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); border-bottom: 1px solid var(--border-card); padding-bottom: 12px; margin-bottom: 16px;">
             ⚙️ Cấu Hình &amp; Đổi Gói Tài Khoản
         </h3>
         <form onsubmit="submitEditAccount(event)" style="display: flex; flex-direction: column; gap: 12px;">
@@ -958,7 +1069,7 @@ select option {
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Lộ Trình Rút Payout (XFA Stage)</label>
-                <select id="editAccXfa" style="width: 100%; color: #82A5FF;">
+                <select id="editAccXfa" style="width: 100%; color: var(--color-primary);">
                     <option value="standard_payout">Standard Path (≥5 ngày thắng ≥$150, trần $2K/đợt)</option>
                     <option value="consistency_payout">Consistency Path (≥3 ngày trade, consistency ≤40%, trần $3K/đợt)</option>
                 </select>
@@ -978,7 +1089,7 @@ select option {
 <div id="payoutModal" class="modal hidden">
     <div class="modal-box">
         <button onclick="closePayoutModal()" class="modal-close">&times;</button>
-        <h3 style="font-size: 16px; font-weight: 700; color: #E38FFF; border-bottom: 1px solid rgba(203, 62, 255, 0.25); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 16px; font-weight: 700; color: var(--color-purple); border-bottom: 1px solid rgba(203, 62, 255, 0.25); padding-bottom: 12px; margin-bottom: 16px;">
             💰 Yêu Cầu Rút Lợi Nhuận Quỹ XFA®
         </h3>
         <form onsubmit="submitPayoutRequest(event)" style="display: flex; flex-direction: column; gap: 12px;">
@@ -991,7 +1102,7 @@ select option {
                 <input id="payoutAmount" type="number" step="0.01" required min="100" placeholder="VD: 1500" style="width: 100%; font-size: 16px; font-weight: 700; color: var(--color-green);">
                 <span id="payoutMaxHint" style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">Hạn mức tối đa được rút: $0.00</span>
             </div>
-            <div style="background: rgba(203, 62, 255, 0.1); border: 1px solid rgba(203, 62, 255, 0.2); border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #E2E8F0;">
+            <div style="background: rgba(203, 62, 255, 0.1); border: 1px solid rgba(203, 62, 255, 0.2); border-radius: 10px; padding: 10px 12px; font-size: 12px; color: var(--text-primary);">
                 Quy tắc chia 90/10: Trader nhận <strong style="color: var(--color-green);">90%</strong> số tiền rút. Số tiền thực nhận sẽ được tự động ghi nhận vào sổ theo dõi.
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border-card);">
@@ -1012,7 +1123,7 @@ select option {
         <div style="display: flex; flex-direction: column; gap: 12px;">
             <div class="b-card-inner" style="padding: 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
                 <div>
-                    <strong style="font-size: 13px; color: #FFFFFF; display: block; margin-bottom: 2px;">Cách 1: Tải Mẫu CSV Chuẩn</strong>
+                    <strong style="font-size: 13px; color: var(--text-primary); display: block; margin-bottom: 2px;">Cách 1: Tải Mẫu CSV Chuẩn</strong>
                     <span style="font-size: 11.5px; color: var(--text-muted);">File CSV có cấu trúc cột PnL, MLL, DLL và Consistency sẵn sàng nhập vào Google Sheets.</span>
                 </div>
                 <a href="topstep_tracker_template.csv" download class="b-btn-primary" style="text-decoration: none; flex-shrink: 0;">
@@ -1022,7 +1133,7 @@ select option {
 
             <div class="b-card-inner" style="padding: 14px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <strong style="font-size: 13px; color: #FFFFFF;">Cách 2: Tự Động Hóa Google Apps Script</strong>
+                    <strong style="font-size: 13px; color: var(--text-primary);">Cách 2: Tự Động Hóa Google Apps Script</strong>
                     <button onclick="copyAppsScriptCode()" class="b-btn-secondary" style="font-size: 11.5px;">
                         Copy Apps Script Code
                     </button>
@@ -2048,6 +2159,55 @@ function setupTopstepTracker() {
             if (origOnload) origOnload();
             const dateEl = document.getElementById("inputDate");
             const pill = document.getElementById("headerTradeDatePill");
+            if (dateEl && pill && dateEl.value) pill.innerText = dateEl.value;
+        };
+    
+
+        /* Theme Management (Behance Light / Dark Mode System) */
+        function initTheme() {
+            const savedTheme = localStorage.getItem('topstep_theme_mode') || 'dark';
+            setTheme(savedTheme);
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('topstep_theme_mode', theme);
+            
+            const darkInd = document.getElementById('themeDarkIndicator');
+            const lightInd = document.getElementById('themeLightIndicator');
+            
+            if (darkInd && lightInd) {
+                if (theme === 'light') {
+                    lightInd.style.background = '#FFFFFF';
+                    lightInd.style.color = '#11121E';
+                    lightInd.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)';
+                    darkInd.style.background = 'transparent';
+                    darkInd.style.color = 'var(--text-muted)';
+                    darkInd.style.boxShadow = 'none';
+                } else {
+                    darkInd.style.background = 'var(--color-primary)';
+                    darkInd.style.color = '#FFFFFF';
+                    darkInd.style.boxShadow = '0 2px 8px rgba(69, 120, 249, 0.35)';
+                    lightInd.style.background = 'transparent';
+                    lightInd.style.color = 'var(--text-muted)';
+                    lightInd.style.boxShadow = 'none';
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            setTheme(next);
+        }
+
+        // Hook into window.onload
+        const prevOnload = window.onload;
+        window.onload = function() {
+            if (prevOnload) prevOnload();
+            initTheme();
+            const dateEl = document.getElementById('inputDate');
+            const pill = document.getElementById('headerTradeDatePill');
             if (dateEl && pill && dateEl.value) pill.innerText = dateEl.value;
         };
     </script>
