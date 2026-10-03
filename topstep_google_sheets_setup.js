@@ -2,9 +2,9 @@
  * ==============================================================================
  * TOPSTEP® DASHBOARD & DAILY RISK TRACKER - GOOGLE APPS SCRIPT (UPDATE 08/2026)
  * ==============================================================================
- * Quy tắc Consistency 50% (Trading Combine):
- * - NẾU LÃI 1 NGÀY > 50% TARGET: KHÔNG PHẢI LỖI VI PHẠM (KHÔNG FAIL TÀI KHOẢN).
- * - Target tổng sẽ TỰ ĐỘNG SCALE UP lên = (Lãi Ngày Cao Nhất x 2).
+ * Quy tắc Consistency 55% (Trading Combine - Cập nhật mới nhất):
+ * - NẾU LÃI 1 NGÀY > 55% TARGET: KHÔNG PHẢI LỖI VI PHẠM (KHÔNG FAIL TÀI KHOẢN).
+ * - Target tổng sẽ TỰ ĐỘNG SCALE UP lên = (Lãi Ngày Cao Nhất / 0.55).
  * - Trader chỉ cần trade tiếp để tổng lãi đạt mốc Target Điều Chỉnh mới là đỗ Combine.
  * ==============================================================================
  */
@@ -40,7 +40,7 @@ function setupTopstepTracker() {
   sheet.getRange("E3:G3").merge().setValue("📈 TIẾN TRÌNH & TARGET SCALING").setFontWeight("bold").setBackground("#1e293b").setFontColor("#94a3b8");
   sheet.getRange("E4").setValue("Tổng PnL Tích Lũy Các Ngày:"); sheet.getRange("F4").setFormula("=SUM(E12:E100)");
   sheet.getRange("E5").setValue("Số Dư Cuối Ngày Hiện Tại:"); sheet.getRange("F5").setFormula("=B5+F4");
-  sheet.getRange("E6").setValue("Mục Tiêu Lợi Nhuận Điều Chỉnh:"); sheet.getRange("F6").setFormula("=MAX(B6, J4*2)");
+  sheet.getRange("E6").setValue("Mục Tiêu Lợi Nhuận Điều Chỉnh:"); sheet.getRange("F6").setFormula("=MAX(B6, ROUNDUP(J4/0.55))");
   sheet.getRange("E7").setValue("% Đạt Profit Target Điều Chỉnh:"); sheet.getRange("F7").setFormula("=F4/F6");
   sheet.getRange("E8").setValue("Ngưỡng MLL Trailing EOD:"); sheet.getRange("F8").setFormula("=MIN(B5, B5-B7+MAX(0, MAX(F12:F100)-B5))");
   sheet.getRange("E9").setValue("Đệm MLL Khả Dụng:"); sheet.getRange("F9").setFormula("=F5-F8");
@@ -51,7 +51,7 @@ function setupTopstepTracker() {
   sheet.getRange("I5").setValue("% Ngày Cao Nhất / Lãi Tổng:"); sheet.getRange("J5").setFormula("=IF(F4>0, J4/F4, 0)");
   sheet.getRange("I6").setValue("Số Ngày Giao Dịch Riêng Biệt:"); sheet.getRange("J6").setFormula("=COUNTUNIQUE(A12:A100)");
   sheet.getRange("I7").setValue("Trạng Thái Trình Đỗ Combine:"); 
-  sheet.getRange("J7:K7").merge().setFormula('=IF(AND(F4>=F6, J5<0.5, J6>=2), "🎉 ĐỦ ĐIỀU KIỆN CẤP VỐN!", IF(AND(F4>=F6, J6<2), "ℹ️ CẦN THÊM NGÀY (Mới đạt " & J6 & "/2 ngày)", IF(J4>B6*0.5, "ℹ️ TARGET SCALE LÊN " & TEXT(F6, "$#,##0") & " (Cần " & TEXT(F6-F4, "$#,##0") & ")", "🟢 ĐANG THI (<50%)")))');
+  sheet.getRange("J7:K7").merge().setFormula('=IF(AND(F4>=F6, J5<=0.55, J6>=2), "🎉 ĐỦ ĐIỀU KIỆN CẤP VỐN!", IF(AND(F4>=F6, J6<2), "ℹ️ CẦN THÊM NGÀY (Mới đạt " & J6 & "/2 ngày)", IF(J4>B6*0.55, "ℹ️ TARGET SCALE LÊN " & TEXT(F6, "$#,##0") & " (Cần " & TEXT(F6-F4, "$#,##0") & ")", "🟢 ĐANG THI (<=55%)")))');
 
   // Format KPI Block
   sheet.getRange("B5:B8").setNumberFormat("$#,##0");

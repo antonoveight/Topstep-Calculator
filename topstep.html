@@ -458,6 +458,10 @@ select option {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                 Quy Tắc Vốn
             </a>
+            <a onclick="openPricingModal()" class="sidebar-link" title="Xem bảng so sánh 3 gói Topstep® chuẩn mới">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                Bảng Gói Topstep®
+            </a>
             <a onclick="openGoogleSheetModal()" class="sidebar-link">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 Google Sheets
@@ -516,6 +520,9 @@ select option {
             <select id="accountDropdown" onchange="onAccountDropdownChange()" style="min-width: 170px; background: var(--bg-card); font-weight: 600; border-color: rgba(69, 120, 249, 0.35); color: var(--color-primary); box-shadow: var(--shadow-card);"></select>
 
             <!-- Buttons matching Behance palette -->
+            <button onclick="openPricingModal()" class="b-btn-secondary" title="Tra cứu bảng giá &amp; thông số 3 gói Topstep®">
+                <span>🏷️ Bảng Gói Topstep</span>
+            </button>
             <button onclick="openAddAccountModal()" class="b-btn-primary">
                 + Tạo Tài Khoản
             </button>
@@ -562,7 +569,7 @@ select option {
                 </div>
                 <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-primary); font-weight: 500;">
                     <span>🎯</span>
-                    <span>Consistency Rule: Lãi ngày ≤ 50%</span>
+                    <span>Consistency Rule: Lãi ngày ≤ 55%</span>
                 </div>
             </div>
 
@@ -620,7 +627,7 @@ select option {
                     </span>
                     <span id="todayTargetPnl" class="tabular-nums" style="font-size: 22px; font-weight: 800; color: var(--color-green); display: block;">+$601.00</span>
                     <span id="todayTargetSubtext" style="font-size: 11.5px; color: var(--color-green); opacity: 0.85; margin-top: 2px; display: block;">
-                        Đảm bảo quy tắc Consistency ≤50%
+                        Đảm bảo quy tắc Consistency ≤55%
                     </span>
                 </div>
 
@@ -698,7 +705,7 @@ select option {
                         <div style="font-size: 11.5px; font-weight: 700; color: var(--color-primary); margin-bottom: 6px;">🎯 QUY TẮC VÒNG COMBINE®</div>
                         <div style="font-size: 11.5px; color: var(--text-slate); display: flex; flex-direction: column; gap: 3px;">
                             <div>Target: <strong id="combineProfitTarget" class="tabular-nums" style="color: var(--color-green);">$3,000</strong> · Tối thiểu <strong style="color: var(--text-primary);">≥ 2 ngày</strong></div>
-                            <div>Lãi an toàn / ngày: <strong id="safeDailyProfit" class="tabular-nums" style="color: var(--color-gold);">≤ $1,499</strong> (≤50%)</div>
+                            <div>Lãi an toàn / ngày: <strong id="safeDailyProfit" class="tabular-nums" style="color: var(--color-gold);">≤ $1,649</strong> (≤55%)</div>
                             <div>MLL Trailing: <span id="combineMllRule" style="color: var(--color-red); font-weight: 600;">Khóa tại vốn $50K</span></div>
                         </div>
                     </div>
@@ -782,7 +789,7 @@ select option {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-card); padding-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                 <div>
                     <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Nhật Ký Giao Dịch &amp; Theo Dõi EOD</div>
-                    <div style="font-size: 11.5px; color: var(--text-muted);">Ghi nhận kết quả chốt phiên, tự động cập nhật Trailing MLL và tính nhất quán 50%</div>
+                    <div style="font-size: 11.5px; color: var(--text-muted);">Ghi nhận kết quả chốt phiên, tự động cập nhật Trailing MLL và tính nhất quán 55%</div>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     <button onclick="exportTrackerCSV()" class="b-btn-secondary" style="font-size: 12px;">
@@ -874,7 +881,7 @@ select option {
                             <th style="color: var(--color-red);">Ngưỡng MLL EOD</th>
                             <th style="color: var(--color-green);">Đệm An Toàn MLL</th>
                             <th>Trạng Thái DLL</th>
-                            <th>Consistency (≤50%)</th>
+                            <th>Consistency (≤55%)</th>
                             <th style="text-align: right;">Thao Tác</th>
                         </tr>
                     </thead>
@@ -913,15 +920,243 @@ select option {
 
         <!-- ── ROW 5: RULES GUIDE & ACCOUNT COMPARISON ACCORDION ── -->
         <div class="b-card" id="rules-section">
-            <details>
+            <details open>
                 <summary style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; list-style: none; user-select: none; font-size: 13px; font-weight: 700; color: var(--text-primary);">
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <span>📌 HƯỚNG DẪN QUY TẮC TOPSTEP® &amp; BẢNG SO SÁNH GÓI $50K - $100K - $150K</span>
+                        <span>🏷️ BẢNG THÔNG SỐ &amp; SO SÁNH 3 GÓI TOPSTEP® (CẬP NHẬT CHUẨN MỚI NHẤT)</span>
+                        <span class="b-badge b-badge-green" style="font-size: 11px;">Consistency 55% · DOUBLE Payout</span>
                     </div>
                     <span style="color: var(--color-primary); font-size: 16px;">▾</span>
                 </summary>
 
-                <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-card); display: flex; flex-direction: column; gap: 14px;">
+                <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-card); display: flex; flex-direction: column; gap: 16px;">
+                    <!-- Key Badges Strip -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--bg-card-inner); padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-inner);">
+                        <span class="b-badge b-badge-blue" style="font-size: 11.5px;">
+                            🛡️ Responsible Trading Advantage: DOUBLE Payout Caps · Giảm tới $30/tháng
+                        </span>
+                        <span class="b-badge b-badge-green" style="font-size: 11.5px;">
+                            ✨ No Activation Fee: Miễn 100% Phí Kích Hoạt khi lên Express Funded ($0)
+                        </span>
+                        <span class="b-badge b-badge-dim" style="font-size: 11.5px;">
+                            🎯 Quy Tắc Nhất Quán: Consistency Target 55% (Lãi ngày ≤ 55% Tổng Lãi)
+                        </span>
+                    </div>
+
+                    <!-- 3 Official Topstep Package Cards Grid (Direct Match to Official Pricing UI) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Card 1: $50K -->
+                        <div class="b-card-inner" style="padding: 20px; border: 1px solid var(--border-card); border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+                            <div>
+                                <div style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">$50K Buying Power</div>
+                                <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px;">
+                                    <span style="font-size: 28px; font-weight: 900; color: var(--color-primary);">$85</span>
+                                    <span style="font-size: 14px; color: var(--text-muted); text-decoration: line-through;">$95</span>
+                                    <span style="font-size: 12px; color: var(--text-muted);">/tháng</span>
+                                </div>
+                                <p style="font-size: 11px; color: var(--text-slate); margin-bottom: 14px; line-height: 1.4;">
+                                    Meet the Targets. Don't Break the One Rule. Earn a Funded Account.
+                                </p>
+
+                                <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border-inner); padding-top: 12px; font-size: 12px;">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Profit Target:</span>
+                                        <strong style="color: var(--color-green);">$3,000</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Consistency Target:</span>
+                                        <strong style="color: var(--color-primary);">55%</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Max Loss Limit (MLL):</span>
+                                        <strong style="color: var(--color-red);">$2,000</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Max Contract Limit:</span>
+                                        <strong style="color: var(--text-primary);">5 mini / 50 micro</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Reset Fee:</span>
+                                        <strong style="color: var(--text-primary);">$85</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Monthly Reset Credit:</span>
+                                        <span style="color: var(--color-green); font-weight: 600;">Included</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Activation Fee:</span>
+                                        <span style="color: var(--color-green); font-weight: 700;">Free ($0)</span>
+                                    </div>
+                                    <div style="border-top: 1px dashed var(--border-inner); margin: 4px 0;"></div>
+                                    <div style="font-size: 11px; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">Responsible Trading Adv:</div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Daily Loss Limit:</span>
+                                        <strong style="color: var(--color-gold);">$1,000</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">DOUBLE Payout Caps:</span>
+                                        <span style="color: var(--color-green); font-weight: 600;">Included (Tới $4K)</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Discount ưu đãi:</span>
+                                        <strong style="color: var(--color-green);">-$10 / tháng</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
+                                <button type="button" onclick="applyPackageToCurrent('50')" class="b-btn-primary" style="width: 100%; justify-content: center; font-size: 12px; padding: 8px;">
+                                    ⚡ Chọn Gói $50K Cho Tài Khoản
+                                </button>
+                                <button type="button" onclick="openAddAccountModalWithSize('50')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 6px;">
+                                    + Tạo Tài Khoản Mới $50K
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: $100K (Recommended) -->
+                        <div class="b-card-inner" style="padding: 20px; border: 2px solid var(--color-gold); border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; position: relative; box-shadow: 0 0 20px rgba(255, 188, 17, 0.15);">
+                            <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--color-gold); color: #000000; font-size: 10.5px; font-weight: 800; padding: 2px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;">
+                                ⭐ Recommended
+                            </div>
+                            <div>
+                                <div style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">$100K Buying Power</div>
+                                <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px;">
+                                    <span style="font-size: 28px; font-weight: 900; color: var(--color-gold);">$129</span>
+                                    <span style="font-size: 14px; color: var(--text-muted); text-decoration: line-through;">$149</span>
+                                    <span style="font-size: 12px; color: var(--text-muted);">/tháng</span>
+                                </div>
+                                <p style="font-size: 11px; color: var(--text-slate); margin-bottom: 14px; line-height: 1.4;">
+                                    Meet the Targets. Don't Break the One Rule. Earn a Funded Account.
+                                </p>
+
+                                <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border-inner); padding-top: 12px; font-size: 12px;">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Profit Target:</span>
+                                        <strong style="color: var(--color-green);">$6,000</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Consistency Target:</span>
+                                        <strong style="color: var(--color-gold);">55%</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Max Loss Limit (MLL):</span>
+                                        <strong style="color: var(--color-red);">$3,000</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Max Contract Limit:</span>
+                                        <strong style="color: var(--text-primary);">10 mini / 100 micro</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Reset Fee:</span>
+                                        <strong style="color: var(--text-primary);">$129</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Monthly Reset Credit:</span>
+                                        <span style="color: var(--color-green); font-weight: 600;">Included</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Activation Fee:</span>
+                                        <span style="color: var(--color-green); font-weight: 700;">Free ($0)</span>
+                                    </div>
+                                    <div style="border-top: 1px dashed var(--border-inner); margin: 4px 0;"></div>
+                                    <div style="font-size: 11px; font-weight: 700; color: var(--color-gold); text-transform: uppercase;">Responsible Trading Adv:</div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Daily Loss Limit:</span>
+                                        <strong style="color: var(--color-gold);">$2,000</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">DOUBLE Payout Caps:</span>
+                                        <span style="color: var(--color-green); font-weight: 600;">Included (Tới $6K)</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Discount ưu đãi:</span>
+                                        <strong style="color: var(--color-green);">-$20 / tháng</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
+                                <button type="button" onclick="applyPackageToCurrent('100')" class="b-btn-primary" style="width: 100%; justify-content: center; font-size: 12px; padding: 8px; background: linear-gradient(135deg, #FFBC11, #D97706); color: #000000; font-weight: 800;">
+                                    ⭐ Chọn Gói $100K Cho Tài Khoản
+                                </button>
+                                <button type="button" onclick="openAddAccountModalWithSize('100')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 6px;">
+                                    + Tạo Tài Khoản Mới $100K
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: $150K -->
+                        <div class="b-card-inner" style="padding: 20px; border: 1px solid var(--border-card); border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+                            <div>
+                                <div style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">$150K Buying Power</div>
+                                <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px;">
+                                    <span style="font-size: 28px; font-weight: 900; color: var(--color-purple);">$199</span>
+                                    <span style="font-size: 14px; color: var(--text-muted); text-decoration: line-through;">$229</span>
+                                    <span style="font-size: 12px; color: var(--text-muted);">/tháng</span>
+                                </div>
+                                <p style="font-size: 11px; color: var(--text-slate); margin-bottom: 14px; line-height: 1.4;">
+                                    Meet the Targets. Don't Break the One Rule. Earn a Funded Account.
+                                </p>
+
+                                <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border-inner); padding-top: 12px; font-size: 12px;">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Profit Target:</span>
+                                        <strong style="color: var(--color-green);">$9,000</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Consistency Target:</span>
+                                        <strong style="color: var(--color-purple);">55%</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Max Loss Limit (MLL):</span>
+                                        <strong style="color: var(--color-red);">$4,500</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Max Contract Limit:</span>
+                                        <strong style="color: var(--text-primary);">15 mini / 150 micro</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Reset Fee:</span>
+                                        <strong style="color: var(--text-primary);">$199</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Monthly Reset Credit:</span>
+                                        <span style="color: var(--color-green); font-weight: 600;">Included</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Activation Fee:</span>
+                                        <span style="color: var(--color-green); font-weight: 700;">Free ($0)</span>
+                                    </div>
+                                    <div style="border-top: 1px dashed var(--border-inner); margin: 4px 0;"></div>
+                                    <div style="font-size: 11px; font-weight: 700; color: var(--color-purple); text-transform: uppercase;">Responsible Trading Adv:</div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Daily Loss Limit:</span>
+                                        <strong style="color: var(--color-gold);">$3,000</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">DOUBLE Payout Caps:</span>
+                                        <span style="color: var(--color-green); font-weight: 600;">Included (Tới $10K)</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-muted);">Discount ưu đãi:</span>
+                                        <strong style="color: var(--color-green);">-$30 / tháng</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
+                                <button type="button" onclick="applyPackageToCurrent('150')" class="b-btn-purple" style="width: 100%; justify-content: center; font-size: 12px; padding: 8px;">
+                                    ⚡ Chọn Gói $150K Cho Tài Khoản
+                                </button>
+                                <button type="button" onclick="openAddAccountModalWithSize('150')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 6px;">
+                                    + Tạo Tài Khoản Mới $150K
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3 Core Rule Highlights -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div class="b-card-inner" style="padding: 14px; border-left: 3px solid var(--color-red);">
                             <strong style="font-size: 12px; color: var(--color-red); display: block; margin-bottom: 4px;">MLL Trailing EOD Rule</strong>
@@ -930,53 +1165,84 @@ select option {
                             </p>
                         </div>
                         <div class="b-card-inner" style="padding: 14px; border-left: 3px solid var(--color-gold);">
-                            <strong style="font-size: 12px; color: var(--color-gold); display: block; margin-bottom: 4px;">DLL (Daily Loss) – Soft Rule</strong>
+                            <strong style="font-size: 12px; color: var(--color-gold); display: block; margin-bottom: 4px;">DLL (Daily Loss Limit) – Soft Rule</strong>
                             <p style="font-size: 11.5px; color: var(--text-slate); line-height: 1.45;">
-                                Nếu vi phạm mức lỗ ngày, hệ thống sẽ tạm dừng tài khoản phiên đó. Bạn KHÔNG bị mất tài khoản và có thể tiếp tục giao dịch vào phiên kế tiếp.
+                                Nếu chạm mức lỗ ngày ($1K / $2K / $3K), hệ thống tự động khóa giao dịch phiên đó để bảo vệ vốn. Bạn KHÔNG bị mất tài khoản và tiếp tục phiên kế tiếp.
                             </p>
                         </div>
                         <div class="b-card-inner" style="padding: 14px; border-left: 3px solid var(--color-primary);">
-                            <strong style="font-size: 12px; color: var(--color-primary); display: block; margin-bottom: 4px;">Giờ Đóng Lệnh Bắt Buộc</strong>
+                            <strong style="font-size: 12px; color: var(--color-primary); display: block; margin-bottom: 4px;">Giờ Đóng Lệnh &amp; Consistency 55%</strong>
                             <p style="font-size: 11.5px; color: var(--text-slate); line-height: 1.45;">
-                                Mọi vị thế phải đóng trước 3:10 PM CT (tức 3:10 AM giờ Việt Nam sáng hôm sau). Không được phép giữ lệnh qua đêm (No Overnight).
+                                Đóng mọi vị thế trước 3:10 PM CT (3:10 AM VN). Lợi nhuận phiên ngày lớn nhất không được vượt quá 55% tổng lợi nhuận để đạt chuẩn cấp vốn.
                             </p>
                         </div>
                     </div>
 
+                    <!-- Detailed Comparison Table -->
                     <div style="overflow-x: auto; border: 1px solid var(--border-card); border-radius: 12px;">
                         <table class="b-table">
                             <thead>
                                 <tr>
-                                    <th>Hạng Mục So Sánh</th>
+                                    <th>Hạng Mục So Sánh Chi Tiết</th>
                                     <th style="color: var(--color-primary);">Gói $50,000</th>
-                                    <th style="color: var(--color-green);">Gói $100,000</th>
-                                    <th style="color: var(--color-gold);">Gói $150,000</th>
+                                    <th style="color: var(--color-gold);">Gói $100,000 (Recommended)</th>
+                                    <th style="color: var(--color-purple);">Gói $150,000</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td style="color: var(--text-muted); font-weight: 600;">Phí / Tháng (Standard vs No-Activation)</td>
-                                    <td>$49 / $95</td>
-                                    <td>$99 / $149</td>
-                                    <td>$199 / $229</td>
+                                    <td style="color: var(--text-muted); font-weight: 600;">Giá No Activation Fee (Có Ưu Đãi)</td>
+                                    <td style="color: var(--color-primary); font-weight: 700;">$85 / tháng <span style="font-size: 11px; text-decoration: line-through; color: var(--text-muted);">$95</span></td>
+                                    <td style="color: var(--color-gold); font-weight: 700;">$129 / tháng <span style="font-size: 11px; text-decoration: line-through; color: var(--text-muted);">$149</span></td>
+                                    <td style="color: var(--color-purple); font-weight: 700;">$199 / tháng <span style="font-size: 11px; text-decoration: line-through; color: var(--text-muted);">$229</span></td>
                                 </tr>
                                 <tr>
-                                    <td style="color: var(--text-muted); font-weight: 600;">Target Lợi Nhuận / Trailing MLL</td>
+                                    <td style="color: var(--text-muted); font-weight: 600;">Giá Standard (Học Viên)</td>
+                                    <td>$49 / tháng + $149 Phí</td>
+                                    <td>$99 / tháng + $149 Phí</td>
+                                    <td>$199 / tháng + $149 Phí</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: var(--text-muted); font-weight: 600;">Express Funded Activation Fee</td>
+                                    <td style="color: var(--color-green); font-weight: 700;">Miễn Phí ($0)</td>
+                                    <td style="color: var(--color-green); font-weight: 700;">Miễn Phí ($0)</td>
+                                    <td style="color: var(--color-green); font-weight: 700;">Miễn Phí ($0)</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: var(--text-muted); font-weight: 600;">Profit Target / MLL Trailing</td>
                                     <td style="color: var(--color-green); font-weight: 700;">$3,000 / $2,000</td>
                                     <td style="color: var(--color-green); font-weight: 700;">$6,000 / $3,000</td>
                                     <td style="color: var(--color-green); font-weight: 700;">$9,000 / $4,500</td>
                                 </tr>
                                 <tr>
-                                    <td style="color: var(--text-muted); font-weight: 600;">Giới Hạn Vị Thế Hợp Đồng</td>
-                                    <td style="color: var(--color-primary); font-weight: 700;">5 Mini / 50 Micro</td>
-                                    <td style="color: var(--color-primary); font-weight: 700;">10 Mini / 100 Micro</td>
-                                    <td style="color: var(--color-primary); font-weight: 700;">15 Mini / 150 Micro</td>
+                                    <td style="color: var(--text-muted); font-weight: 600;">Daily Loss Limit (DLL Soft Rule)</td>
+                                    <td style="color: var(--color-gold); font-weight: 700;">$1,000 / ngày</td>
+                                    <td style="color: var(--color-gold); font-weight: 700;">$2,000 / ngày</td>
+                                    <td style="color: var(--color-gold); font-weight: 700;">$3,000 / ngày</td>
                                 </tr>
                                 <tr>
-                                    <td style="color: var(--text-muted); font-weight: 600;">Hạn Mức Rút Payout (Standard vs Consistency)</td>
-                                    <td style="color: var(--color-purple); font-weight: 700;">$2,000 / $3,000</td>
-                                    <td style="color: var(--color-purple); font-weight: 700;">$3,000 / $4,000</td>
-                                    <td style="color: var(--color-purple); font-weight: 700;">$5,000 / $6,000</td>
+                                    <td style="color: var(--text-muted); font-weight: 600;">Consistency Target</td>
+                                    <td style="color: var(--color-primary); font-weight: 700;">55% (Lãi ngày ≤ $1,650)</td>
+                                    <td style="color: var(--color-gold); font-weight: 700;">55% (Lãi ngày ≤ $3,300)</td>
+                                    <td style="color: var(--color-purple); font-weight: 700;">55% (Lãi ngày ≤ $4,950)</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: var(--text-muted); font-weight: 600;">Giới Hạn Hợp Đồng</td>
+                                    <td style="font-weight: 700;">5 Mini / 50 Micro</td>
+                                    <td style="font-weight: 700;">10 Mini / 100 Micro</td>
+                                    <td style="font-weight: 700;">15 Mini / 150 Micro</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: var(--text-muted); font-weight: 600;">Reset Fee / Monthly Credit</td>
+                                    <td>$85 · Có Credit</td>
+                                    <td>$129 · Có Credit</td>
+                                    <td>$199 · Có Credit</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: var(--text-muted); font-weight: 600;">DOUBLE Payout Cap (XFA Stage)</td>
+                                    <td style="color: var(--color-green); font-weight: 700;">Tối đa $4,000 / đợt</td>
+                                    <td style="color: var(--color-green); font-weight: 700;">Tối đa $6,000 / đợt</td>
+                                    <td style="color: var(--color-green); font-weight: 700;">Tối đa $10,000 / đợt</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1013,9 +1279,9 @@ select option {
             <div>
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Gói Tài Khoản</label>
                 <select id="newAccSize" style="width: 100%; font-weight: 600;">
-                    <option value="50">Gói $50,000 (Target $3K · MLL $2K)</option>
-                    <option value="100">Gói $100,000 (Target $6K · MLL $3K)</option>
-                    <option value="150">Gói $150,000 (Target $9K · MLL $4.5K)</option>
+                    <option value="50">Gói $50,000 · $85/tháng (Target $3K · MLL $2K · DLL $1K · 5/50 Contracts)</option>
+                    <option value="100" selected>Gói $100,000 [Khuyên Dùng] · $129/tháng (Target $6K · MLL $3K · DLL $2K · 10/100 Contracts)</option>
+                    <option value="150">Gói $150,000 · $199/tháng (Target $9K · MLL $4.5K · DLL $3K · 15/150 Contracts)</option>
                 </select>
             </div>
             <div>
@@ -1028,8 +1294,8 @@ select option {
             <div>
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Lộ Trình Phí</label>
                 <select id="newAccPricing" style="width: 100%;">
-                    <option value="standard">Standard ($49/tháng + Phí Kích Hoạt khi đỗ)</option>
-                    <option value="no_activation">No Activation Fee ($95/tháng - Miễn Phí Kích Hoạt)</option>
+                    <option value="no_activation" selected>No Activation Fee ($85 - $129/tháng · Miễn 100% Phí Kích Hoạt · DOUBLE Payout Caps)</option>
+                    <option value="standard">Standard ($49 - $99/tháng + Phí Kích Hoạt $149 khi đỗ)</option>
                 </select>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border-card);">
@@ -1055,16 +1321,16 @@ select option {
             <div>
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Gói Tài Khoản</label>
                 <select id="editAccSize" style="width: 100%; font-weight: 600;">
-                    <option value="50">Gói $50,000 (Target $3K · MLL $2K)</option>
-                    <option value="100">Gói $100,000 (Target $6K · MLL $3K)</option>
-                    <option value="150">Gói $150,000 (Target $9K · MLL $4.5K)</option>
+                    <option value="50">Gói $50,000 · $85/tháng (Target $3K · MLL $2K · DLL $1K · 5/50 Contracts)</option>
+                    <option value="100">Gói $100,000 [Khuyên Dùng] · $129/tháng (Target $6K · MLL $3K · DLL $2K · 10/100 Contracts)</option>
+                    <option value="150">Gói $150,000 · $199/tháng (Target $9K · MLL $4.5K · DLL $3K · 15/150 Contracts)</option>
                 </select>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Lộ Trình Phí</label>
                 <select id="editAccPricing" style="width: 100%;">
-                    <option value="standard">Standard ($49/tháng + Phí Kích Hoạt khi đỗ)</option>
-                    <option value="no_activation">No Activation Fee ($95/tháng - Miễn Phí Kích Hoạt)</option>
+                    <option value="no_activation">No Activation Fee ($85 - $129/tháng · Miễn 100% Phí Kích Hoạt · DOUBLE Payout Caps)</option>
+                    <option value="standard">Standard ($49 - $99/tháng + Phí Kích Hoạt $149 khi đỗ)</option>
                 </select>
             </div>
             <div>
@@ -1149,75 +1415,217 @@ select option {
     </div>
 </div>
 
+<!-- MODAL: PRICING TIERS & PACKAGE SELECTOR -->
+<div id="pricingModal" class="modal hidden">
+    <div class="modal-box extra-wide" style="max-width: 980px; max-height: 92vh; overflow-y: auto;">
+        <button onclick="closePricingModal()" class="modal-close">&times;</button>
+        <div style="border-bottom: 1px solid var(--border-card); padding-bottom: 14px; margin-bottom: 18px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary);">
+                    🏷️ Bảng Giá &amp; Thông Số 3 Gói Vốn Topstep® Mới Nhất
+                </h3>
+                <span class="b-badge b-badge-green">Consistency 55%</span>
+                <span class="b-badge b-badge-blue">DOUBLE Payout Caps</span>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                Lộ trình No Activation Fee đã bao gồm Responsible Trading Advantage (Giảm giá $10 - $30/tháng, nhân đôi trần rút tiền XFA và miễn phí kích hoạt).
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <!-- Modal Tier Card: 50K -->
+            <div class="b-card-inner" style="padding: 18px; border: 1px solid var(--border-card); border-radius: 14px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);">$50K Buying Power</div>
+                    <div style="display: flex; align-items: baseline; gap: 6px; margin: 4px 0 8px;">
+                        <span style="font-size: 26px; font-weight: 900; color: var(--color-primary);">$85</span>
+                        <span style="font-size: 13px; color: var(--text-muted); text-decoration: line-through;">$95</span>
+                        <span style="font-size: 12px; color: var(--text-muted);">/tháng</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 7px; font-size: 11.5px; border-top: 1px solid var(--border-inner); padding-top: 10px;">
+                        <div style="display: flex; justify-content: space-between;"><span>Profit Target:</span><strong style="color: var(--color-green);">$3,000</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Consistency:</span><strong style="color: var(--color-primary);">55%</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Max Loss Limit:</span><strong style="color: var(--color-red);">$2,000</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Daily Loss Limit:</span><strong style="color: var(--color-gold);">$1,000</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Max Contracts:</span><strong>5 mini / 50 micro</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Reset Fee:</span><strong>$85</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Rebill Credit:</span><span style="color: var(--color-green);">Included</span></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Activation Fee:</span><strong style="color: var(--color-green);">Free ($0)</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>DOUBLE Payout:</span><strong style="color: var(--color-green);">Tới $4,000</strong></div>
+                    </div>
+                </div>
+                <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
+                    <button type="button" onclick="applyPackageToCurrent('50')" class="b-btn-primary" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 7px;">
+                        ⚡ Áp Dụng Cho Tài Khoản Này
+                    </button>
+                    <button type="button" onclick="openAddAccountModalWithSize('50')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11px; padding: 5px;">
+                        + Tạo Tài Khoản $50K Mới
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Tier Card: 100K (Recommended) -->
+            <div class="b-card-inner" style="padding: 18px; border: 2px solid var(--color-gold); border-radius: 14px; display: flex; flex-direction: column; justify-content: space-between; position: relative; box-shadow: 0 0 16px rgba(255, 188, 17, 0.12);">
+                <div style="position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: var(--color-gold); color: #000000; font-size: 10px; font-weight: 800; padding: 2px 12px; border-radius: 20px; text-transform: uppercase;">
+                    ⭐ Recommended
+                </div>
+                <div>
+                    <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);">$100K Buying Power</div>
+                    <div style="display: flex; align-items: baseline; gap: 6px; margin: 4px 0 8px;">
+                        <span style="font-size: 26px; font-weight: 900; color: var(--color-gold);">$129</span>
+                        <span style="font-size: 13px; color: var(--text-muted); text-decoration: line-through;">$149</span>
+                        <span style="font-size: 12px; color: var(--text-muted);">/tháng</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 7px; font-size: 11.5px; border-top: 1px solid var(--border-inner); padding-top: 10px;">
+                        <div style="display: flex; justify-content: space-between;"><span>Profit Target:</span><strong style="color: var(--color-green);">$6,000</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Consistency:</span><strong style="color: var(--color-gold);">55%</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Max Loss Limit:</span><strong style="color: var(--color-red);">$3,000</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Daily Loss Limit:</span><strong style="color: var(--color-gold);">$2,000</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Max Contracts:</span><strong>10 mini / 100 micro</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Reset Fee:</span><strong>$129</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Rebill Credit:</span><span style="color: var(--color-green);">Included</span></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Activation Fee:</span><strong style="color: var(--color-green);">Free ($0)</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>DOUBLE Payout:</span><strong style="color: var(--color-green);">Tới $6,000</strong></div>
+                    </div>
+                </div>
+                <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
+                    <button type="button" onclick="applyPackageToCurrent('100')" class="b-btn-primary" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 7px; background: linear-gradient(135deg, #FFBC11, #D97706); color: #000000; font-weight: 800;">
+                        ⭐ Áp Dụng Cho Tài Khoản Này
+                    </button>
+                    <button type="button" onclick="openAddAccountModalWithSize('100')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11px; padding: 5px;">
+                        + Tạo Tài Khoản $100K Mới
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Tier Card: 150K -->
+            <div class="b-card-inner" style="padding: 18px; border: 1px solid var(--border-card); border-radius: 14px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);">$150K Buying Power</div>
+                    <div style="display: flex; align-items: baseline; gap: 6px; margin: 4px 0 8px;">
+                        <span style="font-size: 26px; font-weight: 900; color: var(--color-purple);">$199</span>
+                        <span style="font-size: 13px; color: var(--text-muted); text-decoration: line-through;">$229</span>
+                        <span style="font-size: 12px; color: var(--text-muted);">/tháng</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 7px; font-size: 11.5px; border-top: 1px solid var(--border-inner); padding-top: 10px;">
+                        <div style="display: flex; justify-content: space-between;"><span>Profit Target:</span><strong style="color: var(--color-green);">$9,000</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Consistency:</span><strong style="color: var(--color-purple);">55%</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Max Loss Limit:</span><strong style="color: var(--color-red);">$4,500</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Daily Loss Limit:</span><strong style="color: var(--color-gold);">$3,000</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Max Contracts:</span><strong>15 mini / 150 micro</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Reset Fee:</span><strong>$199</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Rebill Credit:</span><span style="color: var(--color-green);">Included</span></div>
+                        <div style="display: flex; justify-content: space-between;"><span>Activation Fee:</span><strong style="color: var(--color-green);">Free ($0)</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span>DOUBLE Payout:</span><strong style="color: var(--color-green);">Tới $10,000</strong></div>
+                    </div>
+                </div>
+                <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
+                    <button type="button" onclick="applyPackageToCurrent('150')" class="b-btn-purple" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 7px;">
+                        ⚡ Áp Dụng Cho Tài Khoản Này
+                    </button>
+                    <button type="button" onclick="openAddAccountModalWithSize('150')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11px; padding: 5px;">
+                        + Tạo Tài Khoản $150K Mới
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; padding-top: 12px; border-top: 1px solid var(--border-card);">
+            <button onclick="closePricingModal()" class="b-btn-secondary">Đóng Bảng Tra Cứu</button>
+        </div>
+    </div>
+</div>
+
 <!-- JavaScript Engine -->
 <script>
 
 const accountData = {
             "50": {
+                title: "$50K Buying Power",
                 stdFee: "$49 / tháng",
-                noActFee: "$95 / tháng",
+                noActFee: "$85 / tháng",
+                originalNoActFee: "$95",
+                discount: "-$10",
                 stdActivation: "+ $149 Phí kích hoạt",
-                noActActivation: "Miễn 100% Phí kích hoạt",
+                noActActivation: "Miễn 100% Phí kích hoạt ($0)",
                 target: "$3,000",
                 targetVal: 3000,
+                consistencyPct: 55,
+                consistencyRatio: 0.55,
                 mll: "$2,000",
                 mllVal: 2000,
                 mllLock: "Khóa tại $50K",
                 dll: "$1,000",
                 dllVal: 1000,
+                resetFee: "$85",
+                rebillCredit: "Bao gồm (Credit hàng tháng)",
                 initialBal: 50000,
                 contracts: "5 Minis / 50 Micros",
                 maxMicros: 50,
-                safeProfit: "≤ $1,499 / ngày",
+                safeProfit: "≤ $1,649 / ngày",
                 combineMllText: "Khóa tại $50,000",
                 xfaStdCap: "$2,000",
-                xfaConCap: "$3,000",
+                xfaConCap: "$4,000",
                 xfaStdCapVal: 2000,
-                xfaConCapVal: 3000
+                xfaConCapVal: 4000
             },
             "100": {
+                title: "$100K Buying Power [Recommended]",
                 stdFee: "$99 / tháng",
-                noActFee: "$149 / tháng",
+                noActFee: "$129 / tháng",
+                originalNoActFee: "$149",
+                discount: "-$20",
                 stdActivation: "+ $149 Phí kích hoạt",
-                noActActivation: "Miễn 100% Phí kích hoạt",
+                noActActivation: "Miễn 100% Phí kích hoạt ($0)",
                 target: "$6,000",
                 targetVal: 6000,
+                consistencyPct: 55,
+                consistencyRatio: 0.55,
                 mll: "$3,000",
                 mllVal: 3000,
                 mllLock: "Khóa tại $100K",
                 dll: "$2,000",
                 dllVal: 2000,
+                resetFee: "$129",
+                rebillCredit: "Bao gồm (Credit hàng tháng)",
                 initialBal: 100000,
                 contracts: "10 Minis / 100 Micros",
                 maxMicros: 100,
-                safeProfit: "≤ $2,999 / ngày",
+                safeProfit: "≤ $3,299 / ngày",
                 combineMllText: "Khóa tại $100,000",
                 xfaStdCap: "$3,000",
-                xfaConCap: "$4,000",
+                xfaConCap: "$6,000",
                 xfaStdCapVal: 3000,
-                xfaConCapVal: 4000
+                xfaConCapVal: 6000
             },
             "150": {
+                title: "$150K Buying Power",
                 stdFee: "$199 / tháng",
-                noActFee: "$229 / tháng",
+                noActFee: "$199 / tháng",
+                originalNoActFee: "$229",
+                discount: "-$30",
                 stdActivation: "+ $149 Phí kích hoạt",
-                noActActivation: "Miễn 100% Phí kích hoạt",
+                noActActivation: "Miễn 100% Phí kích hoạt ($0)",
                 target: "$9,000",
                 targetVal: 9000,
+                consistencyPct: 55,
+                consistencyRatio: 0.55,
                 mll: "$4,500",
                 mllVal: 4500,
                 mllLock: "Khóa tại $150K",
                 dll: "$3,000",
                 dllVal: 3000,
+                resetFee: "$199",
+                rebillCredit: "Bao gồm (Credit hàng tháng)",
                 initialBal: 150000,
                 contracts: "15 Minis / 150 Micros",
                 maxMicros: 150,
-                safeProfit: "≤ $4,499 / ngày",
+                safeProfit: "≤ $4,949 / ngày",
                 combineMllText: "Khóa tại $150,000",
                 xfaStdCap: "$5,000",
-                xfaConCap: "$6,000",
+                xfaConCap: "$10,000",
                 xfaStdCapVal: 5000,
-                xfaConCapVal: 6000
+                xfaConCapVal: 10000
             }
         };
 
@@ -1321,6 +1729,43 @@ const accountData = {
             acc.stage = (acc.stage === "xfa") ? "combine" : "xfa";
             saveAccounts();
             loadActiveAccountState();
+        }
+
+        
+        function openPricingModal() {
+            document.getElementById("pricingModal").classList.remove("hidden");
+        }
+
+        function closePricingModal() {
+            document.getElementById("pricingModal").classList.add("hidden");
+        }
+
+        function applyPackageToCurrent(size) {
+            const acc = getActiveAccount();
+            if (!acc) return;
+            const targetData = accountData[size];
+            if (confirm(`Bạn có muốn chuyển tài khoản ${acc.id} sang Gói ${targetData.title} (${targetData.noActFee}) không?\n\n• Target: ${targetData.target}\n• Consistency: 55%\n• MLL: ${targetData.mll}\n• DLL: ${targetData.dll}\n• Max Contracts: ${targetData.contracts}`)) {
+                acc.size = size;
+                acc.pricingPath = "no_activation";
+                saveAccounts();
+                loadActiveAccountState();
+                closePricingModal();
+                alert(`✅ Đã chuyển thành công tài khoản ${acc.id} sang Gói ${size}K (${targetData.noActFee})!`);
+            }
+        }
+
+        function openAddAccountModalWithSize(size) {
+            closePricingModal();
+            openAddAccountModal();
+            const sizeSelect = document.getElementById("newAccSize");
+            if (sizeSelect) sizeSelect.value = size;
+            const pricingSelect = document.getElementById("newAccPricing");
+            if (pricingSelect) pricingSelect.value = "no_activation";
+            const idInput = document.getElementById("newAccId");
+            if (idInput) {
+                const nextNum = accountsList.length + 1;
+                idInput.value = `TS-${size}K-00${nextNum}`;
+            }
         }
 
         function openAddAccountModal() {
@@ -1809,7 +2254,7 @@ const accountData = {
                 if (dayPnl > bestDayPnl) bestDayPnl = dayPnl;
             });
 
-            let adjustedTarget = Math.max(data.targetVal, bestDayPnl * 2);
+            let adjustedTarget = Math.max(data.targetVal, Math.ceil(bestDayPnl / 0.55));
             let remainingPnlNeeded = Math.max(0, adjustedTarget - totalPnl);
 
             let trailingMll = Math.min(data.initialBal, data.initialBal - data.mllVal + Math.max(0, highestBal - data.initialBal));
@@ -1988,20 +2433,20 @@ const accountData = {
 
                 let uniqueDates = Object.keys(dailyPnlMap);
                 let uniqueDaysCount = uniqueDates.length;
-                let maxSafeSingleDay = Math.floor(adjustedTarget * 0.485);
+                let maxSafeSingleDay = Math.floor(adjustedTarget * 0.535);
 
                 const todayTargetEl = document.getElementById("todayTargetPnl");
                 const todayDescEl = document.getElementById("targetDynamicDesc");
                 const statusTagEl = document.getElementById("suggestionStatusTag");
 
                 if (journalEntries.length === 0) {
-                    let suggestedDay1 = Math.floor(data.targetVal * 0.485);
+                    let suggestedDay1 = Math.floor(data.targetVal * 0.53);
                     todayTargetEl.innerText = `+$${suggestedDay1.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                     todayTargetEl.className = "text-xl font-black text-emerald-400";
-                    todayDescEl.innerText = `Gợi ý PnL Ngày 1 (< 50% Target $${data.target}) giúp hoàn thành Combine trong 2 ngày cân bằng.`;
+                    todayDescEl.innerText = `Gợi ý PnL Ngày 1 (< 55% Target ${data.target}) giúp hoàn thành Combine trong 2 ngày cân bằng.`;
                     statusTagEl.innerText = "Mức Lãi Ngày 1 Tối Ưu";
                     statusTagEl.className = "px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-bold";
-                } else if (totalPnl >= adjustedTarget && uniqueDaysCount >= 2 && (bestDayPnl / totalPnl) < 0.5) {
+                } else if (totalPnl >= adjustedTarget && uniqueDaysCount >= 2 && (bestDayPnl / totalPnl) <= 0.55) {
                     todayTargetEl.innerText = `🎉 ĐÃ ĐẠT ĐỦ ĐIỀU KIỆN`;
                     todayTargetEl.className = "text-lg font-black text-emerald-400";
                     todayDescEl.innerText = `Đã tích lũy đủ $${totalPnl.toLocaleString('en-US', {minimumFractionDigits: 2})} và đỗ Combine an toàn sau ${uniqueDaysCount} ngày giao dịch!`;
@@ -2021,7 +2466,7 @@ const accountData = {
                         // Ongoing/logged trade today
                         let maxSafeDayTotal;
                         if (priorPnl > 0) {
-                            maxSafeDayTotal = Math.max(datePnlSoFar, Math.min(maxSafeSingleDay, priorPnl - 1));
+                            maxSafeDayTotal = Math.max(datePnlSoFar, Math.min(maxSafeSingleDay, Math.floor(priorPnl * (0.55 / 0.45))));
                         } else {
                             maxSafeDayTotal = Math.max(datePnlSoFar, maxSafeSingleDay);
                         }
@@ -2046,7 +2491,7 @@ const accountData = {
                         // New session / no trades yet today
                         let potentialTotal = totalPnl + remainingPnlNeeded;
                         let potentialBestDay = Math.max(bestDayPnl, remainingPnlNeeded);
-                        let isSafeToFinishToday = (potentialBestDay / potentialTotal) < 0.5 && (potentialBestDay * 2 <= adjustedTarget);
+                        let isSafeToFinishToday = (potentialBestDay / potentialTotal) <= 0.55 && (potentialBestDay / 0.55 <= adjustedTarget);
 
                         if (isSafeToFinishToday && uniqueDaysCount >= 1) {
                             todayTargetEl.innerText = `+$${remainingPnlNeeded.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
@@ -2086,23 +2531,23 @@ const accountData = {
                 if (journalEntries.length === 0) {
                     badge.innerText = "🟢 CHỜ DỮ LIỆU";
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
-                } else if (totalPnl >= adjustedTarget && bestDayPct < 0.5 && uniqueDaysCount >= 2) {
+                } else if (totalPnl >= adjustedTarget && bestDayPct <= 0.55 && uniqueDaysCount >= 2) {
                     badge.innerText = `🎉 ĐỦ ĐIỀU KIỆN CẤP VỐN! ($${adjustedTarget.toLocaleString()})`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
-                } else if (totalPnl >= adjustedTarget && bestDayPct < 0.5 && uniqueDaysCount < 2) {
+                } else if (totalPnl >= adjustedTarget && bestDayPct <= 0.55 && uniqueDaysCount < 2) {
                     badge.innerText = `ℹ️ ĐẠT TARGET - CẦN NGÀY (${uniqueDaysCount}/2 ngày)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[11px]";
-                } else if (bestDayPnl > data.targetVal * 0.5) {
+                } else if (bestDayPnl > data.targetVal * 0.55) {
                     badge.innerText = `ℹ️ TARGET SCALE $${adjustedTarget.toLocaleString()} (Còn +$${remainingPnlNeeded.toLocaleString()})`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold text-[11px]";
-                } else if (bestDayPct >= 0.5) {
+                } else if (bestDayPct > 0.55) {
                     badge.innerText = `ℹ️ CẦN +$${remainingPnlNeeded.toLocaleString()} (Ngày cao ${ (bestDayPct * 100).toFixed(1) }%)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold text-[11px]";
                 } else if (uniqueDaysCount < 2) {
                     badge.innerText = `🟢 ĐANG THI COMBINE (${uniqueDaysCount}/2 ngày tối thiểu)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
                 } else {
-                    badge.innerText = `🟢 ĐANG THI COMBINE (Consistency ${ (bestDayPct * 100).toFixed(1) }% < 50%)`;
+                    badge.innerText = `🟢 ĐANG THI COMBINE (Consistency ${ (bestDayPct * 100).toFixed(1) }% ≤ 55%)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
                 }
             }
