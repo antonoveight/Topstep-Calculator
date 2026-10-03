@@ -282,6 +282,7 @@ select option {
 .b-badge-green { background: rgba(67, 180, 48, 0.14); color: var(--color-green); }
 .b-badge-gold { background: rgba(255, 188, 17, 0.16); color: var(--color-gold); }
 .b-badge-purple { background: rgba(203, 62, 255, 0.14); color: var(--color-purple); }
+.b-badge-red { background: rgba(244, 63, 94, 0.14); color: var(--color-red); }
 .b-badge-dim { background: var(--bg-card-inner); color: var(--text-slate); border: 1px solid var(--border-card); }
 
 /* Table */
@@ -498,39 +499,39 @@ select option {
             </span>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <!-- THEME SWITCHER TOGGLE (Light / Dark Mode Switcher) -->
-            <div class="theme-switch-container" onclick="toggleTheme()" title="Bật / Tắt Giao Diện Sáng & Tối">
-                <div id="themeDarkIndicator" class="theme-switch-btn" style="background: var(--color-primary); color: #FFFFFF; box-shadow: 0 2px 8px rgba(69, 120, 249, 0.35);">
-                    <span>🌙</span> Dark
+            <div class="theme-switch-container" onclick="toggleTheme()" title="Bật / Tắt Giao Diện Sáng &amp; Tối" style="height: 38px; padding: 3px;">
+                <div id="themeDarkIndicator" class="theme-switch-btn" style="height: 32px; background: var(--color-primary); color: #FFFFFF; box-shadow: 0 2px 8px rgba(69, 120, 249, 0.35);">
+                    <span style="font-size: 13px;">🌙</span> Dark
                 </div>
-                <div id="themeLightIndicator" class="theme-switch-btn" style="background: transparent; color: var(--text-muted);">
-                    <span>☀️</span> Light
+                <div id="themeLightIndicator" class="theme-switch-btn" style="height: 32px; background: transparent; color: var(--text-muted);">
+                    <span style="font-size: 13px;">☀️</span> Light
                 </div>
             </div>
 
-            <!-- Date Filter Pill (Behance style: 01.08.2022 - 31.08.2022 📅) -->
-            <div onclick="document.getElementById('inputDate').focus()" style="display: flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 7px 14px; cursor: pointer; box-shadow: var(--shadow-card);">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-slate);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <!-- Date Filter Pill (Behance style) -->
+            <div onclick="document.getElementById('inputDate').focus()" style="display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 10px; height: 38px; padding: 0 14px; cursor: pointer; box-shadow: var(--shadow-card);" title="Chọn ngày làm việc">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-slate); flex-shrink: 0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 <span style="font-size: 12px; font-weight: 500; color: var(--text-slate);">Phiên:</span>
                 <span id="headerTradeDatePill" style="color: var(--text-primary); font-weight: 600; font-size: 12.5px;">Live EOD</span>
             </div>
 
             <!-- Account Selector Dropdown -->
-            <select id="accountDropdown" onchange="onAccountDropdownChange()" style="min-width: 170px; background: var(--bg-card); font-weight: 600; border-color: rgba(69, 120, 249, 0.35); color: var(--color-primary); box-shadow: var(--shadow-card);"></select>
+            <select id="accountDropdown" onchange="onAccountDropdownChange()" style="min-width: 175px; height: 38px; background: var(--bg-card); font-weight: 600; border-color: rgba(69, 120, 249, 0.35); color: var(--color-primary); box-shadow: var(--shadow-card); padding: 0 12px;"></select>
 
-            <!-- Buttons matching Behance palette -->
-            <button onclick="openPricingModal()" class="b-btn-secondary" title="Tra cứu bảng giá &amp; thông số 3 gói Topstep®">
-                <span>🏷️ Bảng Gói Topstep</span>
+            <!-- Buttons matching Behance palette with uniform 38px height -->
+            <button type="button" onclick="openPricingModal()" class="b-btn-secondary" style="height: 38px; padding: 0 13px; font-size: 12px;" title="Tra cứu bảng giá &amp; thông số 3 gói Topstep®">
+                <span style="font-size: 13px;">🏷️</span> Bảng Gói
             </button>
-            <button onclick="openAddAccountModal()" class="b-btn-primary">
-                + Tạo Tài Khoản
+            <button type="button" onclick="openAddAccountModal()" class="b-btn-primary" style="height: 38px; padding: 0 14px; font-size: 12px;">
+                <span>+</span> Tạo Tài Khoản
             </button>
-            <button onclick="toggleAccountStage()" id="btnToggleStage" class="b-btn-purple">
+            <button type="button" onclick="toggleAccountStage()" id="btnToggleStage" class="b-btn-purple" style="height: 38px; padding: 0 14px; font-size: 12px;">
                 <span>⚡ Chuyển Sang XFA</span>
             </button>
-            <button onclick="openEditAccountModal()" class="b-btn-secondary" title="Cài đặt tài khoản">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <button type="button" onclick="openEditAccountModal()" class="b-btn-secondary" style="height: 38px; width: 38px; padding: 0; justify-content: center; flex-shrink: 0;" title="Cài đặt tài khoản">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </button>
         </div>
     </header>
@@ -609,14 +610,17 @@ select option {
 
         <!-- ── ROW 2: MASTER STRATEGIC BANNER (BEHANCE CARD STYLE) ── -->
         <div id="smartTargetBanner" class="b-card" style="border-left: 4px solid var(--color-primary);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                     <span id="smartBannerTitle" style="font-size: 13px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em;">
                         🎯 BẢN ĐỒ CHIẾN LƯỢC &amp; MỤC TIÊU PHIÊN HÔM NAY:
                     </span>
                     <span id="suggestionStatusTag" class="b-badge b-badge-blue">Live Tracking</span>
                 </div>
-                <p id="targetDynamicDesc" style="font-size: 12px; color: var(--text-muted); max-width: 600px;"></p>
+            </div>
+            <!-- Dedicated dynamic recommendation callout banner -->
+            <div style="background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-left: 3px solid var(--color-primary); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;">
+                <p id="targetDynamicDesc" style="font-size: 12px; color: var(--text-slate); margin: 0; line-height: 1.5;"></p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -751,7 +755,7 @@ select option {
                             <label for="stopLossInput" style="font-size: 11.5px; font-weight: 600; color: var(--text-slate); display: block; margin-bottom: 4px;">Mức Dừng Lỗ ($ USD)</label>
                             <div style="position: relative;">
                                 <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 600;">$</span>
-                                <input id="stopLossInput" type="number" value="150" min="10" step="10" oninput="calculateTradeRisk()" style="width: 100%; padding-left: 22px;">
+                                <input id="stopLossInput" type="number" value="150" min="10" step="10" oninput="calculateTradeRisk()" style="width: 100%; padding-left: 28px;">
                             </div>
                         </div>
                         <div>
@@ -816,21 +820,35 @@ select option {
                 </div>
             </div>
 
-            <!-- Add Entry Form (Behance style inputs) -->
-            <div class="b-card-inner" style="padding: 14px 16px; margin-bottom: 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-size: 12px; font-weight: 700; color: var(--text-primary); text-transform: uppercase;">Thêm Dữ Liệu Chốt Ngày (EOD Log)</span>
-                    <span style="font-size: 11px; color: var(--color-gold);">💡 Mỗi dòng tương ứng 1 ngày trade sau 3:10 PM CT</span>
+            <!-- Add Entry Form (Clean EOD Form: Date, Symbol, PnL) -->
+            <div class="b-card-inner" style="padding: 18px 20px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.03em;">
+                            📝 Ghi Nhận Kết Quả Chốt Phiên (EOD PnL)
+                        </span>
+                        <span class="b-badge b-badge-blue" style="font-size: 10.5px;">Chỉ cần nhập PnL</span>
+                    </div>
+                    <span style="font-size: 11.5px; color: var(--color-gold); display: flex; align-items: center; gap: 4px;">
+                        <span>💡</span> Mỗi dòng tương ứng 1 phiên giao dịch chốt sau 3:10 PM CT
+                    </span>
                 </div>
 
-                <form id="tradeForm" onsubmit="addJournalEntry(event)" class="grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
-                    <div>
-                        <label for="inputDate" style="font-size: 11px; font-weight: 600; color: var(--text-slate); display: block; margin-bottom: 4px;">Ngày Giao Dịch</label>
-                        <input id="inputDate" type="date" required style="width: 100%;" onchange="if(document.getElementById('headerTradeDatePill')) document.getElementById('headerTradeDatePill').innerText = this.value">
+                <form id="tradeForm" onsubmit="addJournalEntry(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-end">
+                    <!-- Col 1: Date (3 cols) -->
+                    <div class="lg:col-span-3">
+                        <label for="inputDate" style="font-size: 11.5px; font-weight: 600; color: var(--text-slate); display: flex; align-items: center; gap: 5px; margin-bottom: 6px;">
+                            <span>📅</span> Ngày Giao Dịch
+                        </label>
+                        <input id="inputDate" type="date" required style="width: 100%; height: 42px;" onchange="if(document.getElementById('headerTradeDatePill')) document.getElementById('headerTradeDatePill').innerText = this.value">
                     </div>
-                    <div>
-                        <label for="inputSymbol" style="font-size: 11px; font-weight: 600; color: var(--text-slate); display: block; margin-bottom: 4px;">Sản Phẩm</label>
-                        <select id="inputSymbol" onchange="onEodSymbolChange()" style="width: 100%;">
+
+                    <!-- Col 2: Symbol (3 cols) -->
+                    <div class="lg:col-span-3">
+                        <label for="inputSymbol" style="font-size: 11.5px; font-weight: 600; color: var(--text-slate); display: flex; align-items: center; gap: 5px; margin-bottom: 6px;">
+                            <span>📈</span> Sản Phẩm Giao Dịch
+                        </label>
+                        <select id="inputSymbol" onchange="onEodSymbolChange()" style="width: 100%; height: 42px;">
                             <option value="MGC">MGC (Micro Gold)</option>
                             <option value="GC">GC (Gold Standard)</option>
                             <option value="MNQ">MNQ (Micro Nasdaq)</option>
@@ -847,23 +865,28 @@ select option {
                             <option value="BTC">BTC (Bitcoin Futures)</option>
                         </select>
                     </div>
-                    <div>
-                        <label for="inputContracts" style="font-size: 11px; font-weight: 600; color: var(--text-slate); display: block; margin-bottom: 4px;">Hợp Đồng (Contracts)</label>
-                        <input id="inputContracts" type="number" min="1" value="5" required style="width: 100%; color: var(--color-primary); font-weight: 700;">
+
+                    <!-- Col 3: PnL (4 cols) -->
+                    <div class="lg:col-span-4">
+                        <label for="inputPnl" style="font-size: 11.5px; font-weight: 600; color: var(--text-slate); display: flex; align-items: center; gap: 5px; margin-bottom: 6px;">
+                            <span>💵</span> Lãi / Lỗ Chốt Phiên ($ USD)
+                        </label>
+                        <div style="position: relative;">
+                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 700; font-size: 14px;">$</span>
+                            <input id="inputPnl" type="number" step="0.01" value="350" required placeholder="VD: +350 hoặc -150" style="width: 100%; height: 42px; padding-left: 28px; font-size: 15px; font-weight: 800; color: var(--color-green);">
+                        </div>
                     </div>
-                    <div>
-                        <label for="inputTrades" style="font-size: 11px; font-weight: 600; color: var(--text-slate); display: block; margin-bottom: 4px;">Số Lệnh (Trades)</label>
-                        <input id="inputTrades" type="number" min="1" value="3" required style="width: 100%;">
-                    </div>
-                    <div>
-                        <label for="inputPnl" style="font-size: 11px; font-weight: 600; color: var(--text-slate); display: block; margin-bottom: 4px;">PnL Chốt Ngày ($ USD)</label>
-                        <input id="inputPnl" type="number" step="0.01" value="350" required style="width: 100%; color: var(--color-green); font-weight: 800;">
-                    </div>
-                    <div>
-                        <button type="submit" class="b-btn-primary" style="width: 100%; justify-content: center; padding: 9px 12px;">
-                            + Lưu Ngày
+
+                    <!-- Col 4: Submit Button (2 cols) -->
+                    <div class="lg:col-span-2">
+                        <button type="submit" class="b-btn-primary" style="width: 100%; height: 42px; justify-content: center; font-size: 13px; font-weight: 700; padding: 0 16px;">
+                            + Lưu Phiên
                         </button>
                     </div>
+
+                    <!-- Hidden inputs to preserve DOM IDs and backwards compatibility -->
+                    <input type="hidden" id="inputContracts" value="1">
+                    <input type="hidden" id="inputTrades" value="1">
                 </form>
             </div>
 
@@ -872,17 +895,15 @@ select option {
                 <table class="b-table">
                     <thead>
                         <tr>
-                            <th>Ngày Giao Dịch</th>
-                            <th>Sản Phẩm</th>
-                            <th>Số HĐ</th>
-                            <th>Số Lệnh</th>
-                            <th>PnL Chốt Ngày ($)</th>
-                            <th>Số Dư Tài Khoản</th>
-                            <th style="color: var(--color-red);">Ngưỡng MLL EOD</th>
-                            <th style="color: var(--color-green);">Đệm An Toàn MLL</th>
-                            <th>Trạng Thái DLL</th>
-                            <th>Consistency (≤55%)</th>
-                            <th style="text-align: right;">Thao Tác</th>
+                            <th style="padding: 13px 16px;">Ngày Giao Dịch</th>
+                            <th style="padding: 13px 16px; text-align: center;">Sản Phẩm</th>
+                            <th style="padding: 13px 16px; text-align: right; color: var(--text-primary);">PnL Chốt Ngày ($)</th>
+                            <th style="padding: 13px 16px; text-align: right;">Số Dư EOD</th>
+                            <th style="padding: 13px 16px; text-align: right; color: var(--color-red);">Ngưỡng MLL EOD</th>
+                            <th style="padding: 13px 16px; text-align: right; color: var(--color-gold);">Đệm An Toàn MLL</th>
+                            <th style="padding: 13px 16px; text-align: center;">Trạng Thái DLL</th>
+                            <th style="padding: 13px 16px; text-align: center;">Consistency (≤55%)</th>
+                            <th style="padding: 13px 16px; text-align: center;">Thao Tác</th>
                         </tr>
                     </thead>
                     <tbody id="trackerTableBody"></tbody>
@@ -2274,24 +2295,37 @@ const accountData = {
                 let dayConsistencyPct = totalPnl > 0 && dateTotalPnl > 0 ? ((dateTotalPnl / totalPnl) * 100).toFixed(1) : 0;
 
                 const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-900/50";
                 tr.innerHTML = `
-                    <td class="p-2 font-medium text-slate-300">${entry.date}</td>
-                    <td class="p-2 text-cyan-300 font-bold">${entry.symbol}</td>
-                    <td class="p-2">${entry.contracts}</td>
-                    <td class="p-2">${entry.trades}</td>
-                    <td class="p-2 font-bold ${entry.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
-                        ${entry.pnl >= 0 ? '+' : ''}$${entry.pnl.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                    <td style="padding: 12px 16px; font-weight: 600; color: var(--text-primary);">${entry.date}</td>
+                    <td style="padding: 12px 16px; text-align: center;">
+                        <span class="b-badge b-badge-blue" style="font-weight: 700; font-size: 11px;">${entry.symbol || 'MGC'}</span>
                     </td>
-                    <td class="p-2 font-semibold text-slate-200">$${runningBal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                    <td class="p-2 font-semibold text-rose-400">$${rowMll.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                    <td class="p-2 font-semibold text-emerald-400">$${rowBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                    <td class="p-2 font-bold ${isDllBreach ? 'text-rose-400' : 'text-emerald-400'}">
-                        ${isDllBreach ? '🔴 VI PHẠM DLL' : '🟢 AN TOÀN'}
+                    <td style="padding: 12px 16px; text-align: right; font-weight: 800; font-size: 13.5px;" class="tabular-nums ${entry.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                        ${entry.pnl >= 0 ? '+' : ''}${entry.pnl.toLocaleString('en-US', {minimumFractionDigits: 2})}
                     </td>
-                    <td class="p-2 font-medium text-amber-300">${dayConsistencyPct}%</td>
-                    <td class="p-2 text-right">
-                        <button onclick="deleteEntry(${idx})" class="text-rose-400 hover:text-rose-300 font-bold">&times;</button>
+                    <td style="padding: 12px 16px; text-align: right; font-weight: 700; color: var(--text-primary);" class="tabular-nums">
+                        ${runningBal.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                    </td>
+                    <td style="padding: 12px 16px; text-align: right; font-weight: 700; color: var(--color-red);" class="tabular-nums">
+                        ${rowMll.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                    </td>
+                    <td style="padding: 12px 16px; text-align: right; font-weight: 700; color: var(--color-gold);" class="tabular-nums">
+                        ${rowBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                    </td>
+                    <td style="padding: 12px 16px; text-align: center;">
+                        <span class="b-badge ${isDllBreach ? 'b-badge-red' : 'b-badge-green'}" style="font-size: 10.5px; font-weight: 700;">
+                            ${isDllBreach ? '🔴 Vi Phạm DLL' : '🟢 An Toàn'}
+                        </span>
+                    </td>
+                    <td style="padding: 12px 16px; text-align: center;">
+                        <span class="b-badge ${parseFloat(dayConsistencyPct) > 55 ? 'b-badge-gold' : 'b-badge-dim'}" style="font-size: 11px; font-weight: 600;">
+                            ${dayConsistencyPct}%
+                        </span>
+                    </td>
+                    <td style="padding: 12px 16px; text-align: center;">
+                        <button type="button" onclick="deleteEntry(${idx})" class="b-btn-danger" style="padding: 4px 10px; font-size: 11.5px; border-radius: 8px;" title="Xóa phiên ${entry.date}">
+                            ✕ Xóa
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -2308,14 +2342,15 @@ const accountData = {
                         runningPayoutBal -= p.amount;
                         let netPayoutReceived = p.amount * 0.9;
                         const tr = document.createElement("tr");
-                        tr.className = "hover:bg-slate-900/50";
                         tr.innerHTML = `
-                            <td class="p-2 font-medium text-slate-300">${p.date}</td>
-                            <td class="p-2 font-bold text-purple-300">$${p.amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                            <td class="p-2 font-bold text-emerald-400">+$${netPayoutReceived.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                            <td class="p-2 font-semibold text-slate-200">$${runningPayoutBal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                            <td class="p-2 text-right">
-                                <button onclick="deletePayout(${idx})" class="text-rose-400 hover:text-rose-300 font-bold">&times;</button>
+                            <td style="padding: 12px 16px; font-weight: 500; color: var(--text-primary);">${p.date}</td>
+                            <td style="padding: 12px 16px; text-align: right; font-weight: 700; color: var(--color-purple);" class="tabular-nums">${p.amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                            <td style="padding: 12px 16px; text-align: right; font-weight: 800; color: var(--color-green);" class="tabular-nums">+${netPayoutReceived.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                            <td style="padding: 12px 16px; text-align: right; font-weight: 700; color: var(--text-primary);" class="tabular-nums">${runningPayoutBal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                            <td style="padding: 12px 16px; text-align: center;">
+                                <button type="button" onclick="deletePayout(${idx})" class="b-btn-danger" style="padding: 4px 10px; font-size: 11.5px; border-radius: 8px;" title="Xóa đợt rút này">
+                                    ✕ Xóa
+                                </button>
                             </td>
                         `;
                         payoutTbody.appendChild(tr);
@@ -2381,7 +2416,7 @@ const accountData = {
                 if (acc.xfaPath === "standard_payout") {
                     if (winningDaysCount >= 5) {
                         badge.innerText = `🎉 ĐỦ ĐIỀU KIỆN RÚT PAYOUT! (${winningDaysCount}/5 ngày thắng)`;
-                        badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
+                        badge.className = "b-badge b-badge-green";
                     } else {
                         badge.innerText = `🟢 ĐẠT ${winningDaysCount}/5 NGÀY THẮNG (Mỗi ngày ≥ +$150 EOD)`;
                         badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold text-[11px]";
@@ -2392,7 +2427,7 @@ const accountData = {
                         badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
                     } else {
                         badge.innerText = `ℹ️ CHỜ ĐIỀU KIỆN (${totalTradingDaysCount}/3 ngày trade, Consistency ${ (bestDayPct*100).toFixed(1) }%)`;
-                        badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[11px]";
+                        badge.className = "b-badge b-badge-gold";
                     }
                 }
 
@@ -2539,7 +2574,7 @@ const accountData = {
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[11px]";
                 } else if (bestDayPnl > data.targetVal * 0.55) {
                     badge.innerText = `ℹ️ TARGET SCALE $${adjustedTarget.toLocaleString()} (Còn +$${remainingPnlNeeded.toLocaleString()})`;
-                    badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold text-[11px]";
+                    badge.className = "b-badge b-badge-purple";
                 } else if (bestDayPct > 0.55) {
                     badge.innerText = `ℹ️ CẦN +$${remainingPnlNeeded.toLocaleString()} (Ngày cao ${ (bestDayPct * 100).toFixed(1) }%)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold text-[11px]";
