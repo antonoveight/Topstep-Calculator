@@ -1386,7 +1386,7 @@ select option {
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Số Tiền Yêu Cầu Rút ($ USD)</label>
-                <input id="payoutAmount" type="number" step="0.01" required min="100" placeholder="VD: 1500" style="width: 100%; font-size: 16px; font-weight: 700; color: var(--color-green);">
+                <input id="payoutAmount" type="number" step="0.01" required min="125" placeholder="Tối thiểu $125 (VD: 1500)" style="width: 100%; font-size: 16px; font-weight: 700; color: var(--color-green);">
                 <span id="payoutMaxHint" style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">Hạn mức tối đa được rút: $0.00</span>
             </div>
             <div style="background: rgba(203, 62, 255, 0.1); border: 1px solid rgba(203, 62, 255, 0.2); border-radius: 10px; padding: 10px 12px; font-size: 12px; color: var(--text-primary);">
@@ -2195,7 +2195,24 @@ const accountData = {
 
         function openPayoutModal() {
             const acc = getActiveAccount();
+            const data = accountData[acc.size];
+            const journalEntries = getActiveJournal(acc);
+            const payoutHistory = acc.payoutHistory || [];
+            let totalPnl = journalEntries.reduce((sum, e) => sum + e.pnl, 0);
+            let totalPayouts = payoutHistory.reduce((sum, p) => sum + p.amount, 0);
+            let currentProfit = totalPnl - totalPayouts;
+            let xfaCapVal = acc.xfaPath === "standard_payout" ? data.xfaStdCapVal : data.xfaConCapVal;
+            let maxAllowed = Math.max(0, Math.min(xfaCapVal, Math.floor(currentProfit * 0.5)));
+
             document.getElementById("payoutDate").valueAsDate = new Date();
+            const maxHintEl = document.getElementById("payoutMaxHint");
+            if (maxHintEl) {
+                maxHintEl.innerText = `Tối thiểu: $125 | Hạn mức tối đa đợt này: ${maxAllowed.toLocaleString()} (tối đa 50% lợi nhuận, trần ${xfaCapVal.toLocaleString()})`;
+            }
+            const inputEl = document.getElementById("payoutAmount");
+            if (inputEl) {
+                inputEl.min = 125;
+            }
             document.getElementById("payoutModal").classList.remove("hidden");
         }
         function closePayoutModal() {
@@ -2207,8 +2224,8 @@ const accountData = {
             const date = document.getElementById("payoutDate").value;
             const amount = parseFloat(document.getElementById("payoutAmount").value) || 0;
 
-            if (amount <= 0) {
-                alert("Số tiền rút phải lớn hơn 0!");
+            if (amount < 125) {
+                alert("Số tiền rút tối thiểu theo quy định Topstep là $125 USD!");
                 return;
             }
 
