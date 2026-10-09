@@ -2640,63 +2640,91 @@ const accountData = {
                     if (kpi4SubEl) kpi4SubEl.innerText = "Consistency Path: Cần ≥3 ngày trade + Consistency ≤40%";
                 }
 
-                // Smart Activity Banner for XFA
-                document.getElementById("smartBannerTitle").innerText = `💰 HẠN MỨC PAYOUT & BẢO VỆ TÀI KHOẢN XFA (${evalDateDisplay}):`;
-                document.getElementById("smartBannerTitle").className = "text-xs font-black text-purple-300 uppercase tracking-wider";
+                // Smart Activity Banner for XFA: SESSION PLAN & DAILY RISK MANAGEMENT (TODAY)
+                document.getElementById("smartBannerTitle").innerText = `🎯 KẾ HOẠCH PHIÊN & GIỚI HẠN RỦI RO HÔM NAY (${evalDateDisplay}):`;
+                document.getElementById("smartBannerTitle").className = "text-xs font-black text-blue-400 uppercase tracking-wider";
 
                 const todayTargetEl = document.getElementById("todayTargetPnl");
                 const todayDescEl = document.getElementById("targetDynamicDesc");
                 const statusTagEl = document.getElementById("suggestionStatusTag");
-
-                if (winningDaysCount >= 5 && maxAllowedWithdrawal >= 125) {
-                    statusTagEl.innerText = "Đủ Điều Kiện Rút Payout";
-                    statusTagEl.className = "b-badge b-badge-green";
-                    todayDescEl.innerHTML = `🎉 <strong style="color: var(--color-green);">ĐÃ ĐỦ ĐIỀU KIỆN RÚT TIỀN:</strong> Bạn đã đạt <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Số dư hiện tại ${netAccountBal.toLocaleString()} (lãi ròng +${availableProfit.toLocaleString()}). Bạn có thể rút tối đa <strong>${maxAllowedWithdrawal.toLocaleString()}</strong> (thực nhận 90%: <strong>+${netTraderReceive.toLocaleString()}</strong>). Sau khi rút, đệm MLL còn lại là <strong>+${remainingBufferAfterWithdrawal.toLocaleString()}</strong> (ngưỡng khóa tại ${data.initialBal.toLocaleString()}).`;
-                } else if (winningDaysCount < 5) {
-                    statusTagEl.innerText = "Đang Tích Lũy Ngày Thắng";
-                    statusTagEl.className = "b-badge b-badge-purple";
-                    todayDescEl.innerHTML = `ℹ️ <strong>TIẾN TRÌNH RÚT XFA:</strong> Tài khoản đã đạt <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Lãi tích lũy hiện có <strong>+${availableProfit.toLocaleString()}</strong> tương ứng hạn mức có thể rút <strong>${maxAllowedWithdrawal.toLocaleString()}</strong> (90% nhận: <strong>+${netTraderReceive.toLocaleString()}</strong>). Bạn cần thêm <strong>${5 - winningDaysCount} ngày thắng nữa</strong> để mở cổng rút tiền.`;
-                } else {
-                    statusTagEl.innerText = "Cần Thêm Lợi Nhuận";
-                    statusTagEl.className = "b-badge b-badge-gold";
-                    todayDescEl.innerHTML = `ℹ️ <strong>CẦN TÍCH LŨY THÊM LỢI NHUẬN:</strong> Bạn đã đủ <strong>${winningDaysCount}/5 ngày thắng</strong>, nhưng số dư lợi nhuận hiện tại (+${availableProfit.toLocaleString()}) chưa đạt mức rút tối thiểu ($125). Hãy tiếp tục giao dịch tích lũy lợi nhuận trên vốn gốc ${data.initialBal.toLocaleString()}.`;
-                }
-
-                // Smart Banner Col 1
                 const col1Label = document.getElementById("smartBannerValLabel");
-                if (col1Label) col1Label.innerText = "🟢 CÓ THỂ RÚT ĐỢT NÀY";
-                todayTargetEl.innerText = "$" + maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2});
-                todayTargetEl.className = "text-xl font-black text-purple-300";
                 const todayTargetSubtext = document.getElementById("todayTargetSubtext");
-                if (todayTargetSubtext) {
-                    todayTargetSubtext.innerText = `Tối đa 50% lãi · Trần ${capInfo.label}`;
-                    todayTargetSubtext.style.color = "var(--color-purple)";
+
+                if (datePnlSoFar >= 150) {
+                    statusTagEl.innerText = "Đã Đạt Ngày Thắng Hôm Nay";
+                    statusTagEl.className = "b-badge b-badge-green";
+                    todayDescEl.innerHTML = `🎉 <strong style="color: var(--color-green);">PHIÊN HÔM NAY ĐÃ ĐẠT TIÊU CHUẨN:</strong> Chốt lãi EOD <strong>+${datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> (≥ +$150) — đã ghi nhận thêm 1 ngày thắng (tiến trình: <strong>${winningDaysCount}/5 ngày</strong>). Nên DỪNG giao dịch để bảo toàn kết quả và bảo vệ đệm an toàn!`;
+                    if (col1Label) col1Label.innerText = "🟢 LÃI ĐÃ ĐẠT PHIÊN HÔM NAY";
+                    todayTargetEl.innerText = "+$" + datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    todayTargetEl.className = "text-xl font-black text-emerald-400";
+                    if (todayTargetSubtext) {
+                        todayTargetSubtext.innerText = "Đạt chuẩn ngày thắng (≥ +$150 EOD)";
+                        todayTargetSubtext.style.color = "var(--color-green)";
+                    }
+                } else if (datePnlSoFar > 0) {
+                    let needed = 150 - datePnlSoFar;
+                    statusTagEl.innerText = "Đang Lãi (Cần Thêm Đến $150)";
+                    statusTagEl.className = "b-badge b-badge-purple";
+                    todayDescEl.innerHTML = `Phiên hôm nay (${evalDateDisplay}) đã có <strong>+${datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>. Cần chốt thêm tối thiểu <strong>+${needed.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> nữa để đạt mốc +$150 EOD và tính là 1 ngày thắng hợp lệ (hiện đạt ${winningDaysCount}/5 ngày).`;
+                    if (col1Label) col1Label.innerText = "🎯 CẦN THÊM ĐỂ ĐẠT NGÀY THẮNG";
+                    todayTargetEl.innerText = "+$" + needed.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    todayTargetEl.className = "text-xl font-black text-purple-400";
+                    if (todayTargetSubtext) {
+                        todayTargetSubtext.innerText = "Để đạt mốc tối thiểu +$150 EOD";
+                        todayTargetSubtext.style.color = "var(--color-purple)";
+                    }
+                } else if (datePnlSoFar < 0) {
+                    statusTagEl.innerText = "Đang Âm Phiên (Bảo Vệ DLL)";
+                    statusTagEl.className = "b-badge b-badge-red";
+                    todayDescEl.innerHTML = `⚠️ Phiên hôm nay (${evalDateDisplay}) đang ghi nhận <strong>-${Math.abs(datePnlSoFar).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>. Ngân sách lỗ tối đa còn lại là <strong>-${remainingLossBudgetToday.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>. Tuyệt đối không để chạm Daily Loss Limit (-${rawDllVal.toLocaleString()})!`;
+                    if (col1Label) col1Label.innerText = "🎯 MỤC TIÊU PHIÊN (NGÀY THẮNG)";
+                    todayTargetEl.innerText = "+$150.00";
+                    todayTargetEl.className = "text-xl font-black text-emerald-400";
+                    if (todayTargetSubtext) {
+                        todayTargetSubtext.innerText = "Tối thiểu +$150 EOD để tính ngày thắng";
+                        todayTargetSubtext.style.color = "var(--color-green)";
+                    }
+                } else {
+                    statusTagEl.innerText = "Mục Tiêu Phiên (+ $150)";
+                    statusTagEl.className = "b-badge b-badge-blue";
+                    todayDescEl.innerHTML = `Phiên mới (${evalDateDisplay}): Đặt mục tiêu chốt lãi tối thiểu <strong>+$150.00 EOD</strong> để ghi nhận 1 ngày thắng hợp lệ (tiến trình hiện tại: <strong>${winningDaysCount}/5 ngày</strong>). Ngân sách lỗ tối đa cho phép hôm nay là <strong>-${remainingLossBudgetToday.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> để bảo vệ đệm an toàn MLL.`;
+                    if (col1Label) col1Label.innerText = "🎯 MỤC TIÊU PHIÊN (NGÀY THẮNG)";
+                    todayTargetEl.innerText = "+$150.00";
+                    todayTargetEl.className = "text-xl font-black text-emerald-400";
+                    if (todayTargetSubtext) {
+                        todayTargetSubtext.innerText = "Tối thiểu +$150 EOD để tính ngày thắng";
+                        todayTargetSubtext.style.color = "var(--color-green)";
+                    }
                 }
 
-                // Smart Banner Col 2
+                // Smart Banner Col 2: Daily Loss Budget
                 const col2Label = document.getElementById("todayMaxLossBudgetLabel");
-                if (col2Label) col2Label.innerText = "💵 THỰC NHẬN 90% (VỀ VÍ)";
+                if (col2Label) col2Label.innerText = "🔴 HẠN MỨC LỖ TỐI ĐA HÔM NAY";
                 if (maxLossBudgetEl) {
-                    maxLossBudgetEl.innerText = "+$" + netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2});
-                    maxLossBudgetEl.className = "text-xl font-black text-emerald-400";
+                    maxLossBudgetEl.innerText = "-$" + remainingLossBudgetToday.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    maxLossBudgetEl.className = "text-xl font-black text-rose-500";
                 }
                 if (maxLossSubtextEl) {
-                    maxLossSubtextEl.innerText = "Topstep chia 90/10 · Miễn phí chuyển khoản";
-                    maxLossSubtextEl.style.color = "var(--color-green)";
+                    if (mllBuffer < rawDllVal * 1.5) {
+                        maxLossSubtextEl.innerText = `⚠️ Đệm MLL mỏng (+${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}) -> Khuyên cắt lỗ sớm!`;
+                    } else {
+                        maxLossSubtextEl.innerText = `Bảo vệ DLL (-${rawDllVal.toLocaleString()}) & Khóa tại vốn ${(data.initialBal/1000).toFixed(0)}K`;
+                    }
+                    maxLossSubtextEl.style.color = "var(--color-red)";
                 }
                 const col2Box = document.getElementById("smartBannerCol2Box");
-                if (col2Box) col2Box.style.borderLeftColor = "var(--color-green)";
+                if (col2Box) col2Box.style.borderLeftColor = "var(--color-red)";
 
-                // Smart Banner Col 3
+                // Smart Banner Col 3: Current MLL Buffer
                 const col3Label = document.getElementById("todayMllBufferLabel");
-                if (col3Label) col3Label.innerText = "🛡️ ĐỆM MLL SAU KHI RÚT";
+                if (col3Label) col3Label.innerText = "🛡️ ĐỆM AN TOÀN MLL HIỆN TẠI";
                 if (mllBufferValEl) {
-                    mllBufferValEl.innerText = "+$" + remainingBufferAfterWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    mllBufferValEl.innerText = "+$" + mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2});
                     mllBufferValEl.className = "text-xl font-black text-amber-400";
                 }
                 const col3Sub = document.getElementById("todayMllLimitSubtext");
                 if (col3Sub) {
-                    col3Sub.innerHTML = `Khóa thanh lý: <strong id="bannerMllThresholdText" style="color: var(--color-red);">${data.initialBal.toLocaleString()}</strong>`;
+                    col3Sub.innerHTML = `Khóa thanh lý: <strong id="bannerMllThresholdText" style="color: var(--color-red);">${trailingMll.toLocaleString()}</strong>`;
                 }
 
                 // Dedicated Payout Hub Widgets Update
@@ -2769,28 +2797,27 @@ const accountData = {
                 if (xfaHubCalloutBox && xfaHubCalloutDesc) {
                     if (winningDaysCount >= 5 && maxAllowedWithdrawal >= 125) {
                         xfaHubCalloutBox.style.borderLeftColor = "var(--color-green)";
-                        xfaHubCalloutDesc.innerHTML = `🎉 <strong style="color: var(--color-green);">CHÚC MỪNG: TÀI KHOẢN ĐÃ ĐỦ ĐIỀU KIỆN RÚT TIỀN!</strong> Bạn đã tích lũy đủ <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Hạn mức có thể rút đợt này là <strong>${maxAllowedWithdrawal.toLocaleString()}</strong> (thực nhận 90%: <strong>+${netTraderReceive.toLocaleString()}</strong>). Đệm MLL còn lại sau khi rút là <strong>+${remainingBufferAfterWithdrawal.toLocaleString()}</strong>. Bấm nút bên dưới để gửi yêu cầu rút ngay.`;
+                        xfaHubCalloutDesc.innerHTML = `🎉 <strong style="color: var(--color-green);">CHÚC MỪNG: TÀI KHOẢN ĐÃ ĐỦ ĐIỀU KIỆN RÚT TIỀN!</strong> Bạn đã tích lũy đủ <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Hạn mức có thể rút đợt này là <strong>$${maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> (thực nhận 90%: <strong>+$${netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>). Đệm MLL còn lại sau khi rút là <strong>+$${remainingBufferAfterWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>. Bấm nút bên trên để gửi yêu cầu rút ngay.`;
                         if (btnQuickWithdraw) {
-                            btnQuickWithdraw.innerHTML = `💸 Gửi Yêu Cầu Rút ${maxAllowedWithdrawal.toLocaleString()}`;
+                            btnQuickWithdraw.innerHTML = `💸 Gửi Yêu Cầu Rút $${maxAllowedWithdrawal.toLocaleString()}`;
                             btnQuickWithdraw.onclick = () => openPayoutModal(maxAllowedWithdrawal);
                         }
                     } else if (winningDaysCount < 5) {
                         xfaHubCalloutBox.style.borderLeftColor = "var(--color-purple)";
-                        xfaHubCalloutDesc.innerHTML = `ℹ️ <strong>TIẾN TRÌNH PAYOUT:</strong> Tài khoản đã đạt <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Hạn mức có thể rút tích lũy là <strong>${maxAllowedWithdrawal.toLocaleString()}</strong> (thực nhận 90%: <strong>+${netTraderReceive.toLocaleString()}</strong>). Cần thêm <strong>${5 - winningDaysCount} ngày thắng nữa</strong> để Topstep mở cổng rút tiền.`;
+                        xfaHubCalloutDesc.innerHTML = `ℹ️ <strong>TIẾN TRÌNH PAYOUT:</strong> Tài khoản đã đạt <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Lãi tích lũy hiện có <strong>+$${availableProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> tương ứng hạn mức có thể rút <strong>$${maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> (thực nhận 90%: <strong>+$${netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>). Cần thêm <strong>${5 - winningDaysCount} ngày thắng nữa</strong> để Topstep mở cổng rút tiền.`;
                         if (btnQuickWithdraw) {
                             btnQuickWithdraw.innerHTML = `+ Yêu Cầu Rút Payout`;
                             btnQuickWithdraw.onclick = () => openPayoutModal();
                         }
                     } else {
                         xfaHubCalloutBox.style.borderLeftColor = "var(--color-gold)";
-                        xfaHubCalloutDesc.innerHTML = `ℹ️ <strong>CHƯA ĐỦ LỢI NHUẬN TỐI THIỂU:</strong> Bạn đã đạt <strong>${winningDaysCount}/5 ngày thắng</strong>, nhưng lợi nhuận hiện tại chưa đạt mức rút tối thiểu ($125). Hãy tiếp tục tích lũy lợi nhuận trên vốn gốc ${data.initialBal.toLocaleString()}.`;
+                        xfaHubCalloutDesc.innerHTML = `ℹ️ <strong>CHƯA ĐỦ LỢI NHUẬN TỐI THIỂU:</strong> Bạn đã đạt <strong>${winningDaysCount}/5 ngày thắng</strong>, nhưng số dư lợi nhuận hiện tại (<strong>+$${availableProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>) chưa đạt mức rút tối thiểu ($125). Hãy tiếp tục tích lũy lợi nhuận trên vốn gốc $${data.initialBal.toLocaleString()}.`;
                         if (btnQuickWithdraw) {
                             btnQuickWithdraw.innerHTML = `+ Yêu Cầu Rút Payout`;
                             btnQuickWithdraw.onclick = () => openPayoutModal();
                         }
                     }
                 }
-
             } else {
                 // Combine Stage Mode
                 document.getElementById("trackerKpi2Label").innerText = "Target Điều Chỉnh";
