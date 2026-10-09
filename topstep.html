@@ -19,61 +19,61 @@
 /* ── BEHANCE FINANCE MANAGEMENT THEME SYSTEM ── */
 /* Extracted from Kristi Kamlykova Behance project: Light & Dark Theme palettes */
 :root, [data-theme="dark"] {
-    --bg-app:        #11121E;
-    --bg-sidebar:    #0D0E18;
-    --bg-header:     #11121E;
-    --bg-card:       #1D1D29;
-    --bg-card-inner: #252636;
-    --bg-input:      #161724;
-    --bg-modal:      #1D1D29;
-    
-    --border-card:   rgba(255, 255, 255, 0.08);
+    --bg-app:        #0E1116;
+    --bg-sidebar:    #0B0E12;
+    --bg-header:     #0E1116;
+    --bg-card:       #151A21;
+    --bg-card-inner: #1A2028;
+    --bg-input:      #11161C;
+    --bg-modal:      #151A21;
+
+    --border-card:   rgba(255, 255, 255, 0.07);
     --border-inner:  rgba(255, 255, 255, 0.05);
-    --border-active: rgba(69, 120, 249, 0.4);
-    
-    --color-primary: #4578F9;
-    --color-green:   #43B430;
-    --color-gold:    #FFBC11;
-    --color-purple:  #CB3EFF;
-    --color-red:     #F43F5E;
-    
-    --text-primary:  #FFFFFF;
-    --text-muted:    #7B7B7B;
-    --text-slate:    #9E9EA7;
-    
-    --table-header:  rgba(22, 23, 36, 0.95);
-    --table-hover:   rgba(255, 255, 255, 0.03);
-    --stat-icon-bg:  rgba(255, 255, 255, 0.06);
+    --border-active: rgba(255, 255, 255, 0.12);
+
+    --color-primary: #4C82F7;
+    --color-green:   #2EB67D;
+    --color-gold:    #D9A441;
+    --color-purple:  #4C82F7;
+    --color-red:     #E5484D;
+
+    --text-primary:  #E8ECF1;
+    --text-muted:    #7D8794;
+    --text-slate:    #A3ACB8;
+
+    --table-header:  #131820;
+    --table-hover:   rgba(255, 255, 255, 0.02);
+    --stat-icon-bg:  transparent;
     --shadow-card:   none;
 }
 
 [data-theme="light"] {
-    --bg-app:        #F4F5F9;
+    --bg-app:        #F4F5F7;
     --bg-sidebar:    #FFFFFF;
     --bg-header:     #FFFFFF;
     --bg-card:       #FFFFFF;
-    --bg-card-inner: #F8F9FD;
+    --bg-card-inner: #F8F9FB;
     --bg-input:      #FFFFFF;
     --bg-modal:      #FFFFFF;
-    
-    --border-card:   #E5E7EB;
-    --border-inner:  #EDEFF5;
-    --border-active: rgba(69, 120, 249, 0.5);
-    
-    --color-primary: #3B72F6;
-    --color-green:   #16A34A;
-    --color-gold:    #D97706;
-    --color-purple:  #9333EA;
-    --color-red:     #E11D48;
-    
-    --text-primary:  #11121E;
-    --text-muted:    #6B7280;
-    --text-slate:    #4B5563;
-    
+
+    --border-card:   #E4E7EC;
+    --border-inner:  #EDF0F3;
+    --border-active: #D0D5DD;
+
+    --color-primary: #1F5FD6;
+    --color-green:   #12805C;
+    --color-gold:    #B7791F;
+    --color-purple:  #1F5FD6;
+    --color-red:     #C9302C;
+
+    --text-primary:  #101828;
+    --text-muted:    #667085;
+    --text-slate:    #475467;
+
     --table-header:  #F9FAFB;
-    --table-hover:   rgba(69, 120, 249, 0.05);
-    --stat-icon-bg:  rgba(69, 120, 249, 0.08);
-    --shadow-card:   0 4px 20px -2px rgba(0, 0, 0, 0.06), 0 0 1px 1px rgba(0, 0, 0, 0.03);
+    --table-hover:   #F9FAFB;
+    --stat-icon-bg:  transparent;
+    --shadow-card:   0 1px 2px rgba(16, 24, 40, 0.05);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -414,6 +414,58 @@ select option {
 ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.35); }
 
 .tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* ── CLEAN BUSINESS OVERRIDE LAYER ── */
+body { font-size: 13px; letter-spacing: -0.003em; }
+.b-card, .b-stat-card { border-radius: 10px !important; box-shadow: var(--shadow-card); }
+.b-card { padding: 20px !important; }
+.b-card:hover, .b-stat-card:hover { transform: none !important; border-color: var(--border-card) !important; }
+.b-card-inner { border-radius: 8px !important; }
+.b-stat-card { padding: 16px 18px !important; }
+.stat-icon-wrapper { display: none !important; }
+
+.b-btn-primary, .b-btn-secondary, .b-btn-purple, .b-btn-danger {
+    border-radius: 6px !important; box-shadow: none !important; font-weight: 600;
+}
+.b-btn-primary:hover, .b-btn-purple:hover { transform: none !important; filter: brightness(1.08); }
+.b-btn-purple { background: var(--color-primary) !important; }
+.b-btn-danger { background: transparent !important; }
+
+.b-badge { border-radius: 4px !important; font-weight: 600; letter-spacing: 0; padding: 3px 8px; }
+.b-badge-dim { border: 1px solid var(--border-card); }
+
+input, select { border-radius: 6px !important; }
+input:focus, select:focus { box-shadow: 0 0 0 3px rgba(76, 130, 247, 0.15) !important; }
+
+.sidebar-link { border-radius: 6px !important; }
+.sidebar-link.active {
+    background: rgba(76, 130, 247, 0.10) !important;
+    color: var(--color-primary) !important;
+    box-shadow: inset 2px 0 0 var(--color-primary) !important;
+}
+
+.b-table { border-collapse: collapse !important; }
+.b-table thead th { font-size: 10.5px !important; letter-spacing: 0.06em !important; font-weight: 600 !important; }
+.b-table tbody td { border-bottom: 1px solid var(--border-inner); padding: 11px 14px !important; }
+.b-table tbody tr:last-child td { border-bottom: none; }
+
+.modal-box { border-radius: 12px !important; }
+.theme-switch-container, .theme-switch-btn { border-radius: 6px !important; }
+
+/* Flatten decorative inline styles: radius, glows, heavy weights, tinted panels */
+[style*="border-radius: 12px"], [style*="border-radius: 14px"],
+[style*="border-radius: 16px"], [style*="border-radius: 18px"] { border-radius: 8px !important; }
+[style*="border-radius: 10px"] { border-radius: 6px !important; }
+[style*="box-shadow: 0 0"], [style*="box-shadow: 0 4px"], [style*="box-shadow: 0 2px"] { box-shadow: none !important; }
+[style*="font-weight: 800"] { font-weight: 700 !important; }
+[style*="font-weight: 900"] { font-weight: 700 !important; }
+#xfaPayoutSection .b-card-inner { background: var(--bg-card-inner) !important; border-color: var(--border-inner) !important; }
+[style*="2px solid var(--color-gold)"] { border: 1px solid var(--color-primary) !important; }
+
+/* Metric typography */
+#trackerTotalPnl, #trackerAdjustedTarget, #trackerCurrentMll { font-size: 24px !important; letter-spacing: -0.02em; }
+#todayTargetPnl, #todayMaxLossBudget, #todayMllBufferVal { font-size: 20px !important; }
+#xfaHubMaxWithdraw, #xfaHubNetPayout, #xfaHubDaysCount, #xfaHubRemainingBuffer { font-size: 22px !important; }
 </style>
 </head>
 <body style="display: flex; min-height: 100vh;">
@@ -425,10 +477,10 @@ select option {
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 32px; padding-left: 6px;">
             <div style="display: flex; align-items: center; gap: 3px;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 24px; height: 24px;">
-                    <div style="background: #4578F9; border-radius: 5px 2px 2px 2px;"></div>
-                    <div style="background: #CB3EFF; border-radius: 2px 5px 2px 2px;"></div>
-                    <div style="background: #43B430; border-radius: 2px 2px 2px 5px;"></div>
-                    <div style="background: #FFBC11; border-radius: 2px 2px 5px 2px;"></div>
+                    <div style="background: var(--color-primary); border-radius: 2px;"></div>
+                    <div style="background: var(--color-primary); opacity: .55; border-radius: 2px;"></div>
+                    <div style="background: var(--color-primary); opacity: .55; border-radius: 2px;"></div>
+                    <div style="background: var(--color-primary); opacity: .3; border-radius: 2px;"></div>
                 </div>
             </div>
             <div>
@@ -490,7 +542,7 @@ select option {
     <header style="padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); flex-wrap: wrap; gap: 14px; background: var(--bg-header); position: sticky; top: 0; z-index: 40; transition: background-color 0.25s ease;">
         <div>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">Analytics</h1>
+                <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">Tổng Quan Tài Khoản</h1>
                 <span class="b-badge b-badge-blue" id="activeStageBadge">Vòng Combine</span>
                 <span id="trackerAccountIdTag" class="b-badge b-badge-dim">TS-50K-001</span>
             </div>
@@ -503,10 +555,10 @@ select option {
             <!-- THEME SWITCHER TOGGLE (Light / Dark Mode Switcher) -->
             <div class="theme-switch-container" onclick="toggleTheme()" title="Bật / Tắt Giao Diện Sáng &amp; Tối" style="height: 38px; padding: 3px;">
                 <div id="themeDarkIndicator" class="theme-switch-btn" style="height: 32px; background: var(--color-primary); color: #FFFFFF; box-shadow: 0 2px 8px rgba(69, 120, 249, 0.35);">
-                    <span style="font-size: 13px;">🌙</span> Dark
+                    <span style="font-size: 13px;"></span> Dark
                 </div>
                 <div id="themeLightIndicator" class="theme-switch-btn" style="height: 32px; background: transparent; color: var(--text-muted);">
-                    <span style="font-size: 13px;">☀️</span> Light
+                    <span style="font-size: 13px;"></span> Light
                 </div>
             </div>
 
@@ -522,13 +574,13 @@ select option {
 
             <!-- Buttons matching Behance palette with uniform 38px height -->
             <button type="button" onclick="openPricingModal()" class="b-btn-secondary" style="height: 38px; padding: 0 13px; font-size: 12px;" title="Tra cứu bảng giá &amp; thông số 3 gói Topstep®">
-                <span style="font-size: 13px;">🏷️</span> Bảng Gói
+                <span style="font-size: 13px;"></span> Bảng Gói
             </button>
             <button type="button" onclick="openAddAccountModal()" class="b-btn-primary" style="height: 38px; padding: 0 14px; font-size: 12px;">
                 <span>+</span> Tạo Tài Khoản
             </button>
             <button type="button" onclick="toggleAccountStage()" id="btnToggleStage" class="b-btn-purple" style="height: 38px; padding: 0 14px; font-size: 12px;">
-                <span>⚡ Chuyển Sang XFA</span>
+                <span>Chuyển Sang XFA</span>
             </button>
             <button type="button" onclick="openEditAccountModal()" class="b-btn-secondary" style="height: 38px; width: 38px; padding: 0; justify-content: center; flex-shrink: 0;" title="Cài đặt tài khoản">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -569,7 +621,7 @@ select option {
                     $3,000
                 </div>
                 <div id="trackerKpi2SubText" style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-primary); font-weight: 500;">
-                    <span id="trackerKpi2IconMini">🎯</span>
+                    <span id="trackerKpi2IconMini"></span>
                     <span id="trackerKpi2SubTextVal">Consistency Rule: Lãi ngày ≤ 55%</span>
                 </div>
             </div>
@@ -586,7 +638,7 @@ select option {
                     $48,000
                 </div>
                 <div id="trackerKpi3SubText" style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-gold); font-weight: 500;">
-                    <span>🛡️</span>
+                    
                     <span id="trackerKpi3SubTextVal">Trailing EOD: Khóa tại $50,000 vốn</span>
                 </div>
             </div>
@@ -600,7 +652,7 @@ select option {
                     </div>
                 </div>
                 <div style="margin-bottom: 8px;">
-                    <span id="trackerConsistencyBadge" class="b-badge b-badge-dim" style="font-size: 12px; padding: 5px 12px;">🟢 CHỜ DỮ LIỆU</span>
+                    <span id="trackerConsistencyBadge" class="b-badge b-badge-dim" style="font-size: 12px; padding: 5px 12px;">CHỜ DỮ LIỆU</span>
                 </div>
                 <div id="trackerKpi4SubText" style="font-size: 11.5px; color: var(--text-muted);">
                     Giám sát tự động sau mỗi phiên
@@ -613,7 +665,7 @@ select option {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                     <span id="smartBannerTitle" style="font-size: 13px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em;">
-                        🎯 BẢN ĐỒ CHIẾN LƯỢC &amp; MỤC TIÊU PHIÊN HÔM NAY:
+                        BẢN ĐỒ CHIẾN LƯỢC &amp; MỤC TIÊU PHIÊN HÔM NAY:
                     </span>
                     <span id="suggestionStatusTag" class="b-badge b-badge-blue">Live Tracking</span>
                 </div>
@@ -627,7 +679,7 @@ select option {
                 <!-- Col 1: Max Profit to Take -->
                 <div class="b-card-inner" style="padding: 14px 16px; border-left: 3px solid var(--color-green);">
                     <span id="smartBannerValLabel" style="font-size: 11px; font-weight: 600; color: var(--text-slate); text-transform: uppercase; display: block; margin-bottom: 4px;">
-                        🟢 LÃI TỐI ĐA NÊN CHỐT HÔM NAY
+                        LÃI TỐI ĐA NÊN CHỐT HÔM NAY
                     </span>
                     <span id="todayTargetPnl" class="tabular-nums" style="font-size: 22px; font-weight: 800; color: var(--color-green); display: block;">+$601.00</span>
                     <span id="todayTargetSubtext" style="font-size: 11.5px; color: var(--color-green); opacity: 0.85; margin-top: 2px; display: block;">
@@ -638,7 +690,7 @@ select option {
                 <!-- Col 2: Max Loss Budget -->
                 <div id="smartBannerCol2Box" class="b-card-inner" style="padding: 14px 16px; border-left: 3px solid var(--color-red);">
                     <span id="todayMaxLossBudgetLabel" style="font-size: 11px; font-weight: 600; color: var(--text-slate); text-transform: uppercase; display: block; margin-bottom: 4px;">
-                        🔴 HẠN MỨC LỖ TỐI ĐA HÔM NAY
+                        HẠN MỨC LỖ TỐI ĐA HÔM NAY
                     </span>
                     <span id="todayMaxLossBudget" class="tabular-nums" style="font-size: 22px; font-weight: 800; color: var(--color-red); display: block;">-$1,000.00</span>
                     <span id="todayLossBudgetSubtext" style="font-size: 11.5px; color: var(--color-red); opacity: 0.85; margin-top: 2px; display: block;">
@@ -649,7 +701,7 @@ select option {
                 <!-- Col 3: MLL Buffer -->
                 <div id="smartBannerCol3Box" class="b-card-inner" style="padding: 14px 16px; border-left: 3px solid var(--color-gold);">
                     <span id="todayMllBufferLabel" style="font-size: 11px; font-weight: 600; color: var(--text-slate); text-transform: uppercase; display: block; margin-bottom: 4px;">
-                        🛡️ ĐỆM AN TOÀN MLL HIỆN TẠI
+                        ĐỆM AN TOÀN MLL HIỆN TẠI
                     </span>
                     <span id="todayMllBufferVal" class="tabular-nums" style="font-size: 22px; font-weight: 800; color: var(--color-gold); display: block;">$2,000.00</span>
                     <span id="todayMllLimitSubtext" style="font-size: 11.5px; color: var(--color-gold); opacity: 0.85; margin-top: 2px; display: block;">
@@ -706,7 +758,7 @@ select option {
                 <!-- Combine & XFA Side-by-Side comparison cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="riskRulesCardsRow">
                     <div id="combineRulesCard" class="b-card-inner" style="padding: 12px 14px; border-left: 3px solid var(--color-primary);">
-                        <div style="font-size: 11.5px; font-weight: 700; color: var(--color-primary); margin-bottom: 6px;">🎯 QUY TẮC VÒNG COMBINE®</div>
+                        <div style="font-size: 11.5px; font-weight: 700; color: var(--color-primary); margin-bottom: 6px;">QUY TẮC VÒNG COMBINE®</div>
                         <div style="font-size: 11.5px; color: var(--text-slate); display: flex; flex-direction: column; gap: 3px;">
                             <div>Target: <strong id="combineProfitTarget" class="tabular-nums" style="color: var(--color-green);">$3,000</strong> · Tối thiểu <strong style="color: var(--text-primary);">≥ 2 ngày</strong></div>
                             <div>Lãi an toàn / ngày: <strong id="safeDailyProfit" class="tabular-nums" style="color: var(--color-gold);">≤ $1,649</strong> (≤55%)</div>
@@ -714,7 +766,7 @@ select option {
                         </div>
                     </div>
                     <div id="xfaRulesCard" class="b-card-inner hidden" style="padding: 12px 14px; border-left: 3px solid var(--color-green);">
-                        <div style="font-size: 11.5px; font-weight: 700; color: var(--color-green); margin-bottom: 6px;">🛡️ QUY TẮC TÀI KHOẢN CẤP VỐN XFA®</div>
+                        <div style="font-size: 11.5px; font-weight: 700; color: var(--color-green); margin-bottom: 6px;">QUY TẮC TÀI KHOẢN CẤP VỐN XFA®</div>
                         <div style="font-size: 11.5px; color: var(--text-slate); display: flex; flex-direction: column; gap: 3px;">
                             <div>Target Lợi Nhuận: <strong style="color: var(--color-green);">KHÔNG ÁP DỤNG</strong> (Tự do giao dịch)</div>
                             <div>Consistency 55%: <strong style="color: var(--color-green);">KHÔNG ÁP DỤNG</strong> (Standard Path)</div>
@@ -722,7 +774,7 @@ select option {
                         </div>
                     </div>
                     <div class="b-card-inner" style="padding: 12px 14px; border-left: 3px solid var(--color-purple);">
-                        <div style="font-size: 11.5px; font-weight: 700; color: var(--color-purple); margin-bottom: 6px;">💰 RÚT LỢI NHUẬN XFA® (90/10 SPLIT)</div>
+                        <div style="font-size: 11.5px; font-weight: 700; color: var(--color-purple); margin-bottom: 6px;">RÚT LỢI NHUẬN XFA® (90/10 SPLIT)</div>
                         <div style="font-size: 11.5px; color: var(--text-slate); display: flex; flex-direction: column; gap: 3px;">
                             <div>Lộ trình: <strong id="xfaPathTitle" style="color: var(--color-primary);">Standard Path</strong></div>
                             <p id="xfaPathDesc" style="font-size: 11px; color: var(--text-muted); margin: 0;">≥5 ngày thắng (mỗi ngày lãi ≥$150 EOD). Rút ≤50% số dư.</p>
@@ -833,12 +885,12 @@ select option {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.03em;">
-                            📝 Ghi Nhận Kết Quả Chốt Phiên (EOD PnL)
+                            Ghi Nhận Kết Quả Chốt Phiên (EOD PnL)
                         </span>
                         <span class="b-badge b-badge-blue" style="font-size: 10.5px;">Chỉ cần nhập PnL</span>
                     </div>
                     <span style="font-size: 11.5px; color: var(--color-gold); display: flex; align-items: center; gap: 4px;">
-                        <span>💡</span> Mỗi dòng tương ứng 1 phiên giao dịch chốt sau 3:10 PM CT
+                         Mỗi dòng tương ứng 1 phiên giao dịch chốt sau 3:10 PM CT
                     </span>
                 </div>
 
@@ -846,7 +898,7 @@ select option {
                     <!-- Col 1: Date (3 cols) -->
                     <div class="lg:col-span-3">
                         <label for="inputDate" style="font-size: 11.5px; font-weight: 600; color: var(--text-slate); display: flex; align-items: center; gap: 5px; margin-bottom: 6px;">
-                            <span>📅</span> Ngày Giao Dịch
+                             Ngày Giao Dịch
                         </label>
                         <input id="inputDate" type="date" required style="width: 100%; height: 42px;" onchange="if(document.getElementById('headerTradeDatePill')) document.getElementById('headerTradeDatePill').innerText = this.value">
                     </div>
@@ -854,7 +906,7 @@ select option {
                     <!-- Col 2: Symbol (3 cols) -->
                     <div class="lg:col-span-3">
                         <label for="inputSymbol" style="font-size: 11.5px; font-weight: 600; color: var(--text-slate); display: flex; align-items: center; gap: 5px; margin-bottom: 6px;">
-                            <span>📈</span> Sản Phẩm Giao Dịch
+                             Sản Phẩm Giao Dịch
                         </label>
                         <select id="inputSymbol" onchange="onEodSymbolChange()" style="width: 100%; height: 42px;">
                             <option value="MGC">MGC (Micro Gold)</option>
@@ -877,7 +929,7 @@ select option {
                     <!-- Col 3: PnL (4 cols) -->
                     <div class="lg:col-span-4">
                         <label for="inputPnl" style="font-size: 11.5px; font-weight: 600; color: var(--text-slate); display: flex; align-items: center; gap: 5px; margin-bottom: 6px;">
-                            <span>💵</span> Lãi / Lỗ Chốt Phiên ($ USD)
+                             Lãi / Lỗ Chốt Phiên ($ USD)
                         </label>
                         <div style="position: relative;">
                             <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 700; font-size: 14px;">$</span>
@@ -923,7 +975,7 @@ select option {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                     <div>
                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            <span style="font-size: 15px; font-weight: 800; color: var(--color-purple);">💰 TRUNG TÂM RÚT TIỀN QUỸ XFA®</span>
+                            <span style="font-size: 15px; font-weight: 800; color: var(--color-purple);">TRUNG TÂM RÚT TIỀN QUỸ XFA®</span>
                             <span id="xfaHubStatusBadge" class="b-badge b-badge-purple">Standard Path · 90/10 Split</span>
                         </div>
                         <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">
@@ -932,7 +984,7 @@ select option {
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <button id="btnQuickWithdraw" onclick="openPayoutModal()" class="b-btn-purple" style="box-shadow: 0 4px 14px rgba(203, 62, 255, 0.35);">
-                            💸 Gửi Yêu Cầu Rút Payout
+                            Gửi Yêu Cầu Rút Payout
                         </button>
                     </div>
                 </div>
@@ -1025,10 +1077,10 @@ select option {
 
         <!-- ── ROW 5: RULES GUIDE & ACCOUNT COMPARISON ACCORDION ── -->
         <div class="b-card" id="rules-section">
-            <details open>
+            <details>
                 <summary style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; list-style: none; user-select: none; font-size: 13px; font-weight: 700; color: var(--text-primary);">
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <span>🏷️ BẢNG THÔNG SỐ &amp; SO SÁNH 3 GÓI TOPSTEP® (CẬP NHẬT CHUẨN MỚI NHẤT)</span>
+                        <span>BẢNG THÔNG SỐ &amp; SO SÁNH 3 GÓI TOPSTEP® (CẬP NHẬT CHUẨN MỚI NHẤT)</span>
                         <span class="b-badge b-badge-green" style="font-size: 11px;">Consistency 55% · DOUBLE Payout</span>
                     </div>
                     <span style="color: var(--color-primary); font-size: 16px;">▾</span>
@@ -1038,13 +1090,13 @@ select option {
                     <!-- Key Badges Strip -->
                     <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--bg-card-inner); padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-inner);">
                         <span class="b-badge b-badge-blue" style="font-size: 11.5px;">
-                            🛡️ Responsible Trading Advantage: DOUBLE Payout Caps · Giảm tới $30/tháng
+                            Responsible Trading Advantage: DOUBLE Payout Caps · Giảm tới $30/tháng
                         </span>
                         <span class="b-badge b-badge-green" style="font-size: 11.5px;">
-                            ✨ No Activation Fee: Miễn 100% Phí Kích Hoạt khi lên Express Funded ($0)
+                            No Activation Fee: Miễn 100% Phí Kích Hoạt khi lên Express Funded ($0)
                         </span>
                         <span class="b-badge b-badge-dim" style="font-size: 11.5px;">
-                            🎯 Quy Tắc Nhất Quán: Consistency Target 55% (Lãi ngày ≤ 55% Tổng Lãi)
+                            Quy Tắc Nhất Quán: Consistency Target 55% (Lãi ngày ≤ 55% Tổng Lãi)
                         </span>
                     </div>
 
@@ -1111,7 +1163,7 @@ select option {
 
                             <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
                                 <button type="button" onclick="applyPackageToCurrent('50')" class="b-btn-primary" style="width: 100%; justify-content: center; font-size: 12px; padding: 8px;">
-                                    ⚡ Chọn Gói $50K Cho Tài Khoản
+                                    Chọn Gói $50K Cho Tài Khoản
                                 </button>
                                 <button type="button" onclick="openAddAccountModalWithSize('50')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 6px;">
                                     + Tạo Tài Khoản Mới $50K
@@ -1122,7 +1174,7 @@ select option {
                         <!-- Card 2: $100K (Recommended) -->
                         <div class="b-card-inner" style="padding: 20px; border: 2px solid var(--color-gold); border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; position: relative; box-shadow: 0 0 20px rgba(255, 188, 17, 0.15);">
                             <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--color-gold); color: #000000; font-size: 10.5px; font-weight: 800; padding: 2px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;">
-                                ⭐ Recommended
+                                Recommended
                             </div>
                             <div>
                                 <div style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">$100K Buying Power</div>
@@ -1183,7 +1235,7 @@ select option {
 
                             <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
                                 <button type="button" onclick="applyPackageToCurrent('100')" class="b-btn-primary" style="width: 100%; justify-content: center; font-size: 12px; padding: 8px; background: linear-gradient(135deg, #FFBC11, #D97706); color: #000000; font-weight: 800;">
-                                    ⭐ Chọn Gói $100K Cho Tài Khoản
+                                    Chọn Gói $100K Cho Tài Khoản
                                 </button>
                                 <button type="button" onclick="openAddAccountModalWithSize('100')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 6px;">
                                     + Tạo Tài Khoản Mới $100K
@@ -1252,7 +1304,7 @@ select option {
 
                             <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
                                 <button type="button" onclick="applyPackageToCurrent('150')" class="b-btn-purple" style="width: 100%; justify-content: center; font-size: 12px; padding: 8px;">
-                                    ⚡ Chọn Gói $150K Cho Tài Khoản
+                                    Chọn Gói $150K Cho Tài Khoản
                                 </button>
                                 <button type="button" onclick="openAddAccountModalWithSize('150')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 6px;">
                                     + Tạo Tài Khoản Mới $150K
@@ -1416,7 +1468,7 @@ select option {
     <div class="modal-box">
         <button onclick="closeEditAccountModal()" class="modal-close">&times;</button>
         <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); border-bottom: 1px solid var(--border-card); padding-bottom: 12px; margin-bottom: 16px;">
-            ⚙️ Cấu Hình &amp; Đổi Gói Tài Khoản
+            Cấu Hình &amp; Đổi Gói Tài Khoản
         </h3>
         <form onsubmit="submitEditAccount(event)" style="display: flex; flex-direction: column; gap: 12px;">
             <div>
@@ -1461,7 +1513,7 @@ select option {
     <div class="modal-box">
         <button onclick="closePayoutModal()" class="modal-close">&times;</button>
         <h3 style="font-size: 16px; font-weight: 700; color: var(--color-purple); border-bottom: 1px solid rgba(203, 62, 255, 0.25); padding-bottom: 12px; margin-bottom: 16px;">
-            💰 Yêu Cầu Rút Lợi Nhuận Quỹ XFA®
+            Yêu Cầu Rút Lợi Nhuận Quỹ XFA®
         </h3>
         <form onsubmit="submitPayoutRequest(event)" style="display: flex; flex-direction: column; gap: 12px;">
             <div>
@@ -1489,7 +1541,7 @@ select option {
     <div class="modal-box wide">
         <button onclick="closeGoogleSheetModal()" class="modal-close">&times;</button>
         <h3 style="font-size: 16px; font-weight: 700; color: var(--color-green); border-bottom: 1px solid rgba(67, 180, 48, 0.25); padding-bottom: 12px; margin-bottom: 16px;">
-            📊 Đồng Bộ Google Sheets &amp; Quản Lý Nhật Ký EOD
+            Đồng Bộ Google Sheets &amp; Quản Lý Nhật Ký EOD
         </h3>
         <div style="display: flex; flex-direction: column; gap: 12px;">
             <div class="b-card-inner" style="padding: 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
@@ -1527,7 +1579,7 @@ select option {
         <div style="border-bottom: 1px solid var(--border-card); padding-bottom: 14px; margin-bottom: 18px;">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary);">
-                    🏷️ Bảng Giá &amp; Thông Số 3 Gói Vốn Topstep® Mới Nhất
+                    Bảng Giá &amp; Thông Số 3 Gói Vốn Topstep® Mới Nhất
                 </h3>
                 <span class="b-badge b-badge-green">Consistency 55%</span>
                 <span class="b-badge b-badge-blue">DOUBLE Payout Caps</span>
@@ -1561,7 +1613,7 @@ select option {
                 </div>
                 <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
                     <button type="button" onclick="applyPackageToCurrent('50')" class="b-btn-primary" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 7px;">
-                        ⚡ Áp Dụng Cho Tài Khoản Này
+                        Áp Dụng Cho Tài Khoản Này
                     </button>
                     <button type="button" onclick="openAddAccountModalWithSize('50')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11px; padding: 5px;">
                         + Tạo Tài Khoản $50K Mới
@@ -1572,7 +1624,7 @@ select option {
             <!-- Modal Tier Card: 100K (Recommended) -->
             <div class="b-card-inner" style="padding: 18px; border: 2px solid var(--color-gold); border-radius: 14px; display: flex; flex-direction: column; justify-content: space-between; position: relative; box-shadow: 0 0 16px rgba(255, 188, 17, 0.12);">
                 <div style="position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: var(--color-gold); color: #000000; font-size: 10px; font-weight: 800; padding: 2px 12px; border-radius: 20px; text-transform: uppercase;">
-                    ⭐ Recommended
+                    Recommended
                 </div>
                 <div>
                     <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);">$100K Buying Power</div>
@@ -1595,7 +1647,7 @@ select option {
                 </div>
                 <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
                     <button type="button" onclick="applyPackageToCurrent('100')" class="b-btn-primary" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 7px; background: linear-gradient(135deg, #FFBC11, #D97706); color: #000000; font-weight: 800;">
-                        ⭐ Áp Dụng Cho Tài Khoản Này
+                        Áp Dụng Cho Tài Khoản Này
                     </button>
                     <button type="button" onclick="openAddAccountModalWithSize('100')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11px; padding: 5px;">
                         + Tạo Tài Khoản $100K Mới
@@ -1626,7 +1678,7 @@ select option {
                 </div>
                 <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 6px;">
                     <button type="button" onclick="applyPackageToCurrent('150')" class="b-btn-purple" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 7px;">
-                        ⚡ Áp Dụng Cho Tài Khoản Này
+                        Áp Dụng Cho Tài Khoản Này
                     </button>
                     <button type="button" onclick="openAddAccountModalWithSize('150')" class="b-btn-secondary" style="width: 100%; justify-content: center; font-size: 11px; padding: 5px;">
                         + Tạo Tài Khoản $150K Mới
@@ -1805,13 +1857,13 @@ const accountData = {
             if (acc.stage === "xfa") {
                 stageBadge.innerText = "Vòng XFA";
                 stageBadge.className = "px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-bold";
-                btnToggle.innerHTML = "<span>🔄 Nâng Về Combine</span>";
+                btnToggle.innerHTML = "<span>Nâng Về Combine</span>";
                 btnToggle.className = "bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-1.5 px-3 rounded-xl transition-all shadow-md";
                 document.getElementById("xfaPayoutSection").classList.remove("hidden");
             } else {
                 stageBadge.innerText = "Vòng Combine";
                 stageBadge.className = "px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-bold";
-                btnToggle.innerHTML = "<span>⚡ Chuyển Sang XFA</span>";
+                btnToggle.innerHTML = "<span>Chuyển Sang XFA</span>";
                 btnToggle.className = "bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs py-1.5 px-3 rounded-xl transition-all shadow-md";
                 document.getElementById("xfaPayoutSection").classList.add("hidden");
             }
@@ -1855,7 +1907,7 @@ const accountData = {
                 saveAccounts();
                 loadActiveAccountState();
                 closePricingModal();
-                alert(`✅ Đã chuyển thành công tài khoản ${acc.id} sang Gói ${size}K (${targetData.noActFee})!`);
+                alert(`Đã chuyển thành công tài khoản ${acc.id} sang Gói ${size}K (${targetData.noActFee})!`);
             }
         }
 
@@ -2173,13 +2225,13 @@ const accountData = {
 
             if (slInputMode === "points") {
                 document.getElementById("slDistanceLabel").innerText = `Khoảng SL (${spec.unitName}):`;
-                document.getElementById("slUnitToggleText").innerText = "🔄 Nhập Theo Ticks";
+                document.getElementById("slUnitToggleText").innerText = "Nhập Theo Ticks";
                 let currentTicks = parseFloat(valInput.value) || spec.defaultTicks;
                 let currentPts = (currentTicks * spec.tickSize).toFixed(2);
                 valInput.value = parseFloat(currentPts);
             } else {
                 document.getElementById("slDistanceLabel").innerText = "Khoảng SL (Ticks):";
-                document.getElementById("slUnitToggleText").innerText = "🔄 Nhập Theo Giá (Pts)";
+                document.getElementById("slUnitToggleText").innerText = "Nhập Theo Giá (Pts)";
                 let currentPts = parseFloat(valInput.value) || spec.defaultSlPts;
                 let currentTicks = Math.round(currentPts / spec.tickSize);
                 valInput.value = currentTicks;
@@ -2484,11 +2536,11 @@ const accountData = {
                 if (acc.stage === "xfa") {
                     if (acc.xfaPath === "standard_payout") {
                         if (entry.pnl >= 150) {
-                            col8Cell = `<span class="b-badge b-badge-green" style="font-size: 11px; font-weight: 700;">🟢 Đạt (+$150+)</span>`;
+                            col8Cell = `<span class="b-badge b-badge-green" style="font-size: 11px; font-weight: 700;">Đạt (+$150+)</span>`;
                         } else if (entry.pnl > 0) {
-                            col8Cell = `<span class="b-badge b-badge-dim" style="font-size: 11px; font-weight: 600;">⚪ Lãi (<$150)</span>`;
+                            col8Cell = `<span class="b-badge b-badge-dim" style="font-size: 11px; font-weight: 600;">Lãi (<$150)</span>`;
                         } else {
-                            col8Cell = `<span class="b-badge b-badge-red" style="font-size: 11px; font-weight: 600;">🔴 Ngày Lỗ</span>`;
+                            col8Cell = `<span class="b-badge b-badge-red" style="font-size: 11px; font-weight: 600;">Ngày Lỗ</span>`;
                         }
                     } else {
                         col8Cell = `<span class="b-badge ${parseFloat(dayConsistencyPct) > 40 ? 'b-badge-gold' : 'b-badge-dim'}" style="font-size: 11px; font-weight: 600;">${dayConsistencyPct}% (≤40%)</span>`;
@@ -2517,7 +2569,7 @@ const accountData = {
                     </td>
                     <td style="padding: 12px 16px; text-align: center;">
                         <span class="b-badge ${isDllBreach ? 'b-badge-red' : 'b-badge-green'}" style="font-size: 10.5px; font-weight: 700;">
-                            ${isDllBreach ? '🔴 Vi Phạm DLL' : '🟢 An Toàn'}
+                            ${isDllBreach ? 'Vi Phạm DLL' : 'An Toàn'}
                         </span>
                     </td>
                     <td style="padding: 12px 16px; text-align: center;">
@@ -2601,7 +2653,7 @@ const accountData = {
                 const kpi2SubEl = document.getElementById("trackerKpi2SubText");
                 if (kpi2SubEl) {
                     kpi2SubEl.style.color = "var(--color-purple)";
-                    kpi2SubEl.innerHTML = `<span>💰</span><span>Tối đa 50% lãi · Trần ${capInfo.label} (90%: +$${netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2})})</span>`;
+                    kpi2SubEl.innerHTML = `<span>Tối đa 50% lãi · Trần ${capInfo.label} (90%: +$${netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2})})</span>`;
                 }
 
                 // Card 3: Ngưỡng MLL Khóa Vốn
@@ -2609,7 +2661,7 @@ const accountData = {
                 document.getElementById("trackerCurrentMll").innerText = "$" + trailingMll.toLocaleString('en-US', {minimumFractionDigits: 2});
                 const kpi3SubEl = document.getElementById("trackerKpi3SubText");
                 if (kpi3SubEl) {
-                    kpi3SubEl.innerHTML = `<span>🛡️</span><span>Đệm MLL khả dụng: +${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>`;
+                    kpi3SubEl.innerHTML = `<span>Đệm MLL khả dụng: +${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>`;
                 }
 
                 // Card 4: Tiến Trình Rút Payout
@@ -2617,23 +2669,23 @@ const accountData = {
                 const badge = document.getElementById("trackerConsistencyBadge");
                 if (acc.xfaPath === "standard_payout") {
                     if (winningDaysCount >= 5 && maxAllowedWithdrawal >= 125) {
-                        badge.innerText = `🎉 ĐỦ ĐIỀU KIỆN RÚT PAYOUT! (${winningDaysCount}/5 ngày)`;
+                        badge.innerText = `ĐỦ ĐIỀU KIỆN RÚT PAYOUT! (${winningDaysCount}/5 ngày)`;
                         badge.className = "b-badge b-badge-green";
                     } else if (winningDaysCount >= 5 && maxAllowedWithdrawal < 125) {
-                        badge.innerText = `⏳ ĐỦ 5 NGÀY - CẦN THÊM LÃI (≥$125)`;
+                        badge.innerText = `ĐỦ 5 NGÀY - CẦN THÊM LÃI (≥$125)`;
                         badge.className = "b-badge b-badge-gold";
                     } else {
-                        badge.innerText = `⏳ TIẾN TRÌNH: ${winningDaysCount}/5 NGÀY THẮNG (≥+$150)`;
+                        badge.innerText = `TIẾN TRÌNH: ${winningDaysCount}/5 NGÀY THẮNG (≥+$150)`;
                         badge.className = "b-badge b-badge-purple";
                     }
                     const kpi4SubEl = document.getElementById("trackerKpi4SubText");
                     if (kpi4SubEl) kpi4SubEl.innerText = "Standard Path: Cần ≥5 ngày EOD ≥+$150 · Không áp dụng 55%";
                 } else {
                     if (totalTradingDaysCount >= 3 && bestDayPct <= 0.40) {
-                        badge.innerText = `🎉 ĐỦ ĐIỀU KIỆN RÚT! (3 ngày & ≤40%)`;
+                        badge.innerText = `ĐỦ ĐIỀU KIỆN RÚT! (3 ngày & ≤40%)`;
                         badge.className = "b-badge b-badge-green";
                     } else {
-                        badge.innerText = `⏳ CHỜ ĐIỀU KIỆN (${totalTradingDaysCount}/3 ngày, ${(bestDayPct*100).toFixed(1)}%)`;
+                        badge.innerText = `CHỜ ĐIỀU KIỆN (${totalTradingDaysCount}/3 ngày, ${(bestDayPct*100).toFixed(1)}%)`;
                         badge.className = "b-badge b-badge-gold";
                     }
                     const kpi4SubEl = document.getElementById("trackerKpi4SubText");
@@ -2641,7 +2693,7 @@ const accountData = {
                 }
 
                 // Smart Activity Banner for XFA: SESSION PLAN & DAILY RISK MANAGEMENT (TODAY)
-                document.getElementById("smartBannerTitle").innerText = `🎯 KẾ HOẠCH PHIÊN & GIỚI HẠN RỦI RO HÔM NAY (${evalDateDisplay}):`;
+                document.getElementById("smartBannerTitle").innerText = `KẾ HOẠCH PHIÊN & GIỚI HẠN RỦI RO HÔM NAY (${evalDateDisplay}):`;
                 document.getElementById("smartBannerTitle").className = "text-xs font-black text-blue-400 uppercase tracking-wider";
 
                 const todayTargetEl = document.getElementById("todayTargetPnl");
@@ -2653,8 +2705,8 @@ const accountData = {
                 if (datePnlSoFar >= 150) {
                     statusTagEl.innerText = "Đã Đạt Ngày Thắng Hôm Nay";
                     statusTagEl.className = "b-badge b-badge-green";
-                    todayDescEl.innerHTML = `🎉 <strong style="color: var(--color-green);">PHIÊN HÔM NAY ĐÃ ĐẠT TIÊU CHUẨN:</strong> Chốt lãi EOD <strong>+${datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> (≥ +$150) — đã ghi nhận thêm 1 ngày thắng (tiến trình: <strong>${winningDaysCount}/5 ngày</strong>). Nên DỪNG giao dịch để bảo toàn kết quả và bảo vệ đệm an toàn!`;
-                    if (col1Label) col1Label.innerText = "🟢 LÃI ĐÃ ĐẠT PHIÊN HÔM NAY";
+                    todayDescEl.innerHTML = `<strong style="color: var(--color-green);">PHIÊN HÔM NAY ĐÃ ĐẠT TIÊU CHUẨN:</strong> Chốt lãi EOD <strong>+${datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> (≥ +$150) — đã ghi nhận thêm 1 ngày thắng (tiến trình: <strong>${winningDaysCount}/5 ngày</strong>). Nên DỪNG giao dịch để bảo toàn kết quả và bảo vệ đệm an toàn!`;
+                    if (col1Label) col1Label.innerText = "LÃI ĐÃ ĐẠT PHIÊN HÔM NAY";
                     todayTargetEl.innerText = "+$" + datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2});
                     todayTargetEl.className = "text-xl font-black text-emerald-400";
                     if (todayTargetSubtext) {
@@ -2666,7 +2718,7 @@ const accountData = {
                     statusTagEl.innerText = "Đang Lãi (Cần Thêm Đến $150)";
                     statusTagEl.className = "b-badge b-badge-purple";
                     todayDescEl.innerHTML = `Phiên hôm nay (${evalDateDisplay}) đã có <strong>+${datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>. Cần chốt thêm tối thiểu <strong>+${needed.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> nữa để đạt mốc +$150 EOD và tính là 1 ngày thắng hợp lệ (hiện đạt ${winningDaysCount}/5 ngày).`;
-                    if (col1Label) col1Label.innerText = "🎯 CẦN THÊM ĐỂ ĐẠT NGÀY THẮNG";
+                    if (col1Label) col1Label.innerText = "CẦN THÊM ĐỂ ĐẠT NGÀY THẮNG";
                     todayTargetEl.innerText = "+$" + needed.toLocaleString('en-US', {minimumFractionDigits: 2});
                     todayTargetEl.className = "text-xl font-black text-purple-400";
                     if (todayTargetSubtext) {
@@ -2676,8 +2728,8 @@ const accountData = {
                 } else if (datePnlSoFar < 0) {
                     statusTagEl.innerText = "Đang Âm Phiên (Bảo Vệ DLL)";
                     statusTagEl.className = "b-badge b-badge-red";
-                    todayDescEl.innerHTML = `⚠️ Phiên hôm nay (${evalDateDisplay}) đang ghi nhận <strong>-${Math.abs(datePnlSoFar).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>. Ngân sách lỗ tối đa còn lại là <strong>-${remainingLossBudgetToday.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>. Tuyệt đối không để chạm Daily Loss Limit (-${rawDllVal.toLocaleString()})!`;
-                    if (col1Label) col1Label.innerText = "🎯 MỤC TIÊU PHIÊN (NGÀY THẮNG)";
+                    todayDescEl.innerHTML = `Phiên hôm nay (${evalDateDisplay}) đang ghi nhận <strong>-${Math.abs(datePnlSoFar).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>. Ngân sách lỗ tối đa còn lại là <strong>-${remainingLossBudgetToday.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>. Tuyệt đối không để chạm Daily Loss Limit (-${rawDllVal.toLocaleString()})!`;
+                    if (col1Label) col1Label.innerText = "MỤC TIÊU PHIÊN (NGÀY THẮNG)";
                     todayTargetEl.innerText = "+$150.00";
                     todayTargetEl.className = "text-xl font-black text-emerald-400";
                     if (todayTargetSubtext) {
@@ -2688,7 +2740,7 @@ const accountData = {
                     statusTagEl.innerText = "Mục Tiêu Phiên (+ $150)";
                     statusTagEl.className = "b-badge b-badge-blue";
                     todayDescEl.innerHTML = `Phiên mới (${evalDateDisplay}): Đặt mục tiêu chốt lãi tối thiểu <strong>+$150.00 EOD</strong> để ghi nhận 1 ngày thắng hợp lệ (tiến trình hiện tại: <strong>${winningDaysCount}/5 ngày</strong>). Ngân sách lỗ tối đa cho phép hôm nay là <strong>-${remainingLossBudgetToday.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> để bảo vệ đệm an toàn MLL.`;
-                    if (col1Label) col1Label.innerText = "🎯 MỤC TIÊU PHIÊN (NGÀY THẮNG)";
+                    if (col1Label) col1Label.innerText = "MỤC TIÊU PHIÊN (NGÀY THẮNG)";
                     todayTargetEl.innerText = "+$150.00";
                     todayTargetEl.className = "text-xl font-black text-emerald-400";
                     if (todayTargetSubtext) {
@@ -2699,14 +2751,14 @@ const accountData = {
 
                 // Smart Banner Col 2: Daily Loss Budget
                 const col2Label = document.getElementById("todayMaxLossBudgetLabel");
-                if (col2Label) col2Label.innerText = "🔴 HẠN MỨC LỖ TỐI ĐA HÔM NAY";
+                if (col2Label) col2Label.innerText = "HẠN MỨC LỖ TỐI ĐA HÔM NAY";
                 if (maxLossBudgetEl) {
                     maxLossBudgetEl.innerText = "-$" + remainingLossBudgetToday.toLocaleString('en-US', {minimumFractionDigits: 2});
                     maxLossBudgetEl.className = "text-xl font-black text-rose-500";
                 }
                 if (maxLossSubtextEl) {
                     if (mllBuffer < rawDllVal * 1.5) {
-                        maxLossSubtextEl.innerText = `⚠️ Đệm MLL mỏng (+${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}) -> Khuyên cắt lỗ sớm!`;
+                        maxLossSubtextEl.innerText = `Đệm MLL mỏng (+${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}) -> Khuyên cắt lỗ sớm!`;
                     } else {
                         maxLossSubtextEl.innerText = `Bảo vệ DLL (-${rawDllVal.toLocaleString()}) & Khóa tại vốn ${(data.initialBal/1000).toFixed(0)}K`;
                     }
@@ -2717,7 +2769,7 @@ const accountData = {
 
                 // Smart Banner Col 3: Current MLL Buffer
                 const col3Label = document.getElementById("todayMllBufferLabel");
-                if (col3Label) col3Label.innerText = "🛡️ ĐỆM AN TOÀN MLL HIỆN TẠI";
+                if (col3Label) col3Label.innerText = "ĐỆM AN TOÀN MLL HIỆN TẠI";
                 if (mllBufferValEl) {
                     mllBufferValEl.innerText = "+$" + mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2});
                     mllBufferValEl.className = "text-xl font-black text-amber-400";
@@ -2769,7 +2821,7 @@ const accountData = {
                 const xfaHubDaysProgressText = document.getElementById("xfaHubDaysProgressText");
                 if (xfaHubDaysProgressText) {
                     xfaHubDaysProgressText.innerText = winningDaysCount >= 5
-                        ? "🟢 Đã hoàn thành điều kiện 5 ngày thắng!"
+                        ? "Đã hoàn thành điều kiện 5 ngày thắng!"
                         : `Cần thêm ${5 - winningDaysCount} ngày chốt lãi EOD ≥ +$150 USD`;
                 }
 
@@ -2786,7 +2838,7 @@ const accountData = {
                 const xfaHubBufferWarning = document.getElementById("xfaHubBufferWarning");
                 if (xfaHubBufferWarning) {
                     xfaHubBufferWarning.innerText = remainingBufferAfterWithdrawal < data.dllVal
-                        ? "⚠️ Đệm sau rút mỏng! Rút tối đa có thể làm tài khoản sát ngưỡng MLL."
+                        ? "Đệm sau rút mỏng! Rút tối đa có thể làm tài khoản sát ngưỡng MLL."
                         : "An toàn: Đệm MLL còn lại sau khi rút bảo vệ tài khoản khỏi thanh lý.";
                 }
 
@@ -2797,21 +2849,21 @@ const accountData = {
                 if (xfaHubCalloutBox && xfaHubCalloutDesc) {
                     if (winningDaysCount >= 5 && maxAllowedWithdrawal >= 125) {
                         xfaHubCalloutBox.style.borderLeftColor = "var(--color-green)";
-                        xfaHubCalloutDesc.innerHTML = `🎉 <strong style="color: var(--color-green);">CHÚC MỪNG: TÀI KHOẢN ĐÃ ĐỦ ĐIỀU KIỆN RÚT TIỀN!</strong> Bạn đã tích lũy đủ <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Hạn mức có thể rút đợt này là <strong>$${maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> (thực nhận 90%: <strong>+$${netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>). Đệm MLL còn lại sau khi rút là <strong>+$${remainingBufferAfterWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>. Bấm nút bên trên để gửi yêu cầu rút ngay.`;
+                        xfaHubCalloutDesc.innerHTML = `<strong style="color: var(--color-green);">CHÚC MỪNG: TÀI KHOẢN ĐÃ ĐỦ ĐIỀU KIỆN RÚT TIỀN!</strong> Bạn đã tích lũy đủ <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Hạn mức có thể rút đợt này là <strong>$${maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> (thực nhận 90%: <strong>+$${netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>). Đệm MLL còn lại sau khi rút là <strong>+$${remainingBufferAfterWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>. Bấm nút bên trên để gửi yêu cầu rút ngay.`;
                         if (btnQuickWithdraw) {
-                            btnQuickWithdraw.innerHTML = `💸 Gửi Yêu Cầu Rút $${maxAllowedWithdrawal.toLocaleString()}`;
+                            btnQuickWithdraw.innerHTML = `Gửi Yêu Cầu Rút $${maxAllowedWithdrawal.toLocaleString()}`;
                             btnQuickWithdraw.onclick = () => openPayoutModal(maxAllowedWithdrawal);
                         }
                     } else if (winningDaysCount < 5) {
                         xfaHubCalloutBox.style.borderLeftColor = "var(--color-purple)";
-                        xfaHubCalloutDesc.innerHTML = `ℹ️ <strong>TIẾN TRÌNH PAYOUT:</strong> Tài khoản đã đạt <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Lãi tích lũy hiện có <strong>+$${availableProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> tương ứng hạn mức có thể rút <strong>$${maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> (thực nhận 90%: <strong>+$${netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>). Cần thêm <strong>${5 - winningDaysCount} ngày thắng nữa</strong> để Topstep mở cổng rút tiền.`;
+                        xfaHubCalloutDesc.innerHTML = `<strong>TIẾN TRÌNH PAYOUT:</strong> Tài khoản đã đạt <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Lãi tích lũy hiện có <strong>+$${availableProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> tương ứng hạn mức có thể rút <strong>$${maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> (thực nhận 90%: <strong>+$${netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>). Cần thêm <strong>${5 - winningDaysCount} ngày thắng nữa</strong> để Topstep mở cổng rút tiền.`;
                         if (btnQuickWithdraw) {
                             btnQuickWithdraw.innerHTML = `+ Yêu Cầu Rút Payout`;
                             btnQuickWithdraw.onclick = () => openPayoutModal();
                         }
                     } else {
                         xfaHubCalloutBox.style.borderLeftColor = "var(--color-gold)";
-                        xfaHubCalloutDesc.innerHTML = `ℹ️ <strong>CHƯA ĐỦ LỢI NHUẬN TỐI THIỂU:</strong> Bạn đã đạt <strong>${winningDaysCount}/5 ngày thắng</strong>, nhưng số dư lợi nhuận hiện tại (<strong>+$${availableProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>) chưa đạt mức rút tối thiểu ($125). Hãy tiếp tục tích lũy lợi nhuận trên vốn gốc $${data.initialBal.toLocaleString()}.`;
+                        xfaHubCalloutDesc.innerHTML = `<strong>CHƯA ĐỦ LỢI NHUẬN TỐI THIỂU:</strong> Bạn đã đạt <strong>${winningDaysCount}/5 ngày thắng</strong>, nhưng số dư lợi nhuận hiện tại (<strong>+$${availableProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>) chưa đạt mức rút tối thiểu ($125). Hãy tiếp tục tích lũy lợi nhuận trên vốn gốc $${data.initialBal.toLocaleString()}.`;
                         if (btnQuickWithdraw) {
                             btnQuickWithdraw.innerHTML = `+ Yêu Cầu Rút Payout`;
                             btnQuickWithdraw.onclick = () => openPayoutModal();
@@ -2826,25 +2878,25 @@ const accountData = {
                 const kpi2SubEl = document.getElementById("trackerKpi2SubText");
                 if (kpi2SubEl) {
                     kpi2SubEl.style.color = "var(--color-primary)";
-                    kpi2SubEl.innerHTML = `<span>🎯</span><span>Consistency Rule: Lãi ngày ≤ 55%</span>`;
+                    kpi2SubEl.innerHTML = `<span>Consistency Rule: Lãi ngày ≤ 55%</span>`;
                 }
 
                 document.getElementById("trackerKpi3Label").innerText = "Ngưỡng MLL EOD";
                 document.getElementById("trackerCurrentMll").innerText = `${trailingMll.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                 const kpi3SubEl = document.getElementById("trackerKpi3SubText");
                 if (kpi3SubEl) {
-                    kpi3SubEl.innerHTML = `<span>🛡️</span><span>Trailing EOD: Khóa tại $50,000 vốn</span>`;
+                    kpi3SubEl.innerHTML = `<span>Trailing EOD: Khóa tại $50,000 vốn</span>`;
                 }
 
                 document.getElementById("trackerKpi4Label").innerText = "Trạng Thái Đỗ Combine";
                 const kpi4SubEl = document.getElementById("trackerKpi4SubText");
                 if (kpi4SubEl) kpi4SubEl.innerText = "Giám sát tự động sau mỗi phiên";
 
-                document.getElementById("smartBannerTitle").innerText = `🎯 MỤC TIÊU PNL & GIỚI HẠN RỦI RO PHIÊN (${evalDateDisplay}):`;
+                document.getElementById("smartBannerTitle").innerText = `MỤC TIÊU PNL & GIỚI HẠN RỦI RO PHIÊN (${evalDateDisplay}):`;
                 document.getElementById("smartBannerTitle").className = "text-xs font-black text-emerald-400 uppercase tracking-wider";
 
                 const col1Label = document.getElementById("smartBannerValLabel");
-                if (col1Label) col1Label.innerText = "🟢 LÃI TỐI ĐA NÊN CHỐT HÔM NAY";
+                if (col1Label) col1Label.innerText = "LÃI TỐI ĐA NÊN CHỐT HÔM NAY";
                 const todayTargetSubtext = document.getElementById("todayTargetSubtext");
                 if (todayTargetSubtext) {
                     todayTargetSubtext.innerText = "Đảm bảo quy tắc Consistency ≤55%";
@@ -2852,7 +2904,7 @@ const accountData = {
                 }
 
                 const col2Label = document.getElementById("todayMaxLossBudgetLabel");
-                if (col2Label) col2Label.innerText = "🔴 HẠN MỨC LỖ TỐI ĐA HÔM NAY";
+                if (col2Label) col2Label.innerText = "HẠN MỨC LỖ TỐI ĐA HÔM NAY";
                 const col2Box = document.getElementById("smartBannerCol2Box");
                 if (col2Box) col2Box.style.borderLeftColor = "var(--color-red)";
 
@@ -2860,7 +2912,7 @@ const accountData = {
                     maxLossBudgetEl.innerText = `-$${remainingLossBudgetToday.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                     maxLossBudgetEl.className = "tabular-nums text-2xl font-black text-rose-500";
                     if (mllBuffer < rawDllVal * 1.5) {
-                        maxLossSubtextEl.innerText = `⚠️ Đệm MLL mỏng (${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}) -> Khuyên cắt lỗ sớm!`;
+                        maxLossSubtextEl.innerText = `Đệm MLL mỏng (${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}) -> Khuyên cắt lỗ sớm!`;
                     } else {
                         maxLossSubtextEl.innerText = `Bảo vệ DLL (-${rawDllVal.toLocaleString()}) & Trailing MLL`;
                     }
@@ -2868,7 +2920,7 @@ const accountData = {
                 }
 
                 const col3Label = document.getElementById("todayMllBufferLabel");
-                if (col3Label) col3Label.innerText = "🛡️ ĐỆM AN TOÀN MLL HIỆN TẠI";
+                if (col3Label) col3Label.innerText = "ĐỆM AN TOÀN MLL HIỆN TẠI";
                 if (mllBufferValEl) {
                     mllBufferValEl.innerText = `${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                     mllBufferValEl.className = "tabular-nums text-2xl font-black text-amber-400";
@@ -2894,7 +2946,7 @@ const accountData = {
                     statusTagEl.innerText = "Mức Lãi Ngày 1 Tối Ưu";
                     statusTagEl.className = "px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-bold";
                 } else if (totalPnl >= adjustedTarget && uniqueDaysCount >= 2 && (bestDayPnl / totalPnl) <= 0.55) {
-                    todayTargetEl.innerText = `🎉 ĐÃ ĐẠT ĐỦ ĐIỀU KIỆN`;
+                    todayTargetEl.innerText = `ĐÃ ĐẠT ĐỦ ĐIỀU KIỆN`;
                     todayTargetEl.className = "text-lg font-black text-emerald-400";
                     todayDescEl.innerText = `Đã tích lũy đủ ${totalPnl.toLocaleString('en-US', {minimumFractionDigits: 2})} và đỗ Combine an toàn sau ${uniqueDaysCount} ngày giao dịch!`;
                     statusTagEl.innerText = "Hoàn Thành Đỗ Combine";
@@ -2974,25 +3026,25 @@ const accountData = {
                 let bestDayPct = totalPnl > 0 ? (bestDayPnl / totalPnl) : 0;
 
                 if (journalEntries.length === 0) {
-                    badge.innerText = "🟢 CHỜ DỮ LIỆU";
+                    badge.innerText = "CHỜ DỮ LIỆU";
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
                 } else if (totalPnl >= adjustedTarget && bestDayPct <= 0.55 && uniqueDaysCount >= 2) {
-                    badge.innerText = `🎉 ĐỦ ĐIỀU KIỆN CẤP VỐN! (${adjustedTarget.toLocaleString()})`;
+                    badge.innerText = `ĐỦ ĐIỀU KIỆN CẤP VỐN! (${adjustedTarget.toLocaleString()})`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
                 } else if (totalPnl >= adjustedTarget && bestDayPct <= 0.55 && uniqueDaysCount < 2) {
-                    badge.innerText = `ℹ️ ĐẠT TARGET - CẦN NGÀY (${uniqueDaysCount}/2 ngày)`;
+                    badge.innerText = `ĐẠT TARGET - CẦN NGÀY (${uniqueDaysCount}/2 ngày)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[11px]";
                 } else if (bestDayPnl > data.targetVal * 0.55) {
-                    badge.innerText = `ℹ️ TARGET SCALE ${adjustedTarget.toLocaleString()} (Còn +${remainingPnlNeeded.toLocaleString()})`;
+                    badge.innerText = `TARGET SCALE ${adjustedTarget.toLocaleString()} (Còn +${remainingPnlNeeded.toLocaleString()})`;
                     badge.className = "b-badge b-badge-purple";
                 } else if (bestDayPct > 0.55) {
-                    badge.innerText = `ℹ️ CẦN +${remainingPnlNeeded.toLocaleString()} (Ngày cao ${(bestDayPct * 100).toFixed(1)}%)`;
+                    badge.innerText = `CẦN +${remainingPnlNeeded.toLocaleString()} (Ngày cao ${(bestDayPct * 100).toFixed(1)}%)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold text-[11px]";
                 } else if (uniqueDaysCount < 2) {
-                    badge.innerText = `🟢 ĐANG THI COMBINE (${uniqueDaysCount}/2 ngày tối thiểu)`;
+                    badge.innerText = `ĐANG THI COMBINE (${uniqueDaysCount}/2 ngày tối thiểu)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
                 } else {
-                    badge.innerText = `🟢 ĐANG THI COMBINE (Consistency ${(bestDayPct * 100).toFixed(1)}% ≤ 55%)`;
+                    badge.innerText = `ĐANG THI COMBINE (Consistency ${(bestDayPct * 100).toFixed(1)}% ≤ 55%)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
                 }
             }
