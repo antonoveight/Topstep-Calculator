@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         TopstepX to Cockpit Sync (1-Click Sync)
 // @namespace    https://topstep.cockpit/
-// @version      1.0
+// @version      1.1
 // @description  Tự động đồng bộ số dư, PnL ngày và lệnh từ TopstepX sang Cockpit cá nhân
 // @author       Topstep Cockpit
-// @match        https://trade.topstepx.com/*
+// @match        https://topstepx.com/*
 // @match        https://*.topstepx.com/*
+// @match        http://topstepx.com/*
+// @match        http://*.topstepx.com/*
 // @grant        GM_openInTab
 // @grant        GM_setClipboard
 // @run-at       document-idle
@@ -28,32 +30,32 @@
             <span style="font-weight: 700;">Đồng Bộ Cockpit</span>
         `;
         btn.style.cssText = `
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 999999;
-            background: linear-gradient(135deg, #1E40AF 0%, #2563EB 100%);
-            color: #FFFFFF;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 30px;
-            padding: 10px 18px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
-            transition: all 0.2s ease;
+            position: fixed !important;
+            bottom: 28px !important;
+            right: 28px !important;
+            z-index: 99999999 !important;
+            background: linear-gradient(135deg, #1E40AF 0%, #2563EB 100%) !important;
+            color: #FFFFFF !important;
+            border: 2px solid rgba(255, 255, 255, 0.4) !important;
+            border-radius: 30px !important;
+            padding: 11px 20px !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            font-size: 13.5px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            cursor: pointer !important;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.6) !important;
+            transition: all 0.2s ease !important;
         `;
 
         btn.onmouseover = () => {
-            btn.style.transform = 'translateY(-2px) scale(1.02)';
-            btn.style.boxShadow = '0 12px 28px rgba(37, 99, 235, 0.55)';
+            btn.style.transform = 'translateY(-2px) scale(1.03)';
+            btn.style.boxShadow = '0 14px 32px rgba(37, 99, 235, 0.7)';
         };
         btn.onmouseout = () => {
             btn.style.transform = 'translateY(0) scale(1)';
-            btn.style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.45)';
+            btn.style.boxShadow = '0 10px 30px rgba(37, 99, 235, 0.6)';
         };
 
         btn.onclick = openSyncModal;
@@ -62,7 +64,6 @@
 
     // 2. Tự động cào dữ liệu từ màn hình TopstepX
     function scrapeTopstepXData() {
-        // Lấy ngày hiện tại chuẩn YYYY-MM-DD
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -73,13 +74,14 @@
         let scrapedSymbol = 'MGC';
         let scrapedAccount = '';
 
-        // Tìm PnL trên thanh tiêu đề TopstepX (chứa Daily PnL hoặc P&L)
         try {
             const allElements = Array.from(document.querySelectorAll('*'));
+
+            // 1. Tìm RP&L hoặc Total P&L
             for (const el of allElements) {
-                const text = el.textContent || '';
-                // Nhận diện text dạng Daily P&L hoặc Today's P&L
-                if ((text.includes("Daily P&L") || text.includes("Today's P&L") || text.includes("Realized P&L")) && text.includes("$")) {
+                const text = (el.textContent || '').trim();
+                // Ví dụ: RP&L: $855.30 hoặc Total P&L $855.30
+                if (text.includes("RP&L:") || text.includes("Total P&L") || text.includes("Realized P&L")) {
                     const match = text.match(/([+-]?\$[\d,]+(?:\.\d+)?)/);
                     if (match) {
                         const val = parseFloat(match[1].replace(/[$,]/g, ''));
@@ -91,25 +93,25 @@
                 }
             }
 
-            // Nhận diện mã sản phẩm từ chart hoặc menu TopstepX (ví dụ: MGC, MNQ, MES, GC, NQ, ES)
+            // 2. Tìm mã tài khoản EXPRESS-V2-DLL...
+            for (const el of allElements) {
+                const text = (el.textContent || '').trim();
+                if (text.includes("EXPRESS-") || text.includes("50K DLL EXPRESS") || text.includes("TS-")) {
+                    const m = text.match(/EXPRESS-[A-Za-z0-9-]+/) || text.match(/TS-[A-Za-z0-9-]+/);
+                    if (m) {
+                        scrapedAccount = m[0];
+                        break;
+                    }
+                }
+            }
+
+            // 3. Tìm mã hợp đồng (MGC, GC, MNQ, NQ, MES...)
             for (const el of allElements) {
                 const text = (el.textContent || '').trim();
                 const m = text.match(/\b(MGC|GC|MNQ|NQ|MES|ES|MCL|CL|MYM|YM|M2K|RTY|MBT|BTC)\b/);
                 if (m) {
                     scrapedSymbol = m[1];
                     break;
-                }
-            }
-
-            // Nhận diện mã tài khoản (VD: TS-50K hoặc các chuỗi số tài khoản)
-            for (const el of allElements) {
-                const text = (el.textContent || '').trim();
-                if (text.includes("TS-") || text.includes("50K") || text.includes("100K") || text.includes("150K")) {
-                    const m = text.match(/TS-[\w-]+/);
-                    if (m) {
-                        scrapedAccount = m[0];
-                        break;
-                    }
                 }
             }
         } catch (e) {
