@@ -1271,7 +1271,8 @@ input:focus, select:focus {
     </div>
 </div>
 
-</div>
+<!-- Dynamic TopstepX Sync Toast Container -->
+<div id="finpointSyncToast" style="display: none;"></div>
 
 <!-- JavaScript Engine -->
 <script>
@@ -2802,7 +2803,75 @@ const accountData = {
             const dateEl = document.getElementById('inputDate');
             const pill = document.getElementById('headerTradeDatePill');
             if (dateEl && pill && dateEl.value) pill.innerText = dateEl.value;
+            checkTopstepXSync();
         };
+
+        if (typeof window !== 'undefined' && window.addEventListener) {
+            window.addEventListener('hashchange', checkTopstepXSync);
+        }
+
+        /* ── TOPSTEPX SYNC RECEIVER ── */
+        function checkTopstepXSync() {
+            try {
+                const hash = window.location.hash;
+                if (!hash || !hash.includes('topstepx=')) return;
+                
+                const rawParam = hash.split('topstepx=')[1];
+                if (!rawParam) return;
+                
+                const jsonStr = decodeURIComponent(atob(rawParam));
+                const payload = JSON.parse(jsonStr);
+                
+                if (payload && payload.date && typeof payload.pnl === 'number') {
+                    const acc = getActiveAccount();
+                    const journal = getActiveJournal(acc);
+                    
+                    const existingIdx = journal.findIndex(e => e.date === payload.date);
+                    if (existingIdx >= 0) {
+                        journal[existingIdx].pnl = payload.pnl;
+                        if (payload.symbol) journal[existingIdx].symbol = payload.symbol;
+                    } else {
+                        journal.push({
+                            date: payload.date,
+                            symbol: payload.symbol || 'MGC',
+                            pnl: payload.pnl,
+                            contracts: 1,
+                            trades: 1
+                        });
+                        journal.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    }
+                    
+                    const accounts = JSON.parse(localStorage.getItem('topstep_accounts_data')) || {};
+                    if (accounts[acc.id]) {
+                        accounts[acc.id].journal = journal;
+                        localStorage.setItem('topstep_accounts_data', JSON.stringify(accounts));
+                    }
+                    
+                    renderTrackerTable();
+                    history.replaceState(null, document.title, window.location.pathname + window.location.search);
+                    showSyncToast(`Đã đồng bộ từ TopstepX: Phiên ${payload.date} | PnL ${payload.pnl >= 0 ? '+' : ''}$${payload.pnl.toLocaleString('en-US', {minimumFractionDigits: 2})} (${payload.symbol || 'MGC'})`);
+                }
+            } catch (err) {
+                console.error('Error handling TopstepX sync payload:', err);
+            }
+        }
+
+        function showSyncToast(message) {
+            let toast = document.getElementById('finpointSyncToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'finpointSyncToast';
+                toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: #2563EB; color: #FFFFFF; padding: 12px 20px; border-radius: 12px; font-weight: 600; font-size: 13px; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); display: flex; align-items: center; gap: 10px; transition: all 0.3s ease; transform: translateY(20px); opacity: 0;';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<span style="font-size: 16px;">⚡</span> <span>${message}</span>`;
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.transform = 'translateY(20px)';
+                toast.style.opacity = '0';
+            }, 4500);
+        }
     
 </script>
 </body>
