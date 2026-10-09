@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -568,9 +568,9 @@ select option {
                 <div id="trackerAdjustedTarget" class="tabular-nums" style="font-size: 26px; font-weight: 800; color: var(--color-green); letter-spacing: -0.02em; margin-bottom: 8px;">
                     $3,000
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-primary); font-weight: 500;">
-                    <span>🎯</span>
-                    <span>Consistency Rule: Lãi ngày ≤ 55%</span>
+                <div id="trackerKpi2SubText" style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-primary); font-weight: 500;">
+                    <span id="trackerKpi2IconMini">🎯</span>
+                    <span id="trackerKpi2SubTextVal">Consistency Rule: Lãi ngày ≤ 55%</span>
                 </div>
             </div>
 
@@ -585,9 +585,9 @@ select option {
                 <div id="trackerCurrentMll" class="tabular-nums" style="font-size: 26px; font-weight: 800; color: var(--color-red); letter-spacing: -0.02em; margin-bottom: 8px;">
                     $48,000
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-gold); font-weight: 500;">
+                <div id="trackerKpi3SubText" style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-gold); font-weight: 500;">
                     <span>🛡️</span>
-                    <span>Trailing EOD: Khóa tại $50,000 vốn</span>
+                    <span id="trackerKpi3SubTextVal">Trailing EOD: Khóa tại $50,000 vốn</span>
                 </div>
             </div>
 
@@ -602,7 +602,7 @@ select option {
                 <div style="margin-bottom: 8px;">
                     <span id="trackerConsistencyBadge" class="b-badge b-badge-dim" style="font-size: 12px; padding: 5px 12px;">🟢 CHỜ DỮ LIỆU</span>
                 </div>
-                <div style="font-size: 11.5px; color: var(--text-muted);">
+                <div id="trackerKpi4SubText" style="font-size: 11.5px; color: var(--text-muted);">
                     Giám sát tự động sau mỗi phiên
                 </div>
             </div>
@@ -636,8 +636,8 @@ select option {
                 </div>
 
                 <!-- Col 2: Max Loss Budget -->
-                <div class="b-card-inner" style="padding: 14px 16px; border-left: 3px solid var(--color-red);">
-                    <span style="font-size: 11px; font-weight: 600; color: var(--text-slate); text-transform: uppercase; display: block; margin-bottom: 4px;">
+                <div id="smartBannerCol2Box" class="b-card-inner" style="padding: 14px 16px; border-left: 3px solid var(--color-red);">
+                    <span id="todayMaxLossBudgetLabel" style="font-size: 11px; font-weight: 600; color: var(--text-slate); text-transform: uppercase; display: block; margin-bottom: 4px;">
                         🔴 HẠN MỨC LỖ TỐI ĐA HÔM NAY
                     </span>
                     <span id="todayMaxLossBudget" class="tabular-nums" style="font-size: 22px; font-weight: 800; color: var(--color-red); display: block;">-$1,000.00</span>
@@ -647,8 +647,8 @@ select option {
                 </div>
 
                 <!-- Col 3: MLL Buffer -->
-                <div class="b-card-inner" style="padding: 14px 16px; border-left: 3px solid var(--color-gold);">
-                    <span style="font-size: 11px; font-weight: 600; color: var(--text-slate); text-transform: uppercase; display: block; margin-bottom: 4px;">
+                <div id="smartBannerCol3Box" class="b-card-inner" style="padding: 14px 16px; border-left: 3px solid var(--color-gold);">
+                    <span id="todayMllBufferLabel" style="font-size: 11px; font-weight: 600; color: var(--text-slate); text-transform: uppercase; display: block; margin-bottom: 4px;">
                         🛡️ ĐỆM AN TOÀN MLL HIỆN TẠI
                     </span>
                     <span id="todayMllBufferVal" class="tabular-nums" style="font-size: 22px; font-weight: 800; color: var(--color-gold); display: block;">$2,000.00</span>
@@ -704,13 +704,21 @@ select option {
                 </div>
 
                 <!-- Combine & XFA Side-by-Side comparison cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div class="b-card-inner" style="padding: 12px 14px; border-left: 3px solid var(--color-primary);">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="riskRulesCardsRow">
+                    <div id="combineRulesCard" class="b-card-inner" style="padding: 12px 14px; border-left: 3px solid var(--color-primary);">
                         <div style="font-size: 11.5px; font-weight: 700; color: var(--color-primary); margin-bottom: 6px;">🎯 QUY TẮC VÒNG COMBINE®</div>
                         <div style="font-size: 11.5px; color: var(--text-slate); display: flex; flex-direction: column; gap: 3px;">
                             <div>Target: <strong id="combineProfitTarget" class="tabular-nums" style="color: var(--color-green);">$3,000</strong> · Tối thiểu <strong style="color: var(--text-primary);">≥ 2 ngày</strong></div>
                             <div>Lãi an toàn / ngày: <strong id="safeDailyProfit" class="tabular-nums" style="color: var(--color-gold);">≤ $1,649</strong> (≤55%)</div>
                             <div>MLL Trailing: <span id="combineMllRule" style="color: var(--color-red); font-weight: 600;">Khóa tại vốn $50K</span></div>
+                        </div>
+                    </div>
+                    <div id="xfaRulesCard" class="b-card-inner hidden" style="padding: 12px 14px; border-left: 3px solid var(--color-green);">
+                        <div style="font-size: 11.5px; font-weight: 700; color: var(--color-green); margin-bottom: 6px;">🛡️ QUY TẮC TÀI KHOẢN CẤP VỐN XFA®</div>
+                        <div style="font-size: 11.5px; color: var(--text-slate); display: flex; flex-direction: column; gap: 3px;">
+                            <div>Target Lợi Nhuận: <strong style="color: var(--color-green);">KHÔNG ÁP DỤNG</strong> (Tự do giao dịch)</div>
+                            <div>Consistency 55%: <strong style="color: var(--color-green);">KHÔNG ÁP DỤNG</strong> (Standard Path)</div>
+                            <div>Ngưỡng MLL: <span id="xfaMllRuleText" style="color: var(--color-red); font-weight: 600;">Khóa cố định tại vốn gốc</span></div>
                         </div>
                     </div>
                     <div class="b-card-inner" style="padding: 12px 14px; border-left: 3px solid var(--color-purple);">
@@ -793,7 +801,7 @@ select option {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-card); padding-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                 <div>
                     <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Nhật Ký Giao Dịch &amp; Theo Dõi EOD</div>
-                    <div style="font-size: 11.5px; color: var(--text-muted);">Ghi nhận kết quả chốt phiên, tự động cập nhật Trailing MLL và tính nhất quán 55%</div>
+                    <div id="journalSectionSubtitle" style="font-size: 11.5px; color: var(--text-muted);">Ghi nhận kết quả chốt phiên, tự động cập nhật Trailing MLL và tính nhất quán 55%</div>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     <button onclick="exportTrackerCSV()" class="b-btn-secondary" style="font-size: 12px;">
@@ -902,7 +910,7 @@ select option {
                             <th style="padding: 13px 16px; text-align: right; color: var(--color-red);">Ngưỡng MLL EOD</th>
                             <th style="padding: 13px 16px; text-align: right; color: var(--color-gold);">Đệm An Toàn MLL</th>
                             <th style="padding: 13px 16px; text-align: center;">Trạng Thái DLL</th>
-                            <th style="padding: 13px 16px; text-align: center;">Consistency (≤55%)</th>
+                            <th id="thCol8" style="padding: 13px 16px; text-align: center;">Consistency (≤55%)</th>
                             <th style="padding: 13px 16px; text-align: center;">Thao Tác</th>
                         </tr>
                     </thead>
@@ -910,16 +918,92 @@ select option {
                 </table>
             </div>
 
-            <!-- XFA Payout Withdrawal Section -->
+            <!-- XFA Payout Withdrawal Section (Dedicated Payout Hub) -->
             <div id="xfaPayoutSection" class="hidden" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border-card);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                     <div>
-                        <div style="font-size: 14px; font-weight: 700; color: var(--color-purple);">Lịch Sử Rút Lợi Nhuận Quỹ XFA® (Payouts)</div>
-                        <div style="font-size: 11.5px; color: var(--text-muted);">Tỷ lệ chia lợi nhuận 90/10: Trader nhận 90%, Topstep giữ 10%</div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-size: 15px; font-weight: 800; color: var(--color-purple);">💰 TRUNG TÂM RÚT TIỀN QUỸ XFA®</span>
+                            <span id="xfaHubStatusBadge" class="b-badge b-badge-purple">Standard Path · 90/10 Split</span>
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">
+                            Hạn mức rút tiền tối đa 50% lợi nhuận trên vốn gốc · Không áp dụng luật 55% · Đạt ≥5 ngày thắng (≥+$150 EOD)
+                        </div>
                     </div>
-                    <button onclick="openPayoutModal()" class="b-btn-purple">
-                        + Yêu Cầu Rút Payout
-                    </button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button id="btnQuickWithdraw" onclick="openPayoutModal()" class="b-btn-purple" style="box-shadow: 0 4px 14px rgba(203, 62, 255, 0.35);">
+                            💸 Gửi Yêu Cầu Rút Payout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 Payout Hub Cards Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                    <!-- Card 1: Có thể rút đợt này -->
+                    <div class="b-card-inner" style="padding: 14px 16px; border: 1px solid rgba(203, 62, 255, 0.3); border-radius: 12px; background: rgba(203, 62, 255, 0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-size: 11px; font-weight: 700; color: var(--color-purple); text-transform: uppercase;">CÓ THỂ RÚT ĐỢT NÀY</span>
+                            <span id="xfaHubCapBadge" class="b-badge b-badge-purple" style="font-size: 10px;">Trần $2,000</span>
+                        </div>
+                        <div id="xfaHubMaxWithdraw" class="tabular-nums" style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
+                            $0.00
+                        </div>
+                        <div id="xfaHubMaxWithdrawNote" style="font-size: 11px; color: var(--text-muted);">
+                            Tối đa 50% số dư lợi nhuận trên vốn gốc
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Thực nhận 90% -->
+                    <div class="b-card-inner" style="padding: 14px 16px; border: 1px solid rgba(67, 180, 48, 0.3); border-radius: 12px; background: rgba(67, 180, 48, 0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-size: 11px; font-weight: 700; color: var(--color-green); text-transform: uppercase;">THỰC NHẬN (90% SPLIT)</span>
+                            <span class="b-badge b-badge-green" style="font-size: 10px;">Trader 90%</span>
+                        </div>
+                        <div id="xfaHubNetPayout" class="tabular-nums" style="font-size: 24px; font-weight: 800; color: var(--color-green); margin-bottom: 4px;">
+                            +$0.00
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted);">
+                            Topstep giữ 10% · Không tính thêm phí
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Tiến trình 5 ngày thắng -->
+                    <div class="b-card-inner" style="padding: 14px 16px; border: 1px solid var(--border-inner); border-radius: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-size: 11px; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">TIẾN TRÌNH 5 NGÀY THẮNG</span>
+                            <span id="xfaHubDaysBadge" class="b-badge b-badge-blue" style="font-size: 10px;">0/5 Ngày</span>
+                        </div>
+                        <div id="xfaHubDaysCount" class="tabular-nums" style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
+                            0 / 5 Ngày
+                        </div>
+                        <div id="xfaHubDaysProgressText" style="font-size: 11px; color: var(--text-muted);">
+                            Mỗi ngày chốt lãi EOD ≥ +$150 USD
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Đệm MLL sau khi rút -->
+                    <div class="b-card-inner" style="padding: 14px 16px; border: 1px solid var(--border-inner); border-radius: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-size: 11px; font-weight: 700; color: var(--color-gold); text-transform: uppercase;">ĐỆM MLL CÒN LẠI SAU RÚT</span>
+                            <span id="xfaHubMllThresholdBadge" class="b-badge b-badge-dim" style="font-size: 10px;">Khóa $50,000</span>
+                        </div>
+                        <div id="xfaHubRemainingBuffer" class="tabular-nums" style="font-size: 24px; font-weight: 800; color: var(--color-gold); margin-bottom: 4px;">
+                            +$0.00
+                        </div>
+                        <div id="xfaHubBufferWarning" style="font-size: 11px; color: var(--text-muted);">
+                            Rút tiền làm co hẹp đệm an toàn MLL
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guidance / Callout Box -->
+                <div id="xfaHubCalloutBox" style="background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-left: 3px solid var(--color-purple); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;">
+                    <p id="xfaHubCalloutDesc" style="font-size: 12px; color: var(--text-slate); margin: 0; line-height: 1.5;"></p>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary);">Lịch Sử Các Đợt Rút Lợi Nhuận</div>
+                    <div style="font-size: 11.5px; color: var(--text-muted);">Tối thiểu $125/lần rút</div>
                 </div>
 
                 <div style="overflow-x: auto; border: 1px solid rgba(203, 62, 255, 0.25); border-radius: 14px;">
@@ -1868,6 +1952,27 @@ const accountData = {
             }
         }
 
+        
+        function getPayoutCap(acc, data) {
+            const isDouble = (acc.pricingPath === "no_activation");
+            if (acc.xfaPath === "consistency_payout") {
+                return {
+                    val: data.xfaConCapVal,
+                    label: data.xfaConCap
+                };
+            }
+            if (isDouble) {
+                return {
+                    val: data.xfaConCapVal,
+                    label: data.xfaConCap + " (Double Cap)"
+                };
+            }
+            return {
+                val: data.xfaStdCapVal,
+                label: data.xfaStdCap
+            };
+        }
+
         function calculateRules() {
             const acc = getActiveAccount();
             const selectedAcc = acc.size;
@@ -1875,6 +1980,7 @@ const accountData = {
             const xfaPath = acc.xfaPath || "standard_payout";
 
             const data = accountData[selectedAcc];
+            const capInfo = getPayoutCap(acc, data);
 
             if (pricingPath === "standard") {
                 document.getElementById("monthlyFee").innerText = data.stdFee;
@@ -1886,14 +1992,27 @@ const accountData = {
                 document.getElementById("activationFeeNote").className = "text-[10px] text-emerald-400 font-medium block mt-0.5";
             }
 
-            if (acc.stage === "xfa") {
-                document.getElementById("card2Label").innerText = "Tổng Payout Đã Rút";
-                document.getElementById("profitTarget").innerText = `$${(acc.payoutHistory || []).reduce((sum, p) => sum + p.amount, 0).toLocaleString()}`;
-                document.getElementById("profitTarget").className = "text-lg font-black text-purple-400";
-                document.getElementById("card2Note").innerText = "Tổng tiền đã rút";
+            const combineCardEl = document.getElementById("combineRulesCard");
+            const xfaCardEl = document.getElementById("xfaRulesCard");
+            const xfaMllRuleTextEl = document.getElementById("xfaMllRuleText");
+            if (xfaMllRuleTextEl) {
+                xfaMllRuleTextEl.innerText = `Khóa tại vốn ${(data.initialBal/1000).toFixed(0)}K (${data.initialBal.toLocaleString()})`;
+            }
 
-                document.getElementById("mllLockInfo").innerText = "Khóa vĩnh viễn tại $0";
+            if (acc.stage === "xfa") {
+                if (combineCardEl) combineCardEl.classList.add("hidden");
+                if (xfaCardEl) xfaCardEl.classList.remove("hidden");
+
+                document.getElementById("card2Label").innerText = "Tổng Payout Đã Rút";
+                document.getElementById("profitTarget").innerText = `${(acc.payoutHistory || []).reduce((sum, p) => sum + p.amount, 0).toLocaleString()}`;
+                document.getElementById("profitTarget").className = "text-lg font-black text-purple-400";
+                document.getElementById("card2Note").innerText = "Đã chuyển về ví";
+
+                document.getElementById("mllLockInfo").innerText = `Khóa tại vốn ${(data.initialBal/1000).toFixed(0)}K`;
             } else {
+                if (combineCardEl) combineCardEl.classList.remove("hidden");
+                if (xfaCardEl) xfaCardEl.classList.add("hidden");
+
                 document.getElementById("card2Label").innerText = "Mục Tiêu Target";
                 document.getElementById("profitTarget").innerText = data.target;
                 document.getElementById("profitTarget").className = "text-lg font-black text-emerald-400";
@@ -1911,12 +2030,12 @@ const accountData = {
 
             if (xfaPath === "standard_payout") {
                 document.getElementById("xfaPathTitle").innerText = "Standard Path Payout";
-                document.getElementById("xfaPathDesc").innerText = "≥ 5 ngày thắng (lãi ≥ +$150 EOD). Rút tối đa 50% số dư.";
-                document.getElementById("xfaPayoutCap").innerText = data.xfaStdCap;
+                document.getElementById("xfaPathDesc").innerText = "≥ 5 ngày thắng (lãi ≥ +$150 EOD). Rút ≤50% số dư lợi nhuận.";
+                document.getElementById("xfaPayoutCap").innerText = capInfo.label;
             } else {
                 document.getElementById("xfaPathTitle").innerText = "Consistency Path Payout";
-                document.getElementById("xfaPathDesc").innerText = "≥ 3 ngày trade + Consistency ≤ 40% EOD.";
-                document.getElementById("xfaPayoutCap").innerText = data.xfaConCap;
+                document.getElementById("xfaPathDesc").innerText = "≥ 3 ngày trade + Consistency ≤ 40% EOD. Rút ≤50% số dư lợi nhuận.";
+                document.getElementById("xfaPayoutCap").innerText = capInfo.label;
             }
 
             document.getElementById("inputContracts").value = Math.floor(data.maxMicros / 10);
@@ -2193,25 +2312,35 @@ const accountData = {
             }
         }
 
-        function openPayoutModal() {
+        function openPayoutModal(prefill) {
             const acc = getActiveAccount();
             const data = accountData[acc.size];
             const journalEntries = getActiveJournal(acc);
             const payoutHistory = acc.payoutHistory || [];
             let totalPnl = journalEntries.reduce((sum, e) => sum + e.pnl, 0);
             let totalPayouts = payoutHistory.reduce((sum, p) => sum + p.amount, 0);
-            let currentProfit = totalPnl - totalPayouts;
-            let xfaCapVal = acc.xfaPath === "standard_payout" ? data.xfaStdCapVal : data.xfaConCapVal;
-            let maxAllowed = Math.max(0, Math.min(xfaCapVal, Math.floor(currentProfit * 0.5)));
+            let currentBal = data.initialBal + totalPnl;
+            let netAccountBal = currentBal - totalPayouts;
+            let availableProfit = Math.max(0, netAccountBal - data.initialBal);
+            let capInfo = getPayoutCap(acc, data);
+            let maxAllowed = Math.max(0, Math.min(capInfo.val, Math.floor(availableProfit * 0.5)));
 
             document.getElementById("payoutDate").valueAsDate = new Date();
             const maxHintEl = document.getElementById("payoutMaxHint");
             if (maxHintEl) {
-                maxHintEl.innerText = `Tối thiểu: $125 | Hạn mức tối đa đợt này: ${maxAllowed.toLocaleString()} (tối đa 50% lợi nhuận, trần ${xfaCapVal.toLocaleString()})`;
+                maxHintEl.innerText = `Tối thiểu: $125 | Hạn mức tối đa đợt này: ${maxAllowed.toLocaleString()} (tối đa 50% lãi, trần ${capInfo.label})`;
             }
             const inputEl = document.getElementById("payoutAmount");
             if (inputEl) {
                 inputEl.min = 125;
+                if (maxAllowed > 0) inputEl.max = maxAllowed;
+                if (typeof prefill === 'number' && prefill > 0) {
+                    inputEl.value = Math.min(prefill, maxAllowed);
+                } else if (maxAllowed >= 125) {
+                    inputEl.value = maxAllowed;
+                } else {
+                    inputEl.value = "";
+                }
             }
             document.getElementById("payoutModal").classList.remove("hidden");
         }
@@ -2221,12 +2350,40 @@ const accountData = {
         function submitPayoutRequest(e) {
             e.preventDefault();
             const acc = getActiveAccount();
+            const data = accountData[acc.size];
+            const journalEntries = getActiveJournal(acc);
+            const payoutHistory = acc.payoutHistory || [];
+            let totalPnl = journalEntries.reduce((sum, e) => sum + e.pnl, 0);
+            let totalPayouts = payoutHistory.reduce((sum, p) => sum + p.amount, 0);
+            let currentBal = data.initialBal + totalPnl;
+            let netAccountBal = currentBal - totalPayouts;
+            let availableProfit = Math.max(0, netAccountBal - data.initialBal);
+            let capInfo = getPayoutCap(acc, data);
+            let maxAllowed = Math.max(0, Math.min(capInfo.val, Math.floor(availableProfit * 0.5)));
+
             const date = document.getElementById("payoutDate").value;
             const amount = parseFloat(document.getElementById("payoutAmount").value) || 0;
 
             if (amount < 125) {
                 alert("Số tiền rút tối thiểu theo quy định Topstep là $125 USD!");
                 return;
+            }
+
+            if (amount > maxAllowed) {
+                alert(`Số tiền yêu cầu (${amount.toLocaleString()}) vượt quá hạn mức tối đa cho phép đợt này (${maxAllowed.toLocaleString()})!`);
+                return;
+            }
+
+            let dailyPnlMap = {};
+            journalEntries.forEach(entry => {
+                dailyPnlMap[entry.date] = (dailyPnlMap[entry.date] || 0) + entry.pnl;
+            });
+            let winningDaysCount = Object.values(dailyPnlMap).filter(dayPnl => dayPnl >= 150).length;
+
+            if (acc.xfaPath === "standard_payout" && winningDaysCount < 5) {
+                if (!confirm(`Lưu ý: Tài khoản hiện mới đạt ${winningDaysCount}/5 ngày thắng (≥+$150 EOD). Bạn có chắc chắn muốn ghi nhận đợt rút này không?`)) {
+                    return;
+                }
             }
 
             if (!acc.payoutHistory) acc.payoutHistory = [];
@@ -2249,8 +2406,9 @@ const accountData = {
             const data = accountData[acc.size];
             const journalEntries = getActiveJournal(acc);
             const payoutHistory = acc.payoutHistory || [];
+            const capInfo = getPayoutCap(acc, data);
 
-            document.getElementById("trackerAccBadge").innerText = `Gói $${(data.initialBal/1000).toFixed(0)},000`;
+            document.getElementById("trackerAccBadge").innerText = `Gói ${(data.initialBal/1000).toFixed(0)},000`;
             document.getElementById("trackerStageBadge").innerText = acc.stage === 'xfa' ? 'Vòng XFA' : 'Vòng Combine';
             
             if (acc.pricingPath === "standard") {
@@ -2260,11 +2418,22 @@ const accountData = {
             }
             
             if (acc.xfaPath === "standard_payout") {
-                document.getElementById("trackerXfaBadge").innerText = `Standard Payout (${data.xfaStdCap}/đợt)`;
+                document.getElementById("trackerXfaBadge").innerText = `Standard Payout (${capInfo.label}/đợt)`;
             } else {
-                document.getElementById("trackerXfaBadge").innerText = `Consistency Payout (${data.xfaConCap}/đợt)`;
+                document.getElementById("trackerXfaBadge").innerText = `Consistency Payout (${capInfo.label}/đợt)`;
             }
             document.getElementById("trackerMaxContractsBadge").innerText = data.contracts;
+
+            const thCol8 = document.getElementById("thCol8");
+            if (thCol8) {
+                thCol8.innerText = (acc.stage === 'xfa') ? 'Ngày Thắng (≥+$150 EOD)' : 'Consistency (≤55%)';
+            }
+            const journalSubEl = document.getElementById("journalSectionSubtitle");
+            if (journalSubEl) {
+                journalSubEl.innerText = (acc.stage === 'xfa')
+                    ? 'Ghi nhận kết quả chốt phiên EOD, tự động tính hạn mức rút tiền và đếm số ngày thắng (≥+$150)'
+                    : 'Ghi nhận kết quả chốt phiên, tự động cập nhật Trailing MLL và tính nhất quán 55%';
+            }
 
             tbody.innerHTML = "";
 
@@ -2311,6 +2480,23 @@ const accountData = {
                 let dateTotalPnl = dailyPnlMap[entry.date] || entry.pnl;
                 let dayConsistencyPct = totalPnl > 0 && dateTotalPnl > 0 ? ((dateTotalPnl / totalPnl) * 100).toFixed(1) : 0;
 
+                let col8Cell = "";
+                if (acc.stage === "xfa") {
+                    if (acc.xfaPath === "standard_payout") {
+                        if (entry.pnl >= 150) {
+                            col8Cell = `<span class="b-badge b-badge-green" style="font-size: 11px; font-weight: 700;">🟢 Đạt (+$150+)</span>`;
+                        } else if (entry.pnl > 0) {
+                            col8Cell = `<span class="b-badge b-badge-dim" style="font-size: 11px; font-weight: 600;">⚪ Lãi (<$150)</span>`;
+                        } else {
+                            col8Cell = `<span class="b-badge b-badge-red" style="font-size: 11px; font-weight: 600;">🔴 Ngày Lỗ</span>`;
+                        }
+                    } else {
+                        col8Cell = `<span class="b-badge ${parseFloat(dayConsistencyPct) > 40 ? 'b-badge-gold' : 'b-badge-dim'}" style="font-size: 11px; font-weight: 600;">${dayConsistencyPct}% (≤40%)</span>`;
+                    }
+                } else {
+                    col8Cell = `<span class="b-badge ${parseFloat(dayConsistencyPct) > 55 ? 'b-badge-gold' : 'b-badge-dim'}" style="font-size: 11px; font-weight: 600;">${dayConsistencyPct}%</span>`;
+                }
+
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td style="padding: 12px 16px; font-weight: 600; color: var(--text-primary);">${entry.date}</td>
@@ -2335,9 +2521,7 @@ const accountData = {
                         </span>
                     </td>
                     <td style="padding: 12px 16px; text-align: center;">
-                        <span class="b-badge ${parseFloat(dayConsistencyPct) > 55 ? 'b-badge-gold' : 'b-badge-dim'}" style="font-size: 11px; font-weight: 600;">
-                            ${dayConsistencyPct}%
-                        </span>
+                        ${col8Cell}
                     </td>
                     <td style="padding: 12px 16px; text-align: center;">
                         <button type="button" onclick="deleteEntry(${idx})" class="b-btn-danger" style="padding: 4px 10px; font-size: 11.5px; border-radius: 8px;" title="Xóa phiên ${entry.date}">
@@ -2364,7 +2548,7 @@ const accountData = {
                             <td style="padding: 12px 16px; text-align: right; font-weight: 700; color: var(--color-purple);" class="tabular-nums">${p.amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                             <td style="padding: 12px 16px; text-align: right; font-weight: 800; color: var(--color-green);" class="tabular-nums">+${netPayoutReceived.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                             <td style="padding: 12px 16px; text-align: right; font-weight: 700; color: var(--text-primary);" class="tabular-nums">${runningPayoutBal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                            <td style="padding: 12px 16px; text-align: center;">
+                            <td style="padding: 12px 16px; text-align: right;">
                                 <button type="button" onclick="deletePayout(${idx})" class="b-btn-danger" style="padding: 4px 10px; font-size: 11.5px; border-radius: 8px;" title="Xóa đợt rút này">
                                     ✕ Xóa
                                 </button>
@@ -2375,10 +2559,10 @@ const accountData = {
                 }
             }
 
-            document.getElementById("trackerTotalPnl").innerText = `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            document.getElementById("trackerTotalPnl").innerText = `${totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             document.getElementById("trackerTotalPnl").className = `text-base font-black ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
 
-            // Common MLL Buffer & Safe Loss Budget calculation for both stages
+            // Common MLL Buffer & Safe Loss Budget calculation
             let mllBuffer = Math.max(0, netAccountBal - trailingMll);
             let rawDllVal = data.dllVal;
             let safeDailyLossBudgetVal = Math.min(rawDllVal, Math.floor(mllBuffer * 0.5));
@@ -2397,91 +2581,275 @@ const accountData = {
 
             const maxLossBudgetEl = document.getElementById("todayMaxLossBudget");
             const maxLossSubtextEl = document.getElementById("todayLossBudgetSubtext");
-            if (maxLossBudgetEl) {
-                maxLossBudgetEl.innerText = `-$${remainingLossBudgetToday.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-                if (mllBuffer < rawDllVal * 1.5) {
-                    maxLossSubtextEl.innerText = `⚠️ Đệm MLL mỏng ($${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}) -> Khuyên cắt lỗ sớm!`;
-                } else {
-                    maxLossSubtextEl.innerText = `Bảo vệ DLL (-$${rawDllVal.toLocaleString()}) & Trailing MLL`;
-                }
-            }
-
             const mllBufferValEl = document.getElementById("todayMllBufferVal");
             const mllThresholdTextEl = document.getElementById("bannerMllThresholdText");
-            if (mllBufferValEl) {
-                mllBufferValEl.innerText = `$${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            }
-            if (mllThresholdTextEl) {
-                mllThresholdTextEl.innerText = `$${trailingMll.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            }
 
             if (acc.stage === "xfa") {
-                document.getElementById("trackerKpi2Label").innerText = "Tổng Payout Đã Rút";
-                document.getElementById("trackerAdjustedTarget").innerText = `$${totalPayouts.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-                document.getElementById("trackerAdjustedTarget").className = "text-base font-black text-purple-400";
-
-                document.getElementById("trackerKpi3Label").innerText = "Ngưỡng MLL Trailing EOD";
-                document.getElementById("trackerCurrentMll").innerText = `$${trailingMll.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-
-                document.getElementById("trackerKpi4Label").innerText = "Trạng Thái Payout XFA";
-                
+                let availableProfit = Math.max(0, netAccountBal - data.initialBal);
+                let maxAllowedWithdrawal = Math.max(0, Math.min(capInfo.val, Math.floor(availableProfit * 0.5)));
+                let netTraderReceive = maxAllowedWithdrawal * 0.9;
+                let balAfterWithdraw = netAccountBal - maxAllowedWithdrawal;
+                let remainingBufferAfterWithdrawal = Math.max(0, balAfterWithdraw - trailingMll);
                 let winningDaysCount = Object.values(dailyPnlMap).filter(pnl => pnl >= 150).length;
                 let totalTradingDaysCount = Object.keys(dailyPnlMap).length;
                 let bestDayPct = totalPnl > 0 ? (bestDayPnl / totalPnl) : 0;
 
-                const badge = document.getElementById("trackerConsistencyBadge");
-                if (acc.xfaPath === "standard_payout") {
-                    if (winningDaysCount >= 5) {
-                        badge.innerText = `🎉 ĐỦ ĐIỀU KIỆN RÚT PAYOUT! (${winningDaysCount}/5 ngày thắng)`;
-                        badge.className = "b-badge b-badge-green";
-                    } else {
-                        badge.innerText = `🟢 ĐẠT ${winningDaysCount}/5 NGÀY THẮNG (Mỗi ngày ≥ +$150 EOD)`;
-                        badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold text-[11px]";
-                    }
-                } else {
-                    if (totalTradingDaysCount >= 3 && bestDayPct <= 0.40) {
-                        badge.innerText = `🎉 ĐỦ ĐIỀU KIỆN RÚT PAYOUT! (3 ngày & Consistency ${ (bestDayPct*100).toFixed(1) }%)`;
-                        badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
-                    } else {
-                        badge.innerText = `ℹ️ CHỜ ĐIỀU KIỆN (${totalTradingDaysCount}/3 ngày trade, Consistency ${ (bestDayPct*100).toFixed(1) }%)`;
-                        badge.className = "b-badge b-badge-gold";
-                    }
+                // Card 2: Có Thể Rút Đợt Này
+                document.getElementById("trackerKpi2Label").innerText = "Có Thể Rút Đợt Này";
+                document.getElementById("trackerAdjustedTarget").innerText = "$" + maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2});
+                document.getElementById("trackerAdjustedTarget").className = "tabular-nums text-base font-black text-purple-400";
+                const kpi2SubEl = document.getElementById("trackerKpi2SubText");
+                if (kpi2SubEl) {
+                    kpi2SubEl.style.color = "var(--color-purple)";
+                    kpi2SubEl.innerHTML = `<span>💰</span><span>Tối đa 50% lãi · Trần ${capInfo.label} (90%: +$${netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2})})</span>`;
                 }
 
+                // Card 3: Ngưỡng MLL Khóa Vốn
+                document.getElementById("trackerKpi3Label").innerText = "Ngưỡng MLL Khóa Vốn";
+                document.getElementById("trackerCurrentMll").innerText = "$" + trailingMll.toLocaleString('en-US', {minimumFractionDigits: 2});
+                const kpi3SubEl = document.getElementById("trackerKpi3SubText");
+                if (kpi3SubEl) {
+                    kpi3SubEl.innerHTML = `<span>🛡️</span><span>Đệm MLL khả dụng: +${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>`;
+                }
+
+                // Card 4: Tiến Trình Rút Payout
+                document.getElementById("trackerKpi4Label").innerText = "Tiến Trình Rút Payout";
+                const badge = document.getElementById("trackerConsistencyBadge");
+                if (acc.xfaPath === "standard_payout") {
+                    if (winningDaysCount >= 5 && maxAllowedWithdrawal >= 125) {
+                        badge.innerText = `🎉 ĐỦ ĐIỀU KIỆN RÚT PAYOUT! (${winningDaysCount}/5 ngày)`;
+                        badge.className = "b-badge b-badge-green";
+                    } else if (winningDaysCount >= 5 && maxAllowedWithdrawal < 125) {
+                        badge.innerText = `⏳ ĐỦ 5 NGÀY - CẦN THÊM LÃI (≥$125)`;
+                        badge.className = "b-badge b-badge-gold";
+                    } else {
+                        badge.innerText = `⏳ TIẾN TRÌNH: ${winningDaysCount}/5 NGÀY THẮNG (≥+$150)`;
+                        badge.className = "b-badge b-badge-purple";
+                    }
+                    const kpi4SubEl = document.getElementById("trackerKpi4SubText");
+                    if (kpi4SubEl) kpi4SubEl.innerText = "Standard Path: Cần ≥5 ngày EOD ≥+$150 · Không áp dụng 55%";
+                } else {
+                    if (totalTradingDaysCount >= 3 && bestDayPct <= 0.40) {
+                        badge.innerText = `🎉 ĐỦ ĐIỀU KIỆN RÚT! (3 ngày & ≤40%)`;
+                        badge.className = "b-badge b-badge-green";
+                    } else {
+                        badge.innerText = `⏳ CHỜ ĐIỀU KIỆN (${totalTradingDaysCount}/3 ngày, ${(bestDayPct*100).toFixed(1)}%)`;
+                        badge.className = "b-badge b-badge-gold";
+                    }
+                    const kpi4SubEl = document.getElementById("trackerKpi4SubText");
+                    if (kpi4SubEl) kpi4SubEl.innerText = "Consistency Path: Cần ≥3 ngày trade + Consistency ≤40%";
+                }
+
+                // Smart Activity Banner for XFA
                 document.getElementById("smartBannerTitle").innerText = `💰 HẠN MỨC PAYOUT & BẢO VỆ TÀI KHOẢN XFA (${evalDateDisplay}):`;
                 document.getElementById("smartBannerTitle").className = "text-xs font-black text-purple-300 uppercase tracking-wider";
-
-                let xfaCapVal = (acc.xfaPath === 'standard_payout') ? data.xfaStdCapVal : data.xfaConCapVal;
-                let currentProfit = currentBal - data.initialBal - totalPayouts;
-                let maxAllowedWithdrawal = Math.max(0, Math.min(xfaCapVal, currentProfit * 0.5));
 
                 const todayTargetEl = document.getElementById("todayTargetPnl");
                 const todayDescEl = document.getElementById("targetDynamicDesc");
                 const statusTagEl = document.getElementById("suggestionStatusTag");
 
-                todayTargetEl.innerText = `$${maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                if (winningDaysCount >= 5 && maxAllowedWithdrawal >= 125) {
+                    statusTagEl.innerText = "Đủ Điều Kiện Rút Payout";
+                    statusTagEl.className = "b-badge b-badge-green";
+                    todayDescEl.innerHTML = `🎉 <strong style="color: var(--color-green);">ĐÃ ĐỦ ĐIỀU KIỆN RÚT TIỀN:</strong> Bạn đã đạt <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Số dư hiện tại ${netAccountBal.toLocaleString()} (lãi ròng +${availableProfit.toLocaleString()}). Bạn có thể rút tối đa <strong>${maxAllowedWithdrawal.toLocaleString()}</strong> (thực nhận 90%: <strong>+${netTraderReceive.toLocaleString()}</strong>). Sau khi rút, đệm MLL còn lại là <strong>+${remainingBufferAfterWithdrawal.toLocaleString()}</strong> (ngưỡng khóa tại ${data.initialBal.toLocaleString()}).`;
+                } else if (winningDaysCount < 5) {
+                    statusTagEl.innerText = "Đang Tích Lũy Ngày Thắng";
+                    statusTagEl.className = "b-badge b-badge-purple";
+                    todayDescEl.innerHTML = `ℹ️ <strong>TIẾN TRÌNH RÚT XFA:</strong> Tài khoản đã đạt <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Lãi tích lũy hiện có <strong>+${availableProfit.toLocaleString()}</strong> tương ứng hạn mức có thể rút <strong>${maxAllowedWithdrawal.toLocaleString()}</strong> (90% nhận: <strong>+${netTraderReceive.toLocaleString()}</strong>). Bạn cần thêm <strong>${5 - winningDaysCount} ngày thắng nữa</strong> để mở cổng rút tiền.`;
+                } else {
+                    statusTagEl.innerText = "Cần Thêm Lợi Nhuận";
+                    statusTagEl.className = "b-badge b-badge-gold";
+                    todayDescEl.innerHTML = `ℹ️ <strong>CẦN TÍCH LŨY THÊM LỢI NHUẬN:</strong> Bạn đã đủ <strong>${winningDaysCount}/5 ngày thắng</strong>, nhưng số dư lợi nhuận hiện tại (+${availableProfit.toLocaleString()}) chưa đạt mức rút tối thiểu ($125). Hãy tiếp tục giao dịch tích lũy lợi nhuận trên vốn gốc ${data.initialBal.toLocaleString()}.`;
+                }
+
+                // Smart Banner Col 1
+                const col1Label = document.getElementById("smartBannerValLabel");
+                if (col1Label) col1Label.innerText = "🟢 CÓ THỂ RÚT ĐỢT NÀY";
+                todayTargetEl.innerText = "$" + maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2});
                 todayTargetEl.className = "text-xl font-black text-purple-300";
-                
-                statusTagEl.innerText = "Hạn Mức Rút Đợt Này";
-                statusTagEl.className = "px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-bold";
+                const todayTargetSubtext = document.getElementById("todayTargetSubtext");
+                if (todayTargetSubtext) {
+                    todayTargetSubtext.innerText = `Tối đa 50% lãi · Trần ${capInfo.label}`;
+                    todayTargetSubtext.style.color = "var(--color-purple)";
+                }
 
-                todayDescEl.innerText = `Số dư khả dụng: $${netAccountBal.toLocaleString()}. Bạn có thể gửi yêu cầu rút tối đa $${maxAllowedWithdrawal.toLocaleString()} (tối đa 50% lợi nhuận và không quá trần $${xfaCapVal.toLocaleString()}).`;
+                // Smart Banner Col 2
+                const col2Label = document.getElementById("todayMaxLossBudgetLabel");
+                if (col2Label) col2Label.innerText = "💵 THỰC NHẬN 90% (VỀ VÍ)";
+                if (maxLossBudgetEl) {
+                    maxLossBudgetEl.innerText = "+$" + netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    maxLossBudgetEl.className = "text-xl font-black text-emerald-400";
+                }
+                if (maxLossSubtextEl) {
+                    maxLossSubtextEl.innerText = "Topstep chia 90/10 · Miễn phí chuyển khoản";
+                    maxLossSubtextEl.style.color = "var(--color-green)";
+                }
+                const col2Box = document.getElementById("smartBannerCol2Box");
+                if (col2Box) col2Box.style.borderLeftColor = "var(--color-green)";
 
-                const hintEl = document.getElementById("payoutMaxHint");
-                if (hintEl) hintEl.innerText = `Hạn mức rút tối đa: $${maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                // Smart Banner Col 3
+                const col3Label = document.getElementById("todayMllBufferLabel");
+                if (col3Label) col3Label.innerText = "🛡️ ĐỆM MLL SAU KHI RÚT";
+                if (mllBufferValEl) {
+                    mllBufferValEl.innerText = "+$" + remainingBufferAfterWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    mllBufferValEl.className = "text-xl font-black text-amber-400";
+                }
+                const col3Sub = document.getElementById("todayMllLimitSubtext");
+                if (col3Sub) {
+                    col3Sub.innerHTML = `Khóa thanh lý: <strong id="bannerMllThresholdText" style="color: var(--color-red);">${data.initialBal.toLocaleString()}</strong>`;
+                }
+
+                // Dedicated Payout Hub Widgets Update
+                const xfaHubStatusBadge = document.getElementById("xfaHubStatusBadge");
+                if (xfaHubStatusBadge) {
+                    xfaHubStatusBadge.innerText = (acc.xfaPath === "standard_payout")
+                        ? "Standard Path · 90/10 Split (Không Áp Dụng 55%)"
+                        : "Consistency Path · 90/10 Split";
+                }
+
+                const xfaHubCapBadge = document.getElementById("xfaHubCapBadge");
+                if (xfaHubCapBadge) xfaHubCapBadge.innerText = `Trần ${capInfo.label}`;
+
+                const xfaHubMaxWithdraw = document.getElementById("xfaHubMaxWithdraw");
+                if (xfaHubMaxWithdraw) {
+                    xfaHubMaxWithdraw.innerText = "$" + maxAllowedWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    xfaHubMaxWithdraw.style.color = maxAllowedWithdrawal > 0 ? "var(--color-purple)" : "var(--text-primary)";
+                }
+
+                const xfaHubMaxWithdrawNote = document.getElementById("xfaHubMaxWithdrawNote");
+                if (xfaHubMaxWithdrawNote) {
+                    xfaHubMaxWithdrawNote.innerText = `Tối đa 50% lãi ròng (Lũy kế: +${availableProfit.toLocaleString('en-US', {minimumFractionDigits: 2})})`;
+                }
+
+                const xfaHubNetPayout = document.getElementById("xfaHubNetPayout");
+                if (xfaHubNetPayout) {
+                    xfaHubNetPayout.innerText = "+$" + netTraderReceive.toLocaleString('en-US', {minimumFractionDigits: 2});
+                }
+
+                const xfaHubDaysBadge = document.getElementById("xfaHubDaysBadge");
+                if (xfaHubDaysBadge) {
+                    xfaHubDaysBadge.innerText = `${winningDaysCount}/5 Ngày`;
+                    xfaHubDaysBadge.className = winningDaysCount >= 5 ? "b-badge b-badge-green" : "b-badge b-badge-blue";
+                }
+
+                const xfaHubDaysCount = document.getElementById("xfaHubDaysCount");
+                if (xfaHubDaysCount) {
+                    xfaHubDaysCount.innerText = `${winningDaysCount} / 5 Ngày`;
+                    xfaHubDaysCount.style.color = winningDaysCount >= 5 ? "var(--color-green)" : "var(--text-primary)";
+                }
+
+                const xfaHubDaysProgressText = document.getElementById("xfaHubDaysProgressText");
+                if (xfaHubDaysProgressText) {
+                    xfaHubDaysProgressText.innerText = winningDaysCount >= 5
+                        ? "🟢 Đã hoàn thành điều kiện 5 ngày thắng!"
+                        : `Cần thêm ${5 - winningDaysCount} ngày chốt lãi EOD ≥ +$150 USD`;
+                }
+
+                const xfaHubMllThresholdBadge = document.getElementById("xfaHubMllThresholdBadge");
+                if (xfaHubMllThresholdBadge) {
+                    xfaHubMllThresholdBadge.innerText = "Khóa $" + data.initialBal.toLocaleString();
+                }
+
+                const xfaHubRemainingBuffer = document.getElementById("xfaHubRemainingBuffer");
+                if (xfaHubRemainingBuffer) {
+                    xfaHubRemainingBuffer.innerText = "+$" + remainingBufferAfterWithdrawal.toLocaleString('en-US', {minimumFractionDigits: 2});
+                }
+
+                const xfaHubBufferWarning = document.getElementById("xfaHubBufferWarning");
+                if (xfaHubBufferWarning) {
+                    xfaHubBufferWarning.innerText = remainingBufferAfterWithdrawal < data.dllVal
+                        ? "⚠️ Đệm sau rút mỏng! Rút tối đa có thể làm tài khoản sát ngưỡng MLL."
+                        : "An toàn: Đệm MLL còn lại sau khi rút bảo vệ tài khoản khỏi thanh lý.";
+                }
+
+                const xfaHubCalloutBox = document.getElementById("xfaHubCalloutBox");
+                const xfaHubCalloutDesc = document.getElementById("xfaHubCalloutDesc");
+                const btnQuickWithdraw = document.getElementById("btnQuickWithdraw");
+
+                if (xfaHubCalloutBox && xfaHubCalloutDesc) {
+                    if (winningDaysCount >= 5 && maxAllowedWithdrawal >= 125) {
+                        xfaHubCalloutBox.style.borderLeftColor = "var(--color-green)";
+                        xfaHubCalloutDesc.innerHTML = `🎉 <strong style="color: var(--color-green);">CHÚC MỪNG: TÀI KHOẢN ĐÃ ĐỦ ĐIỀU KIỆN RÚT TIỀN!</strong> Bạn đã tích lũy đủ <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Hạn mức có thể rút đợt này là <strong>${maxAllowedWithdrawal.toLocaleString()}</strong> (thực nhận 90%: <strong>+${netTraderReceive.toLocaleString()}</strong>). Đệm MLL còn lại sau khi rút là <strong>+${remainingBufferAfterWithdrawal.toLocaleString()}</strong>. Bấm nút bên dưới để gửi yêu cầu rút ngay.`;
+                        if (btnQuickWithdraw) {
+                            btnQuickWithdraw.innerHTML = `💸 Gửi Yêu Cầu Rút ${maxAllowedWithdrawal.toLocaleString()}`;
+                            btnQuickWithdraw.onclick = () => openPayoutModal(maxAllowedWithdrawal);
+                        }
+                    } else if (winningDaysCount < 5) {
+                        xfaHubCalloutBox.style.borderLeftColor = "var(--color-purple)";
+                        xfaHubCalloutDesc.innerHTML = `ℹ️ <strong>TIẾN TRÌNH PAYOUT:</strong> Tài khoản đã đạt <strong>${winningDaysCount}/5 ngày thắng (≥+$150 EOD)</strong>. Hạn mức có thể rút tích lũy là <strong>${maxAllowedWithdrawal.toLocaleString()}</strong> (thực nhận 90%: <strong>+${netTraderReceive.toLocaleString()}</strong>). Cần thêm <strong>${5 - winningDaysCount} ngày thắng nữa</strong> để Topstep mở cổng rút tiền.`;
+                        if (btnQuickWithdraw) {
+                            btnQuickWithdraw.innerHTML = `+ Yêu Cầu Rút Payout`;
+                            btnQuickWithdraw.onclick = () => openPayoutModal();
+                        }
+                    } else {
+                        xfaHubCalloutBox.style.borderLeftColor = "var(--color-gold)";
+                        xfaHubCalloutDesc.innerHTML = `ℹ️ <strong>CHƯA ĐỦ LỢI NHUẬN TỐI THIỂU:</strong> Bạn đã đạt <strong>${winningDaysCount}/5 ngày thắng</strong>, nhưng lợi nhuận hiện tại chưa đạt mức rút tối thiểu ($125). Hãy tiếp tục tích lũy lợi nhuận trên vốn gốc ${data.initialBal.toLocaleString()}.`;
+                        if (btnQuickWithdraw) {
+                            btnQuickWithdraw.innerHTML = `+ Yêu Cầu Rút Payout`;
+                            btnQuickWithdraw.onclick = () => openPayoutModal();
+                        }
+                    }
+                }
 
             } else {
+                // Combine Stage Mode
                 document.getElementById("trackerKpi2Label").innerText = "Target Điều Chỉnh";
-                document.getElementById("trackerAdjustedTarget").innerText = `$${adjustedTarget.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-                document.getElementById("trackerAdjustedTarget").className = "text-base font-black text-emerald-400";
+                document.getElementById("trackerAdjustedTarget").innerText = `${adjustedTarget.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                document.getElementById("trackerAdjustedTarget").className = "tabular-nums text-base font-black text-emerald-400";
+                const kpi2SubEl = document.getElementById("trackerKpi2SubText");
+                if (kpi2SubEl) {
+                    kpi2SubEl.style.color = "var(--color-primary)";
+                    kpi2SubEl.innerHTML = `<span>🎯</span><span>Consistency Rule: Lãi ngày ≤ 55%</span>`;
+                }
 
-                document.getElementById("trackerKpi3Label").innerText = "MLL Trailing EOD";
-                document.getElementById("trackerCurrentMll").innerText = `$${trailingMll.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                document.getElementById("trackerKpi3Label").innerText = "Ngưỡng MLL EOD";
+                document.getElementById("trackerCurrentMll").innerText = `${trailingMll.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                const kpi3SubEl = document.getElementById("trackerKpi3SubText");
+                if (kpi3SubEl) {
+                    kpi3SubEl.innerHTML = `<span>🛡️</span><span>Trailing EOD: Khóa tại $50,000 vốn</span>`;
+                }
 
                 document.getElementById("trackerKpi4Label").innerText = "Trạng Thái Đỗ Combine";
+                const kpi4SubEl = document.getElementById("trackerKpi4SubText");
+                if (kpi4SubEl) kpi4SubEl.innerText = "Giám sát tự động sau mỗi phiên";
 
                 document.getElementById("smartBannerTitle").innerText = `🎯 MỤC TIÊU PNL & GIỚI HẠN RỦI RO PHIÊN (${evalDateDisplay}):`;
                 document.getElementById("smartBannerTitle").className = "text-xs font-black text-emerald-400 uppercase tracking-wider";
+
+                const col1Label = document.getElementById("smartBannerValLabel");
+                if (col1Label) col1Label.innerText = "🟢 LÃI TỐI ĐA NÊN CHỐT HÔM NAY";
+                const todayTargetSubtext = document.getElementById("todayTargetSubtext");
+                if (todayTargetSubtext) {
+                    todayTargetSubtext.innerText = "Đảm bảo quy tắc Consistency ≤55%";
+                    todayTargetSubtext.style.color = "var(--color-green)";
+                }
+
+                const col2Label = document.getElementById("todayMaxLossBudgetLabel");
+                if (col2Label) col2Label.innerText = "🔴 HẠN MỨC LỖ TỐI ĐA HÔM NAY";
+                const col2Box = document.getElementById("smartBannerCol2Box");
+                if (col2Box) col2Box.style.borderLeftColor = "var(--color-red)";
+
+                if (maxLossBudgetEl) {
+                    maxLossBudgetEl.innerText = `-$${remainingLossBudgetToday.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                    maxLossBudgetEl.className = "tabular-nums text-2xl font-black text-rose-500";
+                    if (mllBuffer < rawDllVal * 1.5) {
+                        maxLossSubtextEl.innerText = `⚠️ Đệm MLL mỏng (${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}) -> Khuyên cắt lỗ sớm!`;
+                    } else {
+                        maxLossSubtextEl.innerText = `Bảo vệ DLL (-${rawDllVal.toLocaleString()}) & Trailing MLL`;
+                    }
+                    maxLossSubtextEl.style.color = "var(--color-red)";
+                }
+
+                const col3Label = document.getElementById("todayMllBufferLabel");
+                if (col3Label) col3Label.innerText = "🛡️ ĐỆM AN TOÀN MLL HIỆN TẠI";
+                if (mllBufferValEl) {
+                    mllBufferValEl.innerText = `${mllBuffer.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                    mllBufferValEl.className = "tabular-nums text-2xl font-black text-amber-400";
+                }
+                const col3Sub = document.getElementById("todayMllLimitSubtext");
+                if (col3Sub) {
+                    col3Sub.innerHTML = `Khóa thanh lý: <strong id="bannerMllThresholdText" style="color: var(--color-red);">${trailingMll.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>`;
+                }
 
                 let uniqueDates = Object.keys(dailyPnlMap);
                 let uniqueDaysCount = uniqueDates.length;
@@ -2493,7 +2861,7 @@ const accountData = {
 
                 if (journalEntries.length === 0) {
                     let suggestedDay1 = Math.floor(data.targetVal * 0.53);
-                    todayTargetEl.innerText = `+$${suggestedDay1.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                    todayTargetEl.innerText = `+${suggestedDay1.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                     todayTargetEl.className = "text-xl font-black text-emerald-400";
                     todayDescEl.innerText = `Gợi ý PnL Ngày 1 (< 55% Target ${data.target}) giúp hoàn thành Combine trong 2 ngày cân bằng.`;
                     statusTagEl.innerText = "Mức Lãi Ngày 1 Tối Ưu";
@@ -2501,7 +2869,7 @@ const accountData = {
                 } else if (totalPnl >= adjustedTarget && uniqueDaysCount >= 2 && (bestDayPnl / totalPnl) <= 0.55) {
                     todayTargetEl.innerText = `🎉 ĐÃ ĐẠT ĐỦ ĐIỀU KIỆN`;
                     todayTargetEl.className = "text-lg font-black text-emerald-400";
-                    todayDescEl.innerText = `Đã tích lũy đủ $${totalPnl.toLocaleString('en-US', {minimumFractionDigits: 2})} và đỗ Combine an toàn sau ${uniqueDaysCount} ngày giao dịch!`;
+                    todayDescEl.innerText = `Đã tích lũy đủ ${totalPnl.toLocaleString('en-US', {minimumFractionDigits: 2})} và đỗ Combine an toàn sau ${uniqueDaysCount} ngày giao dịch!`;
                     statusTagEl.innerText = "Hoàn Thành Đỗ Combine";
                     statusTagEl.className = "px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold";
                 } else if (totalPnl >= adjustedTarget && uniqueDaysCount < 2) {
@@ -2515,7 +2883,6 @@ const accountData = {
                     let priorPnl = totalPnl - datePnlSoFar;
 
                     if (datePnlSoFar > 0) {
-                        // Ongoing/logged trade today
                         let maxSafeDayTotal;
                         if (priorPnl > 0) {
                             maxSafeDayTotal = Math.max(datePnlSoFar, Math.min(maxSafeSingleDay, Math.floor(priorPnl * (0.55 / 0.45))));
@@ -2529,26 +2896,25 @@ const accountData = {
                         if (remainingSafeRoomToday <= 0) {
                             todayTargetEl.innerText = `+$0.00 (Đã Đạt Trần)`;
                             todayTargetEl.className = "text-lg font-black text-rose-400";
-                            todayDescEl.innerText = `Phiên (${evalDateDisplay}) đã có +$${datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2})}. Đã đạt trần an toàn hôm nay, nên DỪNG giao dịch để tránh Target Scaling!`;
+                            todayDescEl.innerText = `Phiên (${evalDateDisplay}) đã có +${datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2})}. Đã đạt trần an toàn hôm nay, nên DỪNG giao dịch để tránh Target Scaling!`;
                             statusTagEl.innerText = "Đã Đạt Trần An Toàn";
                             statusTagEl.className = "px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px] font-bold";
                         } else {
-                            todayTargetEl.innerText = `+$${remainingSafeRoomToday.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                            todayTargetEl.innerText = `+${remainingSafeRoomToday.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                             todayTargetEl.className = "text-xl font-black text-amber-400";
-                            todayDescEl.innerText = `Phiên (${evalDateDisplay}) đã có +$${datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2})}. Dư địa ăn thêm tối đa hôm nay: +$${remainingSafeRoomToday.toLocaleString('en-US', {minimumFractionDigits: 2})} (tổng ngày ≤ +$${maxSafeDayTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}). Phiên tới chốt +$${nextSessionNeeded.toLocaleString('en-US', {minimumFractionDigits: 2})} là đỗ Combine!`;
+                            todayDescEl.innerText = `Phiên (${evalDateDisplay}) đã có +${datePnlSoFar.toLocaleString('en-US', {minimumFractionDigits: 2})}. Dư địa ăn thêm tối đa hôm nay: +${remainingSafeRoomToday.toLocaleString('en-US', {minimumFractionDigits: 2})} (tổng ngày ≤ +${maxSafeDayTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}). Phiên tới chốt +${nextSessionNeeded.toLocaleString('en-US', {minimumFractionDigits: 2})} là đỗ Combine!`;
                             statusTagEl.innerText = "Dư Địa Ăn Thêm Hôm Nay";
                             statusTagEl.className = "px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold";
                         }
                     } else {
-                        // New session / no trades yet today
                         let potentialTotal = totalPnl + remainingPnlNeeded;
                         let potentialBestDay = Math.max(bestDayPnl, remainingPnlNeeded);
                         let isSafeToFinishToday = (potentialBestDay / potentialTotal) <= 0.55 && (potentialBestDay / 0.55 <= adjustedTarget);
 
                         if (isSafeToFinishToday && uniqueDaysCount >= 1) {
-                            todayTargetEl.innerText = `+$${remainingPnlNeeded.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                            todayTargetEl.innerText = `+${remainingPnlNeeded.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                             todayTargetEl.className = "text-xl font-black text-emerald-400";
-                            todayDescEl.innerText = `Phiên mới (${evalDateDisplay}): Chốt +$${remainingPnlNeeded.toLocaleString('en-US', {minimumFractionDigits: 2})} là hoàn thành 100% Target đỗ Combine.`;
+                            todayDescEl.innerText = `Phiên mới (${evalDateDisplay}): Chốt +${remainingPnlNeeded.toLocaleString('en-US', {minimumFractionDigits: 2})} là hoàn thành 100% Target đỗ Combine.`;
                             statusTagEl.innerText = "PnL Chốt Đỗ Combine";
                             statusTagEl.className = "px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold";
                         } else {
@@ -2560,16 +2926,16 @@ const accountData = {
                                 safeTargetToday = halfRemaining;
                             }
 
-                            todayTargetEl.innerText = `+$${safeTargetToday.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                            todayTargetEl.innerText = `+${safeTargetToday.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                             todayTargetEl.className = "text-xl font-black text-amber-400";
 
                             if (hasLossDay && remainingPnlNeeded > maxSafeSingleDay) {
                                 let nextPart = (remainingPnlNeeded - safeTargetToday).toFixed(2);
-                                todayDescEl.innerText = `Phiên mới (${evalDateDisplay}): Bù đắp ngày thua (${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)} tích lũy, còn thiếu +$${remainingPnlNeeded.toFixed(2)}). Phân bổ 2 phiên: hôm nay chốt +$${safeTargetToday.toLocaleString('en-US', {minimumFractionDigits: 2})} & phiên sau +$${parseFloat(nextPart).toLocaleString('en-US', {minimumFractionDigits: 2})} đỗ Combine an toàn!`;
+                                todayDescEl.innerText = `Phiên mới (${evalDateDisplay}): Bù đắp ngày thua (${totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)} tích lũy, còn thiếu +${remainingPnlNeeded.toFixed(2)}). Phân bổ 2 phiên: hôm nay chốt +${safeTargetToday.toLocaleString('en-US', {minimumFractionDigits: 2})} & phiên sau +${parseFloat(nextPart).toLocaleString('en-US', {minimumFractionDigits: 2})} đỗ Combine an toàn!`;
                                 statusTagEl.innerText = "Gợi Ý Phân Bổ 2 Phiên Bù Thua";
                                 statusTagEl.className = "px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold";
                             } else {
-                                todayDescEl.innerText = `Phiên mới (${evalDateDisplay}): Nên chốt tối đa +$${safeTargetToday.toLocaleString('en-US', {minimumFractionDigits: 2})} bảo vệ Target $${adjustedTarget.toLocaleString()}.`;
+                                todayDescEl.innerText = `Phiên mới (${evalDateDisplay}): Nên chốt tối đa +${safeTargetToday.toLocaleString('en-US', {minimumFractionDigits: 2})} bảo vệ Target ${adjustedTarget.toLocaleString()}.`;
                                 statusTagEl.innerText = "Trần Lãi Phiên Mới";
                                 statusTagEl.className = "px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold";
                             }
@@ -2584,63 +2950,25 @@ const accountData = {
                     badge.innerText = "🟢 CHỜ DỮ LIỆU";
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
                 } else if (totalPnl >= adjustedTarget && bestDayPct <= 0.55 && uniqueDaysCount >= 2) {
-                    badge.innerText = `🎉 ĐỦ ĐIỀU KIỆN CẤP VỐN! ($${adjustedTarget.toLocaleString()})`;
+                    badge.innerText = `🎉 ĐỦ ĐIỀU KIỆN CẤP VỐN! (${adjustedTarget.toLocaleString()})`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
                 } else if (totalPnl >= adjustedTarget && bestDayPct <= 0.55 && uniqueDaysCount < 2) {
                     badge.innerText = `ℹ️ ĐẠT TARGET - CẦN NGÀY (${uniqueDaysCount}/2 ngày)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[11px]";
                 } else if (bestDayPnl > data.targetVal * 0.55) {
-                    badge.innerText = `ℹ️ TARGET SCALE $${adjustedTarget.toLocaleString()} (Còn +$${remainingPnlNeeded.toLocaleString()})`;
+                    badge.innerText = `ℹ️ TARGET SCALE ${adjustedTarget.toLocaleString()} (Còn +${remainingPnlNeeded.toLocaleString()})`;
                     badge.className = "b-badge b-badge-purple";
                 } else if (bestDayPct > 0.55) {
-                    badge.innerText = `ℹ️ CẦN +$${remainingPnlNeeded.toLocaleString()} (Ngày cao ${ (bestDayPct * 100).toFixed(1) }%)`;
+                    badge.innerText = `ℹ️ CẦN +${remainingPnlNeeded.toLocaleString()} (Ngày cao ${(bestDayPct * 100).toFixed(1)}%)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold text-[11px]";
                 } else if (uniqueDaysCount < 2) {
                     badge.innerText = `🟢 ĐANG THI COMBINE (${uniqueDaysCount}/2 ngày tối thiểu)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
                 } else {
-                    badge.innerText = `🟢 ĐANG THI COMBINE (Consistency ${ (bestDayPct * 100).toFixed(1) }% ≤ 55%)`;
+                    badge.innerText = `🟢 ĐANG THI COMBINE (Consistency ${(bestDayPct * 100).toFixed(1)}% ≤ 55%)`;
                     badge.className = "inline-block mt-0.5 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[11px]";
                 }
             }
-        }
-
-        function exportTrackerCSV() {
-            const acc = getActiveAccount();
-            const journalEntries = getActiveJournal(acc);
-            if (journalEntries.length === 0) {
-                alert("Chưa có dữ liệu!");
-                return;
-            }
-            let csvContent = `data:text/csv;charset=utf-8,Tai_Khoan_ID,Ngay_Giao_Dich,Ma_SanPham,Tong_So_Hop_Dong,So_Lenh,Tong_PnL_Cuoi_Ngay_USD\n`;
-            journalEntries.forEach(e => {
-                csvContent += `${acc.id},${e.date},${e.symbol},${e.contracts},${e.trades},${e.pnl}\n`;
-            });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `topstep_${acc.id}_journal.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function openGoogleSheetModal() {
-            document.getElementById("gsModal").classList.remove("hidden");
-        }
-        function closeGoogleSheetModal() {
-            document.getElementById("gsModal").classList.add("hidden");
-        }
-        function copyAppsScriptCode() {
-            const scriptCode = `// Topstep Multi-Account Apps Script Setup Code
-function setupTopstepTracker() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getActiveSheet();
-  sheet.setName("Topstep Multi-Account Dashboard");
-  sheet.getRange("A1:K1").merge().setValue("TOPSTEP MULTI-ACCOUNT EOD DASHBOARD").setFontWeight("bold").setBackground("#0f172a").setFontColor("#38bdf8");
-}`;
-            navigator.clipboard.writeText(scriptCode);
-            alert("Đã copy mã Apps Script!");
         }
 
         window.onload = function() {
