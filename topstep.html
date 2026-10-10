@@ -978,7 +978,127 @@ input:focus, select:focus {
                     </div>
                 </div>
 
-                <!-- 3. Position Sizer / Lot Calculator Widget -->
+                <!-- 3. Execution Checklist Widget (Checklist Thực Chiến Từng Setup) -->
+                <div class="b-card" id="checklist-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Checklist Thực Chiến</span>
+                            <span id="checklistStatusBadge" class="b-badge b-badge-dim" style="font-size: 10px;">Chờ Kiểm Tra</span>
+                        </div>
+                        <button type="button" onclick="resetChecklist()" class="b-btn-secondary" style="padding: 3px 9px; font-size: 11px; height: 26px;" title="Xóa chọn làm lại">
+                            ↺ Làm Mới
+                        </button>
+                    </div>
+
+                    <!-- Setup Selector Tabs (4 Pills) -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; background: var(--bg-card-inner); padding: 3px; border-radius: 8px;">
+                        <button type="button" id="tab-setup-1" onclick="switchChecklistSetup(1)" style="padding: 6px 3px; font-size: 11px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: var(--color-primary); color: #FFFFFF; transition: all 0.15s ease;">1. CRT</button>
+                        <button type="button" id="tab-setup-2" onclick="switchChecklistSetup(2)" style="padding: 6px 3px; font-size: 11px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: transparent; color: var(--text-muted); transition: all 0.15s ease;">2. AMD</button>
+                        <button type="button" id="tab-setup-3" onclick="switchChecklistSetup(3)" style="padding: 6px 3px; font-size: 11px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: transparent; color: var(--text-muted); transition: all 0.15s ease;">3. Trend</button>
+                        <button type="button" id="tab-setup-4" onclick="switchChecklistSetup(4)" style="padding: 6px 3px; font-size: 11px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: transparent; color: var(--text-muted); transition: all 0.15s ease;">4. Break</button>
+                    </div>
+
+                    <!-- Setup 1 Checklist: CRT - FRVP -->
+                    <div id="checklist-setup-1" class="checklist-step-group" style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s1-1" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>1. Kéo FRVP:</strong> Từ Open anchor $\rightarrow$ cây nến trước Sweep để lấy POC.</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s1-2" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>2. Kiểm tra POC:</strong> Tránh xa Target. Ưu tiên POC ở Cực trị (A+) hoặc 50% Range.</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s1-3" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>3. Xác nhận Break:</strong> Thân nến ĐÓNG CỬA dứt khoát qua POC (không vào râu).</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s1-4" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>4. Vào lệnh &amp; SL:</strong> SL ngoài râu Sweep, Target R:R 1:2 / 1:3 hoặc CRTH/L.</span>
+                        </label>
+                    </div>
+
+                    <!-- Setup 2 Checklist: AMD -->
+                    <div id="checklist-setup-2" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s2-1" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>1. Phase A (Tích lũy):</strong> Kéo FRVP vùng tích lũy A $\rightarrow$ Xác định POC-A.</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s2-2" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>2. Phase M (Thao túng):</strong> Giá quét râu bẫy giá ra ngoài Range A (Judas Swing).</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s2-3" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>3. Phase D (Hồi về POC):</strong> Giá chui ngược vào Range A và test lại POC-A.</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s2-4" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>4. Trigger Rejection:</strong> Chờ nến từ chối tại POC $\rightarrow$ Vào lệnh, SL ngoài râu M, TP 1:2 / 1:3.</span>
+                        </label>
+                    </div>
+
+                    <!-- Setup 3 Checklist: Trend -->
+                    <div id="checklist-setup-3" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s3-1" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>1. Xác định Sóng đẩy:</strong> Đánh dấu High &amp; Low $\rightarrow$ Kéo FRVP cả sóng lấy POC.</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s3-2" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>2. Chạm POC $\rightarrow$ Quan sát:</strong> Giá hồi về POC, ĐỨNG NGOÀI (không limit mù).</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s3-3" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>3. Tạo Đáy mới tại POC:</strong> Chờ giá phản ứng tạo Đáy Mới Cục Bộ (Local Low / Higher Low).</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s3-4" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>4. Vào lệnh &amp; SL ngắn:</strong> SL ngay dưới Đáy mới, TP lên Đỉnh sóng cũ (R:R 1:2 – 1:3).</span>
+                        </label>
+                    </div>
+
+                    <!-- Setup 4 Checklist: Break -->
+                    <div id="checklist-setup-4" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s4-1" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>1. Kéo FRVP Range SW:</strong> Kéo cả khối Sideway $\rightarrow$ Xác định POC &amp; 2 biên VAH/VAL.</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s4-2" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>2. Nến Breakout rõ ràng:</strong> Đã có nến đóng cửa dứt khoát thoát khỏi hộp Sideway.</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s4-3" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>3. Retest giữ giá:</strong> Chờ giá test lại POC (hồi sâu) hoặc VAH/VAL có nến từ chối.</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 9px; padding: 8px 10px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                            <input type="checkbox" id="chk-s4-4" onchange="onChecklistChange()" style="margin-top: 2px; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer;">
+                            <span style="font-size: 11.5px; color: var(--text-slate); line-height: 1.4;"><strong>4. Vào lệnh thuận hướng:</strong> SL sau Local High/Low nhịp retest, TP 1:2 / 1:3.</span>
+                        </label>
+                    </div>
+
+                    <!-- In-Trade Risk Management Trailing Checklist -->
+                    <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-inner);">
+                        <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 6px;">QUẢN TRỊ KHI LỆNH ĐANG CHẠY:</span>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); cursor: pointer;">
+                                <input type="checkbox" id="chk-risk-1r" onchange="onChecklistChange()" style="width: 14px; height: 14px; accent-color: var(--color-primary); cursor: pointer;">
+                                <span>Giá chạy <strong>+1R</strong> $\rightarrow$ Dời SL từ -1R lên <strong>-0.5R</strong></span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); cursor: pointer;">
+                                <input type="checkbox" id="chk-risk-2r" onchange="onChecklistChange()" style="width: 14px; height: 14px; accent-color: var(--color-green); cursor: pointer;">
+                                <span>Giá chạy <strong>+2R</strong> $\rightarrow$ Dời SL về <strong>Hòa Vốn (BE / 0R)</strong></span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); cursor: pointer;">
+                                <input type="checkbox" id="chk-risk-tp" onchange="onChecklistChange()" style="width: 14px; height: 14px; accent-color: var(--color-green); cursor: pointer;">
+                                <span>Chờ <strong>Full TP (2R/3R)</strong> hoặc cắn BE/SL (Không chốt non)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Position Sizer / Lot Calculator Widget -->
                 <div class="b-card" id="calculator-section">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
                         <div>
@@ -2804,6 +2924,7 @@ const accountData = {
             const pill = document.getElementById('headerTradeDatePill');
             if (dateEl && pill && dateEl.value) pill.innerText = dateEl.value;
             checkTopstepXSync();
+            loadChecklistState();
         };
 
         if (typeof window !== 'undefined' && window.addEventListener) {
@@ -2871,6 +2992,91 @@ const accountData = {
                 toast.style.transform = 'translateY(20px)';
                 toast.style.opacity = '0';
             }, 4500);
+        }
+
+        /* ── EXECUTION CHECKLIST LOGIC ── */
+        let activeChecklistSetup = 1;
+
+        function switchChecklistSetup(setupNum) {
+            activeChecklistSetup = setupNum;
+            for (let i = 1; i <= 4; i++) {
+                const tab = document.getElementById('tab-setup-' + i);
+                const group = document.getElementById('checklist-setup-' + i);
+                if (tab && group) {
+                    if (i === setupNum) {
+                        tab.style.background = 'var(--color-primary)';
+                        tab.style.color = '#FFFFFF';
+                        tab.style.fontWeight = '700';
+                        group.style.display = 'flex';
+                    } else {
+                        tab.style.background = 'transparent';
+                        tab.style.color = 'var(--text-muted)';
+                        tab.style.fontWeight = '600';
+                        group.style.display = 'none';
+                    }
+                }
+            }
+            try {
+                localStorage.setItem('topstep_active_checklist_setup', setupNum);
+            } catch (e) {}
+            onChecklistChange();
+        }
+
+        function onChecklistChange() {
+            let totalSetupSteps = 4;
+            let checkedSetupSteps = 0;
+            for (let j = 1; j <= totalSetupSteps; j++) {
+                const chk = document.getElementById('chk-s' + activeChecklistSetup + '-' + j);
+                if (chk && chk.checked) checkedSetupSteps++;
+            }
+
+            const badge = document.getElementById('checklistStatusBadge');
+            if (badge) {
+                if (checkedSetupSteps === totalSetupSteps) {
+                    badge.innerText = '✔ SẴN SÀNG VÀO LỆNH';
+                    badge.className = 'b-badge b-badge-green';
+                } else if (checkedSetupSteps > 0) {
+                    badge.innerText = '⏳ Đang Kiểm Tra (' + checkedSetupSteps + '/' + totalSetupSteps + ')';
+                    badge.className = 'b-badge b-badge-blue';
+                } else {
+                    badge.innerText = 'Chờ Kiểm Tra';
+                    badge.className = 'b-badge b-badge-dim';
+                }
+            }
+
+            saveChecklistState();
+        }
+
+        function resetChecklist() {
+            const allCheckboxes = document.querySelectorAll('#checklist-section input[type="checkbox"]');
+            allCheckboxes.forEach(cb => { cb.checked = false; });
+            onChecklistChange();
+        }
+
+        function saveChecklistState() {
+            try {
+                const state = {};
+                const allCheckboxes = document.querySelectorAll('#checklist-section input[type="checkbox"]');
+                allCheckboxes.forEach(cb => {
+                    if (cb.id) state[cb.id] = cb.checked;
+                });
+                localStorage.setItem('topstep_checklist_state', JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        function loadChecklistState() {
+            try {
+                const savedSetup = parseInt(localStorage.getItem('topstep_active_checklist_setup') || '1', 10);
+                if (savedSetup >= 1 && savedSetup <= 4) {
+                    switchChecklistSetup(savedSetup);
+                }
+                const savedState = JSON.parse(localStorage.getItem('topstep_checklist_state') || '{}');
+                Object.keys(savedState).forEach(id => {
+                    const cb = document.getElementById(id);
+                    if (cb) cb.checked = savedState[id];
+                });
+            } catch (e) {}
+            onChecklistChange();
         }
     
 </script>
