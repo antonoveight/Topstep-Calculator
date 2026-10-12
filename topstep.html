@@ -549,6 +549,9 @@ input:focus, select:focus {
             <select id="accountDropdown" onchange="onAccountDropdownChange()" style="min-width: 170px; height: 36px; background: var(--bg-card); font-weight: 600; color: var(--color-primary); padding: 0 10px;"></select>
 
             <!-- Action Buttons -->
+            <button type="button" onclick="openAllAccountsModal()" class="b-btn-secondary" style="height: 36px; padding: 0 12px; font-size: 12px;" title="Xem thống kê tổng quan tất cả các tài khoản">
+                📊 Tổng Hợp Quỹ
+            </button>
             <button type="button" onclick="openAddAccountModal()" class="b-btn-primary" style="height: 36px; padding: 0 13px; font-size: 12px;">
                 <span>+</span> Thêm Quỹ
             </button>
@@ -566,6 +569,29 @@ input:focus, select:focus {
 
         <!-- ── VIEW 1: MAIN DASHBOARD WORKSPACE ── -->
         <div id="view-dashboard" style="display: flex; flex-direction: column; gap: 24px;">
+
+        <!-- ── ARCHIVED ACCOUNT NOTICE BANNER ── -->
+        <div id="archivedAccountBanner" style="display: none; padding: 14px 20px; border-radius: 12px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--color-red);">📁</div>
+                <div>
+                    <div style="font-size: 13.5px; font-weight: 800; color: var(--color-red);" id="archivedBannerTitle">
+                        TÀI KHOẢN NÀY ĐÃ ĐƯỢC LƯU TRỮ (ĐÃ ĐÓNG)
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;" id="archivedBannerDesc">
+                        Dữ liệu nhật ký và PnL được bảo lưu 100% để phục vụ thống kê phân tích sau này.
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" onclick="reactivateCurrentAccount()" class="b-btn-secondary" style="font-size: 11.5px; height: 32px; padding: 0 12px;">
+                    ↺ Mở Lại Quỹ Này
+                </button>
+                <button type="button" onclick="openAddAccountModal()" class="b-btn-primary" style="font-size: 11.5px; height: 32px; padding: 0 12px;">
+                    + Bắt Đầu Quỹ Mới
+                </button>
+            </div>
+        </div>
 
         <!-- ── ROW 1: 3 HERO STAT CARDS (FINPOINT TOP ROW) ── -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -629,26 +655,25 @@ input:focus, select:focus {
                 <!-- 1. Money Flow Interactive Bar Chart Card -->
                 <div class="b-card" id="chart-section">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                             <span style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Money Flow</span>
-                            <span style="font-size: 12px; color: var(--text-muted); cursor: pointer;" title="Biểu đồ phân bổ PnL các phiên giao dịch">ⓘ</span>
-                            <div style="display: flex; align-items: center; gap: 12px; margin-left: 12px;">
-                                <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-muted);">
+                            <span id="moneyFlowAccountTag" class="b-badge b-badge-blue" style="font-size: 11px; font-weight: 700;">TS-50K-001</span>
+                            <span style="font-size: 12px; color: var(--text-muted); cursor: pointer;" title="Biểu đồ phân bổ PnL theo từng phiên của tài khoản đang chọn">ⓘ</span>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-left: 8px;">
+                                <div style="display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted);">
                                     <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-green);"></span>
-                                    <span>Lãi (Win)</span>
+                                    <span>Lãi</span>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-muted);">
+                                <div style="display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted);">
                                     <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-red);"></span>
-                                    <span>Lỗ (Loss)</span>
+                                    <span>Lỗ</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Daily / Monthly view toggle pills -->
-                        <div style="display: flex; background: var(--bg-card-inner); border-radius: 8px; padding: 2px;">
-                            <button style="padding: 4px 10px; font-size: 11.5px; font-weight: 600; border-radius: 6px; background: var(--bg-card); color: var(--text-primary); border: none; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">Daily</button>
-                            <button style="padding: 4px 10px; font-size: 11.5px; font-weight: 500; border-radius: 6px; background: transparent; color: var(--text-muted); border: none; cursor: pointer;">Monthly</button>
-                            <button style="padding: 4px 10px; font-size: 11.5px; font-weight: 500; border-radius: 6px; background: transparent; color: var(--text-muted); border: none; cursor: pointer;">Yearly</button>
+                        <!-- Account specific stats pill -->
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span id="moneyFlowStatsPill" class="b-badge b-badge-dim" style="font-size: 11px; font-weight: 600;">0 phiên · PnL: $0</span>
                         </div>
                     </div>
 
@@ -1542,6 +1567,24 @@ input:focus, select:focus {
                 <input id="editAccName" type="text" required style="width: 100%;">
             </div>
             <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Trạng Thái Quỹ</label>
+                <select id="editAccStatus" onchange="onEditAccStatusChange()" style="width: 100%; font-weight: 600;">
+                    <option value="active">🟢 Đang Hoạt Động (Active)</option>
+                    <option value="archived">📁 Đã Đóng / Lưu Trữ (Archived)</option>
+                </select>
+            </div>
+            <div id="archiveReasonBlock" style="display: none; background: var(--bg-card-inner); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-inner);">
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Lý Do Đóng Quỹ</label>
+                <select id="editAccClosedReason" style="width: 100%; margin-bottom: 8px;">
+                    <option value="mll">Vi Phạm MLL (Cháy tài khoản)</option>
+                    <option value="dll">Vi Phạm DLL (Daily Loss Limit)</option>
+                    <option value="passed">Đã Đỗ (Passed vòng)</option>
+                    <option value="canceled">Hủy / Bỏ Qua Quỹ Này</option>
+                </select>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Ngày Đóng / Vi Phạm</label>
+                <input id="editAccClosedDate" type="date" style="width: 100%;">
+            </div>
+            <div>
                 <label class="block text-xs font-semibold text-slate-400 mb-1">Gói Tài Khoản</label>
                 <select id="editAccSize" style="width: 100%; font-weight: 600;">
                     <option value="50">Gói $50,000</option>
@@ -1564,13 +1607,79 @@ input:focus, select:focus {
                 </select>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                <button type="button" onclick="deleteCurrentAccount()" class="b-btn-danger">Xóa Tài Khoản Này</button>
+                <button type="button" onclick="deleteCurrentAccount()" class="b-btn-danger" style="font-size: 11px;">Xóa Vĩnh Viễn</button>
                 <div style="display: flex; gap: 8px;">
                     <button type="button" onclick="closeEditAccountModal()" class="b-btn-secondary">Hủy</button>
                     <button type="submit" class="b-btn-primary">Lưu Thay Đổi</button>
                 </div>
             </div>
         </form>
+        <hr style="border-color: var(--border-inner); margin: 16px 0;">
+        <!-- Backup & Restore Quick Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="font-size: 11px; color: var(--text-muted);">Sao lưu an toàn dữ liệu:</span>
+            <div style="display: flex; gap: 6px;">
+                <button type="button" onclick="exportFullBackupJSON()" class="b-btn-secondary" style="font-size: 11px; padding: 4px 10px;">
+                    📥 Tải Sao Lưu (JSON)
+                </button>
+                <label class="b-btn-secondary" style="font-size: 11px; padding: 4px 10px; cursor: pointer; margin: 0; display: inline-flex; align-items: center;">
+                    📤 Khôi Phục
+                    <input type="file" id="importBackupFile" accept=".json" onchange="importFullBackupJSON(event)" style="display: none;">
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ALL-ACCOUNTS PERFORMANCE HUB -->
+<div id="allAccountsModal" class="modal hidden">
+    <div class="modal-box wide" style="max-width: 750px;">
+        <button onclick="closeAllAccountsModal()" class="modal-close">&times;</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-inner); padding-bottom: 12px; margin-bottom: 16px;">
+            <div>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">
+                    📊 Thống Kê Toàn Bộ Các Quỹ (All-Accounts Hub)
+                </h3>
+                <span style="font-size: 11px; color: var(--text-muted);">Theo dõi tiến trình &amp; lịch sử các đời tài khoản</span>
+            </div>
+            <button type="button" onclick="exportFullBackupJSON()" class="b-btn-secondary" style="font-size: 11px; padding: 4px 10px;">
+                📥 Xuất Backup
+            </button>
+        </div>
+
+        <!-- 4 KPI Summary Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4" id="allAccountsSummaryStats">
+            <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Accounts List Table -->
+        <div style="max-height: 320px; overflow-y: auto; border: 1px solid var(--border-inner); border-radius: 10px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                <thead>
+                    <tr style="background: var(--bg-card-inner); border-bottom: 1px solid var(--border-inner); color: var(--text-muted); font-size: 11px;">
+                        <th style="padding: 10px 12px;">MÃ QUỸ</th>
+                        <th style="padding: 10px 12px;">GÓI</th>
+                        <th style="padding: 10px 12px;">VÒNG</th>
+                        <th style="padding: 10px 12px;">TRẠNG THÁI</th>
+                        <th style="padding: 10px 12px; text-align: right;">TỔNG PNL</th>
+                        <th style="padding: 10px 12px; text-align: center;">PHIÊN</th>
+                        <th style="padding: 10px 12px; text-align: center;">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody id="allAccountsTableBody">
+                    <!-- Rendered dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+            <button type="button" onclick="closeAllAccountsModal(); openAddAccountModal();" class="b-btn-primary" style="font-size: 11.5px;">
+                + Bắt Đầu Quỹ Mới
+            </button>
+            <button type="button" onclick="closeAllAccountsModal()" class="b-btn-secondary" style="font-size: 11.5px;">
+                Đóng
+            </button>
+        </div>
     </div>
 </div>
 
@@ -1771,14 +1880,37 @@ const accountData = {
         function renderAccountDropdown() {
             const dropdown = document.getElementById("accountDropdown");
             dropdown.innerHTML = "";
-            accountsList.forEach(acc => {
-                const opt = document.createElement("option");
-                opt.value = acc.id;
-                opt.selected = (acc.id === activeAccountId);
-                let stageTag = acc.stage === 'xfa' ? 'XFA' : 'Combine';
-                opt.innerText = `[${stageTag}] ${acc.id} - ${acc.name} ($${acc.size}K)`;
-                dropdown.appendChild(opt);
-            });
+            
+            const activeAccs = accountsList.filter(a => a.status !== 'archived');
+            const archivedAccs = accountsList.filter(a => a.status === 'archived');
+
+            if (activeAccs.length > 0) {
+                const grpActive = document.createElement("optgroup");
+                grpActive.label = "🟢 QUỸ ĐANG HOẠT ĐỘNG";
+                activeAccs.forEach(acc => {
+                    const opt = document.createElement("option");
+                    opt.value = acc.id;
+                    opt.selected = (acc.id === activeAccountId);
+                    let stageTag = acc.stage === 'xfa' ? 'XFA' : 'Combine';
+                    opt.innerText = `[${stageTag}] ${acc.id} - ${acc.name} (${acc.size}K)`;
+                    grpActive.appendChild(opt);
+                });
+                dropdown.appendChild(grpActive);
+            }
+
+            if (archivedAccs.length > 0) {
+                const grpArchived = document.createElement("optgroup");
+                grpArchived.label = "📁 QUỸ ĐÃ ĐÓNG / LƯU TRỮ";
+                archivedAccs.forEach(acc => {
+                    const opt = document.createElement("option");
+                    opt.value = acc.id;
+                    opt.selected = (acc.id === activeAccountId);
+                    let reasonTag = acc.closedReason === 'mll' ? 'Cháy MLL' : (acc.closedReason === 'passed' ? 'Đã Pass' : (acc.closedReason === 'dll' ? 'Vi phạm DLL' : 'Đã đóng'));
+                    opt.innerText = `[ĐÃ ĐÓNG - ${reasonTag}] ${acc.id} - ${acc.name} (${acc.size}K)`;
+                    grpArchived.appendChild(opt);
+                });
+                dropdown.appendChild(grpArchived);
+            }
         }
 
         function onAccountDropdownChange() {
@@ -1800,16 +1932,35 @@ const accountData = {
 
             const stageBadge = document.getElementById("activeStageBadge");
             const btnToggle = document.getElementById("btnToggleStage");
-            
+            const archiveBanner = document.getElementById("archivedAccountBanner");
+            const archiveTitle = document.getElementById("archivedBannerTitle");
+            const archiveDesc = document.getElementById("archivedBannerDesc");
+
+            if (acc.status === "archived") {
+                let reasonText = acc.closedReason === 'mll' ? 'Vi Phạm MLL (Cháy tài khoản)' : (acc.closedReason === 'passed' ? 'Đã Đỗ Vòng Thi' : (acc.closedReason === 'dll' ? 'Vi Phạm DLL' : 'Đã Hủy/Bỏ Qua'));
+                stageBadge.innerText = "ĐÃ ĐÓNG (LƯU TRỮ)";
+                stageBadge.className = "b-badge b-badge-red";
+                if (archiveBanner) {
+                    archiveBanner.style.display = "flex";
+                    if (archiveTitle) archiveTitle.innerText = `TÀI KHOẢN [${acc.id}] ĐÃ LƯU TRỮ · LÝ DO: ${reasonText.toUpperCase()}`;
+                    if (archiveDesc) archiveDesc.innerText = `Đóng ngày: ${acc.closedDate || 'Gần đây'} · Dữ liệu ${(acc.journalEntries || []).length} phiên EOD được bảo lưu nguyên vẹn để thống kê.`;
+                }
+            } else {
+                if (archiveBanner) archiveBanner.style.display = "none";
+                if (acc.stage === "xfa") {
+                    stageBadge.innerText = "Vòng XFA";
+                    stageBadge.className = "px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-bold";
+                } else {
+                    stageBadge.innerText = "Vòng Combine";
+                    stageBadge.className = "px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-bold";
+                }
+            }
+
             if (acc.stage === "xfa") {
-                stageBadge.innerText = "Vòng XFA";
-                stageBadge.className = "px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-bold";
                 btnToggle.innerHTML = "<span>Nâng Về Combine</span>";
                 btnToggle.className = "bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-1.5 px-3 rounded-xl transition-all shadow-md";
                 document.getElementById("xfaPayoutSection").classList.remove("hidden");
             } else {
-                stageBadge.innerText = "Vòng Combine";
-                stageBadge.className = "px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-bold";
                 btnToggle.innerHTML = "<span>Chuyển Sang XFA</span>";
                 btnToggle.className = "bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs py-1.5 px-3 rounded-xl transition-all shadow-md";
                 document.getElementById("xfaPayoutSection").classList.add("hidden");
@@ -1912,12 +2063,27 @@ const accountData = {
             loadActiveAccountState();
         }
 
+        function onEditAccStatusChange() {
+            const status = document.getElementById("editAccStatus").value;
+            const block = document.getElementById("archiveReasonBlock");
+            if (block) block.style.display = (status === "archived") ? "block" : "none";
+        }
+
         function openEditAccountModal() {
             const acc = getActiveAccount();
             document.getElementById("editAccName").value = acc.name;
             document.getElementById("editAccSize").value = acc.size;
             document.getElementById("editAccPricing").value = acc.pricingPath;
             document.getElementById("editAccXfa").value = acc.xfaPath || "standard_payout";
+            
+            const statusSelect = document.getElementById("editAccStatus");
+            if (statusSelect) statusSelect.value = acc.status || "active";
+            const reasonSelect = document.getElementById("editAccClosedReason");
+            if (reasonSelect) reasonSelect.value = acc.closedReason || "mll";
+            const dateInput = document.getElementById("editAccClosedDate");
+            if (dateInput) dateInput.value = acc.closedDate || getActiveTopstepTradeDate();
+
+            onEditAccStatusChange();
             document.getElementById("editAccountModal").classList.remove("hidden");
         }
         function closeEditAccountModal() {
@@ -1931,8 +2097,27 @@ const accountData = {
             acc.pricingPath = document.getElementById("editAccPricing").value;
             acc.xfaPath = document.getElementById("editAccXfa").value;
 
+            const status = document.getElementById("editAccStatus").value;
+            acc.status = status;
+            if (status === "archived") {
+                acc.closedReason = document.getElementById("editAccClosedReason").value;
+                acc.closedDate = document.getElementById("editAccClosedDate").value || getActiveTopstepTradeDate();
+            } else {
+                acc.closedReason = "";
+                acc.closedDate = "";
+            }
+
             saveAccounts();
             closeEditAccountModal();
+            loadActiveAccountState();
+        }
+
+        function reactivateCurrentAccount() {
+            const acc = getActiveAccount();
+            acc.status = "active";
+            acc.closedReason = "";
+            acc.closedDate = "";
+            saveAccounts();
             loadActiveAccountState();
         }
 
@@ -3058,48 +3243,51 @@ const accountData = {
             const chartContainer = document.getElementById("finpointChartBars");
             if (!chartContainer) return;
 
+            const acc = getActiveAccount();
+            const tagEl = document.getElementById("moneyFlowAccountTag");
+            const statsEl = document.getElementById("moneyFlowStatsPill");
+
+            if (tagEl) {
+                tagEl.innerText = acc.id;
+                tagEl.title = acc.name;
+            }
+
             let entries = Object.entries(dailyPnlMap);
+            let totalAccPnl = entries.reduce((sum, e) => sum + e[1], 0);
+            let winCount = entries.filter(e => e[1] >= 0).length;
+            let lossCount = entries.filter(e => e[1] < 0).length;
+
+            if (statsEl) {
+                statsEl.innerText = `${entries.length} phiên · Thắng ${winCount} / Thua ${lossCount} · PnL: ${totalAccPnl >= 0 ? '+' : ''}${totalAccPnl.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                statsEl.className = totalAccPnl >= 0 ? "b-badge b-badge-green" : "b-badge b-badge-red";
+            }
+
             if (entries.length === 0) {
-                // Render sample weekly preview if no trades logged yet
-                const sampleDays = [
-                    { label: "T2", pnl: 280, note: "Mẫu phiên 1" },
-                    { label: "T3", pnl: 450, note: "Mẫu phiên 2 (Win)" },
-                    { label: "T4", pnl: -180, note: "Mẫu phiên 3 (Loss)" },
-                    { label: "T5", pnl: 320, note: "Mẫu phiên 4 (Win)" },
-                    { label: "T6", pnl: 510, note: "Mẫu phiên 5 (Win)" }
-                ];
-                let maxPnl = 600;
-                chartContainer.innerHTML = sampleDays.map(d => {
-                    let isWin = d.pnl >= 0;
-                    let heightPct = Math.max(12, Math.min(100, Math.round((Math.abs(d.pnl) / maxPnl) * 100)));
-                    let barColor = isWin ? "var(--color-green)" : "var(--color-red)";
-                    let barGlow = d.pnl >= 150 ? "box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);" : "";
-                    return `
-                        <div class="finpoint-bar-col" title="${d.note}: ${d.pnl >= 0 ? '+' : ''}${d.pnl}$" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; flex: 1; min-width: 28px; cursor: pointer; position: relative;">
-                            <div style="font-size: 10px; font-weight: 700; color: ${barColor}; margin-bottom: 4px; opacity: 0.85;">${d.pnl >= 0 ? '+' : ''}${d.pnl}</div>
-                            <div style="width: 22px; height: ${heightPct}%; background: ${barColor}; border-radius: 6px 6px 2px 2px; transition: height 0.3s ease; ${barGlow}"></div>
-                            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 6px;">${d.label}</div>
-                        </div>
-                    `;
-                }).join('');
+                chartContainer.innerHTML = `
+                    <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); font-size: 12px; gap: 6px; text-align: center; padding: 20px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        <span>Chưa có dữ liệu phiên giao dịch nào cho quỹ <strong>[${acc.id}]</strong></span>
+                        <span style="font-size: 11px; opacity: 0.75;">Nhập kết quả phiên EOD bên dưới để hiển thị biểu đồ Money Flow của quỹ này.</span>
+                    </div>
+                `;
                 return;
             }
 
-            // Real data from dailyPnlMap
-            let recentEntries = entries.slice(-10); // show up to last 10 sessions
-            let maxPnl = Math.max(300, ...recentEntries.map(e => Math.abs(e[1])));
+            // Real data from dailyPnlMap of THIS specific account
+            let recentEntries = entries.slice(-14); // show up to last 14 sessions
+            let maxPnl = Math.max(250, ...recentEntries.map(e => Math.abs(e[1])));
 
             chartContainer.innerHTML = recentEntries.map(([date, pnl]) => {
                 let isWin = pnl >= 0;
-                let heightPct = Math.max(12, Math.min(100, Math.round((Math.abs(pnl) / maxPnl) * 100)));
+                let heightPct = Math.max(14, Math.min(100, Math.round((Math.abs(pnl) / maxPnl) * 100)));
                 let barColor = isWin ? "var(--color-green)" : "var(--color-red)";
                 let barGlow = pnl >= 150 ? "box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);" : "";
                 let shortDate = date.split('-').slice(1).join('/');
                 return `
-                    <div class="finpoint-bar-col" title="Phiên ${date}: ${pnl >= 0 ? '+' : ''}${pnl.toLocaleString('en-US', {minimumFractionDigits: 2})}$" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; flex: 1; min-width: 28px; cursor: pointer; position: relative;">
+                    <div class="finpoint-bar-col" title="[${acc.id}] Phiên ${date}: ${pnl >= 0 ? '+' : ''}${pnl.toLocaleString('en-US', {minimumFractionDigits: 2})}$" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; flex: 1; min-width: 28px; cursor: pointer; position: relative;">
                         <div style="font-size: 10px; font-weight: 700; color: ${barColor}; margin-bottom: 4px;">${pnl >= 0 ? '+' : ''}${Math.round(pnl)}</div>
-                        <div style="width: 24px; height: ${heightPct}%; background: ${barColor}; border-radius: 6px 6px 2px 2px; transition: height 0.3s ease; ${barGlow}"></div>
-                        <div style="font-size: 10.5px; font-weight: 600; color: var(--text-muted); margin-top: 6px; white-space: nowrap;">${shortDate}</div>
+                        <div style="width: 22px; height: ${heightPct}%; background: ${barColor}; border-radius: 6px 6px 2px 2px; transition: height 0.3s ease; ${barGlow}"></div>
+                        <div style="font-size: 10px; font-weight: 600; color: var(--text-muted); margin-top: 6px; white-space: nowrap;">${shortDate}</div>
                     </div>
                 `;
             }).join('');
@@ -3389,6 +3577,167 @@ const accountData = {
             onChecklistChange();
         }
     
+
+        /* ── ALL-ACCOUNTS PERFORMANCE HUB & ARCHIVE LOGIC ── */
+        function openAllAccountsModal() {
+            renderAllAccountsHub();
+            document.getElementById("allAccountsModal").classList.remove("hidden");
+        }
+
+        function closeAllAccountsModal() {
+            document.getElementById("allAccountsModal").classList.add("hidden");
+        }
+
+        function renderAllAccountsHub() {
+            const summaryContainer = document.getElementById("allAccountsSummaryStats");
+            const tbody = document.getElementById("allAccountsTableBody");
+            if (!summaryContainer || !tbody) return;
+
+            const totalAccounts = accountsList.length;
+            const activeCount = accountsList.filter(a => a.status !== 'archived').length;
+            const archivedCount = accountsList.filter(a => a.status === 'archived').length;
+
+            let allTimePnl = 0;
+            let allTimeTrades = 0;
+            let allTimeWins = 0;
+
+            accountsList.forEach(a => {
+                const journal = a.stage === 'xfa' ? (a.xfaJournalEntries || []) : (a.journalEntries || []);
+                journal.forEach(e => {
+                    allTimePnl += e.pnl;
+                    allTimeTrades++;
+                    if (e.pnl >= 0) allTimeWins++;
+                });
+            });
+
+            const winRate = allTimeTrades > 0 ? ((allTimeWins / allTimeTrades) * 100).toFixed(1) : 0;
+
+            summaryContainer.innerHTML = `
+                <div class="b-card-inner" style="padding: 10px 12px; text-align: center;">
+                    <span style="font-size: 10.5px; color: var(--text-muted); display: block;">Tổng Số Quỹ</span>
+                    <span class="tabular-nums" style="font-size: 18px; font-weight: 800; color: var(--text-primary);">${totalAccounts}</span>
+                    <span style="font-size: 10px; color: var(--color-green);">${activeCount} Hoạt động · ${archivedCount} Đã đóng</span>
+                </div>
+                <div class="b-card-inner" style="padding: 10px 12px; text-align: center;">
+                    <span style="font-size: 10.5px; color: var(--text-muted); display: block;">PnL Toàn Bộ Quỹ</span>
+                    <span class="tabular-nums" style="font-size: 18px; font-weight: 800; color: ${allTimePnl >= 0 ? 'var(--color-green)' : 'var(--color-red)'};">${allTimePnl >= 0 ? '+' : ''}$${allTimePnl.toLocaleString('en-US', {minimumFractionDigits: 0})}</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">Lũy kế lịch sử</span>
+                </div>
+                <div class="b-card-inner" style="padding: 10px 12px; text-align: center;">
+                    <span style="font-size: 10.5px; color: var(--text-muted); display: block;">Tổng Phiên Trade</span>
+                    <span class="tabular-nums" style="font-size: 18px; font-weight: 800; color: var(--color-primary);">${allTimeTrades}</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">${allTimeWins} Thắng / ${allTimeTrades - allTimeWins} Thua</span>
+                </div>
+                <div class="b-card-inner" style="padding: 10px 12px; text-align: center;">
+                    <span style="font-size: 10.5px; color: var(--text-muted); display: block;">Tỷ Lệ Thắng</span>
+                    <span class="tabular-nums" style="font-size: 18px; font-weight: 800; color: var(--color-green);">${winRate}%</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">Tất cả các đời quỹ</span>
+                </div>
+            `;
+
+            tbody.innerHTML = "";
+            accountsList.forEach(acc => {
+                const journal = acc.stage === 'xfa' ? (acc.xfaJournalEntries || []) : (acc.journalEntries || []);
+                const accPnl = journal.reduce((sum, e) => sum + e.pnl, 0);
+                const isArchived = acc.status === 'archived';
+                const isCurrent = acc.id === activeAccountId;
+
+                let statusBadge = "";
+                if (isArchived) {
+                    let reasonTag = acc.closedReason === 'mll' ? 'Cháy MLL' : (acc.closedReason === 'passed' ? 'Đã Pass' : (acc.closedReason === 'dll' ? 'Vi phạm DLL' : 'Đã đóng'));
+                    statusBadge = `<span class="b-badge b-badge-red" style="font-size: 10px;">Đã Đóng (${reasonTag})</span>`;
+                } else {
+                    statusBadge = `<span class="b-badge b-badge-green" style="font-size: 10px;">Hoạt Động</span>`;
+                }
+
+                const tr = document.createElement("tr");
+                tr.style.borderBottom = "1px solid var(--border-inner)";
+                if (isCurrent) tr.style.background = "var(--color-primary-light)";
+
+                tr.innerHTML = `
+                    <td style="padding: 10px 12px;">
+                        <strong style="color: var(--text-primary);">${acc.id}</strong>
+                        <div style="font-size: 10.5px; color: var(--text-muted);">${acc.name}</div>
+                    </td>
+                    <td style="padding: 10px 12px; font-weight: 600;">$${acc.size}K</td>
+                    <td style="padding: 10px 12px;">
+                        <span class="b-badge ${acc.stage === 'xfa' ? 'b-badge-purple' : 'b-badge-blue'}" style="font-size: 10px;">
+                            ${acc.stage === 'xfa' ? 'XFA' : 'Combine'}
+                        </span>
+                    </td>
+                    <td style="padding: 10px 12px;">${statusBadge}</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: ${accPnl >= 0 ? 'var(--color-green)' : 'var(--color-red)'};" class="tabular-nums">
+                        ${accPnl >= 0 ? '+' : ''}$${accPnl.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                    </td>
+                    <td style="padding: 10px 12px; text-align: center; color: var(--text-muted);">${journal.length}</td>
+                    <td style="padding: 10px 12px; text-align: center;">
+                        <button type="button" onclick="selectAccountFromHub('${acc.id}')" class="b-btn-secondary" style="font-size: 10.5px; padding: 3px 8px;">
+                            ${isCurrent ? 'Đang Xem' : 'Xem Quỹ'}
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function selectAccountFromHub(accId) {
+            activeAccountId = accId;
+            saveAccounts();
+            loadActiveAccountState();
+            closeAllAccountsModal();
+        }
+
+        /* ── BACKUP & RESTORE DATA JSON ── */
+        function exportFullBackupJSON() {
+            try {
+                const backupData = {
+                    version: "v3",
+                    exportDate: new Date().toISOString(),
+                    accountsList: accountsList,
+                    activeAccountId: activeAccountId
+                };
+                const jsonStr = JSON.stringify(backupData, null, 2);
+                const blob = new Blob([jsonStr], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `topstep_accounts_backup_${getActiveTopstepTradeDate()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                alert("Đã tải về file sao lưu toàn bộ dữ liệu thành công! Hãy lưu giữ file này để tránh mất dữ liệu khi xóa cache trình duyệt.");
+            } catch (err) {
+                alert("Lỗi khi tạo file sao lưu: " + err.message);
+            }
+        }
+
+        function importFullBackupJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data && Array.isArray(data.accountsList) && data.accountsList.length > 0) {
+                        if (confirm(`Khôi phục ${data.accountsList.length} tài khoản từ file sao lưu ngày ${data.exportDate || 'trước đó'}? Dữ liệu hiện tại sẽ được cập nhật.`)) {
+                            accountsList = data.accountsList;
+                            activeAccountId = data.activeAccountId || accountsList[0].id;
+                            saveAccounts();
+                            loadActiveAccountState();
+                            alert("Đã khôi phục thành công toàn bộ tài khoản và lịch sử giao dịch!");
+                        }
+                    } else {
+                        alert("File sao lưu không đúng định dạng!");
+                    }
+                } catch (err) {
+                    alert("Lỗi khi đọc file sao lưu: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
 </script>
 </body>
 </html>
