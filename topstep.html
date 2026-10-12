@@ -1200,6 +1200,10 @@ input:focus, select:focus {
 
                         <!-- Setup 1 Checklist: CRT - FRVP -->
                         <div id="checklist-setup-1" class="checklist-step-group" style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="font-size: 11px; color: var(--color-primary); background: var(--color-primary-light); padding: 5px 10px; border-radius: 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                                <span>⏰ Giờ vàng: 07:45 – 09:30 (Sáng) &amp; 20:30 – 21:15 (Tối)</span>
+                                <span style="font-size: 10px; color: var(--text-muted);">Quét đỉnh/đáy đêm (ONH/L)</span>
+                            </div>
                             <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
                                 <input type="checkbox" id="chk-s1-1" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
                                 <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
@@ -1228,6 +1232,10 @@ input:focus, select:focus {
 
                         <!-- Setup 2 Checklist: AMD -->
                         <div id="checklist-setup-2" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
+                            <div style="font-size: 11px; color: var(--color-primary); background: var(--color-primary-light); padding: 5px 10px; border-radius: 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                                <span>⏰ Giờ vàng: 14:00 – 15:30 (Âu - MGC) &amp; 20:30 – 22:00 (Mỹ)</span>
+                                <span style="font-size: 10px; color: var(--text-muted);">Quét bẫy Judas Swing</span>
+                            </div>
                             <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
                                 <input type="checkbox" id="chk-s2-1" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
                                 <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
@@ -1256,6 +1264,10 @@ input:focus, select:focus {
 
                         <!-- Setup 3 Checklist: Trend -->
                         <div id="checklist-setup-3" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
+                            <div style="font-size: 11px; color: var(--color-primary); background: var(--color-primary-light); padding: 5px 10px; border-radius: 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                                <span>⏰ Giờ vàng: 08:30 – 09:45 (Sáng) &amp; 21:30 – 22:30 (Mỹ)</span>
+                                <span style="font-size: 10px; color: var(--text-muted);">Hồi POC sóng chủ</span>
+                            </div>
                             <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
                                 <input type="checkbox" id="chk-s3-1" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
                                 <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
@@ -1284,6 +1296,10 @@ input:focus, select:focus {
 
                         <!-- Setup 4 Checklist: Break -->
                         <div id="checklist-setup-4" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
+                            <div style="font-size: 11px; color: var(--color-primary); background: var(--color-primary-light); padding: 5px 10px; border-radius: 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                                <span>⏰ Giờ vàng: 08:00 – 08:30 (Sáng) &amp; 20:25 – 21:00 (Mỹ)</span>
+                                <span style="font-size: 10px; color: var(--text-muted);">Bứt phá nén Sideway</span>
+                            </div>
                             <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
                                 <input type="checkbox" id="chk-s4-1" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
                                 <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
@@ -1384,6 +1400,74 @@ input:focus, select:focus {
                             <a href="trading_playbook.md" target="_blank" class="b-btn-secondary" style="width: 100%; justify-content: center; text-decoration: none; font-size: 11.5px; height: 32px;">
                                 📖 Xem Toàn Bộ Playbook (Markdown) ↗
                             </a>
+                        </div>
+                    </div>
+
+                    <!-- Card: Khung Giờ Săn Mồi & Ngồi Yên (MGC & MNQ) -->
+                    <div class="b-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
+                            <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">Khung Giờ Săn Mồi &amp; Ngồi Yên</span>
+                            <span class="b-badge b-badge-blue" style="font-size: 10px;">MGC &amp; MNQ</span>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 11.5px;">
+                            <!-- Sáng -->
+                            <div class="b-card-inner" style="padding: 9px 11px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                                    <strong style="color: var(--color-primary);">🌅 07:45 – 10:00 (Sáng)</strong>
+                                    <span style="font-size: 10px; color: var(--color-green); font-weight: 700;">SĂN LỆNH</span>
+                                </div>
+                                <div style="color: var(--text-slate); line-height: 1.4;">
+                                    • Dòng tiền Á (Tokyo &amp; Shanghai SGE). MGC/MNQ mượt.<br>
+                                    • Canh <strong>Setup 1</strong> (quét râu đêm) hoặc <strong>Setup 3</strong> (hồi POC sóng).
+                                </div>
+                            </div>
+
+                            <!-- Trưa: Ngồi yên -->
+                            <div class="b-card-inner" style="padding: 8px 11px; background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.2);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong style="color: var(--color-red);">⏸️ 10:30 – 13:30 (Trưa)</strong>
+                                    <span style="font-size: 10px; color: var(--color-red); font-weight: 700;">NGỒI YÊN</span>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                                    Hết sóng sáng, cạn volume, đóng máy tránh cào cấu.
+                                </div>
+                            </div>
+
+                            <!-- Chiều -->
+                            <div class="b-card-inner" style="padding: 9px 11px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                                    <strong style="color: var(--color-primary);">🌆 14:00 – 16:00 (Chiều)</strong>
+                                    <span style="font-size: 10px; color: var(--color-green); font-weight: 700;">SĂN MGC</span>
+                                </div>
+                                <div style="color: var(--text-slate); line-height: 1.4;">
+                                    • London mở cửa (Vàng vật chất).<br>
+                                    • Canh <strong>Setup 1 (CRT)</strong> hoặc <strong>Setup 2 (AMD)</strong> quét râu Á.
+                                </div>
+                            </div>
+
+                            <!-- Tối: Giờ vàng -->
+                            <div class="b-card-inner" style="padding: 9px 11px; border-left: 3px solid var(--color-primary);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                                    <strong style="color: var(--color-primary);">🔥 20:15 – 22:30 (Tối)</strong>
+                                    <span style="font-size: 10px; color: var(--color-primary); font-weight: 700;">GIỜ VÀNG MỸ</span>
+                                </div>
+                                <div style="color: var(--text-slate); line-height: 1.4;">
+                                    • 80% Volume ngày (US Open). Cực mạnh cả MGC &amp; MNQ.<br>
+                                    • Canh <strong>Setup 4 (Break)</strong>, <strong>Setup 1 (CRT)</strong> hoặc <strong>Setup 3 (Trend)</strong>.
+                                </div>
+                            </div>
+
+                            <!-- Đêm: Ngồi yên -->
+                            <div class="b-card-inner" style="padding: 8px 11px; background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.2);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong style="color: var(--color-red);">⏸️ Sau 22:30 (Đêm)</strong>
+                                    <span style="font-size: 10px; color: var(--color-red); font-weight: 700;">ĐÓNG MÁY</span>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                                    Hết sóng chính, tắt chart đi ngủ bảo toàn vốn và kỷ luật.
+                                </div>
+                            </div>
                         </div>
                     </div>
 

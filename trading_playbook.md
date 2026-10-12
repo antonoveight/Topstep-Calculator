@@ -165,3 +165,16 @@ Khi kéo FRVP từ **Open Anchor** đến **cây nến trước nến Sweep (ho�
 - **Quy tắc dừng phiên:**
   - Nếu đạt $+2\text{R}$ hoặc $+3\text{R}$ (lãi $\ge +\$300$) $\rightarrow$ **DỪNG TRADE NGAY HÔM ĐÓ.** Bảo toàn 1 ngày thắng hợp lệ để tích lũy 5 ngày rút tiền.
   - Nếu thua 2 lệnh liên tiếp ($-1\text{R}$ và $-1\text{R}$ = $-300$ to $-400$) $\rightarrow$ **DỪNG TRADE HÔM ĐÓ.** Giữ khoảng cách xa ngưỡng $-1,000$ DLL của Topstep.
+
+---
+
+## 7. Bản Đồ Thanh Khoản & Khung Giờ Săn Mồi (MGC & MNQ - GMT+7)
+
+| Khung Giờ | Trạng Thái | Trọng Tâm Giao Dịch & Setup |
+| :--- | :--- | :--- |
+| **07:45 – 10:00 (Sáng)** | 🟢 **SĂN LỆNH** | **Dòng tiền Á (Tokyo & Shanghai SGE)**: MGC & MNQ chạy rất mượt, tôn trọng kỹ thuật.<br>• Canh **Setup 1 (CRT)** quét râu đêm (ONH/ONL) hoặc **Setup 3 (Trend)** hồi POC sóng sáng. |
+| **10:30 – 13:30 (Trưa)** | 🛑 **NGỒI YÊN** | Hết sóng sáng, cạn volume, thị trường ngủ đông. **Tắt màn hình, tuyệt đối không cố tìm lệnh.** |
+| **14:00 – 16:00 (Chiều)** | 🟢 **SĂN MGC** | **London mở cửa (Vàng vật chất)**: MGC bùng nổ nhịp quét râu phiên Á.<br>• Canh **Setup 1 (CRT)** hoặc **Setup 2 (AMD)**. |
+| **20:15 – 22:30 (Tối)** | 🔥 **GIỜ VÀNG MỸ** | **US Open (80% Volume của ngày)**: Biến động cực mạnh cả MGC & MNQ.<br>• Canh **Setup 4 (Break)**, **Setup 1 (CRT)** hoặc **Setup 3 (Trend)**. |
+| **Sau 22:30 (Đêm)** | 🛑 **ĐÓNG MÁY** | Hết sóng chính, tắt chart đi ngủ để bảo toàn vốn và năng lượng ngày mai. |
+
