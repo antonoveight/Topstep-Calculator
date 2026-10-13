@@ -13,8 +13,8 @@
 3. [Phân Tích 3 Vị Trí Của POC Trong Range Anchor](#3-phân-tích-3-vị-trí-của-poc-trong-range-anchor)
 4. [Chi Tiết 4 Setup Thực Chiến](#4-chi-tiết-4-setup-thực-chiến)
    - [Setup 1: CRT - FRVP (Candle Range Sweep & POC Break)](#setup-1-crt---frvp)
-   - [Setup 2: AMD (Accumulation - Manipulation - Distribution)](#setup-2-amd)
-   - [Setup 3: Trend (Pullback POC & Confirmation Đáy Mới)](#setup-3-trend)
+   - [Setup 2: Trend (Pullback POC & Confirmation Đáy Mới)](#setup-2-trend)
+   - [Setup 3: AMD (Accumulation - Manipulation - Distribution)](#setup-3-amd)
    - [Setup 4: Break (Phá Vỡ Range Sideway & Retest)](#setup-4-break)
 5. [Quy Tắc Quản Trị Lệnh Real-time (Execution Rules)](#5-quy-tắc-quản-trị-lệnh-real-time)
 6. [Quản Trị Vốn & Kỷ Luật Topstep 50K](#6-quản-trị-vốn--kỷ-luật-topstep-50k)
@@ -96,19 +96,7 @@ Khi kéo FRVP từ **Open Anchor** đến **cây nến trước nến Sweep (ho�
 
 ---
 
-### SETUP 2: AMD (Accumulation - Manipulation - Distribution)
-- **Ý Tưởng:** Đánh theo chu kỳ bẫy giá kinh điển của thị trường.
-- **Quy Trình Từng Bước:**
-  1. **Phase A (Tích lũy):** Kéo FRVP trên toàn bộ vùng tích lũy A $\rightarrow$ Xác định đường `POC-A`.
-  2. **Phase M (Thao túng/Bẫy giá):** Giá phá vỡ giả (Judas Swing) quét râu ra ngoài biên Range A để bẫy retail trader.
-  3. **Phase D (Phân phối thật):** Giá quay ngược trở lại vào trong Range A và xuyên qua `POC-A`.
-  4. **Điểm Kích Hoạt (Trigger):** Chờ giá hồi về retest lại đúng `POC-A`. **ĐỨNG NGOÀI CHỜ NẾN PHẢN ỨNG TỪ CHỐI (Rejection)** tại POC $\rightarrow$ Vào lệnh theo hướng Phase D.
-  5. **Stop Loss:** Đặt ngoài đỉnh/đáy của Phase M.
-  6. **Take Profit:** $1:2$ đến $1:3$ (hoặc biên thanh khoản đối diện).
-
----
-
-### SETUP 3: TREND (Pullback POC & Confirmation Đáy Mới)
+### SETUP 2: TREND (Pullback POC & Confirmation Đáy Mới)
 - **Ý Tưởng:** Đánh thuận xu hướng khi giá hồi sâu về vùng giá trị, tối ưu R:R bằng cách chờ tạo cấu trúc xác nhận.
 - **Quy Trình Từng Bước:**
   1. Xác định con sóng đẩy xu hướng rõ ràng: Đánh dấu High và Low của con sóng.
@@ -117,6 +105,18 @@ Khi kéo FRVP từ **Open Anchor** đến **cây nến trước nến Sweep (ho�
   4. **Điểm Kích Hoạt (Trigger):** Quan sát hành động giá tại POC. Chờ giá từ chối và **tạo ra một Đáy Mới Cục Bộ (Local Low / Higher Low)** hoặc nến đảo chiều pinbar/engulfing.
   5. **Vào Lệnh & Cắt Lỗ:** Vào lệnh ngay khi đáy mới hoàn thành. **SL đặt ngay dưới Đáy Mới Cục Bộ này** (khoảng cách SL rất ngắn).
   6. **Take Profit:** Hướng lên Đỉnh Sóng Cũ (Range High). Do SL ngắn, tỷ lệ **R:R tự động đạt 1:2 đến 1:3 tuyệt đẹp**.
+
+---
+
+### SETUP 3: AMD (Accumulation - Manipulation - Distribution)
+- **Ý Tưởng:** Đánh theo chu kỳ bẫy giá kinh điển của thị trường.
+- **Quy Trình Từng Bước:**
+  1. **Phase A (Tích lũy):** Kéo FRVP trên toàn bộ vùng tích lũy A $\rightarrow$ Xác định đường `POC-A`.
+  2. **Phase M (Thao túng/Bẫy giá):** Giá phá vỡ giả (Judas Swing) quét râu ra ngoài biên Range A để bẫy retail trader.
+  3. **Phase D (Phân phối thật):** Giá quay ngược trở lại vào trong Range A và xuyên qua `POC-A`.
+  4. **Điểm Kích Hoạt (Trigger):** Chờ giá hồi về retest lại đúng `POC-A`. **ĐỨNG NGOÀI CHỜ NẾN PHẢN ỨNG TỪ CHỐI (Rejection)** tại POC $\rightarrow$ Vào lệnh theo hướng Phase D.
+  5. **Stop Loss:** Đặt ngoài đỉnh/đáy của Phase M.
+  6. **Take Profit:** $1:2$ đến $1:3$ (hoặc biên thanh khoản đối diện).
 
 ---
 

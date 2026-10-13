@@ -1218,8 +1218,8 @@ input:focus, select:focus {
                         <!-- 4 Setup Tabs -->
                         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 14px; background: var(--bg-card-inner); padding: 3px; border-radius: 8px;">
                             <button type="button" id="tab-setup-1" onclick="switchChecklistSetup(1)" style="padding: 7px 4px; font-size: 11.5px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: var(--color-primary); color: #FFFFFF; transition: all 0.15s ease;">1. CRT - FRVP</button>
-                            <button type="button" id="tab-setup-2" onclick="switchChecklistSetup(2)" style="padding: 7px 4px; font-size: 11.5px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: transparent; color: var(--text-muted); transition: all 0.15s ease;">2. AMD</button>
-                            <button type="button" id="tab-setup-3" onclick="switchChecklistSetup(3)" style="padding: 7px 4px; font-size: 11.5px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: transparent; color: var(--text-muted); transition: all 0.15s ease;">3. Trend</button>
+                            <button type="button" id="tab-setup-2" onclick="switchChecklistSetup(2)" style="padding: 7px 4px; font-size: 11.5px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: transparent; color: var(--text-muted); transition: all 0.15s ease;">2. Trend</button>
+                            <button type="button" id="tab-setup-3" onclick="switchChecklistSetup(3)" style="padding: 7px 4px; font-size: 11.5px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: transparent; color: var(--text-muted); transition: all 0.15s ease;">3. AMD</button>
                             <button type="button" id="tab-setup-4" onclick="switchChecklistSetup(4)" style="padding: 7px 4px; font-size: 11.5px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: transparent; color: var(--text-muted); transition: all 0.15s ease;">4. Break</button>
                         </div>
 
@@ -1255,66 +1255,66 @@ input:focus, select:focus {
                             </label>
                         </div>
 
-                        <!-- Setup 2 Checklist: AMD -->
+                        <!-- Setup 2 Checklist: Trend -->
                         <div id="checklist-setup-2" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
-                            <div style="font-size: 11px; color: var(--color-primary); background: var(--color-primary-light); padding: 5px 10px; border-radius: 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
-                                <span>⏰ Giờ vàng: 14:00 – 15:30 (Âu - MGC) &amp; 20:30 – 22:00 (Mỹ)</span>
-                                <span style="font-size: 10px; color: var(--text-muted);">Quét bẫy Judas Swing</span>
-                            </div>
-                            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
-                                <input type="checkbox" id="chk-s2-1" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
-                                    <strong>1. Phase A:</strong> Kéo FRVP vùng tích lũy → Xác định POC-A
-                                </span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
-                                <input type="checkbox" id="chk-s2-2" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
-                                    <strong>2. Phase M:</strong> Chờ quét râu bẫy giá (Judas Swing) thoát biên Range A
-                                </span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
-                                <input type="checkbox" id="chk-s2-3" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
-                                    <strong>3. Phase D:</strong> Chờ giá chui ngược lại Range A &amp; test lại POC-A
-                                </span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
-                                <input type="checkbox" id="chk-s2-4" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
-                                    <strong>4. Trigger:</strong> Chờ nến từ chối tại POC-A → Vào lệnh, SL ngoài râu M, TP 1:2 / 1:3
-                                </span>
-                            </label>
-                        </div>
-
-                        <!-- Setup 3 Checklist: Trend -->
-                        <div id="checklist-setup-3" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
                             <div style="font-size: 11px; color: var(--color-primary); background: var(--color-primary-light); padding: 5px 10px; border-radius: 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
                                 <span>⏰ Giờ vàng: 08:30 – 09:45 (Sáng) &amp; 21:30 – 22:30 (Mỹ)</span>
                                 <span style="font-size: 10px; color: var(--text-muted);">Hồi POC sóng chủ</span>
                             </div>
                             <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
-                                <input type="checkbox" id="chk-s3-1" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
+                                <input type="checkbox" id="chk-s2-1" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
                                 <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
                                     <strong>1. Sóng đẩy:</strong> Đánh dấu High &amp; Low → Kéo FRVP cả sóng lấy POC
                                 </span>
                             </label>
                             <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
-                                <input type="checkbox" id="chk-s3-2" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
+                                <input type="checkbox" id="chk-s2-2" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
                                 <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
                                     <strong>2. Chạm POC:</strong> Quan sát phản ứng nến (Tuyệt đối không limit mù)
                                 </span>
                             </label>
                             <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
-                                <input type="checkbox" id="chk-s3-3" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
+                                <input type="checkbox" id="chk-s2-3" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
                                 <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
                                     <strong>3. Đáy mới tại POC:</strong> Chờ giá tạo Đáy mới (Local Higher Low) giữ vững trên POC
                                 </span>
                             </label>
                             <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
-                                <input type="checkbox" id="chk-s3-4" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
+                                <input type="checkbox" id="chk-s2-4" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
                                 <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
                                     <strong>4. Vào lệnh:</strong> SL sau Đáy mới, TP lên Đỉnh sóng (R:R 1:2 / 1:3)
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- Setup 3 Checklist: AMD -->
+                        <div id="checklist-setup-3" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
+                            <div style="font-size: 11px; color: var(--color-primary); background: var(--color-primary-light); padding: 5px 10px; border-radius: 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                                <span>⏰ Giờ vàng: 14:00 – 15:30 (Âu - MGC) &amp; 20:30 – 22:00 (Mỹ)</span>
+                                <span style="font-size: 10px; color: var(--text-muted);">Quét bẫy Judas Swing</span>
+                            </div>
+                            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                                <input type="checkbox" id="chk-s3-1" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
+                                <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
+                                    <strong>1. Phase A:</strong> Kéo FRVP vùng tích lũy → Xác định POC-A
+                                </span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                                <input type="checkbox" id="chk-s3-2" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
+                                <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
+                                    <strong>2. Phase M:</strong> Chờ quét râu bẫy giá (Judas Swing) thoát biên Range A
+                                </span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                                <input type="checkbox" id="chk-s3-3" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
+                                <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
+                                    <strong>3. Phase D:</strong> Chờ giá chui ngược lại Range A &amp; test lại POC-A
+                                </span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                                <input type="checkbox" id="chk-s3-4" onchange="onChecklistChange()" style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
+                                <span style="font-size: 12px; color: var(--text-primary); font-weight: 500;">
+                                    <strong>4. Trigger:</strong> Chờ nến từ chối tại POC-A → Vào lệnh, SL ngoài râu M, TP 1:2 / 1:3
                                 </span>
                             </label>
                         </div>
@@ -1409,8 +1409,8 @@ input:focus, select:focus {
                             <div class="b-card-inner" style="padding: 10px 12px;">
                                 <div style="font-weight: 700; color: var(--color-green); margin-bottom: 4px;">⚡ Độ Sâu Retest (Gold &amp; NQ)</div>
                                 <div style="color: var(--text-slate); line-height: 1.5;">
-                                    • <strong>Setup 2 &amp; 4:</strong> Đà mạnh thường chỉ test VAH/VAL hoặc POC nông.<br>
-                                    • <strong>Setup 3:</strong> Luôn đợi nến tạo đáy/đỉnh mới tại POC rồi mới vào.
+                                    • <strong>Setup 2 (Trend):</strong> Luôn đợi nến tạo đáy/đỉnh mới tại POC rồi mới vào.<br>
+                                    • <strong>Setup 3 (AMD) &amp; Setup 4 (Break):</strong> Đà mạnh thường chỉ test VAH/VAL hoặc POC nông.
                                 </div>
                             </div>
 
@@ -1444,7 +1444,7 @@ input:focus, select:focus {
                                 </div>
                                 <div style="color: var(--text-slate); line-height: 1.4;">
                                     • Dòng tiền Á (Tokyo &amp; Shanghai SGE). MGC/MNQ mượt.<br>
-                                    • Canh <strong>Setup 1</strong> (quét râu đêm) hoặc <strong>Setup 3</strong> (hồi POC sóng).
+                                    • Canh <strong>Setup 1 (CRT)</strong> (quét râu đêm) hoặc <strong>Setup 2 (Trend)</strong> (hồi POC sóng).
                                 </div>
                             </div>
 
@@ -1467,7 +1467,7 @@ input:focus, select:focus {
                                 </div>
                                 <div style="color: var(--text-slate); line-height: 1.4;">
                                     • London mở cửa (Vàng vật chất).<br>
-                                    • Canh <strong>Setup 1 (CRT)</strong> hoặc <strong>Setup 2 (AMD)</strong> quét râu Á.
+                                    • Canh <strong>Setup 1 (CRT)</strong> hoặc <strong>Setup 3 (AMD)</strong> quét râu Á.
                                 </div>
                             </div>
 
@@ -1479,7 +1479,7 @@ input:focus, select:focus {
                                 </div>
                                 <div style="color: var(--text-slate); line-height: 1.4;">
                                     • 80% Volume ngày (US Open). Cực mạnh cả MGC &amp; MNQ.<br>
-                                    • Canh <strong>Setup 4 (Break)</strong>, <strong>Setup 1 (CRT)</strong> hoặc <strong>Setup 3 (Trend)</strong>.
+                                    • Canh <strong>Setup 4 (Break)</strong>, <strong>Setup 1 (CRT)</strong> hoặc <strong>Setup 2 (Trend)</strong>.
                                 </div>
                             </div>
 
