@@ -426,6 +426,10 @@ input:focus, select:focus {
 .modal-close:hover { color: var(--color-red); }
 
 .tabular-nums { font-variant-numeric: tabular-nums; }
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
 </style>
 </head>
 <body style="display: flex; min-height: 100vh;">
@@ -1388,6 +1392,72 @@ input:focus, select:focus {
 
                 <!-- RIGHT COLUMN (4 Cols): POC Reference Card -->
                 <div class="lg:col-span-4 flex flex-col gap-4">
+
+                    <!-- Card: AI Chart Lens · Soi Kèo POC & Thẩm Định Nét Vẽ -->
+                    <div class="b-card" id="aiLensCard" style="border: 1px solid var(--border-inner); position: relative;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 26px; height: 26px; border-radius: 7px; background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 14px;">👁️</div>
+                                <div>
+                                    <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); display: block;">AI Chart Lens</span>
+                                    <span style="font-size: 10.5px; color: var(--text-muted);">Soi POC &amp; Thẩm Định Nét Vẽ Của Bạn</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <button type="button" onclick="openAiSettingsModal()" class="b-btn-secondary" style="height: 26px; padding: 0 8px; font-size: 11px;" title="Cài đặt Google Gemini API Key">
+                                    ⚙️ API Key
+                                </button>
+                                <span id="aiApiKeyStatus" class="b-badge b-badge-dim" style="font-size: 9.5px;">Chưa lưu Key</span>
+                            </div>
+                        </div>
+
+                        <!-- Dropzone / Paste Area -->
+                        <div id="aiDropZone" onclick="document.getElementById('aiChartFileInput').click()" style="border: 2px dashed var(--border-active); border-radius: 10px; padding: 18px 14px; text-align: center; cursor: pointer; background: var(--bg-card-inner); transition: all 0.2s ease;">
+                            <input type="file" id="aiChartFileInput" accept="image/*" onchange="onAiChartFileSelected(event)" style="display: none;">
+                            <div id="aiDropZonePrompt" style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                                <div style="font-size: 26px;">📸</div>
+                                <div style="font-size: 12px; font-weight: 600; color: var(--text-primary);">
+                                    Dán ảnh chart (<kbd style="background: var(--bg-card); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-inner); font-size: 10px;">Ctrl + V</kbd>) hoặc bấm để tải lên
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+                                    Chụp ảnh biểu đồ có vẽ FRVP / Range. AI sẽ kiểm tra bạn vẽ đúng hay sai!
+                                </div>
+                            </div>
+
+                            <!-- Preview Container -->
+                            <div id="aiPreviewContainer" style="display: none; position: relative; width: 100%;">
+                                <img id="aiPreviewImg" src="" alt="Chart Preview" style="width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border-inner);">
+                                <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                    <span id="aiImgMeta" style="font-size: 10.5px; color: var(--text-muted);">Ảnh sẵn sàng</span>
+                                    <button type="button" onclick="clearAiChart(event)" class="b-btn-danger" style="font-size: 10.5px; padding: 2px 8px; height: 24px;">
+                                        ✕ Xóa ảnh
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div style="display: flex; gap: 8px; margin-top: 10px;">
+                            <button type="button" id="btnRunAiScan" onclick="runAiChartAnalysis()" class="b-btn-primary" style="flex: 1; height: 34px; font-size: 12px; justify-content: center; font-weight: 700;">
+                                🔍 AI Soi Kèo &amp; Kiểm Tra Vẽ
+                            </button>
+                            <button type="button" onclick="testSampleAiScan()" class="b-btn-secondary" style="height: 34px; padding: 0 10px; font-size: 11px;" title="Chạy thử mẫu phân tích không cần API Key">
+                                Demo Mẫu
+                            </button>
+                        </div>
+
+                        <!-- Scanning Spinner / Status -->
+                        <div id="aiScanningIndicator" style="display: none; padding: 14px; text-align: center; margin-top: 10px; background: var(--bg-card-inner); border-radius: 8px; border: 1px solid var(--border-inner);">
+                            <div style="display: inline-block; width: 22px; height: 22px; border: 2.5px solid var(--color-primary); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                            <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-top: 6px;">AI đang đọc chart &amp; thẩm định nét vẽ...</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Đối chiếu 4 Setup, vị trí POC và cấu trúc nến</div>
+                        </div>
+
+                        <!-- Analysis Output Box -->
+                        <div id="aiAnalysisResultBox" style="display: none; margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
                     
                     <!-- Card: Bí Quyết Vị Trí POC Cheatsheet -->
                     <div class="b-card">
@@ -1708,6 +1778,38 @@ input:focus, select:focus {
                 <button type="submit" class="b-btn-primary">Xác Nhận Rút</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- MODAL: GEMINI API KEY SETTINGS -->
+<div id="aiSettingsModal" class="modal hidden">
+    <div class="modal-box" style="max-width: 480px;">
+        <button onclick="closeAiSettingsModal()" class="modal-close">&times;</button>
+        <h3 style="font-size: 15px; font-weight: 700; color: var(--text-primary); border-bottom: 1px solid var(--border-inner); padding-bottom: 10px; margin-bottom: 14px;">
+            ⚙️ Cài Đặt AI Chart Lens (Gemini Vision)
+        </h3>
+        <p style="font-size: 11.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
+            Hệ thống sử dụng mô hình <strong>Google Gemini 1.5 Flash Vision</strong> để đọc biểu đồ và thẩm định nét vẽ. Google cung cấp API Key <strong>hoàn toàn miễn phí</strong>. Key được lưu an toàn trực tiếp trên trình duyệt của bạn (LocalStorage).
+        </p>
+        <div style="margin-bottom: 12px;">
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Google Gemini API Key</label>
+            <input id="inputGeminiApiKey" type="password" placeholder="AIzaSy..." style="width: 100%; font-family: monospace; font-size: 12px;">
+        </div>
+        <div style="background: var(--bg-card-inner); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-inner); margin-bottom: 16px; font-size: 11px; color: var(--text-slate);">
+            <strong style="color: var(--text-primary);">Cách lấy Key miễn phí (30 giây):</strong>
+            <ol style="margin-left: 16px; margin-top: 4px; line-height: 1.5;">
+                <li>Mở <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--color-primary); font-weight: 600; text-decoration: underline;">Google AI Studio ↗</a> (đăng nhập Gmail).</li>
+                <li>Bấm nút <strong>Create API key</strong> và copy đoạn mã key.</li>
+                <li>Dán vào ô trên và bấm <strong>Lưu Key</strong> để bắt đầu soi kèo!</li>
+            </ol>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <button type="button" onclick="clearGeminiApiKey()" class="b-btn-danger" style="font-size: 11px;">Xóa Key</button>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" onclick="closeAiSettingsModal()" class="b-btn-secondary">Đóng</button>
+                <button type="button" onclick="saveGeminiApiKey()" class="b-btn-primary">Lưu Key</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -3549,6 +3651,7 @@ const accountData = {
             if (dateEl && pill && dateEl.value) pill.innerText = dateEl.value;
             checkTopstepXSync();
             loadChecklistState();
+            updateAiKeyStatus();
             initAppView();
         };
 
@@ -3870,6 +3973,338 @@ const accountData = {
                 }
             };
             reader.readAsText(file);
+        }
+
+
+        /* ── AI CHART LENS & DRAWING VALIDATION ENGINE ── */
+        let currentChartBase64 = null;
+        let currentChartMimeType = "image/png";
+
+        function updateAiKeyStatus() {
+            const key = localStorage.getItem('topstep_gemini_api_key') || '';
+            const statusEl = document.getElementById('aiApiKeyStatus');
+            const inputEl = document.getElementById('inputGeminiApiKey');
+            if (inputEl) inputEl.value = key;
+            if (statusEl) {
+                if (key.trim().length > 10) {
+                    statusEl.innerText = "Đã có Key ✓";
+                    statusEl.className = "b-badge b-badge-green";
+                } else {
+                    statusEl.innerText = "Chưa lưu Key";
+                    statusEl.className = "b-badge b-badge-dim";
+                }
+            }
+        }
+
+        function openAiSettingsModal() {
+            updateAiKeyStatus();
+            document.getElementById('aiSettingsModal').classList.remove('hidden');
+        }
+
+        function closeAiSettingsModal() {
+            document.getElementById('aiSettingsModal').classList.add('hidden');
+        }
+
+        function saveGeminiApiKey() {
+            const input = document.getElementById('inputGeminiApiKey');
+            const key = input ? input.value.trim() : '';
+            if (!key) {
+                alert("Vui lòng nhập Gemini API Key!");
+                return;
+            }
+            localStorage.setItem('topstep_gemini_api_key', key);
+            updateAiKeyStatus();
+            closeAiSettingsModal();
+            alert("Đã lưu Gemini API Key thành công!");
+        }
+
+        function clearGeminiApiKey() {
+            if (confirm("Bạn có chắc muốn xóa Gemini API Key khỏi trình duyệt?")) {
+                localStorage.removeItem('topstep_gemini_api_key');
+                updateAiKeyStatus();
+                closeAiSettingsModal();
+            }
+        }
+
+        function onAiChartFileSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            loadAiImageFile(file);
+        }
+
+        function loadAiImageFile(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                alert("Vui lòng chọn một file hình ảnh biểu đồ hợp lệ!");
+                return;
+            }
+            currentChartMimeType = file.type;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                currentChartBase64 = dataUrl.split(',')[1];
+                showAiImagePreview(dataUrl, file.name + " (" + (file.size / 1024).toFixed(0) + " KB)");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showAiImagePreview(dataUrl, metaText) {
+            const dropPrompt = document.getElementById('aiDropZonePrompt');
+            const previewContainer = document.getElementById('aiPreviewContainer');
+            const previewImg = document.getElementById('aiPreviewImg');
+            const metaEl = document.getElementById('aiImgMeta');
+
+            if (previewImg) previewImg.src = dataUrl;
+            if (metaEl) metaEl.innerText = metaText || "Ảnh biểu đồ sẵn sàng";
+            if (dropPrompt) dropPrompt.style.display = "none";
+            if (previewContainer) previewContainer.style.display = "block";
+            
+            // Clear old result
+            const resultBox = document.getElementById('aiAnalysisResultBox');
+            if (resultBox) {
+                resultBox.style.display = "none";
+                resultBox.innerHTML = "";
+            }
+        }
+
+        function clearAiChart(event) {
+            if (event) event.stopPropagation();
+            currentChartBase64 = null;
+            const dropPrompt = document.getElementById('aiDropZonePrompt');
+            const previewContainer = document.getElementById('aiPreviewContainer');
+            const fileInput = document.getElementById('aiChartFileInput');
+            const previewImg = document.getElementById('aiPreviewImg');
+
+            if (fileInput) fileInput.value = "";
+            if (previewImg) previewImg.src = "";
+            if (dropPrompt) dropPrompt.style.display = "flex";
+            if (previewContainer) previewContainer.style.display = "none";
+
+            const resultBox = document.getElementById('aiAnalysisResultBox');
+            if (resultBox) {
+                resultBox.style.display = "none";
+                resultBox.innerHTML = "";
+            }
+        }
+
+        // Global Paste Listener for Clipboard Images
+        if (typeof window !== 'undefined' && window.addEventListener) {
+            window.addEventListener('paste', function(e) {
+                const checklistView = document.getElementById('view-checklist');
+                if (!checklistView || checklistView.style.display === 'none') return;
+
+                const clipData = e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData);
+                if (!clipData || !clipData.items) return;
+                const items = clipData.items;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].kind === 'file' && items[i].type && items[i].type.startsWith('image/')) {
+                        const blob = items[i].getAsFile();
+                        loadAiImageFile(blob);
+                        break;
+                    }
+                }
+            });
+        }
+
+        async function runAiChartAnalysis() {
+            if (!currentChartBase64) {
+                alert("Vui lòng dán ảnh (Ctrl + V) hoặc tải lên ảnh chart có vẽ nến/FRVP của bạn trước!");
+                return;
+            }
+
+            const apiKey = localStorage.getItem('topstep_gemini_api_key') || '';
+            if (!apiKey) {
+                openAiSettingsModal();
+                alert("Bạn chưa nhập Gemini API Key. Hãy nhập mã Key miễn phí để AI phân tích hình ảnh biểu đồ!");
+                return;
+            }
+
+            const indicator = document.getElementById('aiScanningIndicator');
+            const resultBox = document.getElementById('aiAnalysisResultBox');
+            const btnScan = document.getElementById('btnRunAiScan');
+
+            if (indicator) indicator.style.display = "block";
+            if (resultBox) resultBox.style.display = "none";
+            if (btnScan) btnScan.disabled = true;
+
+            const systemPrompt = `Bạn là Chuyên Gia Cố Vấn Trading Thực Chiến cho một Trader chuyên nghiệp thi quỹ Topstep (Futures Gold MGC và Nasdaq MNQ) theo phương pháp FRVP (Fixed Range Volume Profile) & SMC / CRT / AMD.
+
+TRADER VỪA TẢI LÊN MỘT ẢNH CHART MÀ TRADER ĐÃ TỰ PHÂN TÍCH VÀ TỰ KẺ VẼ TRÊN ĐÓ (hoặc chart thô).
+NHIỆM VỤ SỐ 1 VÀ QUAN TRỌNG NHẤT CỦA BẠN LÀ: THẨM ĐỊNH XEM TRADER ĐÃ KẺ / VẼ CÓ ĐÚNG QUY TẮC KHÔNG, đồng thời nhận diện setup và đưa ra khuyến nghị hành động ngắn gọn.
+
+QUY TẮC PHƯƠNG PHÁP CỦA HỆ THỐNG:
+1. Setup 1 (CRT - FRVP): Kéo FRVP từ Open Anchor đến nến trước nến Sweep. POC phải ở Cực Trị (A+) hoặc Giữa (50%). Thân nến phải đóng cửa dứt khoát qua POC (không chấp nhận chỉ thò râu). Nếu POC nằm sát Target -> Bỏ lệnh.
+2. Setup 2 (Trend): Đánh dấu High & Low con sóng đẩy -> Kéo FRVP cả sóng. Giá hồi về POC -> BẮT BUỘC phải chờ tạo Đáy mới cục bộ (Local Higher Low) giữ vững trên POC, tuyệt đối không limit mù.
+3. Setup 3 (AMD): Vùng tích lũy Range A (có POC-A) -> Giá quét râu Manipulation (Judas Swing) thoát biên -> Chui ngược lại retest POC-A và bị từ chối (Rejection) mới vào lệnh.
+4. Setup 4 (Break): Range Sideway tích lũy nén -> Nến thân lớn đóng cửa dứt khoát thoát hộp -> Retest POC hoặc VAH/VAL.
+
+HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT NÀO NGOÀI JSON NÀY):
+{
+  "drawingCheck": {
+    "status": "DUNG" | "CHUA_DUNG" | "CHUA_VE",
+    "statusText": "Nét vẽ đúng chuẩn ✓" | "Nét vẽ chưa chuẩn / Có lỗi ⚠" | "Chart chưa có nét vẽ của trader",
+    "feedback": "Nhận xét chi tiết cụ thể: Trader đã kẻ vùng nào đúng, đường nào sai? (Ví dụ: Kéo FRVP sai anchor, hoặc nến chưa đóng thân mà đã kẻ vào, hoặc đặt SL quá gần...)"
+  },
+  "setupIdentified": "Setup 1: CRT - FRVP" | "Setup 2: Trend" | "Setup 3: AMD" | "Setup 4: Break" | "Chưa Đủ Điều Kiện / Nhiễu",
+  "pocPosition": "Cực Trị (A+)" | "Cân Bằng 50%" | "Sát Target (Cản Cấm Vào)" | "Chưa Rõ POC",
+  "action": "VÀO LỆNH NGAY" | "CHỜ NẾN ĐÓNG CỬA" | "CHỈNH LẠI HÌNH VẼ" | "BỎ KÈO (SKIP)",
+  "actionColor": "green" | "blue" | "gold" | "red",
+  "slTpPlan": "SL đặt sau... TP kỳ vọng 1:2 / 1:3...",
+  "disciplineAdvice": "Lời khuyên kỷ luật ngắn gọn 1-2 câu bảo vệ vốn Topstep."
+}`;
+
+            try {
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [
+                        {
+                            parts: [
+                                { text: systemPrompt },
+                                {
+                                    inline_data: {
+                                        mime_type: currentChartMimeType,
+                                        data: currentChartBase64
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    generationConfig: {
+                        temperature: 0.2,
+                        maxOutputTokens: 1000
+                    }
+                };
+
+                const response = await fetch(endpoint, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errJson = await response.json().catch(() => ({}));
+                    throw new Error(errJson.error ? errJson.error.message : ("HTTP Error " + response.status));
+                }
+
+                const data = await response.json();
+                const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                
+                let parsedResult = null;
+                try {
+                    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        parsedResult = JSON.parse(jsonMatch[0]);
+                    }
+                } catch (e) {
+                    console.error("JSON parse error:", e);
+                }
+
+                if (!parsedResult) {
+                    // Fallback formatting if raw text was returned
+                    parsedResult = {
+                        drawingCheck: {
+                            status: "CHUA_DUNG",
+                            statusText: "Kết quả phân tích",
+                            feedback: rawText
+                        },
+                        setupIdentified: "Phân Tích AI",
+                        pocPosition: "Tham khảo biểu đồ",
+                        action: "CÂN NHẮC KỸ",
+                        actionColor: "gold",
+                        slTpPlan: "Tuân thủ R:R 1:2",
+                        disciplineAdvice: "Kỷ luật bảo vệ vốn."
+                    };
+                }
+
+                renderAiAnalysisResult(parsedResult);
+            } catch (err) {
+                alert("Lỗi khi AI phân tích ảnh: " + err.message + "\n\nVui lòng kiểm tra lại API Key hoặc định dạng ảnh.");
+            } finally {
+                if (indicator) indicator.style.display = "none";
+                if (btnScan) btnScan.disabled = false;
+            }
+        }
+
+        function renderAiAnalysisResult(res) {
+            const resultBox = document.getElementById('aiAnalysisResultBox');
+            if (!resultBox) return;
+
+            let actionBadgeClass = "b-badge b-badge-blue";
+            let actionBorderColor = "var(--color-primary)";
+            if (res.actionColor === "green") {
+                actionBadgeClass = "b-badge b-badge-green";
+                actionBorderColor = "var(--color-green)";
+            } else if (res.actionColor === "red") {
+                actionBadgeClass = "b-badge b-badge-red";
+                actionBorderColor = "var(--color-red)";
+            } else if (res.actionColor === "gold") {
+                actionBadgeClass = "b-badge b-badge-gold";
+                actionBorderColor = "var(--color-gold)";
+            }
+
+            let drawingBadgeClass = "b-badge b-badge-green";
+            if (res.drawingCheck.status === "CHUA_DUNG") {
+                drawingBadgeClass = "b-badge b-badge-red";
+            } else if (res.drawingCheck.status === "CHUA_VE") {
+                drawingBadgeClass = "b-badge b-badge-dim";
+            }
+
+            resultBox.innerHTML = `
+                <!-- 1. Action Banner -->
+                <div style="background: var(--bg-card-inner); border-left: 4px solid ${actionBorderColor}; border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <div>
+                        <span style="font-size: 10.5px; color: var(--text-muted); display: block; text-transform: uppercase;">Khuyến Nghị Hành Động</span>
+                        <strong style="font-size: 14px; color: var(--text-primary);">${res.action}</strong>
+                    </div>
+                    <span class="${actionBadgeClass}" style="font-size: 11px; font-weight: 700;">${res.setupIdentified}</span>
+                </div>
+
+                <!-- 2. Thẩm Định Nét Vẽ Của Trader -->
+                <div class="b-card-inner" style="padding: 10px 12px; border: 1px solid var(--border-inner);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--text-primary);">✍️ THẨM ĐỊNH NÉT VẼ CỦA BẠN:</span>
+                        <span class="${drawingBadgeClass}" style="font-size: 10px;">${res.drawingCheck.statusText}</span>
+                    </div>
+                    <p style="font-size: 11.5px; color: var(--text-slate); line-height: 1.5; margin: 0;">
+                        ${res.drawingCheck.feedback}
+                    </p>
+                </div>
+
+                <!-- 3. Đánh Giá POC & Setup -->
+                <div class="grid grid-cols-2 gap-2" style="font-size: 11px;">
+                    <div class="b-card-inner" style="padding: 8px 10px;">
+                        <span style="color: var(--text-muted); display: block; font-size: 10px;">VỊ TRÍ POC:</span>
+                        <strong style="color: var(--color-primary); font-size: 12px;">${res.pocPosition}</strong>
+                    </div>
+                    <div class="b-card-inner" style="padding: 8px 10px;">
+                        <span style="color: var(--text-muted); display: block; font-size: 10px;">KẾ HOẠCH SL &amp; TP:</span>
+                        <span style="color: var(--text-primary); font-weight: 600;">${res.slTpPlan}</span>
+                    </div>
+                </div>
+
+                <!-- 4. Lời Khuyên Kỷ Luật -->
+                <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); border-radius: 8px; padding: 8px 12px; font-size: 11px; color: var(--text-slate);">
+                    💡 <strong>Kỷ Luật Topstep:</strong> ${res.disciplineAdvice}
+                </div>
+            `;
+
+            resultBox.style.display = "flex";
+        }
+
+        function testSampleAiScan() {
+            const sampleData = {
+                drawingCheck: {
+                    status: "CHUA_DUNG",
+                    statusText: "Nét vẽ chưa chuẩn ⚠",
+                    feedback: "Bạn đã kẻ đúng hộp tích lũy Range, nhưng điểm kéo FRVP lại lấy nhầm từ cây nến breakout thay vì kéo từ Open Anchor. Đồng thời nến hiện tại mới chỉ quét râu qua POC chứ chưa đóng thân nến dứt khoát."
+                },
+                setupIdentified: "Setup 1: CRT - FRVP",
+                pocPosition: "Cực Trị (A+)",
+                action: "CHỜ NẾN ĐÓNG CỬA",
+                actionColor: "gold",
+                slTpPlan: "SL ngoài râu nến Sweep (-12 ticks). TP 1:2 tại CRTL.",
+                disciplineAdvice: "Kiên nhẫn chờ nến 1M đóng cửa xác nhận vượt POC. Tuyệt đối không FOMO vào sớm khi nến chưa đóng."
+            };
+            renderAiAnalysisResult(sampleData);
         }
 
 </script>
