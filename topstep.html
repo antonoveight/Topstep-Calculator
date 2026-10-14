@@ -1303,19 +1303,27 @@ input[type="number"] {
                 </div>
             </div>
 
-            <!-- ── KHUNG CẢNH 3D BẾN NƯỚC CẦN THỦ DÂN DÃ (CREATURES OF THE DEEP ENGINE) ── -->
-            <div class="b-card" id="rusticAnglerCard" style="padding: 0; overflow: hidden; border: 1px solid var(--border-inner); position: relative; background: #06111f; box-shadow: 0 4px 25px rgba(0,0,0,0.35);">
+            <!-- ── KHUNG CẢNH 3D BẾN NƯỚC CẦN THỦ PLAY TOGETHER & CREATURES OF THE DEEP (HÌNH VUÔNG) ── -->
+            <style>
+                @keyframes popStrike {
+                    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+                    50% { transform: translate(-50%, -50%) scale(1.25); opacity: 1; }
+                    70% { transform: translate(-50%, -50%) scale(0.95); opacity: 1; }
+                    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                }
+            </style>
+            <div class="b-card" id="rusticAnglerCard" style="padding: 0; overflow: hidden; border: 1px solid var(--border-inner); position: relative; background: #06111f; box-shadow: 0 4px 25px rgba(0,0,0,0.35); margin-bottom: 20px;">
                 <!-- Header Toolbar of Deep Water Viewport -->
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: rgba(11, 20, 36, 0.92); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); position: relative; z-index: 10; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: rgba(11, 20, 36, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); position: relative; z-index: 10; flex-wrap: wrap; gap: 8px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="font-size: 20px; line-height: 1; filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.5));">🎣</span>
                         <div>
                             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                <span style="font-size: 13.5px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.02em;">Biển Sâu Cần Thủ · Creatures of the Deep</span>
+                                <span style="font-size: 13.5px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.02em;">Ao Hồ Thiền Định · Play Together &amp; Creatures of the Deep</span>
                                 <span id="anglerSessionBadge" class="b-badge b-badge-blue" style="font-size: 9.5px; padding: 1px 7px; font-weight: 700;">NƯỚC LÊN</span>
-                                <span style="font-size: 10px; color: #38bdf8; background: rgba(56, 189, 248, 0.12); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.25);">Sonar Depth: 48m</span>
+                                <span style="font-size: 10px; color: #38bdf8; background: rgba(56, 189, 248, 0.12); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.25);">Góc Nhìn Thứ 3 (3rd Person)</span>
                             </div>
-                            <span style="font-size: 10.5px; color: #94A3B8; display: block;">Mô phỏng 2.5D mặt nước sâu · Rà quét bóng cá &amp; dòng tiền ngầm theo kỷ luật Giản Hạ Thủy</span>
+                            <span style="font-size: 10.5px; color: #94A3B8; display: block;">Hồ nước tĩnh lặng giữa đảo cây xanh · Trực quan hóa kỷ luật vào lệnh &amp; Quản trị rủi ro</span>
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
@@ -1328,32 +1336,118 @@ input[type="number"] {
                     </div>
                 </div>
 
-                <!-- 2.5D Animated Canvas Viewport -->
-                <div id="rusticCanvasContainer" style="width: 100%; height: 240px; position: relative; overflow: hidden; background: #030a16; cursor: crosshair; user-select: none;">
-                    <canvas id="rusticAnglerCanvas" style="width: 100%; height: 100%; display: block;"></canvas>
-                    
-                    <!-- Floating Top-Right Mini Sonar / Species Legend -->
-                    <div style="position: absolute; top: 10px; right: 12px; display: flex; align-items: center; gap: 8px; pointer-events: none; z-index: 5;">
-                        <div style="background: rgba(11, 20, 36, 0.75); backdrop-filter: blur(6px); padding: 3px 8px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.08); font-size: 10px; color: #94A3B8; display: flex; gap: 8px;">
-                            <span>🐟 Đàn cá con</span>
-                            <span style="color: #38bdf8;">🦈 Cá săn mồi POC</span>
-                            <span style="color: #f59e0b;">🐉 Cự Long Thủy Quái</span>
-                        </div>
-                    </div>
+                <!-- SQUARE VIEWPORT CONTAINER (TỈ LỆ HÌNH VUÔNG 1:1) -->
+                <div style="padding: 16px; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle at 50% 50%, #0d1e33 0%, #06111f 100%);">
+                    <div id="rusticCanvasContainer" style="width: 100%; max-width: 500px; aspect-ratio: 1 / 1; position: relative; overflow: hidden; border-radius: 20px; box-shadow: 0 12px 35px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.12); background: #07192b; cursor: crosshair; user-select: none;">
+                        <canvas id="rusticAnglerCanvas" style="width: 100%; height: 100%; display: block;"></canvas>
+                        
+                        <!-- ── PLAY TOGETHER CASUAL MOBILE HUD OVERLAY ── -->
 
-                    <!-- Floating Full TP Trophy Celebration Banner -->
-                    <div id="anglerTrophyBanner" style="display: none; position: absolute; top: 18px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.95)); color: #FFFFFF; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; box-shadow: 0 4px 18px rgba(245, 158, 11, 0.5); border: 1px solid #FEF08A; z-index: 8; pointer-events: none; text-align: center;">
-                        ⭐ VỚT TRỌN CỰ LONG HOÀNG KIM · FULL TP KỶ LUẬT TUYỆT ĐỐI! ⭐
-                    </div>
-
-                    <!-- Floating Bottom HUD: Real-time Status & Folk Angler Wisdom -->
-                    <div style="position: absolute; bottom: 8px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; flex-wrap: wrap; gap: 6px; z-index: 5;">
-                        <div style="background: rgba(11, 20, 36, 0.88); backdrop-filter: blur(8px); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; gap: 8px; pointer-events: auto;">
-                            <span id="anglerStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; display: inline-block; box-shadow: 0 0 8px #38bdf8;"></span>
-                            <span id="anglerStatusText" style="font-size: 11.5px; font-weight: 600; color: #F1F5F9;">🍃 Mặt nước tĩnh mịch · Đang rà quét luồng cá &amp; dòng tiền</span>
+                        <!-- 1. TOP-LEFT: AVATAR & LEVEL BADGE & EXP BAR -->
+                        <div style="position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 8px; pointer-events: auto; z-index: 6;">
+                            <div style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); border: 2.5px solid #ffffff; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 22px; position: relative; flex-shrink: 0;">
+                                🧑‍🌾
+                                <span style="position: absolute; bottom: -3px; right: -4px; background: #2563eb; color: #ffffff; font-size: 8.5px; font-weight: 800; padding: 1px 4px; border-radius: 8px; border: 1.5px solid #ffffff;">Lv.12</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <span style="font-size: 11.5px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Cần Thủ Giản Hạ Thủy</span>
+                                </div>
+                                <!-- EXP Bar (Checklist Progress) -->
+                                <div style="width: 95px; height: 7px; background: rgba(15,23,42,0.8); border-radius: 10px; border: 1px solid rgba(255,255,255,0.25); overflow: hidden; position: relative;">
+                                    <div id="anglerExpBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #22c55e); border-radius: 10px; transition: width 0.3s ease;"></div>
+                                </div>
+                                <div style="display: flex; gap: 4px; margin-top: 2px;">
+                                    <span class="b-badge b-badge-dim" style="font-size: 8.5px; padding: 0 5px; cursor: pointer;" onclick="scrollToSection('checklist-section')">🎯 Nhiệm vụ</span>
+                                    <span class="b-badge b-badge-dim" style="font-size: 8.5px; padding: 0 5px; cursor: pointer;" onclick="openTradePlaybookModal()">📖 Playbook</span>
+                                </div>
+                            </div>
                         </div>
-                        <div style="background: rgba(11, 20, 36, 0.75); backdrop-filter: blur(8px); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); font-size: 10.5px; color: #94A3B8; font-style: italic;">
-                            <span id="anglerQuoteText">"Nước chưa lên cấm buông câu · Phao chưa chìm cấm giật cần"</span>
+
+                        <!-- 2. TOP-RIGHT: COINS, GEMS & MINI-MAP RADAR -->
+                        <div style="position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: auto; z-index: 6;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <!-- PnL Coins -->
+                                <div style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); border: 1.5px solid #f59e0b; padding: 2px 8px; border-radius: 14px; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">
+                                    <span style="font-size: 12px;">🪙</span>
+                                    <span id="anglerCoinText" style="font-size: 10.5px; font-weight: 800; color: #fbbf24;">+$1,250</span>
+                                </div>
+                                <!-- Target Gems -->
+                                <div style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); border: 1.5px solid #38bdf8; padding: 2px 8px; border-radius: 14px; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">
+                                    <span style="font-size: 12px;">💎</span>
+                                    <span style="font-size: 10.5px; font-weight: 800; color: #38bdf8;">3.0 R</span>
+                                </div>
+                            </div>
+                            <!-- Mini-map radar button -->
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(15, 23, 42, 0.85); border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 14px;" title="Radar hồ nước">
+                                🧭
+                            </div>
+                        </div>
+
+                        <!-- 3. BOTTOM-RIGHT: PLAY TOGETHER BIG ROUND "CAST / REEL" BUTTON & TENSION GAUGE -->
+                        <div style="position: absolute; bottom: 12px; right: 12px; display: flex; flex-direction: column; align-items: center; pointer-events: auto; z-index: 7;">
+                            <!-- Curved Tension Gauge Arc Overlay -->
+                            <div style="position: relative; width: 80px; height: 42px; margin-bottom: -10px; pointer-events: none;">
+                                <svg viewBox="0 0 100 55" style="width: 100%; height: 100%; overflow: visible;">
+                                    <!-- Background Arc (Green, Yellow, Red warning zones) -->
+                                    <path d="M 15 50 A 40 40 0 0 1 85 50" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="8" stroke-linecap="round"/>
+                                    <!-- Green Zone (0% - 50%) -->
+                                    <path d="M 15 50 A 40 40 0 0 1 50 10" fill="none" stroke="#10b981" stroke-width="7" stroke-linecap="round"/>
+                                    <!-- Yellow Zone (50% - 75%) -->
+                                    <path d="M 50 10 A 40 40 0 0 1 72 20" fill="none" stroke="#f59e0b" stroke-width="7"/>
+                                    <!-- Red Warning Zone (75% - 100%) -->
+                                    <path d="M 72 20 A 40 40 0 0 1 85 50" fill="none" stroke="#ef4444" stroke-width="7" stroke-linecap="round"/>
+                                    <!-- Oscillating Needle -->
+                                    <line id="anglerGaugeNeedle" x1="50" y1="50" x2="30" y2="20" stroke="#ffffff" stroke-width="3" stroke-linecap="round" style="filter: drop-shadow(0 0 4px rgba(0,0,0,0.8)); transform-origin: 50px 50px; transition: transform 0.15s ease-out;"/>
+                                    <circle cx="50" cy="50" r="4.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+
+                            <!-- Big Glossy Blue Cast/Reel Action Button -->
+                            <button type="button" id="btnAnglerCastReel" onclick="handleCastReelButtonClick()" style="width: 62px; height: 62px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8 0%, #2563eb 50%, #1d4ed8 100%); border: 3px solid #ffffff; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.6), inset 0 2px 4px rgba(255,255,255,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; outline: none;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                                <span style="font-size: 22px; line-height: 1; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));">🎣</span>
+                                <span id="anglerCastBtnText" style="font-size: 9px; font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 0.04em; text-shadow: 0 1px 2px rgba(0,0,0,0.6);">CAST</span>
+                            </button>
+
+                            <!-- Mini Action Buttons -->
+                            <div style="display: flex; gap: 6px; margin-top: 4px;">
+                                <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(255,255,255,0.2); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer;" title="Mồi câu POC" onclick="triggerCastStep(1)">
+                                    🪱
+                                </div>
+                                <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(255,255,255,0.2); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer;" title="Bắt cá giật cần" onclick="triggerCastStep(4)">
+                                    ⚡
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. BOTTOM-CENTER: CAST POWER & STATUS PILL -->
+                        <div style="position: absolute; bottom: 12px; left: 12px; right: 90px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; z-index: 6;">
+                            <!-- Cast Power / Distance Bar -->
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 11px;">⚡</span>
+                                <div style="flex: 1; height: 8px; background: rgba(15,23,42,0.85); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; position: relative;">
+                                    <div id="anglerPowerBar" style="width: 65%; height: 100%; background: linear-gradient(90deg, #f59e0b, #ef4444); border-radius: 8px; box-shadow: 0 0 6px #f59e0b; transition: width 0.2s;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Real-time Status Banner -->
+                            <div style="background: rgba(11, 20, 36, 0.9); backdrop-filter: blur(8px); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; gap: 6px; pointer-events: auto;">
+                                <span id="anglerStatusDot" style="width: 7px; height: 7px; border-radius: 50%; background: #38bdf8; display: inline-block; box-shadow: 0 0 8px #38bdf8; flex-shrink: 0;"></span>
+                                <span id="anglerStatusText" style="font-size: 10.5px; font-weight: 700; color: #F1F5F9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🍃 Đang buông cần · Ngắm mặt nước tĩnh lặng</span>
+                            </div>
+                            <!-- Proverb Text (Hidden on extra small, shown cleanly) -->
+                            <div style="display: none;">
+                                <span id="anglerQuoteText">"Nước chưa lên cấm buông câu · Phao chưa chìm cấm giật cần"</span>
+                            </div>
+                        </div>
+
+                        <!-- 5. FLOATING POP-UP STRIKE (!) & FULL TP TROPHY NOTIFICATION -->
+                        <div id="anglerStrikeBanner" style="display: none; position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%); background: #ef4444; color: #ffffff; padding: 4px 14px; border-radius: 14px; font-size: 14px; font-weight: 900; box-shadow: 0 4px 18px rgba(239, 68, 68, 0.7); border: 2px solid #ffffff; z-index: 10; pointer-events: none; animation: popStrike 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                            ⚡ STRIKE! ⚡
+                        </div>
+
+                        <div id="anglerTrophyBanner" style="display: none; position: absolute; top: 22%; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, rgba(245, 158, 11, 0.98), rgba(217, 119, 6, 0.98)); color: #FFFFFF; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 800; box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6); border: 2px solid #FEF08A; z-index: 10; pointer-events: none; text-align: center; width: 85%;">
+                            ⭐ VỚT TRỌN CỰ LONG HOÀNG KIM · FULL TP KỶ LUẬT TUYỆT ĐỐI! ⭐
                         </div>
                     </div>
                 </div>
@@ -4885,7 +4979,7 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
         }
 
 
-        /* ── RUSTIC 3D ANGLER SIMULATION ENGINE (CREATURES OF THE DEEP) ── */
+        /* ── PLAY TOGETHER & CREATURES OF THE DEEP SQUARE ISOMETRIC ENGINE ── */
         let anglerState = {
             stepCount: 0,
             isRisk1r: false,
@@ -4897,32 +4991,27 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
             audioCtx: null,
             mouse: { x: -200, y: -200, isHover: false },
             rodFlex: 0,
-            bobber: { x: 380, y: 130, targetY: 0, currentY: 0, twitch: 0, splashAlpha: 0 },
-            strikeAlert: { active: false, timer: 0 },
-            strikeRing: { active: false, radius: 0, maxRadius: 36, alpha: 0 },
-            trophyJump: { active: false, x: 0, y: 0, vx: 0, vy: 0, angle: 0, alpha: 0 },
+            tension: 0.15,
+            targetTension: 0.15,
+            bobber: { x: 300, y: 260, targetY: 0, currentY: 0, twitch: 0 },
+            hook: { x: 300, y: 284 },
+            fish: {
+                x: 340,
+                y: 300,
+                angle: -2.0,
+                speed: 0.6,
+                tail: 0,
+                size: 26,
+                color: '#38bdf8',
+                state: 'idle', // 'idle', 'approaching', 'hooked', 'lifted'
+                segments: []
+            },
+            schoolFish: [],
             ripples: [],
             bubbles: [],
-            sparkles: [],
+            fireflies: [],
             sonarWaves: [],
-            smallFish: [],
-            predator: {
-                x: 320,
-                y: 160,
-                angle: 0.2,
-                speed: 0.7,
-                tail: 0,
-                segments: [],
-                state: 'idle'
-            },
-            leviathan: {
-                x: 150,
-                y: 190,
-                angle: 0.1,
-                speed: 0.35,
-                tail: 0,
-                segments: []
-            }
+            strikeTimer: 0
         };
 
         function initRusticAngler() {
@@ -4935,38 +5024,43 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
             }
             anglerState.isLoopRunning = true;
 
-            // Initialize segments for Predator (8 segments)
-            anglerState.predator.segments = [];
-            for (let i = 0; i < 8; i++) {
-                anglerState.predator.segments.push({ x: 320 - i * 6, y: 160, angle: 0 });
+            // Initialize predator fish segments (6 segments for sinuous swimming)
+            anglerState.fish.segments = [];
+            for (let i = 0; i < 6; i++) {
+                anglerState.fish.segments.push({ x: 340 - i * 7, y: 300, angle: 0 });
             }
 
-            // Initialize segments for Leviathan (12 segments)
-            anglerState.leviathan.segments = [];
-            for (let i = 0; i < 12; i++) {
-                anglerState.leviathan.segments.push({ x: 150 - i * 11, y: 190, angle: 0 });
-            }
-
-            // Spawn schooling small fish (6 fish)
-            anglerState.smallFish = [
-                { x: 220, y: 90, vx: 0.6, vy: 0.2, tail: 0, size: 10, color: '#38bdf8' },
-                { x: 240, y: 105, vx: 0.55, vy: -0.15, tail: 1.2, size: 9, color: '#38bdf8' },
-                { x: 210, y: 115, vx: 0.65, vy: 0.1, tail: 2.4, size: 11, color: '#67e8f9' },
-                { x: 260, y: 95, vx: 0.5, vy: 0.25, tail: 3.1, size: 8, color: '#34d399' },
-                { x: 440, y: 170, vx: -0.45, vy: -0.2, tail: 0.8, size: 10, color: '#60a5fa' },
-                { x: 460, y: 185, vx: -0.5, vy: 0.15, tail: 2.0, size: 9, color: '#38bdf8' }
+            // Spawn schooling small minnows (4 small fish)
+            anglerState.schoolFish = [
+                { x: 260, y: 220, vx: 0.5, vy: 0.2, tail: 0, size: 8, color: '#38bdf8' },
+                { x: 280, y: 235, vx: 0.45, vy: -0.15, tail: 1.2, size: 7, color: '#67e8f9' },
+                { x: 360, y: 310, vx: -0.4, vy: -0.2, tail: 2.1, size: 8, color: '#34d399' },
+                { x: 380, y: 295, vx: -0.5, vy: 0.1, tail: 3.0, size: 7, color: '#38bdf8' }
             ];
 
-            // Interactive mouse tracking: Flashlight / Torch & Ripples
+            // Spawn floating fireflies / pollen (8 particles)
+            anglerState.fireflies = [];
+            for (let i = 0; i < 10; i++) {
+                anglerState.fireflies.push({
+                    x: 60 + Math.random() * 380,
+                    y: 60 + Math.random() * 380,
+                    vx: (Math.random() - 0.5) * 0.3,
+                    vy: (Math.random() - 0.5) * 0.3 - 0.15,
+                    size: 1.5 + Math.random() * 2,
+                    alpha: 0.4 + Math.random() * 0.5,
+                    pulse: Math.random() * Math.PI * 2
+                });
+            }
+
+            // Mouse tracking
             canvas.onmousemove = function(e) {
                 const rect = canvas.getBoundingClientRect();
                 anglerState.mouse.x = (e.clientX - rect.left);
                 anglerState.mouse.y = (e.clientY - rect.top);
                 anglerState.mouse.isHover = true;
 
-                // Subtle swimming ripples from cursor
-                if (Math.random() < 0.18) {
-                    spawnAnglerRipple(anglerState.mouse.x, anglerState.mouse.y, 22, 'rgba(56, 189, 248, 0.4)');
+                if (Math.random() < 0.15) {
+                    spawnAnglerRipple(anglerState.mouse.x, anglerState.mouse.y, 18, 'rgba(56, 189, 248, 0.4)');
                 }
             };
 
@@ -4974,34 +5068,33 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                 anglerState.mouse.isHover = false;
             };
 
-            // Touch support for mobile / tablets
+            // Touch support for tablets & mobile
             canvas.ontouchstart = function(e) {
                 if (e.touches && e.touches[0]) {
                     const rect = canvas.getBoundingClientRect();
                     const x = e.touches[0].clientX - rect.left;
                     const y = e.touches[0].clientY - rect.top;
-                    spawnAnglerRipple(x, y, 42, '#38bdf8');
+                    spawnAnglerRipple(x, y, 35, '#38bdf8');
                     playAnglerSound('plop');
                 }
             };
 
-            // Click listener: Drop bait / Pebble with plop sound & scare fish
+            // Canvas click: throw pebble or trigger cast
             canvas.onclick = function(e) {
                 const rect = canvas.getBoundingClientRect();
                 const x = (e.clientX - rect.left);
                 const y = (e.clientY - rect.top);
-                spawnAnglerRipple(x, y, 45, '#38bdf8');
-                spawnAnglerRipple(x, y, 25, '#ffffff');
+                spawnAnglerRipple(x, y, 40, '#38bdf8');
                 playAnglerSound('plop');
 
-                // Small fish scatter
-                anglerState.smallFish.forEach(f => {
+                // Scatter small fish
+                anglerState.schoolFish.forEach(f => {
                     const dx = f.x - x;
                     const dy = f.y - y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 90) {
-                        f.vx = (dx / (dist || 1)) * 1.8;
-                        f.vy = (dy / (dist || 1)) * 1.8;
+                    if (dist < 75) {
+                        f.vx = (dx / (dist || 1)) * 1.5;
+                        f.vy = (dy / (dist || 1)) * 1.5;
                     }
                 });
             };
@@ -5020,7 +5113,7 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
             } catch (e) {}
 
             updateAnglerSessionBadge();
-            requestAnimationFrame(creaturesDeepRenderLoop);
+            requestAnimationFrame(playTogetherRenderLoop);
         }
 
         function toggleAnglerCardCollapse() {
@@ -5070,7 +5163,7 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(650, ctx.currentTime);
+                    osc.frequency.setValueAtTime(620, ctx.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.12);
                     gain.gain.setValueAtTime(0.25, ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
@@ -5079,20 +5172,18 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                     osc.start();
                     osc.stop(ctx.currentTime + 0.13);
                 } else if (type === 'strike') {
-                    // Dramatic strike water plunge & reel buzz
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(200, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(950, ctx.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(220, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.18);
                     gain.gain.setValueAtTime(0.35, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.28);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
                     osc.connect(gain);
                     gain.connect(ctx.destination);
                     osc.start();
-                    osc.stop(ctx.currentTime + 0.29);
+                    osc.stop(ctx.currentTime + 0.26);
                 } else if (type === 'catch') {
-                    // Majestic victory chime
                     [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, idx) => {
                         const osc = ctx.createOscillator();
                         const gain = ctx.createGain();
@@ -5114,7 +5205,7 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                 x: x,
                 y: y,
                 r: 2,
-                maxR: maxR || 42,
+                maxR: maxR || 38,
                 alpha: 0.85,
                 color: color || '#38bdf8'
             });
@@ -5125,12 +5216,62 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                 x: x,
                 y: y,
                 r: 4,
-                maxR: maxR || 110,
+                maxR: maxR || 90,
                 alpha: 0.8,
                 color: color || '#38bdf8'
             });
         }
 
+        // Handle Play Together Big CAST/REEL button
+        function handleCastReelButtonClick() {
+            const btn = document.getElementById('btnAnglerCastReel');
+            const txt = document.getElementById('anglerCastBtnText');
+            if (btn) {
+                btn.style.transform = 'scale(0.92)';
+                if (typeof setTimeout === 'function') {
+                    setTimeout(() => { btn.style.transform = 'scale(1)'; }, 120);
+                }
+            }
+
+            if (anglerState.stepCount === 0) {
+                triggerCastStep(1);
+            } else if (anglerState.stepCount === 1) {
+                triggerCastStep(2);
+            } else if (anglerState.stepCount === 2) {
+                triggerCastStep(3);
+            } else if (anglerState.stepCount === 3) {
+                triggerCastStep(4);
+            } else if (anglerState.stepCount === 4 && !anglerState.isRiskTp) {
+                // Reel in!
+                const tpCb = document.getElementById('chk-risk-tp');
+                if (tpCb) {
+                    tpCb.checked = true;
+                    if (typeof onChecklistChange === 'function') onChecklistChange();
+                }
+            } else {
+                // Reset
+                if (typeof resetChecklist === 'function') resetChecklist();
+            }
+        }
+
+        function triggerCastStep(stepNum) {
+            // Find current active setup tab
+            let prefix = 'chk-s1';
+            for (let s = 1; s <= 4; s++) {
+                const pane = document.getElementById('setup-' + s);
+                if (pane && pane.style.display !== 'none') {
+                    prefix = 'chk-s' + s;
+                    break;
+                }
+            }
+            const cb = document.getElementById(prefix + '-' + stepNum);
+            if (cb) {
+                cb.checked = true;
+                if (typeof onChecklistChange === 'function') onChecklistChange();
+            }
+        }
+
+        // Update function called from checklist change events
         function updateAnglerState(stepCount, isRisk1r, isRisk2r, isRiskTp) {
             const prevStep = anglerState.stepCount;
             anglerState.stepCount = stepCount;
@@ -5141,98 +5282,120 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
             const dot = document.getElementById('anglerStatusDot');
             const text = document.getElementById('anglerStatusText');
             const quote = document.getElementById('anglerQuoteText');
+            const expBar = document.getElementById('anglerExpBar');
+            const powerBar = document.getElementById('anglerPowerBar');
+            const castBtnText = document.getElementById('anglerCastBtnText');
+            const strikeBanner = document.getElementById('anglerStrikeBanner');
             const trophyBanner = document.getElementById('anglerTrophyBanner');
 
+            // EXP bar progress (0% - 100%)
+            let exp = (stepCount / 4) * 70;
+            if (isRisk1r) exp += 10;
+            if (isRisk2r) exp += 10;
+            if (isRiskTp) exp = 100;
+            if (expBar) expBar.style.width = exp + '%';
+
+            // Power / Distance bar
+            if (powerBar) {
+                const pw = stepCount === 0 ? 30 : (stepCount === 1 ? 55 : (stepCount === 2 ? 75 : 95));
+                powerBar.style.width = pw + '%';
+            }
+
+            // Trophy banner visibility
             if (trophyBanner) {
                 trophyBanner.style.display = isRiskTp ? 'block' : 'none';
+            }
+
+            // Strike pop-up banner
+            if (strikeBanner) {
+                if (stepCount === 3) {
+                    strikeBanner.style.display = 'block';
+                    strikeBanner.style.animation = 'popStrike 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                } else {
+                    strikeBanner.style.display = 'none';
+                }
             }
 
             if (isRiskTp) {
                 if (dot) { dot.style.background = '#10b981'; dot.style.boxShadow = '0 0 12px #10b981'; }
                 if (text) text.innerText = '🏆 Vớt cá chép vàng vào giỏ tre! Kỷ luật 100% · Cự Long Full TP!';
                 if (quote) quote.innerText = '"Bắt được cá to ấm giỏ · Không tham cào cấu thêm"';
-                // Trigger Golden Leviathan vault breach!
-                const canvas = document.getElementById('rusticAnglerCanvas');
-                const cw = canvas ? canvas.width : 600;
-                const ch = canvas ? canvas.height : 240;
-                anglerState.trophyJump = {
-                    active: true,
-                    x: cw * 0.62,
-                    y: ch * 0.6,
-                    vx: -1.2,
-                    vy: -6.5,
-                    angle: -0.4,
-                    alpha: 1.0
-                };
+                if (castBtnText) castBtnText.innerText = 'CATCH!';
+                anglerState.targetTension = 0.9;
+                anglerState.fish.state = 'lifted';
                 playAnglerSound('catch');
-                spawnAnglerRipple(cw * 0.62, ch * 0.6, 75, '#fbbf24');
+                spawnAnglerRipple(anglerState.bobber.x, anglerState.bobber.y, 65, '#fbbf24');
             } else if (isRisk2r) {
                 if (dot) { dot.style.background = '#34d399'; dot.style.boxShadow = '0 0 10px #34d399'; }
                 if (text) text.innerText = '🛡️ Kéo cá sát mạn thuyền · Khóa an toàn Hòa Vốn (0R)';
                 if (quote) quote.innerText = '"Lệnh đã hòa vốn tuyệt đối · Cá không thể kéo mất mồi"';
+                if (castBtnText) castBtnText.innerText = 'REEL';
+                anglerState.targetTension = 0.55;
+                anglerState.fish.state = 'hooked';
             } else if (isRisk1r) {
                 if (dot) { dot.style.background = '#60a5fa'; dot.style.boxShadow = '0 0 10px #60a5fa'; }
                 if (text) text.innerText = '🐟 Dòng cá hạ bớt lực · Dời SL lên -0.5R bảo vệ vốn';
                 if (quote) quote.innerText = '"Giảm nửa rủi ro đứt cước khi cá bắt đầu mỏi"';
+                if (castBtnText) castBtnText.innerText = 'REEL';
+                anglerState.targetTension = 0.65;
+                anglerState.fish.state = 'hooked';
             } else if (stepCount === 4) {
                 if (dot) { dot.style.background = '#10b981'; dot.style.boxShadow = '0 0 12px #10b981'; }
                 if (text) text.innerText = '🎣 STRIKE! Giật cần đóng lưỡi! Khớp lệnh chuẩn kỷ luật!';
                 if (quote) quote.innerText = '"Đủ 4 điều kiện mới giật cần · Vào lệnh dứt khoát"';
+                if (castBtnText) castBtnText.innerText = 'FIGHT';
                 anglerState.rodFlex = 1.0;
-                anglerState.bobber.targetY = 16;
-                anglerState.strikeRing = { active: true, radius: 4, maxRadius: 40, alpha: 1.0 };
-                const canvas = document.getElementById('rusticAnglerCanvas');
-                const cw = canvas ? canvas.width : 600;
-                const ch = canvas ? canvas.height : 240;
-                spawnAnglerRipple(cw * 0.62, ch * 0.52, 65, '#10b981');
+                anglerState.targetTension = 0.85;
+                anglerState.fish.state = 'hooked';
+                spawnAnglerRipple(anglerState.bobber.x, anglerState.bobber.y, 55, '#10b981');
                 if (prevStep < 4) playAnglerSound('strike');
             } else if (stepCount === 3) {
                 if (dot) { dot.style.background = '#ef4444'; dot.style.boxShadow = '0 0 10px #ef4444'; }
                 if (text) text.innerText = '🌊 CẮN CÂU! Phao chìm lỉm đánh rụp! Break POC xác nhận!';
                 if (quote) quote.innerText = '"Thân nến đóng qua POC như phao lặn mất tăm"';
+                if (castBtnText) castBtnText.innerText = 'STRIKE!';
                 anglerState.bobber.targetY = 18;
-                anglerState.bobber.splashAlpha = 1.0;
-                anglerState.strikeAlert = { active: true, timer: 120 };
-                const canvas = document.getElementById('rusticAnglerCanvas');
-                const cw = canvas ? canvas.width : 600;
-                const ch = canvas ? canvas.height : 240;
-                spawnAnglerRipple(cw * 0.62, ch * 0.52, 55, '#ef4444');
-                spawnAnglerRipple(cw * 0.62, ch * 0.52, 35, '#ffffff');
+                anglerState.targetTension = 0.78;
+                anglerState.fish.state = 'hooked';
+                spawnAnglerRipple(anglerState.bobber.x, anglerState.bobber.y, 45, '#ef4444');
+                spawnAnglerRipple(anglerState.bobber.x, anglerState.bobber.y, 25, '#ffffff');
                 if (prevStep < 3) playAnglerSound('plop');
             } else if (stepCount === 2) {
                 if (dot) { dot.style.background = '#f59e0b'; dot.style.boxShadow = '0 0 8px #f59e0b'; }
                 if (text) text.innerText = '🫧 Tăm cá sủi bọt quanh phao · Ổ POC Cực trị hội tụ';
                 if (quote) quote.innerText = '"POC Cực trị A+ như ổ cá đói tụ về đớp mồi"';
-                anglerState.bobber.targetY = 5;
-                const canvas = document.getElementById('rusticAnglerCanvas');
-                const cw = canvas ? canvas.width : 600;
-                const ch = canvas ? canvas.height : 240;
-                // Spawn bubble stream under bobber
-                for (let b = 0; b < 8; b++) {
+                if (castBtnText) castBtnText.innerText = 'WAIT';
+                anglerState.bobber.targetY = 4;
+                anglerState.targetTension = 0.4;
+                anglerState.fish.state = 'approaching';
+                for (let b = 0; b < 6; b++) {
                     anglerState.bubbles.push({
-                        x: cw * 0.62 + (Math.random() - 0.5) * 35,
-                        y: ch * 0.55 + Math.random() * 40,
-                        r: 2 + Math.random() * 2.5,
-                        vy: 0.7 + Math.random() * 0.8,
-                        alpha: 0.85
+                        x: anglerState.bobber.x + (Math.random() - 0.5) * 25,
+                        y: anglerState.bobber.y + Math.random() * 30,
+                        r: 2 + Math.random() * 2,
+                        vy: 0.6 + Math.random() * 0.7,
+                        alpha: 0.8
                     });
                 }
             } else if (stepCount === 1) {
                 if (dot) { dot.style.background = '#38bdf8'; dot.style.boxShadow = '0 0 8px #38bdf8'; }
                 if (text) text.innerText = '🌿 Đã thả phao rà đáy hồ · Sonar quét luồng POC Open Anchor';
                 if (quote) quote.innerText = '"Neo Open Anchor rà đáy hồ đo luồng nước"';
+                if (castBtnText) castBtnText.innerText = 'REEL';
                 anglerState.bobber.targetY = 2;
-                const canvas = document.getElementById('rusticAnglerCanvas');
-                const cw = canvas ? canvas.width : 600;
-                const ch = canvas ? canvas.height : 240;
-                spawnSonarWave(cw * 0.62, ch * 0.52, 120, '#38bdf8');
-                spawnAnglerRipple(cw * 0.62, ch * 0.52, 38, '#38bdf8');
+                anglerState.targetTension = 0.25;
+                anglerState.fish.state = 'idle';
+                spawnSonarWave(anglerState.bobber.x, anglerState.bobber.y, 85, '#38bdf8');
+                spawnAnglerRipple(anglerState.bobber.x, anglerState.bobber.y, 30, '#38bdf8');
             } else {
                 if (dot) { dot.style.background = '#38bdf8'; dot.style.boxShadow = '0 0 8px #38bdf8'; }
                 if (text) text.innerText = '🍃 Đang buông cần · Ngắm mặt nước tĩnh lặng rà soát luồng cá';
                 if (quote) quote.innerText = '"Nước chưa lên cấm buông câu · Phao chưa chìm cấm giật cần"';
+                if (castBtnText) castBtnText.innerText = 'CAST';
                 anglerState.bobber.targetY = 0;
                 anglerState.rodFlex = 0;
+                anglerState.targetTension = 0.15;
+                anglerState.fish.state = 'idle';
             }
         }
 
@@ -5266,633 +5429,549 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
             }
         }
 
-        // ── MAIN CREATURES OF THE DEEP 2.5D RENDER LOOP ──
-        function creaturesDeepRenderLoop() {
+        // ── MAIN PLAY TOGETHER SQUARE ISOMETRIC RENDER LOOP ──
+        function playTogetherRenderLoop() {
             const canvas = document.getElementById('rusticAnglerCanvas');
             if (!canvas) return;
 
             const rect = canvas.getBoundingClientRect();
-            if (canvas.width !== rect.width || canvas.height !== rect.height) {
-                canvas.width = rect.width;
-                canvas.height = rect.height;
+            if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
+                canvas.width = Math.floor(rect.width);
+                canvas.height = Math.floor(rect.height);
             }
 
             const ctx = canvas.getContext('2d');
             const w = canvas.width;
             const h = canvas.height;
             if (w === 0 || h === 0) {
-                requestAnimationFrame(creaturesDeepRenderLoop);
+                requestAnimationFrame(playTogetherRenderLoop);
                 return;
             }
 
-            anglerState.time += 0.022;
+            anglerState.time += 0.02;
             const t = anglerState.time;
 
-            // 1. DEEP WATER BACKGROUND GRADIENT
-            // Translucent deep oceanic abyss gradient
-            const bgGrad = ctx.createRadialGradient(w * 0.45, h * 0.45, 20, w * 0.5, h * 0.5, w * 0.75);
-            bgGrad.addColorStop(0, '#0a2540');   // Deep illuminated teal-blue
-            bgGrad.addColorStop(0.45, '#06172b'); // Rich sapphire abyss
-            bgGrad.addColorStop(1, '#020914');   // Deepest abyssal navy/black
-            ctx.fillStyle = bgGrad;
+            // Smooth tension needle physics
+            anglerState.tension += (anglerState.targetTension - anglerState.tension) * 0.1;
+            const needleEl = document.getElementById('anglerGaugeNeedle');
+            if (needleEl) {
+                // Tension angle: -50deg (zero) to +50deg (max)
+                const tensionJitter = (anglerState.stepCount >= 3 ? Math.sin(t * 25) * 6 : 0);
+                const rotAngle = (anglerState.tension - 0.5) * 110 + tensionJitter;
+                needleEl.setAttribute('transform', 'rotate(' + rotAngle + ' 50 50)');
+            }
+
+            // 1. ISOMETRIC ISLAND NATURE BACKGROUND
+            // Warm sunset meadow grass base
+            const groundGrad = ctx.createRadialGradient(w * 0.5, h * 0.5, 50, w * 0.5, h * 0.5, w * 0.72);
+            groundGrad.addColorStop(0, '#166534');   // Deep lush grass near pond
+            groundGrad.addColorStop(0.65, '#15803d'); // Vibrant green grass
+            groundGrad.addColorStop(1, '#0f3a22');   // Outer shaded knoll
+            ctx.fillStyle = groundGrad;
             ctx.fillRect(0, 0, w, h);
 
-            // 2. PROCEDURAL WATER CAUSTICS (Shimmering Light Web of Creatures of the Deep)
+            // 2. SERENE LAKE IN THE MIDDLE (HỒ NƯỚC Ở GIỮA)
+            const pondCenterX = w * 0.52;
+            const pondCenterY = w * 0.52;
+            const pondRadiusX = w * 0.36;
+            const pondRadiusY = h * 0.28;
+
+            // Sandy Shore Bevel around Pond
             ctx.save();
+            ctx.fillStyle = '#ca8a04'; // Warm sandy shore
+            ctx.beginPath();
+            ctx.ellipse(pondCenterX, pondCenterY, pondRadiusX + 14, pondRadiusY + 12, -0.05, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#eab308'; // Wet sand highlight
+            ctx.beginPath();
+            ctx.ellipse(pondCenterX, pondCenterY, pondRadiusX + 7, pondRadiusY + 6, -0.05, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Water Basin Depth Gradient (Translucent turquoise to deep navy)
+            const waterGrad = ctx.createRadialGradient(pondCenterX - 20, pondCenterY - 15, 20, pondCenterX, pondCenterY, pondRadiusX);
+            waterGrad.addColorStop(0, '#0284c7');   // Sunlit clear cyan
+            waterGrad.addColorStop(0.5, '#0369a1'); // Serene turquoise
+            waterGrad.addColorStop(0.85, '#075985');
+            waterGrad.addColorStop(1, '#082f49');   // Deep shadowed bank
+            ctx.fillStyle = waterGrad;
+            ctx.beginPath();
+            ctx.ellipse(pondCenterX, pondCenterY, pondRadiusX, pondRadiusY, -0.05, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Procedural Water Caustics Shimmering Layer
             ctx.globalCompositeOperation = 'screen';
             ctx.lineWidth = 1.0;
-            const causticsStep = 32;
-            for (let cy = 8; cy < h; cy += causticsStep) {
+            for (let angle = 0; angle < Math.PI * 2; angle += 0.45) {
+                ctx.strokeStyle = 'rgba(56, 189, 248, ' + (0.07 + Math.sin(t * 1.5 + angle) * 0.04) + ')';
                 ctx.beginPath();
-                for (let cx = 0; cx <= w; cx += 16) {
-                    const wave1 = Math.sin(cx * 0.025 + cy * 0.015 + t * 0.8) * 6;
-                    const wave2 = Math.cos(cx * 0.018 - cy * 0.022 - t * 0.6) * 5;
-                    const py = cy + wave1 + wave2;
-                    if (cx === 0) ctx.moveTo(cx, py);
-                    else ctx.lineTo(cx, py);
-                }
-                const alpha = 0.04 + Math.sin(cy * 0.05 + t) * 0.02;
-                ctx.strokeStyle = 'rgba(56, 189, 248, ' + alpha + ')';
+                const waveR = pondRadiusX * (0.35 + Math.sin(t * 1.2 + angle * 3) * 0.25);
+                ctx.ellipse(pondCenterX, pondCenterY, waveR, waveR * 0.72, -0.05, angle, angle + 1.2);
                 ctx.stroke();
             }
+            ctx.globalCompositeOperation = 'source-over';
             ctx.restore();
 
-            // 3. ABYSSAL LEVIATHAN (CỰ LONG THỦY QUÁI TRONG VÙNG NƯỚC SÂU)
-            // Sinuous 12-segment IK spine
-            const lev = anglerState.leviathan;
-            lev.tail += 0.04;
-            lev.x += Math.cos(lev.angle) * lev.speed;
-            lev.y += Math.sin(lev.angle) * lev.speed;
+            // 3. UNDERWATER FISH & CREATURE INTERACTION (KHỚP HOÀN TOÀN!)
+            const fish = anglerState.fish;
+            fish.tail += 0.16;
 
-            // Gentle turning boundaries
-            if (lev.x > w + 120) { lev.x = -120; lev.y = h * 0.45 + (Math.random() - 0.5) * 60; }
-            if (lev.y < h * 0.35) lev.angle += 0.01;
-            if (lev.y > h * 0.85) lev.angle -= 0.01;
+            // Bobber and hook global coordinates
+            const bobberBaseX = pondCenterX + 15;
+            const bobberBaseY = pondCenterY - 10;
+            const bobberLift = (fish.state === 'lifted' ? -75 : 0);
+            anglerState.bobber.currentY += (anglerState.bobber.targetY + bobberLift - anglerState.bobber.currentY) * 0.15;
+            anglerState.bobber.twitch = Math.sin(t * 22) * (anglerState.stepCount === 3 ? 3.5 : (anglerState.stepCount === 2 ? 1.5 : 0.4));
 
-            // Update spine segments
-            if (lev.segments && lev.segments.length) {
-                lev.segments[0].x = lev.x;
-                lev.segments[0].y = lev.y;
-                lev.segments[0].angle = lev.angle;
-                const segLen = 10;
-                for (let i = 1; i < lev.segments.length; i++) {
-                    const wave = Math.sin(lev.tail - i * 0.45) * 0.18;
-                    const prev = lev.segments[i - 1];
+            const bx = bobberBaseX;
+            const by = bobberBaseY + anglerState.bobber.currentY + anglerState.bobber.twitch;
+            anglerState.bobber.x = bx;
+            anglerState.bobber.y = by;
+
+            // Hook coordinates (drops vertically below bobber)
+            const hookX = bx;
+            const hookY = by + 26;
+            anglerState.hook.x = hookX;
+            anglerState.hook.y = hookY;
+
+            // Fish AI state machine:
+            if (fish.state === 'lifted') {
+                // Suspended in air, hanging directly from hook!
+                fish.x = hookX;
+                fish.y = hookY + 8;
+                fish.angle = Math.PI / 2 + Math.sin(t * 8) * 0.35; // Hanging vertically, wriggling
+                fish.color = '#fbbf24'; // Golden Carp!
+            } else if (fish.state === 'hooked') {
+                // Mouth physically locked to hook! Thrashing vigorously!
+                const thrash = Math.sin(t * 16) * 12;
+                fish.x = hookX + Math.cos(fish.angle) * 12;
+                fish.y = hookY + Math.sin(fish.angle) * 12;
+                fish.angle = -0.5 + Math.sin(t * 14) * 0.8;
+                fish.color = anglerState.isRiskTp ? '#fbbf24' : (anglerState.stepCount >= 4 ? '#10b981' : '#ef4444');
+                // Thrash water ripples
+                if (Math.random() < 0.25) spawnAnglerRipple(hookX, hookY, 28, fish.color);
+            } else if (fish.state === 'approaching') {
+                // Stalking toward the hook (Step 2 POC)
+                const fdx = hookX - fish.x;
+                const fdy = hookY - fish.y;
+                const dist = Math.sqrt(fdx * fdx + fdy * fdy);
+                fish.angle = Math.atan2(fdy, fdx);
+                if (dist > 18) {
+                    fish.x += Math.cos(fish.angle) * 1.1;
+                    fish.y += Math.sin(fish.angle) * 1.1;
+                } else {
+                    // Circle near hook
+                    fish.x = hookX + Math.cos(t * 2) * 16;
+                    fish.y = hookY + Math.sin(t * 2) * 12;
+                }
+                fish.color = '#38bdf8';
+            } else {
+                // Idle calm swimming around the pond (Step 0 & 1)
+                const orbitAngle = t * 0.35;
+                const targetX = pondCenterX + Math.cos(orbitAngle) * (pondRadiusX * 0.55);
+                const targetY = pondCenterY + Math.sin(orbitAngle) * (pondRadiusY * 0.55);
+                const fdx = targetX - fish.x;
+                const fdy = targetY - fish.y;
+                fish.angle = Math.atan2(fdy, fdx);
+                fish.x += Math.cos(fish.angle) * 0.7;
+                fish.y += Math.sin(fish.angle) * 0.7;
+                fish.color = '#38bdf8';
+            }
+
+            // Update fish spine IK
+            if (fish.segments && fish.segments.length) {
+                fish.segments[0].x = fish.x;
+                fish.segments[0].y = fish.y;
+                fish.segments[0].angle = fish.angle;
+                const segLen = 5.5;
+                for (let i = 1; i < fish.segments.length; i++) {
+                    const wave = Math.sin(fish.tail - i * 0.55) * 0.25;
+                    const prev = fish.segments[i - 1];
                     const segAngle = prev.angle + wave;
-                    lev.segments[i].angle = segAngle;
-                    lev.segments[i].x = prev.x - Math.cos(segAngle) * segLen;
-                    lev.segments[i].y = prev.y - Math.sin(segAngle) * segLen;
+                    fish.segments[i].angle = segAngle;
+                    fish.segments[i].x = prev.x - Math.cos(segAngle) * segLen;
+                    fish.segments[i].y = prev.y - Math.sin(segAngle) * segLen;
                 }
 
-                // Render Leviathan Shadow
+                // Render Fish Body
                 ctx.save();
-                ctx.fillStyle = 'rgba(3, 30, 50, 0.42)'; // Deep creature shadow
+                ctx.fillStyle = fish.color;
+                ctx.globalAlpha = fish.state === 'lifted' ? 1.0 : 0.75;
+                if (fish.state === 'lifted') {
+                    ctx.shadowColor = '#fbbf24';
+                    ctx.shadowBlur = 14;
+                }
                 ctx.beginPath();
-                // Draw tapered organic body from head to tail
-                const head = lev.segments[0];
-                ctx.arc(head.x, head.y, 16, head.angle - Math.PI / 2, head.angle + Math.PI / 2);
-                for (let i = 1; i < lev.segments.length; i++) {
-                    const seg = lev.segments[i];
-                    const radius = Math.max(3, 15 * (1 - i / lev.segments.length));
-                    const nx = Math.cos(seg.angle + Math.PI / 2) * radius;
-                    const ny = Math.sin(seg.angle + Math.PI / 2) * radius;
+                const fHead = fish.segments[0];
+                ctx.arc(fHead.x, fHead.y, 6.5, fHead.angle - Math.PI / 2, fHead.angle + Math.PI / 2);
+                for (let i = 1; i < fish.segments.length; i++) {
+                    const seg = fish.segments[i];
+                    const rad = Math.max(2, 6 * (1 - i / fish.segments.length));
+                    const nx = Math.cos(seg.angle + Math.PI / 2) * rad;
+                    const ny = Math.sin(seg.angle + Math.PI / 2) * rad;
                     ctx.lineTo(seg.x + nx, seg.y + ny);
                 }
-                const tailSeg = lev.segments[lev.segments.length - 1];
-                // Large crescent tail fin
-                ctx.lineTo(tailSeg.x - Math.cos(tailSeg.angle) * 16, tailSeg.y - Math.sin(tailSeg.angle) * 16);
-                for (let i = lev.segments.length - 1; i >= 1; i--) {
-                    const seg = lev.segments[i];
-                    const radius = Math.max(3, 15 * (1 - i / lev.segments.length));
-                    const nx = Math.cos(seg.angle - Math.PI / 2) * radius;
-                    const ny = Math.sin(seg.angle - Math.PI / 2) * radius;
+                const tailSeg = fish.segments[fish.segments.length - 1];
+                ctx.lineTo(tailSeg.x - Math.cos(tailSeg.angle) * 9, tailSeg.y - Math.sin(tailSeg.angle) * 9);
+                for (let i = fish.segments.length - 1; i >= 1; i--) {
+                    const seg = fish.segments[i];
+                    const rad = Math.max(2, 6 * (1 - i / fish.segments.length));
+                    const nx = Math.cos(seg.angle - Math.PI / 2) * rad;
+                    const ny = Math.sin(seg.angle - Math.PI / 2) * rad;
                     ctx.lineTo(seg.x + nx, seg.y + ny);
                 }
                 ctx.closePath();
                 ctx.fill();
 
-                // Pectoral Fins (Vây bơi lớn)
-                if (lev.segments.length > 3) {
-                    const finSeg = lev.segments[2];
-                    const finWave = Math.sin(t * 1.5) * 0.2;
-                    ctx.fillStyle = 'rgba(3, 30, 50, 0.35)';
-                    [-1, 1].forEach(side => {
+                // Golden sparkles on fish when Full TP
+                if (fish.state === 'lifted') {
+                    for (let s = 0; s < 3; s++) {
+                        ctx.fillStyle = '#fef08a';
                         ctx.beginPath();
-                        ctx.moveTo(finSeg.x, finSeg.y);
-                        const fx = finSeg.x + Math.cos(finSeg.angle + side * 1.2 + finWave) * 26;
-                        const fy = finSeg.y + Math.sin(finSeg.angle + side * 1.2 + finWave) * 26;
-                        ctx.lineTo(fx, fy);
-                        ctx.lineTo(finSeg.x - Math.cos(finSeg.angle) * 10, finSeg.y - Math.sin(finSeg.angle) * 10);
-                        ctx.closePath();
+                        ctx.arc(fish.x + (Math.random() - 0.5) * 25, fish.y + (Math.random() - 0.5) * 20, 2, 0, Math.PI * 2);
                         ctx.fill();
-                    });
-                }
-
-                // Bioluminescent glowing spine dots (Ánh sáng lân tinh kỳ ảo)
-                ctx.globalCompositeOperation = 'screen';
-                for (let i = 1; i < lev.segments.length - 1; i += 2) {
-                    const seg = lev.segments[i];
-                    const glowPulse = 0.4 + Math.sin(t * 2 + i) * 0.3;
-                    ctx.fillStyle = 'rgba(56, 189, 248, ' + (glowPulse * 0.45) + ')';
-                    ctx.beginPath();
-                    ctx.arc(seg.x, seg.y, 3.5, 0, Math.PI * 2);
-                    ctx.fill();
+                    }
                 }
                 ctx.restore();
             }
 
-            // 4. PREDATOR FISH (CÁ SĂN MỒI POC - MỤC TIÊU CỦA CHECKLIST)
-            const pred = anglerState.predator;
-            pred.tail += 0.12;
-
-            // Target destination based on checklist step
-            const bobberPos = { x: w * 0.62, y: h * 0.52 };
-            let target = { x: w * 0.55, y: h * 0.65 };
-
-            if (anglerState.isRiskTp) {
-                target = { x: w * 0.3, y: h * 0.48 };
-            } else if (anglerState.isRisk2r) {
-                target = { x: w * 0.28, y: h * 0.5 };
-            } else if (anglerState.isRisk1r) {
-                target = { x: w * 0.42, y: h * 0.52 };
-            } else if (anglerState.stepCount >= 3) {
-                target = { x: bobberPos.x + Math.sin(t * 4) * 10, y: bobberPos.y + Math.cos(t * 4) * 8 };
-            } else if (anglerState.stepCount === 2) {
-                // Circling the bait (Tăm cá sủi bọt)
-                target = { x: bobberPos.x + Math.cos(t * 2) * 28, y: bobberPos.y + Math.sin(t * 2) * 22 };
-            } else if (anglerState.stepCount === 1) {
-                target = { x: bobberPos.x - 45, y: bobberPos.y + 20 };
-            }
-
-            // Smooth navigation towards target
-            const pdx = target.x - pred.x;
-            const pdy = target.y - pred.y;
-            const targetAngle = Math.atan2(pdy, pdx);
-            let angleDiff = targetAngle - pred.angle;
-            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-            pred.angle += angleDiff * 0.05;
-
-            const distToTarget = Math.sqrt(pdx * pdx + pdy * pdy);
-            pred.speed = distToTarget > 20 ? 0.95 : 0.45;
-            if (anglerState.stepCount === 3) pred.speed = 2.2; // Strike rush!
-
-            pred.x += Math.cos(pred.angle) * pred.speed;
-            pred.y += Math.sin(pred.angle) * pred.speed;
-
-            // Update predator IK segments
-            if (pred.segments && pred.segments.length) {
-                pred.segments[0].x = pred.x;
-                pred.segments[0].y = pred.y;
-                pred.segments[0].angle = pred.angle;
-                const pSegLen = 5.5;
-                for (let i = 1; i < pred.segments.length; i++) {
-                    const wave = Math.sin(pred.tail - i * 0.6) * 0.28;
-                    const prev = pred.segments[i - 1];
-                    const segAngle = prev.angle + wave;
-                    pred.segments[i].angle = segAngle;
-                    pred.segments[i].x = prev.x - Math.cos(segAngle) * pSegLen;
-                    pred.segments[i].y = prev.y - Math.sin(segAngle) * pSegLen;
-                }
-
-                // Render Predator Shadow (Sinuous 3D silhouette)
-                ctx.save();
-                // Color shifts when hooked (golden/teal)
-                ctx.fillStyle = anglerState.stepCount >= 4 ? 'rgba(16, 185, 129, 0.75)' : 'rgba(14, 116, 144, 0.65)';
-                ctx.beginPath();
-                const pHead = pred.segments[0];
-                ctx.arc(pHead.x, pHead.y, 8, pHead.angle - Math.PI / 2, pHead.angle + Math.PI / 2);
-                for (let i = 1; i < pred.segments.length; i++) {
-                    const seg = pred.segments[i];
-                    const radius = Math.max(2, 7.5 * (1 - i / pred.segments.length));
-                    const nx = Math.cos(seg.angle + Math.PI / 2) * radius;
-                    const ny = Math.sin(seg.angle + Math.PI / 2) * radius;
-                    ctx.lineTo(seg.x + nx, seg.y + ny);
-                }
-                const pTailSeg = pred.segments[pred.segments.length - 1];
-                // Caudal fin
-                ctx.lineTo(pTailSeg.x - Math.cos(pTailSeg.angle) * 11, pTailSeg.y - Math.sin(pTailSeg.angle) * 11);
-                for (let i = pred.segments.length - 1; i >= 1; i--) {
-                    const seg = pred.segments[i];
-                    const radius = Math.max(2, 7.5 * (1 - i / pred.segments.length));
-                    const nx = Math.cos(seg.angle - Math.PI / 2) * radius;
-                    const ny = Math.sin(seg.angle - Math.PI / 2) * radius;
-                    ctx.lineTo(seg.x + nx, seg.y + ny);
-                }
-                ctx.closePath();
-                ctx.fill();
-
-                // Dorsal & Pectoral Fin accents
-                if (pred.segments.length > 2) {
-                    const fin = pred.segments[2];
-                    ctx.strokeStyle = anglerState.stepCount >= 4 ? '#34d399' : '#38bdf8';
-                    ctx.lineWidth = 1.2;
-                    ctx.beginPath();
-                    ctx.moveTo(fin.x, fin.y);
-                    ctx.lineTo(fin.x + Math.cos(fin.angle + 1.2) * 12, fin.y + Math.sin(fin.angle + 1.2) * 12);
-                    ctx.moveTo(fin.x, fin.y);
-                    ctx.lineTo(fin.x + Math.cos(fin.angle - 1.2) * 12, fin.y + Math.sin(fin.angle - 1.2) * 12);
-                    ctx.stroke();
-                }
-                ctx.restore();
-            }
-
-            // 5. SMALL FISH SCHOOL (ĐÀN CÁ CON BƠI THĂM DÒ)
-            anglerState.smallFish.forEach(f => {
+            // Small schooling minnows
+            anglerState.schoolFish.forEach(f => {
                 f.x += f.vx;
                 f.y += f.vy;
-                f.tail += 0.2;
-
-                // Bounce off edges smoothly
-                if (f.x < 30) f.vx = Math.abs(f.vx);
-                if (f.x > w - 30) f.vx = -Math.abs(f.vx);
-                if (f.y < 30) f.vy = Math.abs(f.vy);
-                if (f.y > h - 30) f.vy = -Math.abs(f.vy);
-
-                const fAngle = Math.atan2(f.vy, f.vx);
+                f.tail += 0.22;
+                // Keep inside pond
+                const dx = f.x - pondCenterX;
+                const dy = (f.y - pondCenterY) / 0.72;
+                if (dx * dx + dy * dy > (pondRadiusX - 25) * (pondRadiusX - 25)) {
+                    f.vx *= -1; f.vy *= -1;
+                }
                 ctx.save();
-                ctx.translate(f.x, f.y);
-                ctx.rotate(fAngle);
                 ctx.fillStyle = f.color;
                 ctx.globalAlpha = 0.5;
-
-                // Fish shape
                 ctx.beginPath();
-                ctx.ellipse(0, 0, f.size, f.size * 0.38, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Tail waggle
-                const tailWag = Math.sin(f.tail) * (f.size * 0.35);
-                ctx.beginPath();
-                ctx.moveTo(-f.size * 0.7, 0);
-                ctx.lineTo(-f.size * 1.3, -f.size * 0.4 + tailWag);
-                ctx.lineTo(-f.size * 1.3, f.size * 0.4 + tailWag);
-                ctx.closePath();
+                ctx.ellipse(f.x, f.y, f.size, f.size * 0.4, Math.atan2(f.vy, f.vx), 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             });
 
-            // 6. SONAR WAVES & RIPPLES & BUBBLES
-            // Update Sonar Waves
+            // 4. WATER LILIES, RIPPLES & BUBBLES
+            // Water lilies floating peacefully
+            const lilies = [
+                { x: pondCenterX + pondRadiusX * 0.5, y: pondCenterY + pondRadiusY * 0.45 },
+                { x: pondCenterX - pondRadiusX * 0.45, y: pondCenterY - pondRadiusY * 0.35 }
+            ];
+            lilies.forEach((l, idx) => {
+                const bob = Math.sin(t * 1.5 + idx) * 1.5;
+                ctx.fillStyle = '#16a34a';
+                ctx.beginPath();
+                ctx.ellipse(l.x, l.y + bob, 11, 7, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#f472b6'; // Pink flower
+                ctx.beginPath();
+                ctx.arc(l.x, l.y + bob - 1, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Sonar waves
             for (let i = anglerState.sonarWaves.length - 1; i >= 0; i--) {
                 const s = anglerState.sonarWaves[i];
                 s.r += 1.8;
                 s.alpha *= 0.96;
-                if (s.r >= s.maxR || s.alpha <= 0.02) {
-                    anglerState.sonarWaves.splice(i, 1);
-                    continue;
-                }
+                if (s.r >= s.maxR || s.alpha <= 0.02) { anglerState.sonarWaves.splice(i, 1); continue; }
                 ctx.save();
                 ctx.strokeStyle = s.color;
                 ctx.globalAlpha = s.alpha;
                 ctx.lineWidth = 1.5;
                 ctx.beginPath();
-                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.ellipse(s.x, s.y, s.r, s.r * 0.7, 0, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.restore();
             }
 
-            // Update Ripples
+            // Ripples
             for (let i = anglerState.ripples.length - 1; i >= 0; i--) {
                 const r = anglerState.ripples[i];
                 r.r += 1.2;
                 r.alpha *= 0.95;
-                if (r.r >= r.maxR || r.alpha <= 0.02) {
-                    anglerState.ripples.splice(i, 1);
-                    continue;
-                }
+                if (r.r >= r.maxR || r.alpha <= 0.02) { anglerState.ripples.splice(i, 1); continue; }
                 ctx.save();
                 ctx.strokeStyle = r.color;
                 ctx.globalAlpha = r.alpha;
                 ctx.lineWidth = 1.4;
                 ctx.beginPath();
-                ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+                ctx.ellipse(r.x, r.y, r.r, r.r * 0.65, 0, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.restore();
             }
 
-            // Update Bubbles
+            // Bubbles
             for (let i = anglerState.bubbles.length - 1; i >= 0; i--) {
                 const b = anglerState.bubbles[i];
                 b.y -= b.vy;
                 b.alpha *= 0.97;
-                if (b.y <= h * 0.45 || b.alpha <= 0.04) {
-                    spawnAnglerRipple(b.x, b.y, 14, 'rgba(56, 189, 248, 0.6)');
-                    anglerState.bubbles.splice(i, 1);
-                    continue;
-                }
+                if (b.alpha <= 0.04) { anglerState.bubbles.splice(i, 1); continue; }
                 ctx.save();
                 ctx.strokeStyle = 'rgba(147, 197, 253, ' + b.alpha + ')';
-                ctx.fillStyle = 'rgba(255, 255, 255, ' + (b.alpha * 0.35) + ')';
-                ctx.lineWidth = 1;
+                ctx.fillStyle = 'rgba(255, 255, 255, ' + (b.alpha * 0.4) + ')';
                 ctx.beginPath();
                 ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
+                ctx.fill(); ctx.stroke();
                 ctx.restore();
             }
 
-            // 7. THE WOODEN BOAT & LANTERN (3/4 ISOMETRIC TOP-DOWN VIEW)
-            const boatX = w * 0.18;
-            const boatY = h * 0.48;
-            const boatRock = Math.sin(t * 1.2) * 0.035;
-            const boatBob = Math.sin(t * 1.6) * 2.5;
+            // 5. WOODEN PIER & 3RD-PERSON CHIBI ANGLER (CẦU TÀU GỖ & CẦN THỦ CHIBI)
+            const pierStartX = w * 0.12;
+            const pierStartY = h * 0.72;
+            const pierEndX = w * 0.32;
+            const pierEndY = h * 0.54;
 
+            // Wooden support pilings in water
+            ctx.fillStyle = '#3e2723';
+            ctx.fillRect(pierEndX - 18, pierEndY + 8, 8, 26);
+            ctx.fillRect(pierEndX - 4, pierEndY + 12, 8, 24);
+            // Foam around pilings
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(pierEndX - 20, pierEndY + 30, 12, 5);
+
+            // Pier Decking Planks
             ctx.save();
-            ctx.translate(boatX, boatY + boatBob);
-            ctx.rotate(-0.12 + boatRock);
-
-            // Water foam ring around boat
-            ctx.strokeStyle = 'rgba(224, 242, 254, 0.18)';
-            ctx.lineWidth = 2.5;
+            ctx.fillStyle = '#78350f'; // Dark amber wood base
             ctx.beginPath();
-            ctx.ellipse(0, 0, 48, 22, 0, 0, Math.PI * 2);
+            ctx.moveTo(pierStartX - 10, pierStartY + 14);
+            ctx.lineTo(pierEndX - 10, pierEndY + 14);
+            ctx.lineTo(pierEndX + 16, pierEndY - 10);
+            ctx.lineTo(pierStartX + 16, pierStartY - 10);
+            ctx.closePath();
+            ctx.fill();
+
+            // Planks lines
+            ctx.strokeStyle = '#92400e';
+            ctx.lineWidth = 2.0;
+            ctx.beginPath();
+            for (let p = 0; p < 7; p++) {
+                const px1 = pierStartX + (pierEndX - pierStartX) * (p / 7);
+                const py1 = pierStartY + (pierEndY - pierStartY) * (p / 7);
+                ctx.moveTo(px1 - 8, py1 + 10);
+                ctx.lineTo(px1 + 12, py1 - 8);
+            }
             ctx.stroke();
 
-            // Safe shield ring when in BE (+2R)
+            // Safe shield ring around pier if Risk 2R (BE locked)
             if (anglerState.isRisk2r) {
                 ctx.strokeStyle = 'rgba(52, 211, 153, ' + (0.5 + Math.sin(t * 4) * 0.3) + ')';
                 ctx.lineWidth = 3.0;
                 ctx.shadowColor = '#34d399';
-                ctx.shadowBlur = 12;
+                ctx.shadowBlur = 10;
                 ctx.beginPath();
-                ctx.ellipse(0, 0, 54, 26, 0, 0, Math.PI * 2);
+                ctx.ellipse(pierEndX, pierEndY + 4, 30, 18, 0, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.shadowBlur = 0;
             }
 
-            // Outer wooden hull
-            ctx.fillStyle = '#3e2723'; // Dark teak wood
+            // CHIBI ANGLER CHARACTER (3RD PERSON STANDING ON PIER)
+            const charX = pierEndX - 4;
+            const charY = pierEndY - 2;
+            const breathe = Math.sin(t * 1.5) * 1.2;
+
+            // Character shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
             ctx.beginPath();
-            ctx.moveTo(42, 0); // Pointed bow
-            ctx.quadraticCurveTo(15, -18, -36, -15); // Port side
-            ctx.quadraticCurveTo(-42, 0, -36, 15);   // Stern
-            ctx.quadraticCurveTo(15, 18, 42, 0);     // Starboard
-            ctx.closePath();
+            ctx.ellipse(charX, charY + 8, 12, 6, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Inner deck floor
-            ctx.fillStyle = '#6d4c41'; // Warmer inner planks
+            // Character body / jacket (Viewed from 3/4 back)
+            ctx.fillStyle = '#2563eb'; // Cobalt blue hoodie/jacket
             ctx.beginPath();
-            ctx.moveTo(36, 0);
-            ctx.quadraticCurveTo(12, -14, -30, -11);
-            ctx.quadraticCurveTo(-35, 0, -30, 11);
-            ctx.quadraticCurveTo(12, 14, 36, 0);
-            ctx.closePath();
+            ctx.ellipse(charX, charY - 6 + breathe, 9, 11, 0.1, 0, Math.PI * 2);
             ctx.fill();
 
-            // Wooden bench seat across middle
-            ctx.fillStyle = '#8d6e63';
-            ctx.fillRect(-6, -11, 12, 22);
-            ctx.strokeStyle = '#271713';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(-6, -11, 12, 22);
+            // Character pants & boots
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(charX - 5, charY + 1 + breathe, 4, 8);
+            ctx.fillRect(charX + 1, charY + 1 + breathe, 4, 8);
 
-            // ANGLER SEATED ON BENCH (NÓN LÁ & ÁO NÂU DÂN DÃ)
-            ctx.fillStyle = '#5c4033'; // Brown robe
+            // Chibi Head & Straw Hat (Nón Lá / Beanie)
+            ctx.fillStyle = '#eab308'; // Straw yellow hat
             ctx.beginPath();
-            ctx.ellipse(0, 0, 6, 8, 0, 0, Math.PI * 2);
+            ctx.ellipse(charX, charY - 20 + breathe, 14, 8, 0.1, 0, Math.PI * 2);
             ctx.fill();
-
-            // Conical Bamboo Hat (Nón Lá)
-            ctx.fillStyle = '#eab308'; // Straw yellow
-            ctx.beginPath();
-            ctx.arc(0, 0, 9, 0, Math.PI * 2);
-            ctx.fill();
-            // Center cone tip highlight
+            // Hat cone crown
             ctx.fillStyle = '#fef08a';
             ctx.beginPath();
-            ctx.arc(0, 0, 3, 0, Math.PI * 2);
+            ctx.arc(charX, charY - 22 + breathe, 5, 0, Math.PI * 2);
             ctx.fill();
 
-            // BAMBOO ROD (CẦN TRÚC VƯƠN RA MẶT NƯỚC)
-            const rodTipX = 65;
-            const rodTipY = -12 + (anglerState.stepCount >= 4 ? 14 : (anglerState.stepCount === 3 ? 6 : Math.sin(t * 2) * 2));
-            ctx.strokeStyle = '#d4a373'; // Bamboo stalk
-            ctx.lineWidth = 2.5;
+            // Tackle bucket & net beside character on pier
+            ctx.fillStyle = '#ef4444'; // Red bucket
+            ctx.fillRect(charX - 16, charY + 2, 7, 9);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(charX - 16, charY + 1, 7, 2);
+
+            // FISHING ROD & EXACT ATTACHMENT
+            // Rod flexes dynamically when hooked/strike
+            const flexBend = (anglerState.stepCount >= 4 ? 22 : (anglerState.stepCount === 3 ? 12 : Math.sin(t * 2) * 2));
+            const rodBaseX = charX + 5;
+            const rodBaseY = charY - 14 + breathe;
+            const rodTipX = charX + 50;
+            const rodTipY = charY - 34 + flexBend;
+
+            // Draw Bamboo Rod
+            ctx.strokeStyle = '#d4a373';
+            ctx.lineWidth = 3.0;
             ctx.lineCap = 'round';
             ctx.beginPath();
-            ctx.moveTo(2, -3);
-            ctx.quadraticCurveTo(35, -16, rodTipX, rodTipY);
+            ctx.moveTo(rodBaseX, rodBaseY);
+            ctx.quadraticCurveTo(rodBaseX + 22, rodBaseY - 18, rodTipX, rodTipY);
             ctx.stroke();
 
-            // GLOWING BRASS LANTERN ON STERN (ĐÈN BÃO CHIẾU SÁNG MẶT NƯỚC)
-            const lanternX = -32;
-            const lanternY = 0;
-            // Warm radial ambient light pool
-            const lanternGrad = ctx.createRadialGradient(lanternX, lanternY, 4, lanternX, lanternY, 85);
-            const flicker = 0.22 + Math.sin(t * 8) * 0.04;
-            lanternGrad.addColorStop(0, 'rgba(251, 191, 36, ' + flicker + ')');
-            lanternGrad.addColorStop(0.5, 'rgba(245, 158, 11, ' + (flicker * 0.4) + ')');
-            lanternGrad.addColorStop(1, 'rgba(245, 158, 11, 0)');
-            ctx.fillStyle = lanternGrad;
-            ctx.beginPath();
-            ctx.arc(lanternX, lanternY, 85, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Brass lantern body
-            ctx.fillStyle = '#b45309';
-            ctx.fillRect(lanternX - 3, lanternY - 4, 6, 8);
-            ctx.fillStyle = '#fef08a'; // Glowing core
-            ctx.fillRect(lanternX - 2, lanternY - 3, 4, 6);
-
-            ctx.restore();
-
-            // Global coordinates for rod tip
-            const globalRodTipX = boatX + Math.cos(-0.12 + boatRock) * 65 - Math.sin(-0.12 + boatRock) * (-12);
-            const globalRodTipY = boatY + boatBob + Math.sin(-0.12 + boatRock) * 65 + Math.cos(-0.12 + boatRock) * (-12);
-
-            // 8. BOBBER & FISHING LINE (DÂY CƯỚC & PHAO CÂU 2.5D)
-            const bobber = anglerState.bobber;
-            bobber.currentY += (bobber.targetY - bobber.currentY) * 0.15;
-            bobber.twitch = Math.sin(t * 18) * (anglerState.stepCount === 2 ? 2.5 : 0.5);
-
-            const bx = bobberPos.x;
-            const by = bobberPos.y + bobber.currentY + bobber.twitch;
-
-            // Periodic ripples around bobber
-            if (Math.floor(t * 30) % 25 === 0) {
-                spawnAnglerRipple(bx, by, 28, '#38bdf8');
-            }
-
-            // Fishing Line
-            ctx.save();
+            // Outer highlight on rod
+            ctx.strokeStyle = '#fef08a';
             ctx.lineWidth = 1.0;
+            ctx.beginPath();
+            ctx.moveTo(rodBaseX, rodBaseY - 1);
+            ctx.quadraticCurveTo(rodBaseX + 22, rodBaseY - 19, rodTipX, rodTipY);
+            ctx.stroke();
+
+            // 6. FISHING LINE EXACT ATTACHMENT: Rod Tip -> Bobber -> Hook -> Fish Mouth!
+            ctx.save();
             if (anglerState.stepCount >= 4) {
                 ctx.strokeStyle = '#fbbf24'; // Golden taut line
                 ctx.lineWidth = 1.5;
             } else {
-                ctx.strokeStyle = 'rgba(241, 245, 249, 0.7)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+                ctx.lineWidth = 1.0;
             }
             ctx.beginPath();
-            ctx.moveTo(globalRodTipX, globalRodTipY);
-            const sag = anglerState.stepCount >= 4 ? 0 : 8;
-            ctx.quadraticCurveTo((globalRodTipX + bx) / 2, (globalRodTipY + by) / 2 + sag, bx, by - 8);
+            ctx.moveTo(rodTipX, rodTipY);
+            // Dynamic line sag / tension
+            const lineSag = anglerState.stepCount >= 4 ? 0 : 8;
+            const lineMidX = (rodTipX + bx) / 2;
+            const lineMidY = (rodTipY + by) / 2 + lineSag;
+            ctx.quadraticCurveTo(lineMidX, lineMidY, bx, by - 8);
+            ctx.stroke();
+
+            // Submerged leader line: Bobber -> Hook
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(bx, by);
+            ctx.lineTo(hookX, hookY);
+            ctx.stroke();
+
+            // Small silver hook at bottom of line
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(hookX + 2, hookY - 2, 3, 0.5 * Math.PI, 1.8 * Math.PI);
             ctx.stroke();
             ctx.restore();
 
-            // Draw Floating Bobber (Phao Xốp Đỏ - Trắng Truyền Thống)
+            // Draw Bobber (Phao xốp đỏ-trắng truyền thống)
             ctx.save();
             ctx.translate(bx, by);
             const bobberTilt = (Math.sin(t * 3) * 0.1) + (anglerState.stepCount >= 3 ? 0.35 : 0);
             ctx.rotate(bobberTilt);
 
-            // Antenna stem
+            // Bobber stem
             ctx.strokeStyle = '#0f172a';
             ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(0, -14);
-            ctx.lineTo(0, 8);
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(0, 6); ctx.stroke();
 
-            // Top half: Vermilion Red
+            // Top half: Red
             ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.ellipse(0, -5, 4.5, 7, 0, Math.PI, 0, false);
-            ctx.fill();
+            ctx.beginPath(); ctx.ellipse(0, -4, 4, 6, 0, Math.PI, 0, false); ctx.fill();
 
-            // Bottom half: Pure Ivory White
-            ctx.fillStyle = '#f8fafc';
-            ctx.beginPath();
-            ctx.ellipse(0, -5, 4.5, 7, 0, 0, Math.PI, false);
-            ctx.fill();
-
-            // Accent strip
-            ctx.strokeStyle = '#090d16';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(-4.5, -5);
-            ctx.lineTo(4.5, -5);
-            ctx.stroke();
+            // Bottom half: White
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath(); ctx.ellipse(0, -4, 4, 6, 0, 0, Math.PI, false); ctx.fill();
             ctx.restore();
 
-            // 9. HIGH-TENSION STRIKE EXCLAMATION (!) ON STEP 3
-            if (anglerState.stepCount === 3 || anglerState.strikeAlert.active) {
-                if (anglerState.strikeAlert.active) anglerState.strikeAlert.timer--;
-                if (anglerState.strikeAlert.timer <= 0 && anglerState.stepCount !== 3) {
-                    anglerState.strikeAlert.active = false;
-                }
-                ctx.save();
-                ctx.translate(bx, by - 28);
-                const popScale = 1.0 + Math.sin(t * 12) * 0.15;
-                ctx.scale(popScale, popScale);
+            // Periodic water ripples from bobber
+            if (Math.floor(t * 30) % 25 === 0) {
+                spawnAnglerRipple(bx, by, 26, '#38bdf8');
+            }
 
-                // Exclamation Bubble
-                ctx.fillStyle = '#ef4444';
-                ctx.shadowColor = '#ef4444';
-                ctx.shadowBlur = 10;
+            ctx.restore();
+
+            // 7. SURROUNDING NATURE: SWAYING TREES (CÂY CỐI XUNG QUANH CHUYỂN ĐỘNG NHẸ NHÀNG)
+            // 5 tropical coconut / stylized bonsai trees positioned around the pond perimeter
+            const treePositions = [
+                { x: w * 0.14, y: h * 0.22, scale: 0.9, type: 'palm' },
+                { x: w * 0.48, y: h * 0.14, scale: 1.05, type: 'palm' },
+                { x: w * 0.84, y: h * 0.22, scale: 0.95, type: 'palm' },
+                { x: w * 0.88, y: h * 0.58, scale: 1.0, type: 'palm' },
+                { x: w * 0.82, y: h * 0.84, scale: 0.85, type: 'willow' }
+            ];
+
+            treePositions.forEach((tree, idx) => {
+                ctx.save();
+                ctx.translate(tree.x, tree.y);
+                ctx.scale(tree.scale, tree.scale);
+
+                // Gentle, serene wind sway
+                const treeSway = Math.sin(t * 0.8 + idx * 1.1) * 0.045;
+                ctx.rotate(treeSway);
+
+                // Tree shadow on grass
+                ctx.fillStyle = 'rgba(0,0,0,0.25)';
                 ctx.beginPath();
-                ctx.arc(0, 0, 11, 0, Math.PI * 2);
+                ctx.ellipse(6, 6, 16, 8, 0.2, 0, Math.PI * 2);
                 ctx.fill();
 
-                // '!' letter
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 13px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('!', 0, 0.5);
-                ctx.restore();
-            }
-
-            // 10. STRIKE ZONE TARGET CATCH RING ON STEP 4 (CREATURES OF THE DEEP MINI-GAME RING)
-            if (anglerState.stepCount >= 4) {
-                const ring = anglerState.strikeRing;
-                ring.radius += 0.8;
-                if (ring.radius > ring.maxRadius) ring.radius = 6;
-                ctx.save();
-                ctx.strokeStyle = '#10b981';
-                ctx.lineWidth = 2.0;
-                ctx.globalAlpha = 0.8 - (ring.radius / ring.maxRadius) * 0.7;
+                // Curved wooden trunk
+                ctx.strokeStyle = '#78350f';
+                ctx.lineWidth = 6.0;
+                ctx.lineCap = 'round';
                 ctx.beginPath();
-                ctx.arc(bx, by, ring.radius, 0, Math.PI * 2);
+                ctx.moveTo(0, 0);
+                ctx.quadraticCurveTo(-6, -25, 4, -48);
                 ctx.stroke();
 
-                // Target Crosshairs
-                ctx.strokeStyle = '#34d399';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.arc(bx, by, 18, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            // 11. GOLDEN LEVIATHAN VAULT BREACH (KHI FULL TP)
-            if (anglerState.trophyJump.active) {
-                const j = anglerState.trophyJump;
-                j.x += j.vx;
-                j.y += j.vy;
-                j.vy += 0.22; // Gravity
-                j.angle += 0.04;
-
-                if (j.y > h + 40) {
-                    j.active = false;
-                    spawnAnglerRipple(j.x, h * 0.6, 60, '#fbbf24');
-                } else {
-                    ctx.save();
-                    ctx.translate(j.x, j.y);
-                    ctx.rotate(j.angle);
-
-                    // Golden creature body
-                    ctx.fillStyle = '#f59e0b';
-                    ctx.shadowColor = '#fbbf24';
-                    ctx.shadowBlur = 15;
+                // Palm Fronds / Leaves Canopy (5 lush fronds)
+                const canopyX = 4;
+                const canopyY = -48;
+                for (let f = 0; f < 6; f++) {
+                    const frondAngle = (f / 6) * Math.PI * 2 + Math.sin(t + f) * 0.06;
+                    const frondLen = 24 + (f % 2) * 6;
+                    ctx.fillStyle = f % 2 === 0 ? '#22c55e' : '#16a34a'; // Vibrant dual-tone green
                     ctx.beginPath();
-                    ctx.ellipse(0, 0, 26, 12, 0, 0, Math.PI * 2);
+                    ctx.moveTo(canopyX, canopyY);
+                    const tipX = canopyX + Math.cos(frondAngle) * frondLen;
+                    const tipY = canopyY + Math.sin(frondAngle) * frondLen * 0.65;
+                    ctx.quadraticCurveTo(canopyX + Math.cos(frondAngle + 0.3) * (frondLen * 0.7), canopyY + Math.sin(frondAngle + 0.3) * (frondLen * 0.5), tipX, tipY);
+                    ctx.quadraticCurveTo(canopyX + Math.cos(frondAngle - 0.3) * (frondLen * 0.7), canopyY + Math.sin(frondAngle - 0.3) * (frondLen * 0.5), canopyX, canopyY);
                     ctx.fill();
-
-                    // Scales highlight
-                    ctx.fillStyle = '#fef08a';
-                    ctx.beginPath();
-                    ctx.arc(-2, -3, 8, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Tail
-                    ctx.fillStyle = '#d97706';
-                    ctx.beginPath();
-                    ctx.moveTo(-22, 0);
-                    ctx.lineTo(-35, -12);
-                    ctx.lineTo(-35, 12);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Golden sparkle trail
-                    for (let s = 0; s < 3; s++) {
-                        ctx.fillStyle = '#fef08a';
-                        ctx.beginPath();
-                        ctx.arc((Math.random() - 0.5) * 40, (Math.random() - 0.5) * 30, 2.5, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                    ctx.restore();
                 }
-            }
 
-            // 12. FLASHLIGHT / TORCH CURSOR BEAM (SIGNATURE CREATURES OF THE DEEP INSPECTION)
-            if (anglerState.mouse.isHover) {
-                const mx = anglerState.mouse.x;
-                const my = anglerState.mouse.y;
-                ctx.save();
-                ctx.globalCompositeOperation = 'screen';
-                const torchGrad = ctx.createRadialGradient(mx, my, 4, mx, my, 70);
-                torchGrad.addColorStop(0, 'rgba(56, 189, 248, 0.16)');
-                torchGrad.addColorStop(0.5, 'rgba(56, 189, 248, 0.06)');
-                torchGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
-                ctx.fillStyle = torchGrad;
-                ctx.beginPath();
-                ctx.arc(mx, my, 70, 0, Math.PI * 2);
-                ctx.fill();
+                // Coconuts cluster
+                ctx.fillStyle = '#b45309';
+                ctx.beginPath(); ctx.arc(canopyX - 2, canopyY + 2, 3, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(canopyX + 2, canopyY + 1, 3, 0, Math.PI * 2); ctx.fill();
 
-                // Subtle reticle
-                ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.arc(mx, my, 12, 0, Math.PI * 2);
-                ctx.moveTo(mx - 16, my); ctx.lineTo(mx + 16, my);
-                ctx.moveTo(mx, my - 16); ctx.lineTo(mx, my + 16);
-                ctx.stroke();
                 ctx.restore();
-            }
+            });
 
-            requestAnimationFrame(creaturesDeepRenderLoop);
+            // 8. FLOATING FIREFLIES / GOLDEN POLLEN (DRIFTING SLOWLY & TRANQUIL)
+            anglerState.fireflies.forEach(ff => {
+                ff.x += ff.vx;
+                ff.y += ff.vy;
+                ff.pulse += 0.04;
+
+                if (ff.x < 20) ff.x = w - 20;
+                if (ff.x > w - 20) ff.x = 20;
+                if (ff.y < 20) ff.y = h - 20;
+                if (ff.y > h - 20) ff.y = 20;
+
+                const glow = ff.alpha * (0.6 + Math.sin(ff.pulse) * 0.4);
+                ctx.fillStyle = 'rgba(254, 240, 138, ' + glow + ')';
+                ctx.beginPath();
+                ctx.arc(ff.x, ff.y, ff.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(playTogetherRenderLoop);
         }
 
     </script>
