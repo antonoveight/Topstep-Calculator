@@ -172,9 +172,12 @@ Khi kéo FRVP từ **Open Anchor** đến **cây nến trước nến Sweep (ho�
 
 | Khung Giờ | Trạng Thái | Trọng Tâm Giao Dịch & Setup |
 | :--- | :--- | :--- |
-| **07:45 – 10:00 (Sáng)** | 🟢 **SĂN LỆNH** | **Dòng tiền Á (Tokyo & Shanghai SGE)**: MGC & MNQ chạy rất mượt, tôn trọng kỹ thuật.<br>• Canh **Setup 1 (CRT)** quét râu đêm (ONH/ONL) hoặc **Setup 3 (Trend)** hồi POC sóng sáng. |
-| **10:30 – 13:30 (Trưa)** | 🛑 **NGỒI YÊN** | Hết sóng sáng, cạn volume, thị trường ngủ đông. **Tắt màn hình, tuyệt đối không cố tìm lệnh.** |
-| **14:00 – 16:00 (Chiều)** | 🟢 **SĂN MGC** | **London mở cửa (Vàng vật chất)**: MGC bùng nổ nhịp quét râu phiên Á.<br>• Canh **Setup 1 (CRT)** hoặc **Setup 2 (AMD)**. |
-| **20:15 – 22:30 (Tối)** | 🔥 **GIỜ VÀNG MỸ** | **US Open (80% Volume của ngày)**: Biến động cực mạnh cả MGC & MNQ.<br>• Canh **Setup 4 (Break)**, **Setup 1 (CRT)** hoặc **Setup 3 (Trend)**. |
-| **Sau 22:30 (Đêm)** | 🛑 **ĐÓNG MÁY** | Hết sóng chính, tắt chart đi ngủ để bảo toàn vốn và năng lượng ngày mai. |
+| **07:45 – 10:00 (Sáng)** | 🟢 **SĂN LỆNH** | **Dòng tiền Á (Tokyo & Shanghai SGE)**: MGC & MNQ chạy mượt, tôn trọng kỹ thuật.<br>• Canh **Setup 1 (CRT)** quét râu đêm (ONH/ONL) hoặc **Setup 2 (Trend)** hồi POC sóng sáng. |
+| **10:30 – 13:30 (Trưa)** | 🛑 **NGỒI YÊN** | **Vùng chết (Deadzone)**: Cạn volume, thị trường ngủ đông. Tắt màn hình, tuyệt đối không cố tìm lệnh. |
+| **14:00 – 16:00 (Chiều)** | 🟡 **ƯU TIÊN MGC** | **London mở cửa (Vàng vật chất)**: MGC bùng nổ nhịp quét râu phiên Á. Canh **Setup 1 (CRT)** hoặc **Setup 3 (AMD)**.<br>• *Lưu ý:* MNQ biên hẹp, dễ bẫy $\rightarrow$ Khuyên đứng ngoài với MNQ. |
+| **16:30 – 19:30 (Chiều)** | 🛑 **NGHỈ NGƠI** | **Giữa phiên Âu & Mỹ**: Volume chững lại chờ tin. Tắt chart, ăn tối, nghỉ ngơi tái tạo năng lượng. |
+| **20:15 – 22:30 (Tối)\*** | 🔥 **GIỜ VÀNG MỸ** | **US Open (80% Volume ngày)**: Biến động cực mạnh cả MGC & MNQ, sóng dứt khoát nhanh tới TP.<br>• Canh **Setup 4 (Break)**, **Setup 1 (CRT)** hoặc **Setup 2 (Trend)**. |
+| **Sau 22:30 (Đêm)** | 🛑 **ĐÓNG MÁY** | Hết sóng chính, tắt chart đi ngủ để bảo toàn vốn và kỷ luật. |
 
+> [!NOTE]
+> **(\*) Lưu ý chu kỳ giờ Mùa Đông (từ tháng 11 đến tháng 3):** Khung Giờ Vàng Mỹ sẽ lùi lại 1 tiếng: **21:15 – 23:30** (NYSE mở cửa lúc 21:30 VN thay vì 20:30 VN).
