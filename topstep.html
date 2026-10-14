@@ -216,21 +216,48 @@ body {
 }
 
 /* Inputs & Form Controls */
+/* Inputs & Form Controls */
 input, select {
     background: var(--bg-input);
     border: 1px solid var(--border-card);
-    border-radius: 10px;
-    padding: 9px 13px;
+    border-radius: 8px;
+    height: 38px;
+    line-height: 36px;
+    padding: 0 12px;
     color: var(--text-primary);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
     outline: none;
-    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    vertical-align: middle;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 input:focus, select:focus {
     border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+input[type="date"] {
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
+    line-height: 38px;
+    padding: 0 10px;
+}
+select {
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
+    line-height: 38px;
+    padding: 0 10px;
+    cursor: pointer;
+}
+input[type="number"] {
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
+    line-height: 38px;
+    padding: 0 12px;
 }
 
 /* Buttons */
@@ -240,12 +267,17 @@ input:focus, select:focus {
     font-weight: 600;
     font-size: 12.5px;
     border: none;
-    border-radius: 10px;
-    padding: 9px 16px;
+    border-radius: 8px;
+    padding: 0 16px;
+    height: 36px;
+    line-height: 36px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
     transition: all 0.15s ease;
 }
 .b-btn-primary:hover { background: var(--color-primary-hover); }
@@ -254,17 +286,25 @@ input:focus, select:focus {
     background: var(--bg-card-inner);
     color: var(--text-primary);
     font-weight: 500;
-    font-size: 12.5px;
+    font-size: 12px;
     border: 1px solid var(--border-card);
-    border-radius: 10px;
-    padding: 8px 14px;
+    border-radius: 8px;
+    padding: 0 12px;
+    height: 36px;
+    line-height: 34px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 5px;
+    white-space: nowrap;
+    flex-shrink: 0;
     transition: all 0.15s ease;
 }
-.b-btn-secondary:hover { border-color: var(--color-primary); }
+.b-btn-secondary:hover {
+    background: var(--bg-card);
+    border-color: var(--color-primary);
+}
 
 .b-btn-purple {
     background: var(--color-primary);
@@ -272,24 +312,38 @@ input:focus, select:focus {
     font-weight: 600;
     font-size: 12.5px;
     border: none;
-    border-radius: 10px;
-    padding: 9px 16px;
+    border-radius: 8px;
+    padding: 0 16px;
+    height: 36px;
+    line-height: 36px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 .b-btn-purple:hover { background: var(--color-primary-hover); }
 
 .b-btn-danger {
     background: transparent;
     color: var(--color-red);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.25);
     border-radius: 8px;
-    padding: 6px 12px;
+    padding: 0 12px;
+    height: 36px;
+    line-height: 34px;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
     font-size: 11.5px;
     font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
 }
 .b-btn-danger:hover { background: var(--color-red-light); }
 
@@ -297,11 +351,15 @@ input:focus, select:focus {
 .b-badge {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 4px;
     padding: 3px 8px;
     border-radius: 6px;
     font-size: 11px;
     font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    line-height: normal;
 }
 .b-badge-blue, .b-badge-purple {
     background: var(--color-primary-light);
@@ -755,13 +813,13 @@ input:focus, select:focus {
                     <!-- Quick EOD 1-Row Form -->
                     <div style="background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
                         <form id="tradeForm" onsubmit="addJournalEntry(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-                            <div class="sm:col-span-3">
-                                <label for="inputDate" style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Ngày Giao Dịch</label>
-                                <input id="inputDate" type="date" required style="width: 100%; height: 38px;" onchange="if(document.getElementById('headerTradeDatePill')) document.getElementById('headerTradeDatePill').innerText = this.value">
+                            <div class="sm:col-span-3" style="display: flex; flex-direction: column;">
+                                <label for="inputDate" style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 5px; line-height: 1.2;">Ngày Giao Dịch</label>
+                                <input id="inputDate" type="date" required style="width: 100%; height: 38px; line-height: 38px; padding: 0 10px;" onchange="if(document.getElementById('headerTradeDatePill')) document.getElementById('headerTradeDatePill').innerText = this.value">
                             </div>
-                            <div class="sm:col-span-3">
-                                <label for="inputSymbol" style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Sản Phẩm</label>
-                                <select id="inputSymbol" onchange="onEodSymbolChange()" style="width: 100%; height: 38px;">
+                            <div class="sm:col-span-3" style="display: flex; flex-direction: column;">
+                                <label for="inputSymbol" style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 5px; line-height: 1.2;">Sản Phẩm</label>
+                                <select id="inputSymbol" onchange="onEodSymbolChange()" style="width: 100%; height: 38px; line-height: 38px; padding: 0 10px;">
                                     <option value="MGC">MGC (Micro Gold)</option>
                                     <option value="GC">GC (Gold Standard)</option>
                                     <option value="MNQ">MNQ (Micro Nasdaq)</option>
@@ -778,12 +836,12 @@ input:focus, select:focus {
                                     <option value="BTC">BTC (Bitcoin Futures)</option>
                                 </select>
                             </div>
-                            <div class="sm:col-span-4">
-                                <label for="inputPnl" style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Lãi / Lỗ Chốt Phiên ($ USD)</label>
-                                <input id="inputPnl" type="number" step="0.01" value="350" required placeholder="+350 hoặc -150" style="width: 100%; height: 38px; font-weight: 700; color: var(--color-green);">
+                            <div class="sm:col-span-4" style="display: flex; flex-direction: column;">
+                                <label for="inputPnl" style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 5px; line-height: 1.2;">Lãi / Lỗ Chốt Phiên ($ USD)</label>
+                                <input id="inputPnl" type="number" step="0.01" value="350" required placeholder="+350 hoặc -150" style="width: 100%; height: 38px; line-height: 38px; padding: 0 12px; font-weight: 700; color: var(--color-green);">
                             </div>
-                            <div class="sm:col-span-2">
-                                <button type="submit" class="b-btn-primary" style="width: 100%; height: 38px; justify-content: center; font-size: 12px;">
+                            <div class="sm:col-span-2" style="display: flex; flex-direction: column;">
+                                <button type="submit" class="b-btn-primary" style="width: 100%; height: 38px; line-height: 38px; padding: 0 14px; justify-content: center; font-size: 12px; white-space: nowrap;">
                                     + Lưu Phiên
                                 </button>
                             </div>
@@ -1395,20 +1453,22 @@ input:focus, select:focus {
 
                     <!-- Card: AI Chart Lens · Soi Kèo POC & Thẩm Định Nét Vẽ -->
                     <div class="b-card" id="aiLensCard" style="border: 1px solid var(--border-inner); position: relative;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div style="width: 26px; height: 26px; border-radius: 7px; background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 14px;">👁️</div>
-                                <div>
-                                    <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); display: block;">AI Chart Lens</span>
-                                    <span style="font-size: 10.5px; color: var(--text-muted);">Soi POC &amp; Thẩm Định Nét Vẽ Của Bạn</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px; gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                                <div style="width: 28px; height: 28px; border-radius: 7px; background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">👁️</div>
+                                <div style="min-width: 0;">
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); white-space: nowrap;">AI Chart Lens</span>
+                                        <span id="aiActiveModelBadge" class="b-badge b-badge-blue" style="font-size: 9px; padding: 1px 5px; white-space: nowrap; flex-shrink: 0; display: none;">Flash</span>
+                                    </div>
+                                    <span style="font-size: 10.5px; color: var(--text-muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Soi POC &amp; Thẩm định nét vẽ</span>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <button type="button" onclick="openAiSettingsModal()" class="b-btn-secondary" style="height: 26px; padding: 0 8px; font-size: 11px;" title="Cài đặt Google Gemini API Key">
-                                    ⚙️ API Key
+                            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                                <span id="aiApiKeyStatus" class="b-badge b-badge-dim" style="font-size: 9.5px; padding: 2px 7px; white-space: nowrap; flex-shrink: 0;">Chưa lưu Key</span>
+                                <button type="button" onclick="openAiSettingsModal()" class="b-btn-secondary" style="height: 25px; padding: 0 8px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; border-radius: 6px;" title="Cài đặt Google Gemini API Key">
+                                    ⚙️ Key
                                 </button>
-                                <span id="aiActiveModelBadge" class="b-badge b-badge-blue" style="font-size: 9.5px; display: none;">Gemini</span>
-                                <span id="aiApiKeyStatus" class="b-badge b-badge-dim" style="font-size: 9.5px;">Chưa lưu Key</span>
                             </div>
                         </div>
 
@@ -4036,11 +4096,14 @@ const accountData = {
 
             if (modelBadgeEl) {
                 if (activeModel) {
-                    modelBadgeEl.innerText = activeModel.replace('gemini-', '').toUpperCase();
-                    modelBadgeEl.style.display = "inline-block";
+                    let clean = activeModel.replace(/^gemini-/, '').replace(/-latest$/, '').replace(/-preview.*$/, '');
+                    if (clean.length > 10) clean = clean.substring(0, 10);
+                    modelBadgeEl.innerText = clean.toUpperCase();
+                    modelBadgeEl.title = activeModel;
+                    modelBadgeEl.style.display = "inline-flex";
                 } else if (key.trim().length > 10) {
-                    modelBadgeEl.innerText = savedModel === 'auto' ? 'Auto' : savedModel.replace('gemini-', '');
-                    modelBadgeEl.style.display = "inline-block";
+                    modelBadgeEl.innerText = savedModel === 'auto' ? 'Auto' : savedModel.replace(/^gemini-/, '');
+                    modelBadgeEl.style.display = "inline-flex";
                 } else {
                     modelBadgeEl.style.display = "none";
                 }
