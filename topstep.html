@@ -1303,6 +1303,11 @@ input[type="number"] {
                 </div>
             </div>
 
+            <!-- Unified 2-Column Execution Grid: Left = Living Pond Diorama & In-Trade Trailing; Right = Pre-Trade Checklist Cockpit & AI Vision Hub -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5" id="checklist-section">
+                
+                <!-- LEFT COLUMN (6 Cols): Living Natural Pond Diorama & Trailing Rules -->
+                <div class="lg:col-span-6 flex flex-col gap-4">
             <!-- ── KHUNG CẢNH 3D BẾN NƯỚC CẦN THỦ PLAY TOGETHER & CREATURES OF THE DEEP (HÌNH VUÔNG) ── -->
             <style>
                 @keyframes popStrike {
@@ -1312,128 +1317,122 @@ input[type="number"] {
                     100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
                 }
             </style>
-            <div class="b-card" id="rusticAnglerCard" style="padding: 0; overflow: hidden; border: 1px solid var(--border-inner); position: relative; background: #06111f; box-shadow: 0 4px 25px rgba(0,0,0,0.35); margin-bottom: 20px;">
+            <div class="b-card" id="rusticAnglerCard" style="padding: 0; overflow: hidden; border: 1px solid var(--border-inner); position: relative; background: #06111f; box-shadow: 0 4px 25px rgba(0,0,0,0.35);">
                 <!-- Header Toolbar of Deep Water Viewport -->
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: rgba(11, 20, 36, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); position: relative; z-index: 10; flex-wrap: wrap; gap: 8px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 20px; line-height: 1; filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.5));">🎣</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; background: rgba(11, 20, 36, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); position: relative; z-index: 10; flex-wrap: wrap; gap: 6px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 18px; line-height: 1; filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.5));">🎣</span>
                         <div>
-                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                <span style="font-size: 13.5px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.02em;">Ao Hồ Thiền Định · Play Together &amp; Creatures of the Deep</span>
-                                <span id="anglerSessionBadge" class="b-badge b-badge-blue" style="font-size: 9.5px; padding: 1px 7px; font-weight: 700;">NƯỚC LÊN</span>
-                                <span style="font-size: 10px; color: #38bdf8; background: rgba(56, 189, 248, 0.12); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.25);">Góc Nhìn Thứ 3 (3rd Person)</span>
+                            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                <span style="font-size: 12.5px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.02em;">Ao Hồ Thiền Định · Play Together</span>
+                                <span id="anglerSessionBadge" class="b-badge b-badge-blue" style="font-size: 9px; padding: 1px 6px; font-weight: 700;">NƯỚC LÊN</span>
                             </div>
-                            <span style="font-size: 10.5px; color: #94A3B8; display: block;">Hồ nước tĩnh lặng giữa đảo cây xanh · Trực quan hóa kỷ luật vào lệnh &amp; Quản trị rủi ro</span>
+                            <span style="font-size: 10px; color: #94A3B8; display: block;">Ao uốn lượn tự nhiên · Chưa tick thì chưa thả cần</span>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                        <button type="button" id="btnToggleAnglerAudio" onclick="toggleAnglerAudio()" class="b-btn-secondary" style="height: 26px; padding: 0 9px; font-size: 11px; background: rgba(30, 41, 59, 0.85); color: #E2E8F0; border-color: rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 4px; border-radius: 5px; cursor: pointer;" title="Bật/Tắt âm thanh sông nước & tiếng quăng cần">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                        <button type="button" id="btnToggleAnglerAudio" onclick="toggleAnglerAudio()" class="b-btn-secondary" style="height: 24px; padding: 0 8px; font-size: 10.5px; background: rgba(30, 41, 59, 0.85); color: #E2E8F0; border-color: rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 4px; border-radius: 5px; cursor: pointer;" title="Bật/Tắt âm thanh sông nước & tiếng quăng cần">
                             <span id="anglerAudioIcon">🔇</span> <span id="anglerAudioText">Âm thanh</span>
                         </button>
-                        <button type="button" id="btnToggleAnglerCollapse" onclick="toggleAnglerCardCollapse()" class="b-btn-secondary" style="height: 26px; padding: 0 9px; font-size: 11px; background: rgba(30, 41, 59, 0.85); color: #E2E8F0; border-color: rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 4px; border-radius: 5px; cursor: pointer;" title="Thu gọn / Mở rộng cảnh mô phỏng">
+                        <button type="button" id="btnToggleAnglerCollapse" onclick="toggleAnglerCardCollapse()" class="b-btn-secondary" style="height: 24px; padding: 0 8px; font-size: 10.5px; background: rgba(30, 41, 59, 0.85); color: #E2E8F0; border-color: rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 4px; border-radius: 5px; cursor: pointer;" title="Thu gọn / Mở rộng cảnh mô phỏng">
                             <span id="anglerCollapseIcon">🌿</span> <span id="anglerCollapseText">Thu gọn</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- SQUARE VIEWPORT CONTAINER (TỈ LỆ HÌNH VUÔNG 1:1) -->
-                <div style="padding: 16px; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle at 50% 50%, #0d1e33 0%, #06111f 100%);">
-                    <div id="rusticCanvasContainer" style="width: 100%; max-width: 500px; aspect-ratio: 1 / 1; position: relative; overflow: hidden; border-radius: 20px; box-shadow: 0 12px 35px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.12); background: #07192b; cursor: crosshair; user-select: none;">
+                <div style="padding: 10px; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle at 50% 50%, #0d1e33 0%, #06111f 100%);">
+                    <div id="rusticCanvasContainer" style="width: 100%; max-width: 440px; aspect-ratio: 1 / 1; position: relative; overflow: hidden; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.12); background: #07192b; cursor: crosshair; user-select: none;">
                         <canvas id="rusticAnglerCanvas" style="width: 100%; height: 100%; display: block;"></canvas>
                         
                         <!-- ── PLAY TOGETHER CASUAL MOBILE HUD OVERLAY ── -->
 
                         <!-- 1. TOP-LEFT: AVATAR & LEVEL BADGE & EXP BAR -->
-                        <div style="position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 8px; pointer-events: auto; z-index: 6;">
-                            <div style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); border: 2.5px solid #ffffff; box-shadow: 0 3px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 22px; position: relative; flex-shrink: 0;">
+                        <div style="position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 7px; pointer-events: auto; z-index: 6;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); border: 2px solid #ffffff; box-shadow: 0 3px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 19px; position: relative; flex-shrink: 0;">
                                 🧑‍🌾
-                                <span style="position: absolute; bottom: -3px; right: -4px; background: #2563eb; color: #ffffff; font-size: 8.5px; font-weight: 800; padding: 1px 4px; border-radius: 8px; border: 1.5px solid #ffffff;">Lv.12</span>
+                                <span style="position: absolute; bottom: -3px; right: -3px; background: #2563eb; color: #ffffff; font-size: 8px; font-weight: 800; padding: 1px 3.5px; border-radius: 7px; border: 1px solid #ffffff;">Lv.12</span>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 2px;">
                                 <div style="display: flex; align-items: center; gap: 5px;">
-                                    <span style="font-size: 11.5px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Cần Thủ Giản Hạ Thủy</span>
+                                    <span style="font-size: 11px; font-weight: 800; color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Cần Thủ Giản Hạ Thủy</span>
                                 </div>
                                 <!-- EXP Bar (Checklist Progress) -->
-                                <div style="width: 95px; height: 7px; background: rgba(15,23,42,0.8); border-radius: 10px; border: 1px solid rgba(255,255,255,0.25); overflow: hidden; position: relative;">
-                                    <div id="anglerExpBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #22c55e); border-radius: 10px; transition: width 0.3s ease;"></div>
+                                <div style="width: 82px; height: 6px; background: rgba(15,23,42,0.8); border-radius: 8px; border: 1px solid rgba(255,255,255,0.25); overflow: hidden; position: relative;">
+                                    <div id="anglerExpBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #22c55e); border-radius: 8px; transition: width 0.3s ease;"></div>
                                 </div>
                                 <div style="display: flex; gap: 4px; margin-top: 2px;">
-                                    <span class="b-badge b-badge-dim" style="font-size: 8.5px; padding: 0 5px; cursor: pointer;" onclick="scrollToSection('checklist-section')">🎯 Nhiệm vụ</span>
-                                    <span class="b-badge b-badge-dim" style="font-size: 8.5px; padding: 0 5px; cursor: pointer;" onclick="openTradePlaybookModal()">📖 Playbook</span>
+                                    <span class="b-badge b-badge-dim" style="font-size: 8px; padding: 0 4px; cursor: pointer;" onclick="scrollToSection('checklist-section')">🎯 Nhiệm vụ</span>
+                                    <span class="b-badge b-badge-dim" style="font-size: 8px; padding: 0 4px; cursor: pointer;" onclick="openTradePlaybookModal()">📖 Playbook</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- 2. TOP-RIGHT: COINS, GEMS & MINI-MAP RADAR -->
-                        <div style="position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: auto; z-index: 6;">
-                            <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; pointer-events: auto; z-index: 6;">
+                            <div style="display: flex; align-items: center; gap: 5px;">
                                 <!-- PnL Coins -->
-                                <div style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); border: 1.5px solid #f59e0b; padding: 2px 8px; border-radius: 14px; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">
-                                    <span style="font-size: 12px;">🪙</span>
-                                    <span id="anglerCoinText" style="font-size: 10.5px; font-weight: 800; color: #fbbf24;">+$1,250</span>
+                                <div style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); border: 1px solid #f59e0b; padding: 2px 7px; border-radius: 12px; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.25);">
+                                    <span style="font-size: 11px;">🪙</span>
+                                    <span id="anglerCoinText" style="font-size: 10px; font-weight: 800; color: #fbbf24;">+$1,250</span>
                                 </div>
                                 <!-- Target Gems -->
-                                <div style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); border: 1.5px solid #38bdf8; padding: 2px 8px; border-radius: 14px; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">
-                                    <span style="font-size: 12px;">💎</span>
-                                    <span style="font-size: 10.5px; font-weight: 800; color: #38bdf8;">3.0 R</span>
+                                <div style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); border: 1px solid #38bdf8; padding: 2px 7px; border-radius: 12px; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.25);">
+                                    <span style="font-size: 11px;">💎</span>
+                                    <span style="font-size: 10px; font-weight: 800; color: #38bdf8;">3.0 R</span>
                                 </div>
                             </div>
                             <!-- Mini-map radar button -->
-                            <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(15, 23, 42, 0.85); border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 14px;" title="Radar hồ nước">
+                            <div style="width: 27px; height: 27px; border-radius: 50%; background: rgba(15, 23, 42, 0.85); border: 1.5px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Radar hồ nước">
                                 🧭
                             </div>
                         </div>
 
                         <!-- 3. BOTTOM-RIGHT: PLAY TOGETHER BIG ROUND "CAST / REEL" BUTTON & TENSION GAUGE -->
-                        <div style="position: absolute; bottom: 12px; right: 12px; display: flex; flex-direction: column; align-items: center; pointer-events: auto; z-index: 7;">
+                        <div style="position: absolute; bottom: 10px; right: 10px; display: flex; flex-direction: column; align-items: center; pointer-events: auto; z-index: 7;">
                             <!-- Curved Tension Gauge Arc Overlay -->
-                            <div style="position: relative; width: 80px; height: 42px; margin-bottom: -10px; pointer-events: none;">
+                            <div style="position: relative; width: 75px; height: 38px; margin-bottom: -8px; pointer-events: none;">
                                 <svg viewBox="0 0 100 55" style="width: 100%; height: 100%; overflow: visible;">
-                                    <!-- Background Arc (Green, Yellow, Red warning zones) -->
                                     <path d="M 15 50 A 40 40 0 0 1 85 50" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="8" stroke-linecap="round"/>
-                                    <!-- Green Zone (0% - 50%) -->
                                     <path d="M 15 50 A 40 40 0 0 1 50 10" fill="none" stroke="#10b981" stroke-width="7" stroke-linecap="round"/>
-                                    <!-- Yellow Zone (50% - 75%) -->
                                     <path d="M 50 10 A 40 40 0 0 1 72 20" fill="none" stroke="#f59e0b" stroke-width="7"/>
-                                    <!-- Red Warning Zone (75% - 100%) -->
                                     <path d="M 72 20 A 40 40 0 0 1 85 50" fill="none" stroke="#ef4444" stroke-width="7" stroke-linecap="round"/>
-                                    <!-- Oscillating Needle -->
                                     <line id="anglerGaugeNeedle" x1="50" y1="50" x2="30" y2="20" stroke="#ffffff" stroke-width="3" stroke-linecap="round" style="filter: drop-shadow(0 0 4px rgba(0,0,0,0.8)); transform-origin: 50px 50px; transition: transform 0.15s ease-out;"/>
                                     <circle cx="50" cy="50" r="4.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
                                 </svg>
                             </div>
 
                             <!-- Big Glossy Blue Cast/Reel Action Button -->
-                            <button type="button" id="btnAnglerCastReel" onclick="handleCastReelButtonClick()" style="width: 62px; height: 62px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8 0%, #2563eb 50%, #1d4ed8 100%); border: 3px solid #ffffff; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.6), inset 0 2px 4px rgba(255,255,255,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; outline: none;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
-                                <span style="font-size: 22px; line-height: 1; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));">🎣</span>
-                                <span id="anglerCastBtnText" style="font-size: 9px; font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 0.04em; text-shadow: 0 1px 2px rgba(0,0,0,0.6);">CAST</span>
+                            <button type="button" id="btnAnglerCastReel" onclick="handleCastReelButtonClick()" style="width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8 0%, #2563eb 50%, #1d4ed8 100%); border: 2.5px solid #ffffff; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.6), inset 0 2px 4px rgba(255,255,255,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; outline: none;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)'">
+                                <span style="font-size: 19px; line-height: 1; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));">🎣</span>
+                                <span id="anglerCastBtnText" style="font-size: 8.5px; font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 0.04em; text-shadow: 0 1px 2px rgba(0,0,0,0.6);">CAST</span>
                             </button>
 
                             <!-- Mini Action Buttons -->
-                            <div style="display: flex; gap: 6px; margin-top: 4px;">
-                                <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(255,255,255,0.2); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer;" title="Mồi câu POC" onclick="triggerCastStep(1)">
+                            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                                <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(255,255,255,0.2); width: 23px; height: 23px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer;" title="Mồi câu POC" onclick="triggerCastStep(1)">
                                     🪱
                                 </div>
-                                <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(255,255,255,0.2); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer;" title="Bắt cá giật cần" onclick="triggerCastStep(4)">
+                                <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(255,255,255,0.2); width: 23px; height: 23px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer;" title="Bắt cá giật cần" onclick="triggerCastStep(4)">
                                     ⚡
                                 </div>
                             </div>
                         </div>
 
                         <!-- 4. BOTTOM-CENTER: CAST POWER & STATUS PILL -->
-                        <div style="position: absolute; bottom: 12px; left: 12px; right: 90px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; z-index: 6;">
-                            <!-- Cast Power / Distance Bar -->
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 11px;">⚡</span>
-                                <div style="flex: 1; height: 8px; background: rgba(15,23,42,0.85); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; position: relative;">
-                                    <div id="anglerPowerBar" style="width: 65%; height: 100%; background: linear-gradient(90deg, #f59e0b, #ef4444); border-radius: 8px; box-shadow: 0 0 6px #f59e0b; transition: width 0.2s;"></div>
+                        <div style="position: absolute; bottom: 10px; left: 10px; right: 80px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; z-index: 6;">
+                            <!-- Cast Power Bar -->
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="font-size: 10px;">⚡</span>
+                                <div style="flex: 1; height: 6px; background: rgba(15,23,42,0.85); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; position: relative;">
+                                    <div id="anglerPowerBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f59e0b, #ef4444); border-radius: 8px; box-shadow: 0 0 6px #f59e0b; transition: width 0.25s;"></div>
                                 </div>
                             </div>
 
                             <!-- Real-time Status Banner -->
-                            <div style="background: rgba(11, 20, 36, 0.9); backdrop-filter: blur(8px); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; gap: 6px; pointer-events: auto;">
-                                <span id="anglerStatusDot" style="width: 7px; height: 7px; border-radius: 50%; background: #38bdf8; display: inline-block; box-shadow: 0 0 8px #38bdf8; flex-shrink: 0;"></span>
-                                <span id="anglerStatusText" style="font-size: 10.5px; font-weight: 700; color: #F1F5F9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🍃 Đang buông cần · Ngắm mặt nước tĩnh lặng</span>
+                            <div style="background: rgba(11, 20, 36, 0.92); backdrop-filter: blur(8px); padding: 3px 8px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; gap: 6px; pointer-events: auto;">
+                                <span id="anglerStatusDot" style="width: 6.5px; height: 6.5px; border-radius: 50%; background: #38bdf8; display: inline-block; box-shadow: 0 0 6px #38bdf8; flex-shrink: 0;"></span>
+                                <span id="anglerStatusText" style="font-size: 10px; font-weight: 700; color: #F1F5F9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🍃 Đang buông cần · Ngắm mặt nước tĩnh lặng</span>
                             </div>
                             <!-- Proverb Text (Hidden on extra small, shown cleanly) -->
                             <div style="display: none;">
@@ -1442,22 +1441,69 @@ input[type="number"] {
                         </div>
 
                         <!-- 5. FLOATING POP-UP STRIKE (!) & FULL TP TROPHY NOTIFICATION -->
-                        <div id="anglerStrikeBanner" style="display: none; position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%); background: #ef4444; color: #ffffff; padding: 4px 14px; border-radius: 14px; font-size: 14px; font-weight: 900; box-shadow: 0 4px 18px rgba(239, 68, 68, 0.7); border: 2px solid #ffffff; z-index: 10; pointer-events: none; animation: popStrike 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                        <div id="anglerStrikeBanner" style="display: none; position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%); background: #ef4444; color: #ffffff; padding: 4px 14px; border-radius: 14px; font-size: 13px; font-weight: 900; box-shadow: 0 4px 18px rgba(239, 68, 68, 0.7); border: 2px solid #ffffff; z-index: 10; pointer-events: none; animation: popStrike 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
                             ⚡ STRIKE! ⚡
                         </div>
 
-                        <div id="anglerTrophyBanner" style="display: none; position: absolute; top: 22%; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, rgba(245, 158, 11, 0.98), rgba(217, 119, 6, 0.98)); color: #FFFFFF; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 800; box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6); border: 2px solid #FEF08A; z-index: 10; pointer-events: none; text-align: center; width: 85%;">
+                        <div id="anglerTrophyBanner" style="display: none; position: absolute; top: 20%; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, rgba(245, 158, 11, 0.98), rgba(217, 119, 6, 0.98)); color: #FFFFFF; padding: 6px 14px; border-radius: 18px; font-size: 11px; font-weight: 800; box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6); border: 2px solid #FEF08A; z-index: 10; pointer-events: none; text-align: center; width: 88%;">
                             ⭐ VỚT TRỌN CỰ LONG HOÀNG KIM · FULL TP KỶ LUẬT TUYỆT ĐỐI! ⭐
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Balanced 2-Column Execution Grid: 6 Cols Cockpit + 6 Cols AI & Playbook -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5" id="checklist-section">
-                
-                <!-- LEFT COLUMN (6 Cols): Execution Cockpit (Setup + Checklist Steps + Trailing Rules) -->
+<!-- Card 2: In-Trade Risk Management Trailing Rules Card -->
+                    <div class="b-card" style="border-left: 4px solid var(--color-primary);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border-inner); padding-bottom: 8px;">
+                            <div>
+                                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.03em; display: flex; align-items: center; gap: 6px;">
+                                    <span>🛡️</span> Quản Trị Khi Lệnh Đang Chạy
+                                </span>
+                                <span style="font-size: 11px; color: var(--text-muted); display: block;">Quy tắc dời SL 3 giai đoạn — Kỷ luật thực thi</span>
+                            </div>
+                            <span class="b-badge b-badge-blue" style="font-size: 10px; font-weight: 700;">Trailing Rules</span>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label class="chk-risk-card">
+                                <input type="checkbox" id="chk-risk-1r" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                                    <span class="b-badge b-badge-blue" style="font-size: 10px; font-weight: 700; padding: 2px 7px; flex-shrink: 0;">+1R</span>
+                                    <div style="min-width: 0;">
+                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Dời SL lên -0.5R</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">Cắt giảm 50% rủi ro khi giá đã bắt đầu chạy thuận hướng</div>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label class="chk-risk-card">
+                                <input type="checkbox" id="chk-risk-2r" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-green); cursor: pointer; flex-shrink: 0;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                                    <span class="b-badge b-badge-green" style="font-size: 10px; font-weight: 700; padding: 2px 7px; flex-shrink: 0;">+2R</span>
+                                    <div style="min-width: 0;">
+                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Dời SL về Hòa Vốn (BE / 0R)</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">Khóa rủi ro tuyệt đối — Lệnh an toàn 100%, không để thắng thành thua</div>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label class="chk-risk-card">
+                                <input type="checkbox" id="chk-risk-tp" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-green); cursor: pointer; flex-shrink: 0;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                                    <span class="b-badge b-badge-gold" style="font-size: 10px; font-weight: 700; padding: 2px 7px; flex-shrink: 0;">FULL TP</span>
+                                    <div style="min-width: 0;">
+                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Kỷ Luật Xác Suất (1:2 / 1:3)</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">Chờ cắn Full TP hoặc cắn BE/SL — Tuyệt đối không chốt non bằng tay</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN (6 Cols): Pre-Trade Checklist Cockpit & AI Vision Hub -->
                 <div class="lg:col-span-6 flex flex-col gap-4">
+<div class="lg:col-span-6 flex flex-col gap-4">
                     
                     <!-- Card 1: Pre-Trade Checklist (4 Setups) -->
                     <div class="b-card">
@@ -1697,57 +1743,7 @@ input[type="number"] {
                         </div>
                     </div>
 
-                    <!-- Card 2: In-Trade Risk Management Trailing Rules Card -->
-                    <div class="b-card" style="border-left: 4px solid var(--color-primary);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border-inner); padding-bottom: 8px;">
-                            <div>
-                                <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.03em; display: flex; align-items: center; gap: 6px;">
-                                    <span>🛡️</span> Quản Trị Khi Lệnh Đang Chạy
-                                </span>
-                                <span style="font-size: 11px; color: var(--text-muted); display: block;">Quy tắc dời SL 3 giai đoạn — Kỷ luật thực thi</span>
-                            </div>
-                            <span class="b-badge b-badge-blue" style="font-size: 10px; font-weight: 700;">Trailing Rules</span>
-                        </div>
-
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                            <label class="chk-risk-card">
-                                <input type="checkbox" id="chk-risk-1r" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span class="b-badge b-badge-blue" style="font-size: 10px; font-weight: 700; padding: 2px 7px; flex-shrink: 0;">+1R</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Dời SL lên -0.5R</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Cắt giảm 50% rủi ro khi giá đã bắt đầu chạy thuận hướng</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-risk-card">
-                                <input type="checkbox" id="chk-risk-2r" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-green); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span class="b-badge b-badge-green" style="font-size: 10px; font-weight: 700; padding: 2px 7px; flex-shrink: 0;">+2R</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Dời SL về Hòa Vốn (BE / 0R)</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Khóa rủi ro tuyệt đối — Lệnh an toàn 100%, không để thắng thành thua</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-risk-card">
-                                <input type="checkbox" id="chk-risk-tp" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-green); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span class="b-badge b-badge-gold" style="font-size: 10px; font-weight: 700; padding: 2px 7px; flex-shrink: 0;">FULL TP</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Kỷ Luật Xác Suất (1:2 / 1:3)</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Chờ cắn Full TP hoặc cắn BE/SL — Tuyệt đối không chốt non bằng tay</div>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- RIGHT COLUMN (6 Cols): AI Vision & Knowledge Hub -->
+<!-- RIGHT COLUMN (6 Cols): AI Vision & Knowledge Hub -->
                 <div class="lg:col-span-6 flex flex-col gap-4">
 
                     <!-- Card 1: AI Chart Lens · Soi Kèo POC & Thẩm Định Nét Vẽ -->
@@ -1951,9 +1947,9 @@ input[type="number"] {
                             </a>
                         </div>
                     </div>
-
                 </div>
-            </div>
+
+            </div>            </div>
         </div> <!-- END #view-checklist -->
 <!-- Footer -->
         <footer style="text-align: center; font-size: 11.5px; color: var(--text-muted); padding: 12px 0; border-top: 1px solid var(--border-card);">
@@ -4979,7 +4975,7 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
         }
 
 
-        /* ── PLAY TOGETHER & CREATURES OF THE DEEP SQUARE ISOMETRIC ENGINE ── */
+/* ── PLAY TOGETHER & CREATURES OF THE DEEP SQUARE ISOMETRIC ENGINE (NATURAL MEANDERING POND) ── */
         let anglerState = {
             stepCount: 0,
             isRisk1r: false,
@@ -4991,15 +4987,16 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
             audioCtx: null,
             mouse: { x: -200, y: -200, isHover: false },
             rodFlex: 0,
-            tension: 0.15,
-            targetTension: 0.15,
-            bobber: { x: 300, y: 260, targetY: 0, currentY: 0, twitch: 0 },
-            hook: { x: 300, y: 284 },
+            tension: 0.1,
+            targetTension: 0.1,
+            // Pond center and radius coordinates
+            bobber: { x: 275, y: 245, targetY: 0, currentY: 0, twitch: 0 },
+            hook: { x: 275, y: 268 },
             fish: {
-                x: 340,
-                y: 300,
-                angle: -2.0,
-                speed: 0.6,
+                x: 310,
+                y: 280,
+                angle: -1.8,
+                speed: 0.35, // Slow, peaceful zen speed
                 tail: 0,
                 size: 26,
                 color: '#38bdf8',
@@ -5027,27 +5024,28 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
             // Initialize predator fish segments (6 segments for sinuous swimming)
             anglerState.fish.segments = [];
             for (let i = 0; i < 6; i++) {
-                anglerState.fish.segments.push({ x: 340 - i * 7, y: 300, angle: 0 });
+                anglerState.fish.segments.push({ x: 310 - i * 7, y: 280, angle: 0 });
             }
 
-            // Spawn schooling small minnows (4 small fish)
+            // Spawn schooling small minnows (5 small fish)
             anglerState.schoolFish = [
-                { x: 260, y: 220, vx: 0.5, vy: 0.2, tail: 0, size: 8, color: '#38bdf8' },
-                { x: 280, y: 235, vx: 0.45, vy: -0.15, tail: 1.2, size: 7, color: '#67e8f9' },
-                { x: 360, y: 310, vx: -0.4, vy: -0.2, tail: 2.1, size: 8, color: '#34d399' },
-                { x: 380, y: 295, vx: -0.5, vy: 0.1, tail: 3.0, size: 7, color: '#38bdf8' }
+                { x: 230, y: 210, vx: 0.25, vy: 0.1, tail: 0, size: 7, color: '#38bdf8' },
+                { x: 245, y: 220, vx: 0.22, vy: -0.08, tail: 1.2, size: 6.5, color: '#67e8f9' },
+                { x: 330, y: 290, vx: -0.2, vy: -0.1, tail: 2.1, size: 7, color: '#34d399' },
+                { x: 345, y: 280, vx: -0.22, vy: 0.08, tail: 3.0, size: 6.5, color: '#38bdf8' },
+                { x: 280, y: 310, vx: 0.18, vy: -0.15, tail: 1.7, size: 6, color: '#60a5fa' }
             ];
 
-            // Spawn floating fireflies / pollen (8 particles)
+            // Spawn floating fireflies / pollen (12 particles drifting slowly)
             anglerState.fireflies = [];
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 12; i++) {
                 anglerState.fireflies.push({
-                    x: 60 + Math.random() * 380,
-                    y: 60 + Math.random() * 380,
-                    vx: (Math.random() - 0.5) * 0.3,
-                    vy: (Math.random() - 0.5) * 0.3 - 0.15,
-                    size: 1.5 + Math.random() * 2,
-                    alpha: 0.4 + Math.random() * 0.5,
+                    x: 40 + Math.random() * 420,
+                    y: 40 + Math.random() * 420,
+                    vx: (Math.random() - 0.5) * 0.12, // Very slow drift
+                    vy: (Math.random() - 0.5) * 0.12 - 0.06,
+                    size: 1.5 + Math.random() * 1.8,
+                    alpha: 0.35 + Math.random() * 0.45,
                     pulse: Math.random() * Math.PI * 2
                 });
             }
@@ -5059,8 +5057,8 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                 anglerState.mouse.y = (e.clientY - rect.top);
                 anglerState.mouse.isHover = true;
 
-                if (Math.random() < 0.15) {
-                    spawnAnglerRipple(anglerState.mouse.x, anglerState.mouse.y, 18, 'rgba(56, 189, 248, 0.4)');
+                if (Math.random() < 0.1) {
+                    spawnAnglerRipple(anglerState.mouse.x, anglerState.mouse.y, 16, 'rgba(56, 189, 248, 0.35)');
                 }
             };
 
@@ -5074,7 +5072,7 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                     const rect = canvas.getBoundingClientRect();
                     const x = e.touches[0].clientX - rect.left;
                     const y = e.touches[0].clientY - rect.top;
-                    spawnAnglerRipple(x, y, 35, '#38bdf8');
+                    spawnAnglerRipple(x, y, 30, '#38bdf8');
                     playAnglerSound('plop');
                 }
             };
@@ -5084,17 +5082,17 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                 const rect = canvas.getBoundingClientRect();
                 const x = (e.clientX - rect.left);
                 const y = (e.clientY - rect.top);
-                spawnAnglerRipple(x, y, 40, '#38bdf8');
+                spawnAnglerRipple(x, y, 35, '#38bdf8');
                 playAnglerSound('plop');
 
-                // Scatter small fish
+                // Scatter small fish gently
                 anglerState.schoolFish.forEach(f => {
                     const dx = f.x - x;
                     const dy = f.y - y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 75) {
-                        f.vx = (dx / (dist || 1)) * 1.5;
-                        f.vy = (dy / (dist || 1)) * 1.5;
+                    if (dist < 70) {
+                        f.vx = (dx / (dist || 1)) * 0.8;
+                        f.vy = (dy / (dist || 1)) * 0.8;
                     }
                 });
             };
@@ -5113,7 +5111,947 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
             } catch (e) {}
 
             updateAnglerSessionBadge();
-            requestAnimationFrame(playTogetherRenderLoop);
+            requestAnimationFrame(naturalPondRenderLoop);
+        }
+
+        function toggleAnglerCardCollapse() {
+            const container = document.getElementById('rusticCanvasContainer');
+            const text = document.getElementById('anglerCollapseText');
+            const icon = document.getElementById('anglerCollapseIcon');
+            if (!container) return;
+
+            const isCurrentlyHidden = container.style.display === 'none';
+            if (isCurrentlyHidden) {
+                container.style.display = 'block';
+                if (text) text.innerText = 'Thu gọn';
+                if (icon) icon.innerText = '🌿';
+                try { localStorage.setItem('topstep_angler_collapsed', 'false'); } catch (e) {}
+            } else {
+                container.style.display = 'none';
+                if (text) text.innerText = 'Mở rộng';
+                if (icon) icon.innerText = '🌾';
+                try { localStorage.setItem('topstep_angler_collapsed', 'true'); } catch (e) {}
+            }
+        }
+
+        function toggleAnglerAudio() {
+            anglerState.audioEnabled = !anglerState.audioEnabled;
+            const icon = document.getElementById('anglerAudioIcon');
+            const text = document.getElementById('anglerAudioText');
+            if (anglerState.audioEnabled) {
+                if (icon) icon.innerText = '🔊';
+                if (text) text.innerText = 'Đang bật';
+                playAnglerSound('plop');
+            } else {
+                if (icon) icon.innerText = '🔇';
+                if (text) text.innerText = 'Âm thanh';
+            }
+        }
+
+        function playAnglerSound(type) {
+            if (!anglerState.audioEnabled) return;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                if (!anglerState.audioCtx) anglerState.audioCtx = new AudioCtx();
+                const ctx = anglerState.audioCtx;
+                if (ctx.state === 'suspended') ctx.resume();
+
+                if (type === 'plop') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.13);
+                } else if (type === 'strike') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(220, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.18);
+                    gain.gain.setValueAtTime(0.35, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.26);
+                } else if (type === 'catch') {
+                    [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.07);
+                        gain.gain.setValueAtTime(0.2, ctx.currentTime + idx * 0.07);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + idx * 0.07 + 0.4);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(ctx.currentTime + idx * 0.07);
+                        osc.stop(ctx.currentTime + idx * 0.07 + 0.42);
+                    });
+                }
+            } catch (e) {}
+        }
+
+        function spawnAnglerRipple(x, y, maxR, color) {
+            anglerState.ripples.push({
+                x: x,
+                y: y,
+                r: 2,
+                maxR: maxR || 35,
+                alpha: 0.85,
+                color: color || '#38bdf8'
+            });
+        }
+
+        function spawnSonarWave(x, y, maxR, color) {
+            anglerState.sonarWaves.push({
+                x: x,
+                y: y,
+                r: 4,
+                maxR: maxR || 85,
+                alpha: 0.8,
+                color: color || '#38bdf8'
+            });
+        }
+
+        // Handle Play Together Big CAST/REEL button
+        function handleCastReelButtonClick() {
+            const btn = document.getElementById('btnAnglerCastReel');
+            if (btn) {
+                btn.style.transform = 'scale(0.92)';
+                if (typeof setTimeout === 'function') {
+                    setTimeout(() => { btn.style.transform = 'scale(1)'; }, 120);
+                }
+            }
+
+            if (anglerState.stepCount === 0) {
+                triggerCastStep(1);
+            } else if (anglerState.stepCount === 1) {
+                triggerCastStep(2);
+            } else if (anglerState.stepCount === 2) {
+                triggerCastStep(3);
+            } else if (anglerState.stepCount === 3) {
+                triggerCastStep(4);
+            } else if (anglerState.stepCount === 4 && !anglerState.isRiskTp) {
+                const tpCb = document.getElementById('chk-risk-tp');
+                if (tpCb) {
+                    tpCb.checked = true;
+                    if (typeof onChecklistChange === 'function') onChecklistChange();
+                }
+            } else {
+                if (typeof resetChecklist === 'function') resetChecklist();
+            }
+        }
+
+        function triggerCastStep(stepNum) {
+            let prefix = 'chk-s1';
+            for (let s = 1; s <= 4; s++) {
+                const pane = document.getElementById('setup-' + s);
+                if (pane && pane.style.display !== 'none') {
+                    prefix = 'chk-s' + s;
+                    break;
+                }
+            }
+            const cb = document.getElementById(prefix + '-' + stepNum);
+            if (cb) {
+                cb.checked = true;
+                if (typeof onChecklistChange === 'function') onChecklistChange();
+            }
+        }
+
+        // Update function called from checklist change events
+        function updateAnglerState(stepCount, isRisk1r, isRisk2r, isRiskTp) {
+            const prevStep = anglerState.stepCount;
+            anglerState.stepCount = stepCount;
+            anglerState.isRisk1r = isRisk1r;
+            anglerState.isRisk2r = isRisk2r;
+            anglerState.isRiskTp = isRiskTp;
+
+            const dot = document.getElementById('anglerStatusDot');
+            const text = document.getElementById('anglerStatusText');
+            const quote = document.getElementById('anglerQuoteText');
+            const expBar = document.getElementById('anglerExpBar');
+            const powerBar = document.getElementById('anglerPowerBar');
+            const castBtnText = document.getElementById('anglerCastBtnText');
+            const strikeBanner = document.getElementById('anglerStrikeBanner');
+            const trophyBanner = document.getElementById('anglerTrophyBanner');
+
+            // EXP bar progress (0% - 100%)
+            let exp = (stepCount / 4) * 70;
+            if (isRisk1r) exp += 10;
+            if (isRisk2r) exp += 10;
+            if (isRiskTp) exp = 100;
+            if (expBar) expBar.style.width = exp + '%';
+
+            // Power / Distance bar
+            if (powerBar) {
+                const pw = stepCount === 0 ? 0 : (stepCount === 1 ? 55 : (stepCount === 2 ? 75 : 95));
+                powerBar.style.width = pw + '%';
+            }
+
+            // Trophy banner visibility
+            if (trophyBanner) {
+                trophyBanner.style.display = isRiskTp ? 'block' : 'none';
+            }
+
+            // Strike pop-up banner
+            if (strikeBanner) {
+                if (stepCount === 3) {
+                    strikeBanner.style.display = 'block';
+                    strikeBanner.style.animation = 'popStrike 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                } else {
+                    strikeBanner.style.display = 'none';
+                }
+            }
+
+            if (isRiskTp) {
+                if (dot) { dot.style.background = '#10b981'; dot.style.boxShadow = '0 0 12px #10b981'; }
+                if (text) text.innerText = '🏆 Vớt cá chép vàng vào giỏ tre! Kỷ luật 100% · Cự Long Full TP!';
+                if (quote) quote.innerText = '"Bắt được cá to ấm giỏ · Không tham cào cấu thêm"';
+                if (castBtnText) castBtnText.innerText = 'CATCH!';
+                anglerState.targetTension = 0.9;
+                anglerState.fish.state = 'lifted';
+                playAnglerSound('catch');
+                spawnAnglerRipple(anglerState.bobber.x, anglerState.bobber.y, 65, '#fbbf24');
+            } else if (isRisk2r) {
+                if (dot) { dot.style.background = '#34d399'; dot.style.boxShadow = '0 0 10px #34d399'; }
+                if (text) text.innerText = '🛡️ Kéo cá sát mạn thuyền · Khóa an toàn Hòa Vốn (0R)';
+                if (quote) quote.innerText = '"Lệnh đã hòa vốn tuyệt đối · Cá không thể kéo mất mồi"';
+                if (castBtnText) castBtnText.innerText = 'REEL';
+                anglerState.targetTension = 0.55;
+                anglerState.fish.state = 'hooked';
+            } else if (isRisk1r) {
+                if (dot) { dot.style.background = '#60a5fa'; dot.style.boxShadow = '0 0 10px #60a5fa'; }
+                if (text) text.innerText = '🐟 Dòng cá hạ bớt lực · Dời SL lên -0.5R bảo vệ vốn';
+                if (quote) quote.innerText = '"Giảm nửa rủi ro đứt cước khi cá bắt đầu mỏi"';
+                if (castBtnText) castBtnText.innerText = 'REEL';
+                anglerState.targetTension = 0.65;
+                anglerState.fish.state = 'hooked';
+            } else if (stepCount === 4) {
+                if (dot) { dot.style.background = '#10b981'; dot.style.boxShadow = '0 0 12px #10b981'; }
+                if (text) text.innerText = '🎣 STRIKE! Giật cần đóng lưỡi! Khớp lệnh chuẩn kỷ luật!';
+                if (quote) quote.innerText = '"Đủ 4 điều kiện mới giật cần · Vào lệnh dứt khoát"';
+                if (castBtnText) castBtnText.innerText = 'FIGHT';
+                anglerState.rodFlex = 1.0;
+                anglerState.targetTension = 0.85;
+                anglerState.fish.state = 'hooked';
+                spawnAnglerRipple(anglerState.bobber.x, anglerState.bobber.y, 55, '#10b981');
+                if (prevStep < 4) playAnglerSound('strike');
+            } else if (stepCount === 3) {
+                if (dot) { dot.style.background = '#ef4444'; dot.style.boxShadow = '0 0 10px #ef4444'; }
+                if (text) text.innerText = '🌊 CẮN CÂU! Phao chìm lỉm đánh rụp! Break POC xác nhận!';
+                if (quote) quote.innerText = '"Thân nến đóng qua POC như phao lặn mất tăm"';
+                if (castBtnText) castBtnText.innerText = 'STRIKE!';
+                anglerState.bobber.targetY = 18;
+                anglerState.targetTension = 0.78;
+                anglerState.fish.state = 'hooked';
+                spawnAnglerRipple(anglerState.bobber.x, anglerState.bobber.y, 45, '#ef4444');
+                spawnAnglerRipple(anglerState.bobber.x, anglerState.bobber.y, 25, '#ffffff');
+                if (prevStep < 3) playAnglerSound('plop');
+            } else if (stepCount === 2) {
+                if (dot) { dot.style.background = '#f59e0b'; dot.style.boxShadow = '0 0 8px #f59e0b'; }
+                if (text) text.innerText = '🫧 Tăm cá sủi bọt quanh phao · Ổ POC Cực trị hội tụ';
+                if (quote) quote.innerText = '"POC Cực trị A+ như ổ cá đói tụ về đớp mồi"';
+                if (castBtnText) castBtnText.innerText = 'WAIT';
+                anglerState.bobber.targetY = 4;
+                anglerState.targetTension = 0.4;
+                anglerState.fish.state = 'approaching';
+                for (let b = 0; b < 6; b++) {
+                    anglerState.bubbles.push({
+                        x: anglerState.bobber.x + (Math.random() - 0.5) * 25,
+                        y: anglerState.bobber.y + Math.random() * 30,
+                        r: 2 + Math.random() * 2,
+                        vy: 0.35 + Math.random() * 0.4,
+                        alpha: 0.8
+                    });
+                }
+            } else if (stepCount === 1) {
+                if (dot) { dot.style.background = '#38bdf8'; dot.style.boxShadow = '0 0 8px #38bdf8'; }
+                if (text) text.innerText = '🌿 Đã thả phao rà đáy hồ · Sonar quét luồng POC Open Anchor';
+                if (quote) quote.innerText = '"Neo Open Anchor rà đáy hồ đo luồng nước"';
+                if (castBtnText) castBtnText.innerText = 'REEL';
+                anglerState.bobber.targetY = 2;
+                anglerState.targetTension = 0.25;
+                anglerState.fish.state = 'idle';
+                spawnSonarWave(anglerState.bobber.x, anglerState.bobber.y, 85, '#38bdf8');
+                spawnAnglerRipple(anglerState.bobber.x, anglerState.bobber.y, 30, '#38bdf8');
+            } else {
+                if (dot) { dot.style.background = '#38bdf8'; dot.style.boxShadow = '0 0 8px #38bdf8'; }
+                // KHI CHƯA TICK THÌ CHƯA THẢ CẦN:
+                if (text) text.innerText = '🍃 Đang buông cần · Ngắm mặt nước tĩnh lặng rà soát luồng cá';
+                if (quote) quote.innerText = '"Nước chưa lên cấm buông câu · Phao chưa chìm cấm giật cần"';
+                if (castBtnText) castBtnText.innerText = 'CAST';
+                anglerState.bobber.targetY = 0;
+                anglerState.rodFlex = 0;
+                anglerState.targetTension = 0.1;
+                anglerState.fish.state = 'idle';
+            }
+        }
+
+        function updateAnglerSessionBadge() {
+            const badge = document.getElementById('anglerSessionBadge');
+            if (!badge) return;
+            const now = new Date();
+            const h = now.getHours();
+            const m = now.getMinutes();
+            const timeVal = h * 60 + m;
+
+            if (timeVal >= 465 && timeVal <= 600) {
+                badge.innerText = '🌅 NƯỚC LÊN (SĂN LỆNH)';
+                badge.className = 'b-badge b-badge-green';
+            } else if (timeVal > 600 && timeVal < 840) {
+                badge.innerText = '⏸️ NƯỚC ĐỨNG (DEADZONE)';
+                badge.className = 'b-badge b-badge-red';
+            } else if (timeVal >= 840 && timeVal <= 960) {
+                badge.innerText = '🌆 CON NƯỚC ÂU (MGC)';
+                badge.className = 'b-badge b-badge-blue';
+            } else if (timeVal > 960 && timeVal < 1215) {
+                badge.innerText = '⏸️ NGHỈ NGƠI (NGỒI YÊN)';
+                badge.className = 'b-badge b-badge-red';
+            } else if (timeVal >= 1215 && timeVal <= 1350) {
+                badge.innerText = '🔥 GIỜ VÀNG MỸ (CON NƯỚC LỚN)';
+                badge.className = 'b-badge b-badge-gold';
+            } else {
+                badge.innerText = '🛑 ĐÓNG MÁY (ĐÊM)';
+                badge.className = 'b-badge b-badge-dim';
+            }
+        }
+
+        // Helper to draw the organic meandering shoreline
+        function drawMeanderingPondPath(ctx, w, h, offset) {
+            const off = offset || 0;
+            ctx.beginPath();
+            // Start at upper-left bay
+            ctx.moveTo(w * 0.28 - off * 0.8, h * 0.22 - off);
+            // Curve across top cove
+            ctx.bezierCurveTo(w * 0.44, h * 0.15 - off, w * 0.64, h * 0.17 - off, w * 0.76 + off, h * 0.24 - off * 0.6);
+            // Right headland & bay
+            ctx.bezierCurveTo(w * 0.88 + off * 1.2, h * 0.33, w * 0.86 + off * 1.2, h * 0.52 + off * 0.5, w * 0.74 + off, h * 0.63 + off);
+            // Serpentine inlet bend towards bottom cove
+            ctx.bezierCurveTo(w * 0.64 + off * 0.5, h * 0.72 + off, w * 0.68 + off * 0.8, h * 0.83 + off * 1.2, w * 0.54, h * 0.85 + off * 1.2);
+            // Bottom-left shore curve around the pier
+            ctx.bezierCurveTo(w * 0.40 - off * 0.5, h * 0.86 + off * 1.2, w * 0.28 - off * 0.8, h * 0.76 + off * 0.8, w * 0.22 - off, h * 0.66 + off * 0.5);
+            // Left shore inlet back to start
+            ctx.bezierCurveTo(w * 0.15 - off * 1.2, h * 0.56, w * 0.17 - off * 1.2, h * 0.32 - off * 0.5, w * 0.28 - off * 0.8, h * 0.22 - off);
+            ctx.closePath();
+        }
+
+        // ── MAIN PLAY TOGETHER SQUARE ISOMETRIC RENDER LOOP ──
+        function naturalPondRenderLoop() {
+            const canvas = document.getElementById('rusticAnglerCanvas');
+            if (!canvas) return;
+
+            const rect = canvas.getBoundingClientRect();
+            if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
+                canvas.width = Math.floor(rect.width);
+                canvas.height = Math.floor(rect.height);
+            }
+
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            if (w === 0 || h === 0) {
+                requestAnimationFrame(naturalPondRenderLoop);
+                return;
+            }
+
+            // SLOW ZEN TIME ACCUMULATION (Sự chuyển động chậm rãi, yên bình)
+            anglerState.time += 0.007; // Much slower, relaxed pace!
+            const t = anglerState.time;
+
+            // Is the rod actively cast into the water? (Khi chưa tick thì chưa thả cần)
+            const isRodCast = (anglerState.stepCount > 0);
+
+            // Smooth tension needle physics
+            anglerState.tension += (anglerState.targetTension - anglerState.tension) * 0.08;
+            const needleEl = document.getElementById('anglerGaugeNeedle');
+            if (needleEl) {
+                const tensionJitter = (anglerState.stepCount >= 3 ? Math.sin(t * 12) * 4 : 0);
+                const rotAngle = (anglerState.tension - 0.5) * 105 + tensionJitter;
+                needleEl.setAttribute('transform', 'rotate(' + rotAngle + ' 50 50)');
+            }
+
+            // 1. ISOMETRIC NATURAL TERRAIN & MEADOW GRASS
+            const groundGrad = ctx.createRadialGradient(w * 0.5, h * 0.5, 60, w * 0.5, h * 0.5, w * 0.72);
+            groundGrad.addColorStop(0, '#166534');   // Deep green grass near lake
+            groundGrad.addColorStop(0.7, '#15803d'); // Vibrant meadow
+            groundGrad.addColorStop(1, '#0f3a22');   // Shaded rolling knolls
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // 2. ORGANIC MEANDERING POND (DẢI ĐẤT TỰ NHIÊN CONG CONG UỐN LƯỢN)
+            // Outer Sandy Beach Shoreline
+            ctx.save();
+            ctx.fillStyle = '#ca8a04'; // Warm sand base
+            drawMeanderingPondPath(ctx, w, h, 15);
+            ctx.fill();
+
+            // Inner Wet Sand Contour
+            ctx.fillStyle = '#eab308'; // Wet golden sand
+            drawMeanderingPondPath(ctx, w, h, 7);
+            ctx.fill();
+
+            // Shallow Crystal Turquoise Water Shelf
+            ctx.fillStyle = '#0284c7'; // Turquoise clear water
+            drawMeanderingPondPath(ctx, w, h, 0);
+            ctx.fill();
+
+            // Deep Water Channel (Winding dark abyssal gradient inside the pond)
+            const deepGrad = ctx.createRadialGradient(w * 0.52, h * 0.46, 25, w * 0.52, h * 0.52, w * 0.32);
+            deepGrad.addColorStop(0, '#0284c7');
+            deepGrad.addColorStop(0.5, '#0369a1');
+            deepGrad.addColorStop(0.85, '#075985');
+            deepGrad.addColorStop(1, '#082f49');
+            ctx.fillStyle = deepGrad;
+            drawMeanderingPondPath(ctx, w, h, -8);
+            ctx.fill();
+
+            // Procedural Water Caustics Shimmering Layer (Very slow & serene)
+            ctx.globalCompositeOperation = 'screen';
+            ctx.lineWidth = 1.0;
+            for (let c = 0; c < 5; c++) {
+                ctx.strokeStyle = 'rgba(56, 189, 248, ' + (0.06 + Math.sin(t * 0.8 + c) * 0.03) + ')';
+                ctx.beginPath();
+                const waveCenterY = h * (0.3 + c * 0.1);
+                ctx.moveTo(w * 0.28, waveCenterY + Math.sin(t * 0.6 + c) * 5);
+                ctx.bezierCurveTo(
+                    w * 0.45, waveCenterY + Math.cos(t * 0.5 + c) * 6,
+                    w * 0.65, waveCenterY - Math.sin(t * 0.7 + c) * 6,
+                    w * 0.75, waveCenterY + Math.sin(t * 0.6 + c) * 4
+                );
+                ctx.stroke();
+            }
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.restore();
+
+            // 3. PIER & CHIBI ANGLER (3RD PERSON VIEW)
+            const pierStartX = w * 0.12;
+            const pierStartY = h * 0.72;
+            const pierEndX = w * 0.30;
+            const pierEndY = h * 0.56;
+
+            // Wooden support pilings
+            ctx.fillStyle = '#3e2723';
+            ctx.fillRect(pierEndX - 16, pierEndY + 6, 7, 24);
+            ctx.fillRect(pierEndX - 3, pierEndY + 10, 7, 22);
+            // Foam around pilings
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 1.2;
+            ctx.strokeRect(pierEndX - 18, pierEndY + 26, 11, 4);
+
+            // Pier Decking Planks
+            ctx.save();
+            ctx.fillStyle = '#78350f'; // Dark amber wood base
+            ctx.beginPath();
+            ctx.moveTo(pierStartX - 8, pierStartY + 12);
+            ctx.lineTo(pierEndX - 8, pierEndY + 12);
+            ctx.lineTo(pierEndX + 14, pierEndY - 8);
+            ctx.lineTo(pierStartX + 14, pierStartY - 8);
+            ctx.closePath();
+            ctx.fill();
+
+            // Planks lines
+            ctx.strokeStyle = '#92400e';
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            for (let p = 0; p < 7; p++) {
+                const px1 = pierStartX + (pierEndX - pierStartX) * (p / 7);
+                const py1 = pierStartY + (pierEndY - pierStartY) * (p / 7);
+                ctx.moveTo(px1 - 6, py1 + 8);
+                ctx.lineTo(px1 + 10, py1 - 6);
+            }
+            ctx.stroke();
+
+            // Safe shield ring around pier if Risk 2R (BE locked)
+            if (anglerState.isRisk2r) {
+                ctx.strokeStyle = 'rgba(52, 211, 153, ' + (0.5 + Math.sin(t * 3) * 0.3) + ')';
+                ctx.lineWidth = 2.5;
+                ctx.shadowColor = '#34d399';
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.ellipse(pierEndX, pierEndY + 4, 28, 16, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            // CHIBI ANGLER CHARACTER (3RD PERSON STANDING ON PIER)
+            const charX = pierEndX - 4;
+            const charY = pierEndY - 2;
+            const breathe = Math.sin(t * 1.0) * 1.0; // Slow, calm breathing
+
+            // Character shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.25)';
+            ctx.beginPath();
+            ctx.ellipse(charX, charY + 7, 11, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Body / jacket
+            ctx.fillStyle = '#2563eb'; // Cobalt blue hoodie
+            ctx.beginPath();
+            ctx.ellipse(charX, charY - 6 + breathe, 8.5, 10.5, 0.1, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pants & boots
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(charX - 4.5, charY + 1 + breathe, 3.5, 7.5);
+            ctx.fillRect(charX + 1, charY + 1 + breathe, 3.5, 7.5);
+
+            // Chibi Head & Straw Hat
+            ctx.fillStyle = '#eab308'; // Straw yellow hat
+            ctx.beginPath();
+            ctx.ellipse(charX, charY - 19 + breathe, 13, 7.5, 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            // Cone top
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(charX, charY - 21 + breathe, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tackle bucket & net beside character on pier
+            ctx.fillStyle = '#ef4444'; // Red bucket
+            ctx.fillRect(charX - 15, charY + 2, 6.5, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(charX - 15, charY + 1, 6.5, 2);
+
+            // 4. BAMBOO ROD DYNAMICS & PHYSICAL ATTACHMENT
+            // WHEN UNCAST (stepCount === 0): Rod is held resting upright by shoulder!
+            // WHEN CAST (stepCount >= 1): Rod is lowered forward over the pond!
+            const rodBaseX = charX + 4;
+            const rodBaseY = charY - 13 + breathe;
+            let rodTipX, rodTipY;
+
+            if (!isRodCast) {
+                // RESTING POSE: Rod points almost straight UP-BACKWARD, no line in water!
+                const rodRestAngle = -1.35; // ~77 degrees upward
+                const rodLen = 50;
+                rodTipX = rodBaseX + Math.cos(rodRestAngle) * rodLen;
+                rodTipY = rodBaseY + Math.sin(rodRestAngle) * rodLen;
+
+                // Draw resting bamboo rod
+                ctx.strokeStyle = '#d4a373';
+                ctx.lineWidth = 2.8;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(rodBaseX, rodBaseY);
+                ctx.lineTo(rodTipX, rodTipY);
+                ctx.stroke();
+
+                // Highlight
+                ctx.strokeStyle = '#fef08a';
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                ctx.moveTo(rodBaseX, rodBaseY - 1);
+                ctx.lineTo(rodTipX, rodTipY - 1);
+                ctx.stroke();
+
+                // Reeled-in line coiled neatly along rod
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                ctx.moveTo(rodTipX, rodTipY);
+                ctx.lineTo(rodBaseX, rodBaseY);
+                ctx.stroke();
+            } else {
+                // ACTIVE FISHING POSE: Rod arches forward over the water!
+                const flexBend = (anglerState.stepCount >= 4 ? 20 : (anglerState.stepCount === 3 ? 11 : Math.sin(t * 1.5) * 1.5));
+                rodTipX = charX + 48;
+                rodTipY = charY - 32 + flexBend;
+
+                // Draw arched bamboo rod
+                ctx.strokeStyle = '#d4a373';
+                ctx.lineWidth = 2.8;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(rodBaseX, rodBaseY);
+                ctx.quadraticCurveTo(rodBaseX + 22, rodBaseY - 18, rodTipX, rodTipY);
+                ctx.stroke();
+
+                // Highlight
+                ctx.strokeStyle = '#fef08a';
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                ctx.moveTo(rodBaseX, rodBaseY - 1);
+                ctx.quadraticCurveTo(rodBaseX + 22, rodBaseY - 19, rodTipX, rodTipY);
+                ctx.stroke();
+            }
+
+            // 5. BOBBER, HOOK & FISH IN THE WATER
+            const fish = anglerState.fish;
+            fish.tail += 0.08; // Slower tail waggle
+
+            const bobberBaseX = w * 0.55;
+            const bobberBaseY = h * 0.52;
+            const bobberLift = (fish.state === 'lifted' ? -65 : 0);
+            anglerState.bobber.currentY += (anglerState.bobber.targetY + bobberLift - anglerState.bobber.currentY) * 0.12;
+            anglerState.bobber.twitch = Math.sin(t * 14) * (anglerState.stepCount === 3 ? 3.0 : (anglerState.stepCount === 2 ? 1.2 : 0.3));
+
+            const bx = bobberBaseX;
+            const by = bobberBaseY + anglerState.bobber.currentY + anglerState.bobber.twitch;
+            anglerState.bobber.x = bx;
+            anglerState.bobber.y = by;
+
+            // Hook coordinates
+            const hookX = bx;
+            const hookY = by + 24;
+            anglerState.hook.x = hookX;
+            anglerState.hook.y = hookY;
+
+            // DRAW ACTIVE FISHING LINE & BOBBER ONLY IF CAST (stepCount > 0)!
+            if (isRodCast) {
+                ctx.save();
+                if (anglerState.stepCount >= 4) {
+                    ctx.strokeStyle = '#fbbf24'; // Golden taut line
+                    ctx.lineWidth = 1.5;
+                } else {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+                    ctx.lineWidth = 1.0;
+                }
+                ctx.beginPath();
+                ctx.moveTo(rodTipX, rodTipY);
+                const lineSag = anglerState.stepCount >= 4 ? 0 : 8;
+                const lineMidX = (rodTipX + bx) / 2;
+                const lineMidY = (rodTipY + by) / 2 + lineSag;
+                ctx.quadraticCurveTo(lineMidX, lineMidY, bx, by - 7);
+                ctx.stroke();
+
+                // Submerged leader line: Bobber -> Hook
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                ctx.moveTo(bx, by);
+                ctx.lineTo(hookX, hookY);
+                ctx.stroke();
+
+                // Silver hook
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.arc(hookX + 2, hookY - 2, 2.5, 0.5 * Math.PI, 1.8 * Math.PI);
+                ctx.stroke();
+                ctx.restore();
+
+                // Draw Bobber
+                ctx.save();
+                ctx.translate(bx, by);
+                const bobberTilt = (Math.sin(t * 2) * 0.08) + (anglerState.stepCount >= 3 ? 0.3 : 0);
+                ctx.rotate(bobberTilt);
+
+                ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 1.2;
+                ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(0, 5); ctx.stroke();
+
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath(); ctx.ellipse(0, -3.5, 3.5, 5, 0, Math.PI, 0, false); ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.ellipse(0, -3.5, 3.5, 5, 0, 0, Math.PI, false); ctx.fill();
+                ctx.restore();
+
+                // Periodic water ripples from bobber
+                if (Math.floor(t * 30) % 35 === 0) {
+                    spawnAnglerRipple(bx, by, 24, '#38bdf8');
+                }
+            }
+
+            // FISH POSITIONING & HOOK INTERACTION
+            if (fish.state === 'lifted') {
+                fish.x = hookX;
+                fish.y = hookY + 6;
+                fish.angle = Math.PI / 2 + Math.sin(t * 5) * 0.25;
+                fish.color = '#fbbf24';
+            } else if (fish.state === 'hooked') {
+                fish.x = hookX + Math.cos(fish.angle) * 10;
+                fish.y = hookY + Math.sin(fish.angle) * 10;
+                fish.angle = -0.5 + Math.sin(t * 10) * 0.6;
+                fish.color = anglerState.isRiskTp ? '#fbbf24' : (anglerState.stepCount >= 4 ? '#10b981' : '#ef4444');
+                if (Math.random() < 0.2) spawnAnglerRipple(hookX, hookY, 24, fish.color);
+            } else if (fish.state === 'approaching' && isRodCast) {
+                const fdx = hookX - fish.x;
+                const fdy = hookY - fish.y;
+                const dist = Math.sqrt(fdx * fdx + fdy * fdy);
+                fish.angle = Math.atan2(fdy, fdx);
+                if (dist > 16) {
+                    fish.x += Math.cos(fish.angle) * 0.8;
+                    fish.y += Math.sin(fish.angle) * 0.8;
+                } else {
+                    fish.x = hookX + Math.cos(t * 1.5) * 14;
+                    fish.y = hookY + Math.sin(t * 1.5) * 10;
+                }
+                fish.color = '#38bdf8';
+            } else {
+                // Idle peaceful slow glide in the lake
+                const orbitAngle = t * 0.25;
+                const targetX = w * 0.52 + Math.cos(orbitAngle) * (w * 0.18);
+                const targetY = h * 0.52 + Math.sin(orbitAngle) * (h * 0.14);
+                const fdx = targetX - fish.x;
+                const fdy = targetY - fish.y;
+                fish.angle = Math.atan2(fdy, fdx);
+                fish.x += Math.cos(fish.angle) * 0.45;
+                fish.y += Math.sin(fish.angle) * 0.45;
+                fish.color = '#38bdf8';
+            }
+
+            // Update fish spine IK
+            if (fish.segments && fish.segments.length) {
+                fish.segments[0].x = fish.x;
+                fish.segments[0].y = fish.y;
+                fish.segments[0].angle = fish.angle;
+                const segLen = 5.2;
+                for (let i = 1; i < fish.segments.length; i++) {
+                    const wave = Math.sin(fish.tail - i * 0.5) * 0.2;
+                    const prev = fish.segments[i - 1];
+                    const segAngle = prev.angle + wave;
+                    fish.segments[i].angle = segAngle;
+                    fish.segments[i].x = prev.x - Math.cos(segAngle) * segLen;
+                    fish.segments[i].y = prev.y - Math.sin(segAngle) * segLen;
+                }
+
+                // Render Fish Body
+                ctx.save();
+                ctx.fillStyle = fish.color;
+                ctx.globalAlpha = fish.state === 'lifted' ? 1.0 : 0.75;
+                if (fish.state === 'lifted') {
+                    ctx.shadowColor = '#fbbf24';
+                    ctx.shadowBlur = 12;
+                }
+                ctx.beginPath();
+                const fHead = fish.segments[0];
+                ctx.arc(fHead.x, fHead.y, 6.0, fHead.angle - Math.PI / 2, fHead.angle + Math.PI / 2);
+                for (let i = 1; i < fish.segments.length; i++) {
+                    const seg = fish.segments[i];
+                    const rad = Math.max(1.8, 5.5 * (1 - i / fish.segments.length));
+                    const nx = Math.cos(seg.angle + Math.PI / 2) * rad;
+                    const ny = Math.sin(seg.angle + Math.PI / 2) * rad;
+                    ctx.lineTo(seg.x + nx, seg.y + ny);
+                }
+                const tailSeg = fish.segments[fish.segments.length - 1];
+                ctx.lineTo(tailSeg.x - Math.cos(tailSeg.angle) * 8, tailSeg.y - Math.sin(tailSeg.angle) * 8);
+                for (let i = fish.segments.length - 1; i >= 1; i--) {
+                    const seg = fish.segments[i];
+                    const rad = Math.max(1.8, 5.5 * (1 - i / fish.segments.length));
+                    const nx = Math.cos(seg.angle - Math.PI / 2) * rad;
+                    const ny = Math.sin(seg.angle - Math.PI / 2) * rad;
+                    ctx.lineTo(seg.x + nx, seg.y + ny);
+                }
+                ctx.closePath();
+                ctx.fill();
+
+                if (fish.state === 'lifted') {
+                    for (let s = 0; s < 3; s++) {
+                        ctx.fillStyle = '#fef08a';
+                        ctx.beginPath();
+                        ctx.arc(fish.x + (Math.random() - 0.5) * 22, fish.y + (Math.random() - 0.5) * 18, 1.8, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                ctx.restore();
+            }
+
+            // Small minnows swimming peacefully
+            anglerState.schoolFish.forEach(f => {
+                f.x += f.vx;
+                f.y += f.vy;
+                f.tail += 0.12;
+                // Soft bounce inside meandering pond
+                if (f.x < w * 0.25 || f.x > w * 0.78) f.vx *= -1;
+                if (f.y < h * 0.22 || f.y > h * 0.76) f.vy *= -1;
+                ctx.save();
+                ctx.fillStyle = f.color;
+                ctx.globalAlpha = 0.45;
+                ctx.beginPath();
+                ctx.ellipse(f.x, f.y, f.size, f.size * 0.38, Math.atan2(f.vy, f.vx), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Water lilies floating peacefully
+            const lilies = [
+                { x: w * 0.68, y: h * 0.42 },
+                { x: w * 0.38, y: h * 0.30 },
+                { x: w * 0.56, y: h * 0.74 }
+            ];
+            lilies.forEach((l, idx) => {
+                const bob = Math.sin(t * 1.2 + idx) * 1.2;
+                ctx.fillStyle = '#16a34a';
+                ctx.beginPath();
+                ctx.ellipse(l.x, l.y + bob, 10, 6.5, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#f472b6'; // Pink lotus flower
+                ctx.beginPath();
+                ctx.arc(l.x, l.y + bob - 1, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Sonar waves
+            for (let i = anglerState.sonarWaves.length - 1; i >= 0; i--) {
+                const s = anglerState.sonarWaves[i];
+                s.r += 1.4;
+                s.alpha *= 0.96;
+                if (s.r >= s.maxR || s.alpha <= 0.02) { anglerState.sonarWaves.splice(i, 1); continue; }
+                ctx.save();
+                ctx.strokeStyle = s.color;
+                ctx.globalAlpha = s.alpha;
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.ellipse(s.x, s.y, s.r, s.r * 0.68, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Ripples
+            for (let i = anglerState.ripples.length - 1; i >= 0; i--) {
+                const r = anglerState.ripples[i];
+                r.r += 1.0;
+                r.alpha *= 0.95;
+                if (r.r >= r.maxR || r.alpha <= 0.02) { anglerState.ripples.splice(i, 1); continue; }
+                ctx.save();
+                ctx.strokeStyle = r.color;
+                ctx.globalAlpha = r.alpha;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.ellipse(r.x, r.y, r.r, r.r * 0.62, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Bubbles
+            for (let i = anglerState.bubbles.length - 1; i >= 0; i--) {
+                const b = anglerState.bubbles[i];
+                b.y -= b.vy;
+                b.alpha *= 0.97;
+                if (b.alpha <= 0.04) { anglerState.bubbles.splice(i, 1); continue; }
+                ctx.save();
+                ctx.strokeStyle = 'rgba(147, 197, 253, ' + b.alpha + ')';
+                ctx.fillStyle = 'rgba(255, 255, 255, ' + (b.alpha * 0.35) + ')';
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+                ctx.restore();
+            }
+
+            ctx.restore();
+
+            // 6. LUSH NATURE: 11 TREES SURROUNDING THE POND (NHIỀU CÂY CỐI HƠN & DAO ĐỘNG CHẬM RÃI)
+            const naturalTrees = [
+                // Top-Left Grove
+                { x: w * 0.12, y: h * 0.18, scale: 0.95, type: 'palm' },
+                { x: w * 0.22, y: h * 0.12, scale: 0.8, type: 'willow' },
+                // Top-Center
+                { x: w * 0.44, y: h * 0.10, scale: 1.0, type: 'palm' },
+                { x: w * 0.58, y: h * 0.12, scale: 0.75, type: 'willow' },
+                // Top-Right Grove
+                { x: w * 0.78, y: h * 0.14, scale: 0.9, type: 'palm' },
+                { x: w * 0.88, y: h * 0.24, scale: 1.05, type: 'palm' },
+                // Right Bank / Peninsula
+                { x: w * 0.92, y: h * 0.45, scale: 0.85, type: 'willow' },
+                { x: w * 0.86, y: h * 0.68, scale: 0.95, type: 'palm' },
+                // Bottom-Right Grove
+                { x: w * 0.72, y: h * 0.88, scale: 0.8, type: 'palm' },
+                { x: w * 0.84, y: h * 0.86, scale: 0.9, type: 'willow' },
+                // Left-Bottom Shore near pier
+                { x: w * 0.08, y: h * 0.58, scale: 0.85, type: 'palm' }
+            ];
+
+            naturalTrees.forEach((tree, idx) => {
+                ctx.save();
+                ctx.translate(tree.x, tree.y);
+                ctx.scale(tree.scale, tree.scale);
+
+                // Very gentle, tranquil slow-motion breeze sway
+                const treeSway = Math.sin(t * 0.4 + idx * 1.1) * 0.025;
+                ctx.rotate(treeSway);
+
+                // Tree shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.22)';
+                ctx.beginPath();
+                ctx.ellipse(5, 5, 14, 7, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (tree.type === 'willow') {
+                    // Weeping Willow (Cây liễu rủ lá soi bóng nước)
+                    ctx.strokeStyle = '#5c2c16';
+                    ctx.lineWidth = 5.0;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(-4, -18, 2, -36);
+                    ctx.stroke();
+
+                    // Drooping weeping willow foliage
+                    ctx.fillStyle = '#15803d';
+                    ctx.beginPath();
+                    ctx.ellipse(2, -38, 16, 12, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Hanging willow vines swaying gently
+                    ctx.strokeStyle = '#22c55e';
+                    ctx.lineWidth = 1.4;
+                    for (let v = -12; v <= 12; v += 6) {
+                        const vineSway = Math.sin(t * 0.6 + v) * 3;
+                        ctx.beginPath();
+                        ctx.moveTo(v + 2, -36);
+                        ctx.quadraticCurveTo(v + 2 + vineSway, -22, v + 2 + vineSway * 1.5, -8);
+                        ctx.stroke();
+                    }
+                } else {
+                    // Tropical Coconut Palm (Cây dừa nhiệt đới)
+                    ctx.strokeStyle = '#78350f';
+                    ctx.lineWidth = 5.5;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(-5, -22, 3, -44);
+                    ctx.stroke();
+
+                    const canopyX = 3;
+                    const canopyY = -44;
+                    // Palm fronds
+                    for (let f = 0; f < 6; f++) {
+                        const frondAngle = (f / 6) * Math.PI * 2 + Math.sin(t * 0.5 + f) * 0.04;
+                        const frondLen = 22 + (f % 2) * 5;
+                        ctx.fillStyle = f % 2 === 0 ? '#22c55e' : '#16a34a';
+                        ctx.beginPath();
+                        ctx.moveTo(canopyX, canopyY);
+                        const tipX = canopyX + Math.cos(frondAngle) * frondLen;
+                        const tipY = canopyY + Math.sin(frondAngle) * frondLen * 0.65;
+                        ctx.quadraticCurveTo(canopyX + Math.cos(frondAngle + 0.3) * (frondLen * 0.7), canopyY + Math.sin(frondAngle + 0.3) * (frondLen * 0.5), tipX, tipY);
+                        ctx.quadraticCurveTo(canopyX + Math.cos(frondAngle - 0.3) * (frondLen * 0.7), canopyY + Math.sin(frondAngle - 0.3) * (frondLen * 0.5), canopyX, canopyY);
+                        ctx.fill();
+                    }
+
+                    // Coconuts
+                    ctx.fillStyle = '#b45309';
+                    ctx.beginPath(); ctx.arc(canopyX - 2, canopyY + 2, 2.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(canopyX + 2, canopyY + 1, 2.5, 0, Math.PI * 2); ctx.fill();
+                }
+
+                ctx.restore();
+            });
+
+            // 7. FLOATING FIREFLIES / GOLDEN POLLEN (DRIFTING VERY SLOWLY & TRANQUIL)
+            anglerState.fireflies.forEach(ff => {
+                ff.x += ff.vx;
+                ff.y += ff.vy;
+                ff.pulse += 0.02; // Slower pulse
+
+                if (ff.x < 15) ff.x = w - 15;
+                if (ff.x > w - 15) ff.x = 15;
+                if (ff.y < 15) ff.y = h - 15;
+                if (ff.y > h - 15) ff.y = 15;
+
+                const glow = ff.alpha * (0.6 + Math.sin(ff.pulse) * 0.4);
+                ctx.fillStyle = 'rgba(254, 240, 138, ' + glow + ')';
+                ctx.beginPath();
+                ctx.arc(ff.x, ff.y, ff.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(naturalPondRenderLoop);
         }
 
         function toggleAnglerCardCollapse() {
