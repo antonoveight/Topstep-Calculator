@@ -4167,23 +4167,28 @@ const accountData = {
 
 TRADER VỪA TẢI LÊN MỘT ẢNH BIỂU ĐỒ (CÓ THỂ LÀ ẢNH CHỤP 1 KHUNG THỜI GIAN HOẶC ĐA KHUNG THỜI GIAN 15M/1H + 1M/5M, VÀ CÓ THỂ ĐÃ KẺ VẼ HOẶC LÀ BIỂU ĐỒ SẠCH NGUYÊN BẢN CHƯA KẺ VẼ GÌ).
 
+BẮT BUỘC FORMAT CÂU TRẢ LỜI NGẮN GỌN - DỨT KHOÁT - ĐỊNH HƯỚNG RÕ RÀNG HƯỚNG ĐI VÀ VIỆC CẦN LÀM:
+1. HƯỚNG LỆNH (DIRECTION): Bắt buộc xác định rõ là "LONG" (Mua), "SHORT" (Bán), hoặc "NO_TRADE" (Đứng ngoài / Chưa đủ điều kiện).
+2. VIỆC CẦN LÀM NGAY (SUMMARY DIRECTIVE): 1 câu mệnh lệnh ngắn gọn, dứt khoát nêu hành động chính xác trader cần thực hiện ngay lúc này (Ví dụ: "Chờ nến 1M đóng xanh qua POC 2664 rồi mở Long ngay, SL 2658" hoặc "Vào lệnh Short ngay khi nến hiện tại đóng cửa dưới 2680" hoặc "Đứng ngoài, giá đang nén trong range chưa có tín hiệu").
+3. KẾ HOẠCH THỰC THI (LEVELS): Nêu rõ vùng Entry, mức SL (kèm số ticks), và mức TP (đạt chuẩn tỷ lệ 1:2 hoặc 1:3).
+
 NGUYÊN TẮC XỬ LÝ 2 TÌNH HUỐNG (BẮT BUỘC TUÂN THỦ):
 
 TÌNH HUỐNG 1: NẾU PHÁT HIỆN TRADER ĐÃ CÓ NÉT KẺ VẼ TRÊN BIỂU ĐỒ (có hộp Range, đường kẻ POC, mũi tên, sóng, hoặc thước đo SL/TP):
 - Thẩm định chi tiết xem trader đã kẻ đúng hay sai quy tắc (Kéo FRVP đúng anchor chưa, có chọn đúng râu nến sweep không, nến đã đóng thân qua POC chưa, đặt SL/TP có đúng tỷ lệ 1:2/1:3 không).
 - "status": "DUNG" (nếu vẽ chuẩn) hoặc "CHUA_DUNG" (nếu có lỗi).
 - "statusText": "Nét vẽ chuẩn xác ✓" hoặc "Nét vẽ chưa chuẩn / Cần chỉnh ⚠".
-- "feedback": Chỉ rõ nét nào kẻ đúng, nét nào kẻ sai hoặc chưa an toàn.
+- "feedback": 2-3 gạch đầu dòng ngắn gọn chỉ rõ nét nào kẻ đúng, nét nào kẻ sai hoặc chưa an toàn.
 
 TÌNH HUỐNG 2: NẾU TRADER CHƯA KẺ VẼ GÌ (BIỂU ĐỒ SẠCH / CHART NGUYÊN BẢN / ẢNH CHỤP CÁC KHUNG THỜI GIAN SẠCH):
 - TUYỆT ĐỐI KHÔNG ĐƯỢC TỪ CHỐI PHÂN TÍCH HOẶC NÓI RẰNG "DO CHƯA VẼ NÊN KHÔNG THỂ ĐÁNH GIÁ"!
 - BẠN PHẢI TỰ ĐỘNG ĐÓNG VAI TRÒ CHUYÊN GIA TỰ PHÂN TÍCH TOÀN DIỆN TỪ ĐẦU CHO TRADER:
   + "status": "AI_TU_PHAN_TICH".
   + "statusText": "AI Tự Soi Kèo & Lên Kế Hoạch 🔍".
-  + "feedback": Tự phân tích cấu trúc thị trường:
-    * Khung lớn HTF (nếu có trong ảnh): Xu hướng chính đang tăng hay giảm, đỉnh đáy then chốt (ONH/ONL, PDH/PDL) ở đâu?
-    * Khung nhỏ LTF: Giai đoạn nén, sóng đẩy hay đang quét râu thanh khoản?
-    * HƯỚNG DẪN KẺ VẼ CHO TRADER: Trader nên kéo FRVP từ cây nến nào (Open Anchor) đến nến nào, vùng POC trọng yếu nằm ở mốc giá nào, và cần đợi nến tín hiệu nào để kích hoạt lệnh.
+  + "feedback": Phân tích cấu trúc ngắn gọn:
+    * HTF (15M/1H nếu có): Xu hướng chính, đỉnh đáy then chốt (ONH/ONL, PDH/PDL).
+    * LTF (1M/5M): Trạng thái nén, sóng đẩy hay quét râu?
+    * GỢI Ý KẺ VẼ: Kéo FRVP từ đâu đến đâu (Open Anchor), POC then chốt ở mức giá nào.
 
 QUY TẮC 4 SETUP THỰC CHIẾN CỦA HỆ THỐNG:
 1. Setup 1 (CRT - FRVP): Kéo FRVP từ Open Anchor đến nến trước nến Sweep (hoặc qua nến Sweep). POC phải ở Cực Trị (A+) hoặc Giữa (50%). Thân nến phải đóng cửa dứt khoát qua POC (không chấp nhận chỉ thò râu). Nếu POC nằm sát Target -> Bỏ lệnh.
@@ -4193,17 +4198,23 @@ QUY TẮC 4 SETUP THỰC CHIẾN CỦA HỆ THỐNG:
 
 HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT NÀO NGOÀI JSON NÀY):
 {
+  "direction": "LONG" | "SHORT" | "NO_TRADE",
+  "directionText": "🟢 LONG (MUA)" | "🔴 SHORT (BÁN)" | "⚪ ĐỨNG NGOÀI (NO TRADE)" | "⏳ CHỜ TÍN HIỆU",
+  "summaryDirective": "1 câu mệnh lệnh dứt khoát xác định việc cần làm ngay (Ví dụ: Chờ nến 1M đóng xanh qua POC 2664 rồi mở Long ngay, SL 2658)",
+  "action": "VÀO LỆNH NGAY" | "CHỜ NẾN ĐÓNG CỬA" | "CANH PULLBACK POC" | "CHỜ QUÉT RÂU" | "ĐỨNG NGOÀI" | "BỎ KÈO (SKIP)",
+  "actionColor": "green" | "blue" | "gold" | "red",
+  "setupIdentified": "Setup 1: CRT - FRVP" | "Setup 2: Trend" | "Setup 3: AMD" | "Setup 4: Break" | "Chưa Đủ Điều Kiện / Đang Tích Lũy",
+  "pocPosition": "Cực Trị (A+)" | "Cân Bằng 50%" | "Sát Target (Cản Cấm Vào)" | "Vùng POC Đề Xuất",
+  "entryPlan": "Khoảng giá Entry cụ thể",
+  "slPlan": "Giá SL (kèm số ticks / điểm)",
+  "tpPlan": "Giá TP (đạt chuẩn 1:2 hoặc 1:3)",
+  "slTpPlan": "SL đặt tại... TP kỳ vọng 1:2 / 1:3...",
   "drawingCheck": {
     "status": "DUNG" | "CHUA_DUNG" | "AI_TU_PHAN_TICH",
     "statusText": "Nét vẽ chuẩn xác ✓" | "Nét vẽ chưa chuẩn / Cần chỉnh ⚠" | "AI Tự Soi Kèo & Lên Kế Hoạch 🔍",
-    "feedback": "Nhận xét chi tiết cụ thể: Nếu trader đã vẽ thì chỉ ra chỗ đúng/sai; Nếu trader chưa vẽ thì AI tự phân tích cấu trúc, hướng dẫn cách kẻ FRVP và điểm neo giá trị cụ thể."
+    "feedback": "Nhận xét ngắn gọn 2-3 gạch đầu dòng: Chỗ đúng/sai (nếu có vẽ) HOẶC gợi ý kẻ FRVP và cấu trúc HTF/LTF (nếu chart sạch)"
   },
-  "setupIdentified": "Setup 1: CRT - FRVP" | "Setup 2: Trend" | "Setup 3: AMD" | "Setup 4: Break" | "Chưa Đủ Điều Kiện / Đang Tích Lũy",
-  "pocPosition": "Cực Trị (A+)" | "Cân Bằng 50%" | "Sát Target (Cản Cấm Vào)" | "Vùng POC AI Khuyến Nghị",
-  "action": "VÀO LỆNH NGAY" | "CHỜ NẾN ĐÓNG CỬA" | "CANH MUA (LONG) TẠI..." | "CANH BÁN (SHORT) TẠI..." | "CHỜ QUÉT RÂU (SWEEP)" | "CHỜ HỒI VỀ POC" | "CHỈNH LẠI HÌNH VẼ" | "ĐỨNG NGOÀI (CHỜ THÊM)",
-  "actionColor": "green" | "blue" | "gold" | "red",
-  "slTpPlan": "SL đặt tại... TP kỳ vọng 1:2 / 1:3...",
-  "disciplineAdvice": "Lời khuyên kỷ luật ngắn gọn 1-2 câu bảo vệ vốn Topstep theo khung giờ và DLL."
+  "disciplineAdvice": "1 câu nhắc nhở kỷ luật quản trị vốn Topstep (DLL, dời SL khi +1R / +2R)."
 }`;
 
             try {
@@ -4375,18 +4386,41 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
             const resultBox = document.getElementById('aiAnalysisResultBox');
             if (!resultBox) return;
 
-            let actionBadgeClass = "b-badge b-badge-blue";
-            let actionBorderColor = "var(--color-primary)";
-            if (res.actionColor === "green") {
-                actionBadgeClass = "b-badge b-badge-green";
-                actionBorderColor = "var(--color-green)";
-            } else if (res.actionColor === "red") {
-                actionBadgeClass = "b-badge b-badge-red";
-                actionBorderColor = "var(--color-red)";
-            } else if (res.actionColor === "gold") {
-                actionBadgeClass = "b-badge b-badge-gold";
-                actionBorderColor = "var(--color-gold)";
+            // 1. Xác định Hướng Lệnh (LONG / SHORT / NO_TRADE)
+            let dir = res.direction || "";
+            if (!dir) {
+                const combined = ((res.action || "") + " " + (res.summaryDirective || "") + " " + (res.slTpPlan || "")).toUpperCase();
+                if (combined.includes("LONG") || combined.includes("MUA")) dir = "LONG";
+                else if (combined.includes("SHORT") || combined.includes("BÁN") || combined.includes("BAN")) dir = "SHORT";
+                else dir = "NO_TRADE";
             }
+
+            let dirBadgeClass = "b-badge b-badge-dim";
+            let dirBadgeText = res.directionText || "⚪ ĐỨNG NGOÀI (NO TRADE)";
+            let dirBorderColor = "var(--border-inner)";
+            let dirBg = "rgba(100, 116, 139, 0.08)";
+
+            if (dir.toUpperCase().includes("LONG") || dir === "MUA") {
+                dirBadgeClass = "b-badge b-badge-green";
+                dirBadgeText = res.directionText || "🟢 LONG (MUA)";
+                dirBorderColor = "var(--color-green)";
+                dirBg = "rgba(16, 185, 129, 0.08)";
+            } else if (dir.toUpperCase().includes("SHORT") || dir === "BAN") {
+                dirBadgeClass = "b-badge b-badge-red";
+                dirBadgeText = res.directionText || "🔴 SHORT (BÁN)";
+                dirBorderColor = "var(--color-red)";
+                dirBg = "rgba(239, 68, 68, 0.08)";
+            } else if (dir.toUpperCase().includes("WAIT") || dir.toUpperCase().includes("CHO")) {
+                dirBadgeClass = "b-badge b-badge-gold";
+                dirBadgeText = res.directionText || "⏳ CHỜ TÍN HIỆU";
+                dirBorderColor = "var(--color-gold)";
+                dirBg = "rgba(245, 158, 11, 0.08)";
+            }
+
+            let actionBadgeClass = "b-badge b-badge-blue";
+            if (res.actionColor === "green") actionBadgeClass = "b-badge b-badge-green";
+            else if (res.actionColor === "red") actionBadgeClass = "b-badge b-badge-red";
+            else if (res.actionColor === "gold") actionBadgeClass = "b-badge b-badge-gold";
 
             let drawingBadgeClass = "b-badge b-badge-green";
             let drawingTitle = "✍️ THẨM ĐỊNH NÉT VẼ CỦA BẠN:";
@@ -4401,20 +4435,53 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                 drawingTitle = "🤖 AI TỰ PHÂN TÍCH CẤU TRÚC &amp; GỢI Ý ĐIỂM KẺ:";
             }
 
+            const directiveText = res.summaryDirective || res.action || "Theo dõi chặt chẽ phản ứng giá";
+            const entryVal = res.entryPlan || (res.action ? res.action : "Chờ kích hoạt");
+            const slVal = res.slPlan || (res.slTpPlan ? res.slTpPlan.split('.')[0] : "Sau râu nến");
+            const tpVal = res.tpPlan || "R:R 1:2 hoặc 1:3";
+
             resultBox.innerHTML = `
-                <!-- 1. Action Banner -->
-                <div style="background: var(--bg-card-inner); border-left: 4px solid ${actionBorderColor}; border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                    <div>
-                        <span style="font-size: 10.5px; color: var(--text-muted); display: block; text-transform: uppercase;">Khuyến Nghị Hành Động</span>
-                        <strong style="font-size: 14px; color: var(--text-primary);">${res.action || 'THEO DÕI'}</strong>
+                <!-- 1. Executive Direction & Action Directive Bar -->
+                <div style="background: ${dirBg}; border: 1.5px solid ${dirBorderColor}; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span class="${dirBadgeClass}" style="font-size: 13px; font-weight: 800; padding: 4px 10px; letter-spacing: 0.5px;">${dirBadgeText}</span>
+                            <span class="${actionBadgeClass}" style="font-size: 11px; font-weight: 700;">${res.action || 'THEO DÕI'}</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            ${usedModel ? `<span class="b-badge b-badge-dim" style="font-size: 9.5px;">${usedModel.replace('gemini-', '')}</span>` : ''}
+                            <span class="b-badge b-badge-blue" style="font-size: 11px; font-weight: 700;">${res.setupIdentified || 'Setup Phù Hợp'}</span>
+                        </div>
                     </div>
-                    <div style="display: flex; gap: 6px; align-items: center;">
-                        ${usedModel ? `<span class="b-badge b-badge-dim" style="font-size: 9.5px;">${usedModel.replace('gemini-', '')}</span>` : ''}
-                        <span class="${actionBadgeClass}" style="font-size: 11px; font-weight: 700;">${res.setupIdentified || 'Setup Phù Hợp'}</span>
+
+                    <!-- VIỆC CẦN LÀM NGAY (DIRECTIVE) -->
+                    <div style="background: var(--bg-card); border-radius: 6px; padding: 8px 10px; border: 1px solid var(--border-inner);">
+                        <span style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px;">
+                            ⚡ VIỆC CẦN LÀM NGAY:
+                        </span>
+                        <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-top: 3px; line-height: 1.4;">
+                            👉 ${directiveText}
+                        </div>
                     </div>
                 </div>
 
-                <!-- 2. Thẩm Định Nét Vẽ Hoặc AI Tự Phân Tích Cấu Trúc -->
+                <!-- 2. Execution Levels: Entry - SL - TP -->
+                <div class="grid grid-cols-3 gap-2" style="font-size: 11px;">
+                    <div class="b-card-inner" style="padding: 8px 10px; text-align: center;">
+                        <span style="color: var(--text-muted); font-size: 9.5px; display: block; font-weight: 700;">VÙNG ENTRY</span>
+                        <strong style="color: var(--color-primary); font-size: 11.5px; display: block; margin-top: 2px;">${entryVal}</strong>
+                    </div>
+                    <div class="b-card-inner" style="padding: 8px 10px; text-align: center; border-left: 2px solid var(--color-red);">
+                        <span style="color: var(--color-red); font-size: 9.5px; display: block; font-weight: 700;">CẮT LỖ (SL)</span>
+                        <strong style="color: var(--text-primary); font-size: 11.5px; display: block; margin-top: 2px;">${slVal}</strong>
+                    </div>
+                    <div class="b-card-inner" style="padding: 8px 10px; text-align: center; border-left: 2px solid var(--color-green);">
+                        <span style="color: var(--color-green); font-size: 9.5px; display: block; font-weight: 700;">CHỐT LỜI (TP)</span>
+                        <strong style="color: var(--color-green); font-size: 11.5px; display: block; margin-top: 2px;">${tpVal}</strong>
+                    </div>
+                </div>
+
+                <!-- 3. Thẩm Định Nét Vẽ Hoặc AI Tự Phân Tích Cấu Trúc -->
                 <div class="b-card-inner" style="padding: 10px 12px; border: 1px solid var(--border-inner);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <span style="font-size: 11px; font-weight: 700; color: var(--text-primary);">${drawingTitle}</span>
@@ -4425,19 +4492,19 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                     </p>
                 </div>
 
-                <!-- 3. Đánh Giá POC & Setup -->
+                <!-- 4. Đánh Giá POC & Bối Cảnh -->
                 <div class="grid grid-cols-2 gap-2" style="font-size: 11px;">
                     <div class="b-card-inner" style="padding: 8px 10px;">
                         <span style="color: var(--text-muted); display: block; font-size: 10px;">VỊ TRÍ / VÙNG POC:</span>
                         <strong style="color: var(--color-primary); font-size: 12px;">${res.pocPosition || 'Đang xác định'}</strong>
                     </div>
                     <div class="b-card-inner" style="padding: 8px 10px;">
-                        <span style="color: var(--text-muted); display: block; font-size: 10px;">KẾ HOẠCH SL &amp; TP:</span>
-                        <span style="color: var(--text-primary); font-weight: 600;">${res.slTpPlan || 'Theo tỷ lệ 1:2'}</span>
+                        <span style="color: var(--text-muted); display: block; font-size: 10px;">KẾ HOẠCH R:R:</span>
+                        <span style="color: var(--text-primary); font-weight: 600;">${res.slTpPlan || 'Tối thiểu 1:2'}</span>
                     </div>
                 </div>
 
-                <!-- 4. Lời Khuyên Kỷ Luật -->
+                <!-- 5. Lời Khuyên Kỷ Luật -->
                 <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); border-radius: 8px; padding: 8px 12px; font-size: 11px; color: var(--text-slate);">
                     💡 <strong>Kỷ Luật Topstep:</strong> ${res.disciplineAdvice || 'Tuân thủ quy tắc quản trị DLL và dừng phiên khi đạt target.'}
                 </div>
@@ -4450,34 +4517,46 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
         function testSampleAiScan() {
             demoToggleCounter++;
             if (demoToggleCounter % 2 === 1) {
-                // Demo 1: Trader có kẻ vẽ và AI thẩm định
+                // Demo 1: Trader có kẻ vẽ và AI thẩm định (SHORT)
                 const sampleData = {
+                    direction: "SHORT",
+                    directionText: "🔴 SHORT (BÁN)",
+                    summaryDirective: "CHỜ NẾN 1M ĐÓNG CỬA DỨT KHOÁT DƯỚI POC 2664 RỒI MỞ LỆNH SHORT NGAY",
+                    action: "CHỜ NẾN ĐÓNG CỬA",
+                    actionColor: "gold",
+                    setupIdentified: "Setup 1: CRT - FRVP",
+                    pocPosition: "Cực Trị (A+)",
+                    entryPlan: "2663.5 - 2664.0 (sau nến đóng)",
+                    slPlan: "2667.0 (ngoài râu sweep -12 ticks)",
+                    tpPlan: "2657.0 (Tỷ lệ 1:2 tại CRTL)",
+                    slTpPlan: "SL 2667.0 (-12 ticks). TP 2657.0 (1:2 tại CRTL).",
                     drawingCheck: {
                         status: "CHUA_DUNG",
                         statusText: "Nét vẽ chưa chuẩn ⚠",
-                        feedback: "Bạn đã kẻ đúng hộp tích lũy Range, nhưng điểm kéo FRVP lại lấy nhầm từ cây nến breakout thay vì kéo từ Open Anchor. Đồng thời nến hiện tại mới chỉ quét râu qua POC chứ chưa đóng thân nến dứt khoát."
+                        feedback: "• Bạn đã kẻ đúng hộp tích lũy Range.\n• LỖI: Điểm kéo FRVP lại lấy nhầm từ cây nến breakout thay vì Open Anchor.\n• Nến hiện tại mới chỉ quét râu qua POC chứ chưa đóng thân nến dứt khoát."
                     },
-                    setupIdentified: "Setup 1: CRT - FRVP",
-                    pocPosition: "Cực Trị (A+)",
-                    action: "CHỜ NẾN ĐÓNG CỬA",
-                    actionColor: "gold",
-                    slTpPlan: "SL ngoài râu nến Sweep (-12 ticks). TP 1:2 tại CRTL.",
-                    disciplineAdvice: "Kiên nhẫn chờ nến 1M đóng cửa xác nhận vượt POC. Tuyệt đối không FOMO vào sớm khi nến chưa đóng."
+                    disciplineAdvice: "Kiên nhẫn chờ nến 1M đóng cửa xác nhận vượt POC. Khi giá chạy +1R dời SL về -0.5R, +2R dời SL về BE."
                 };
                 renderAiAnalysisResult(sampleData, "Demo Thẩm Định Vẽ");
             } else {
-                // Demo 2: Chart sạch chưa vẽ, AI tự phân tích cấu trúc và gợi ý điểm kẻ
+                // Demo 2: Chart sạch chưa vẽ, AI tự phân tích cấu trúc và gợi ý điểm kẻ (LONG)
                 const sampleData = {
+                    direction: "LONG",
+                    directionText: "🟢 LONG (MUA)",
+                    summaryDirective: "CANH MUA (LONG) TẠI POC 2664 KHI NẾN 1M TẠO ĐÁY LOCAL HIGHER LOW XÁC NHẬN",
+                    action: "CANH PULLBACK POC",
+                    actionColor: "blue",
+                    setupIdentified: "Setup 2: Trend",
+                    pocPosition: "Cân Bằng 50%",
+                    entryPlan: "2664.0 - 2665.0 (vùng POC sóng đẩy)",
+                    slPlan: "2661.0 (dưới Local Low -15 ticks)",
+                    tpPlan: "2672.0 - 2680.0 (Tỷ lệ 1:2.5 về đỉnh cũ)",
+                    slTpPlan: "SL 2661.0 (dưới Local Low). TP 2680.0 (1:2.5 tại đỉnh sóng).",
                     drawingCheck: {
                         status: "AI_TU_PHAN_TICH",
                         statusText: "AI Tự Soi Kèo & Lên Kế Hoạch 🔍",
-                        feedback: "Phát hiện chart sạch đa khung thời gian: Khung 15M đang là xu hướng tăng mạnh với sóng đẩy từ 2650 lên 2680. Khung 1M giá đang hồi sâu về vùng cân bằng.\n\nGỢI Ý ĐIỂM KẺ CHO TRADER: Hãy kéo FRVP từ đáy sóng 2650 lên đỉnh sóng 2680. Vùng POC then chốt nằm tại 2664. Hãy chờ nến 1M tạo Đáy mới cục bộ (Local Higher Low) giữ vững trên 2664 để kích hoạt lệnh."
+                        feedback: "• Khung 15M: Xu hướng Tăng mạnh, sóng đẩy bứt phá từ 2650 lên 2680.\n• Khung 1M: Đang có nhịp hồi sâu (pullback) về vùng cân bằng giá trị.\n• GỢI Ý ĐIỂM KẺ: Kéo FRVP từ đáy 2650 lên đỉnh 2680, đường POC then chốt hội tụ tại 2664."
                     },
-                    setupIdentified: "Setup 2: Trend",
-                    pocPosition: "Cân Bằng 50%",
-                    action: "CANH MUA (LONG) TẠI POC",
-                    actionColor: "blue",
-                    slTpPlan: "SL đặt dưới Local Higher Low 1M (khoảng 2661, rủi ro ~15 ticks). TP 1:2.5 hướng về đỉnh cũ 2680.",
                     disciplineAdvice: "Tuyệt đối không đặt Limit order mù tại POC. Bắt buộc chờ nến 1M xác nhận tạo đáy mới giữ vững trên POC."
                 };
                 renderAiAnalysisResult(sampleData, "Demo AI Tự Soi Kèo");
