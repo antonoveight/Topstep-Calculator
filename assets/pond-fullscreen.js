@@ -1,4 +1,4 @@
-/* One scene, one action. Native fullscreen with an accessible modal fallback. */
+/* One scene, two controls. Native fullscreen with an accessible modal fallback. */
 (() => {
     let session=null;
     const card=()=>document.getElementById('rusticAnglerCard');
@@ -44,7 +44,14 @@
     };
     document.addEventListener('fullscreenchange',()=>{if(session&&!session.dialog&&document.fullscreenElement!==card())restore();});
     document.addEventListener('keydown',e=>{
-        if(session&&e.key==='Tab') {e.preventDefault();document.getElementById('btnAnglerCastReel').focus();}
+        if(session&&e.key==='Tab') {
+            const controls=[...card().querySelectorAll('button:not(:disabled)')].filter(b=>b.getBoundingClientRect().width>0);
+            if(controls.length){
+                e.preventDefault();
+                const index=controls.indexOf(document.activeElement);
+                controls[index<0?(e.shiftKey?controls.length-1:0):(index+(e.shiftKey?-1:1)+controls.length)%controls.length].focus();
+            }
+        }
         if(session&&e.key==='Escape') {e.preventDefault();window.exitPondFullscreen();}
     });
     document.getElementById('rusticCanvasContainer').addEventListener('dblclick',()=>{if(session)window.exitPondFullscreen();});

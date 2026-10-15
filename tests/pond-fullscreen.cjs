@@ -10,7 +10,7 @@ const path=require('node:path');
   await page.locator('#btnPondFullscreen').click();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='rusticAnglerCard');
   await page.waitForFunction(()=>document.getElementById('rusticAnglerCanvas').height/document.getElementById('rusticAnglerCanvas').width<.57);
-  assert.equal(await page.locator('#rusticAnglerCard button:visible').count(),1);
+  assert.equal(await page.locator('#rusticAnglerCard button:visible').count(),2);
   assert.equal(await page.locator('#btnAnglerCastReel').isVisible(),true);
   const geometry=await page.evaluate(()=>{
    const rect=document.getElementById('rusticCanvasContainer').getBoundingClientRect(),canvas=document.getElementById('rusticAnglerCanvas');
@@ -26,15 +26,15 @@ const path=require('node:path');
   await page.waitForFunction(()=>!document.getElementById('rusticAnglerCard').dataset.fullscreen);
   assert.equal(await page.locator('#pondTimeMode').isVisible(),true);
   assert.equal(await page.locator('#chk-risk-tp').isChecked(),true,'Exit keeps checklist state');
-  console.log('PASS native fullscreen, one button, uniform 16:9 crop, full catch/basket and Escape restore');
+  console.log('PASS native fullscreen, two buttons, uniform 16:9 crop, full catch/basket and Escape restore');
   // Simulate a browser that rejects Fullscreen API, including entering from a collapsed pond.
   await page.evaluate(()=>{document.getElementById('rusticAnglerCard').requestFullscreen=()=>Promise.reject(new Error('Unavailable'));});
   await page.locator('#btnToggleAnglerCollapse').click();
   await page.locator('#btnPondFullscreen').click();
   await page.waitForFunction(()=>document.querySelector('.pond-fullscreen-fallback')?.open);
-  assert.equal(await page.locator('#rusticAnglerCard button:visible').count(),1);
+  assert.equal(await page.locator('#rusticAnglerCard button:visible').count(),2);
   await page.keyboard.press('Tab');
-  assert.equal(await page.evaluate(()=>document.activeElement.id),'btnAnglerCastReel','Modal focus stays on the only control');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'btnAnglerCastReel','Modal focus skips the disabled manual control');
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('.pond-fullscreen-fallback').count(),0);
   assert.equal(await page.locator('#rusticCanvasContainer').isVisible(),false,'Restore the collapsed preference');
@@ -47,7 +47,7 @@ const path=require('node:path');
     return {ratio:r.width/r.height,buttons:[...card.querySelectorAll('button')].filter(e=>e.getBoundingClientRect().width>0).length,
      inScene:b.top>=r.top&&b.bottom<=r.bottom+1,hit:document.elementFromPoint(b.x+b.width/2,b.y+b.height/2)?.closest('button')?.id};
    });
-   assert.ok(Math.abs(state.ratio-16/9)<.01);assert.equal(state.buttons,1);assert.equal(state.inScene,true);assert.equal(state.hit,'btnAnglerCastReel');
+   assert.ok(Math.abs(state.ratio-16/9)<.01);assert.equal(state.buttons,2);assert.equal(state.inScene,true);assert.equal(state.hit,'btnAnglerCastReel');
    await page.locator('#rusticCanvasContainer').dblclick({position:{x:40,y:30}});
    assert.equal(await page.locator('.pond-fullscreen-fallback').count(),0);
   }

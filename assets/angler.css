@@ -126,4 +126,12 @@
 
 .pond-controls{flex-wrap:wrap}.pond-manual-close{padding:0;display:flex;justify-content:flex-end}.pond-manual-close button{font-size:11px;min-height:38px;white-space:nowrap}
 .pond-manual-close button:disabled{opacity:.45;cursor:default}
-#rusticAnglerCard[data-fullscreen="true"] .pond-manual-close,#rusticAnglerCard[data-studio="true"] .pond-manual-close{display:none!important}
+#rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) .pond-controls{flex-wrap:nowrap}
+#rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) .pond-manual-close{display:flex;pointer-events:none;flex:0 1 180px;min-width:0}
+#rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) .pond-manual-close button{pointer-events:auto;min-height:44px;height:auto;line-height:1.3;width:100%;white-space:normal;padding:10px 14px;background:rgba(12,33,35,.88);color:#edf7ee;border:1px solid rgba(197,225,207,.45);border-radius:10px;box-shadow:0 3px 12px #0003}
+#rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) .pond-manual-close button:focus-visible{outline:2px solid #64d9cb;outline-offset:3px}
+@media(max-width:600px){
+ #rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) .pond-controls{gap:8px}
+ #rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) .pond-action{min-width:104px;padding:10px 12px}
+ #rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) .pond-manual-close button{font-size:10px;padding:10px 8px}
+}

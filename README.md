@@ -20,7 +20,7 @@ Dữ liệu lưu trong LocalStorage. Hãy dùng cùng trình duyệt và cùng �
 - Standard/Consistency payout theo từng chu kỳ: kiểm tra số ngày, lợi nhuận và hạn mức. Đây là **ghi nhận cá nhân**, không gửi yêu cầu rút hay đặt lệnh lên Topstep.
 - Calculator tính Micro và hợp đồng lớn theo ngân sách SL và ticks/points; trả về 0 khi không đủ ngân sách.
 - Checklist CRT–FRVP, Trend, AMD, Break; lưu trạng thái sau khi tải lại; mô phỏng hồ câu bằng Canvas.
-- Hồ câu có nút **Toàn màn hình 16:9**: chỉ hiện cảnh hồ và một nút thao tác như “Thả câu”. Nhấn **Esc** hoặc chạm đúp mặt hồ để thoát; giữ nguyên tiến độ checkbox. Nếu trình duyệt chặn Fullscreen API, ứng dụng mở chế độ phủ toàn màn hình trong trang. Màn hình khác tỷ lệ 16:9 có viền tối để giữ tỷ lệ cảnh.
+- Hồ câu có nút **Toàn màn hình 16:9**: hiện cảnh hồ, nút thao tác như “Thả câu” và nút **Đóng lệnh thủ công · Thu cá**. Nhấn **Esc** hoặc chạm đúp mặt hồ để thoát; giữ nguyên tiến độ checkbox. Nếu trình duyệt chặn Fullscreen API, ứng dụng mở chế độ phủ toàn màn hình trong trang. Màn hình khác tỷ lệ 16:9 có viền tối để giữ tỷ lệ cảnh. Tab/Shift+Tab di chuyển giữa các nút đang dùng được.
 - Hồ Câu Tĩnh Tâm dùng cảnh minh họa 2.5D theo mẫu đã duyệt, với cần/dây/phao và gợn nước bằng Canvas. Điều khiển nằm ngoài cảnh; hỗ trợ tạm dừng, giảm chuyển động theo hệ thống và tự dừng khi không hiển thị. Trên điện thoại, checklist nằm ngay sau hồ câu.
 - Hồ có nước dao động, lau nhẹ, cá nền xuất hiện ngẫu nhiên và cá mục tiêu riêng. Các bước vào lệnh đọc theo setup và điều kiện trước đó; tích sai thứ tự không tự hoàn thành bước còn thiếu. Các ô quản lý +1R/BE/TP **độc lập**, được lưu riêng theo từng setup: có thể tick BE hoặc TP trực tiếp mà không cần trailing trước. TP được ưu tiên khi vẫn có các ô khác được tích.
 - Chuyển động nền có hơi thở nhẹ của nhân vật, đầu cần, lau theo gió, lá rơi và chuồn chuồn thưa. Cá nền không phát âm báo hoặc xác nhận tín hiệu.
@@ -77,7 +77,7 @@ assets/workspace.css              Bố cục các phần quản lý mới
 assets/tailwind.css               CSS Tailwind cục bộ
 assets/angler.css                 Giao diện hồ câu và bố cục checklist
 assets/angler.js                  Lớp chuyển động tương tác hồ câu
-assets/pond-fullscreen.js         Toàn màn hình 16:9, một nút thao tác và khôi phục
+assets/pond-fullscreen.js         Toàn màn hình 16:9, điều khiển bàn phím và khôi phục
 assets/pond-ambient.js            Chuyển động môi trường và nhân vật
 assets/pond-scene.js              Ghép lớp cảnh, tư thế, tay/cần và chất lượng
 assets/pond-water.js              Sóng, phản chiếu và gợn mặt hồ
@@ -154,7 +154,7 @@ Kế hoạch phiên đã được loại khỏi giao diện và phép tính. D�
 
 ## Studio livestream và kỷ luật
 
-1. Trong Checklist, bấm biểu tượng điện thoại trên thanh hồ câu để mở **Studio livestream**. Fullscreen 16:9 hiện có vẫn chỉ có hồ và một nút.
+1. Trong Checklist, bấm biểu tượng điện thoại trên thanh hồ câu để mở **Studio livestream**. Cả Studio và Fullscreen 16:9 đều có nút thao tác chính và **Đóng lệnh thủ công · Thu cá** ngay trên cảnh hồ.
 2. Studio có khung dọc 9:16 chia hai nửa hồ/chart; có thể đổi vị trí hai phần. Nút **Chọn chart Topstep** dùng bộ chọn cửa sổ của trình duyệt, không iframe hoặc yêu cầu mật khẩu Topstep. Nguồn chỉ được xem trước, không tự ghi hình/phát sóng. Nếu không hỗ trợ chọn nguồn, có thể ghép chart riêng trong phần mềm live.
 3. Kiểm tra thông tin cá nhân trong nguồn trước khi phát. Chọn vùng crop chỉ gồm khung xem trước, không lấy bảng điều khiển. Có thể chọn xem toàn bộ nguồn hoặc cắt viền; chart nhỏ nên chọn cửa sổ chart hẹp hơn.
 4. Trước buổi chỉ chọn sản phẩm, setup, khung giờ và xác nhận nguyên tắc chờ đủ điều kiện. Đây là ghi nhận riêng của studio, không đưa lại bảng Kế hoạch phiên trên dashboard. Lịch theo mục 7 playbook: sáng 07:45–10:00 (CRT/Trend), chiều 14:00–16:00 ưu tiên MGC (CRT/AMD), Mỹ 20:15–22:30 (CRT/Trend/Break), mùa đông lùi một giờ. Ngoài khung có nhãn quan sát; giờ không tự tạo tín hiệu.
