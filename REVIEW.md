@@ -99,3 +99,13 @@ Dự án là nhật ký EOD, không xác nhận việc khóa ngày hoặc theo d
 - Ảnh và canvas cùng crop 16:9 ở tâm, dùng tỷ lệ đồng nhất để không kéo méo; các điểm neo cần/dây/cá/rổ giữ khớp. Màn hình khác 16:9 dùng viền tối.
 - Fullscreen API có fallback dialog toàn màn hình; Esc hoặc chạm đúp mặt hồ để thoát. Giữ tiến độ và khôi phục trạng thái thu gọn, focus, overflow; Tab tập trung vào nút duy nhất.
 - `tests/pond-fullscreen.cjs` đạt: native fullscreen, một nút, tỷ lệ cảnh/canvas, cả lượt câu tới rổ, Esc, fallback khi API bị từ chối, bàn phím và bốn kích thước desktop/mobile. `tests/review.cjs`, `tests/pond.cjs`, `tests/pond-landing.cjs` cũng đạt sau thay đổi.
+
+## Hồ câu chuyển động, kết quả và studio
+
+- Bước 1: thêm chuyển động môi trường độc lập: nước rõ hơn, hơi thở khu trú ở thân người, đầu cần, lau theo gió, lá rơi và chuồn chuồn thưa. Dùng cùng vòng 30fps, tôn trọng tạm dừng/giảm chuyển động/ẩn tab.
+- Bước 2: giữ diễn biến riêng CRT/Trend/AMD/Break, bổ sung kết quả BE/−0.5R/−1R/bỏ qua bên cạnh TP. Kết quả không TP thu dây nhẹ và cá rời đi, không vào rổ; có đánh giá tuân thủ riêng. Kết quả lưu theo tài khoản/vòng/setup, không phát lại sau reload và không tự ghi PnL.
+- Thống nhất gợi ý giờ theo `pond-schedule.js`, lấy mục 7 playbook làm lịch tham chiếu, xử lý giờ Mỹ mùa đông. Cập nhật cả nhãn từng setup và bảng lịch khi đồng hồ đổi.
+- Bước 3: studio modal có khung 9:16 chia hai nửa, scene crop đồng tỷ lệ, đổi vị trí hồ/chart, contain/cover cho nguồn. Chọn nguồn dùng getDisplayMedia với audio=false; không tự xin quyền, ghi hình hoặc phát sóng. Đóng/hủy/chấm dứt nguồn dừng track và hoàn trả hồ đúng vị trí.
+- Bước 4: cam kết ngắn trước buổi, lý do khi đổi setup/tiếp tục ngoài điều kiện nghỉ, trạng thái chờ/quản lý/nghỉ, tự đánh giá từng lượt/cuối buổi và tổng kết không có lệnh. Điều kiện nghỉ chỉ chặn lượt mới trong hồ, không tác động Topstep. Có lưu buổi qua reload, xuất JSON và kiểm tra dữ liệu trước khi import backup.
+- `tests/pond-studio.cjs`: chuyển động có giới hạn; kết quả/idempotence/reload; giữ dữ liệu tài chính; lịch DST; TP; tỷ lệ/chia đôi; thao tác cam kết/đổi setup/lý do; hai SL chuyển nghỉ; buổi không lệnh; khôi phục buổi; mock quyền chia sẻ/video và dừng track; desktop/tablet/mobile; backup đầy đủ và từ chối metadata lỗi trước khi ghi.
+- 13 tệp kiểm thử chạy đạt trong đợt này; lượt cuối chạy lại studio/review sau khi thêm rollback import khi quota lỗi và version URL tài nguyên để cập nhật cache. Không thực hiện phiên phát TikTok/Topstep thật.

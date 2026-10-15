@@ -42,7 +42,7 @@ function initRusticAngler() {
     document.addEventListener('visibilitychange',syncAnglerMotion);
     canvas.addEventListener('pointerup',event=>{
         const rect=canvas.getBoundingClientRect();
-        const wide=document.getElementById('rusticAnglerCard').dataset.fullscreen==='true';
+        const wide=document.getElementById('rusticAnglerCard').dataset.fullscreen==='true'||document.getElementById('rusticAnglerCard').dataset.studio==='true';
         const scale=wide?Math.max(rect.width/1000,rect.height/750):rect.width/1000;
         const x=(event.clientX-rect.left-(rect.width-1000*scale)/2)/scale;
         const y=(event.clientY-rect.top-(rect.height-750*scale)/2)/scale;
@@ -175,6 +175,8 @@ function readPondChecklist() {
 }
 
 function handleCastReelButtonClick() {
+    if(window.PondLive?.shouldRest()){PondLive.noteRest();return;}
+    if(window.PondExecution?.current()){PondExecution.newRound();return;}
     const snapshot=readPondChecklist();
     if(snapshot.stage<4) { triggerCastStep(snapshot.phase+1); }
     else if(snapshot.riskPhase<3) {
@@ -183,10 +185,14 @@ function handleCastReelButtonClick() {
     } else resetChecklist();
 }
 
-function getPondBend() { return [0,0,.08,.28,1,.65,.35,.2][anglerState.stage]; }
+function getPondBend() {
+    const result=window.PondExecution?.current();
+    return result&&result.outcome!=='tp' ? .04 : [0,0,.08,.28,1,.65,.35,.2][anglerState.stage];
+}
 
 function updateAnglerState(_count,_risk1,_risk2,_tp,options={}) {
     const next=readPondChecklist(), prev=anglerState.snapshot;
+    window.PondExecution?.onChecklist(next,prev,options);
     const restored=options.restore || !prev || prev.setup!==next.setup;
     const advance=!restored && next.stage>prev.stage;
     const changed=!prev || prev.setup!==next.setup || prev.stage!==next.stage;
@@ -231,6 +237,7 @@ function updateAnglerState(_count,_risk1,_risk2,_tp,options={}) {
         anglerState.castProgress=next.stage>0?1:0;anglerState.catchProgress=next.stage===7?1:0;
         anglerState.rodBend=getPondBend();anglerState.reelAmount=next.stage>=6?1:0;
     }
+    window.PondExecution?.refresh();
     renderQuietPond();
 }
 
@@ -241,13 +248,15 @@ function renderQuietPond() {
     if(!ctx) return;
     const w=1000,h=750,t=anglerState.time;
     ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(document.getElementById('rusticAnglerCard').dataset.fullscreen==='true') {
+    if(document.getElementById('rusticAnglerCard').dataset.fullscreen==='true'||document.getElementById('rusticAnglerCard').dataset.studio==='true') {
         const scale=Math.max(canvas.width/w,canvas.height/h);
         ctx.setTransform(scale,0,0,scale,(canvas.width-w*scale)/2,(canvas.height-h*scale)/2);
     } else ctx.setTransform(canvas.width/w,0,0,canvas.height/h,0,0);
     ctx.clearRect(0,0,w,h);
-    const active=anglerState.stage>0;
-    const cast=1-Math.pow(1-anglerState.castProgress,3);
+    const outcome=window.PondExecution?.current(),ended=outcome&&outcome.outcome!=='tp';
+    if(ended)anglerState.fish.state=PondExecution.age()<2?'departing':'idle';
+    const active=anglerState.stage>0&&(!ended||PondExecution.age()<1.4);
+    const cast=(1-Math.pow(1-anglerState.castProgress,3))*(ended?Math.max(0,1-PondExecution.age()/1.4):1);
     const caught=anglerState.stage===7;
     const catchPose=caught?PondCatch.sample(anglerState.catchProgress,anglerState.catchOrigin):null;
     anglerState.catchPose=catchPose;
@@ -255,7 +264,8 @@ function renderQuietPond() {
     // Anchors are aligned to the hands and perspective in quiet-pond.png (1448 × 1086).
     const hand={x:303,y:443};
     const struggle=anglerState.stage===4?Math.sin(t*4)*2.5:anglerState.stage===5?Math.sin(t*2.3):0;
-    const tip=catchPose?catchPose.tip:{x:active?477+tension*8+struggle:460,y:active?296+tension*31:321};
+    const idleSway=Math.sin(t*1.1)*1.5;
+    const tip=catchPose?catchPose.tip:{x:active?477+tension*8+struggle:460+idleSway*.4,y:active?296+tension*31:321+idleSway};
     const bobber=catchPose?catchPose.float:{x:hand.x+(650-hand.x)*cast-anglerState.reelAmount*22,
         y:hand.y+(412-hand.y)*cast-Math.sin(cast*Math.PI)*94+Math.sin(t*1.8)*1.6};
     if(anglerState.stage===3) {
@@ -325,6 +335,7 @@ function renderQuietPond() {
     }
     if(catchPose) drawPondLanding(ctx,catchPose,t,filter);
     drawPondReeds(ctx,t);
+    PondAmbient.draw(ctx,t,image,filter,grade.night);
     drawPondAtmosphere(ctx,t);
 }
 
@@ -354,7 +365,7 @@ function drawPondWater(ctx,t,filter) {
     if(image.complete && image.naturalWidth) {
         ctx.filter=filter;
         for(let y=200;y<645;y+=10) {
-            const shift=Math.sin(y*.033+t*.7)*1.1+Math.sin(y*.071-t*.45)*.55;
+            const shift=Math.sin(y*.033+t*.7)*2+Math.sin(y*.071-t*.45)*.85;
             ctx.drawImage(image,0,y/750*image.naturalHeight,image.naturalWidth,10.5/750*image.naturalHeight,shift,y,1000,10.5);
         }
     }
@@ -375,6 +386,12 @@ function drawPondWater(ctx,t,filter) {
 
 function drawPondTargetFish(ctx,bobber,t,caught) {
     if(anglerState.stage<2 || caught) return;
+    const outcome=window.PondExecution?.current();
+    if(outcome&&outcome.outcome!=='tp') {
+        const age=PondExecution.age();
+        if(age<2&&outcome.outcome!=='skip')drawPondFish(ctx,650+age*80,440+age*24,31,.25,(1-age/2)*.35,false,Math.sin(t*4));
+        return;
+    }
     const stage=anglerState.stage, effect=anglerState.snapshot?.effect, age=anglerState.phaseTime;
     const arrival=1-Math.exp(-age*.8);
     let x=bobber.x+16+(1-arrival)*115+Math.sin(t*.8)*10, y=bobber.y+20+Math.cos(t*.7)*6;
@@ -384,6 +401,8 @@ function drawPondTargetFish(ctx,bobber,t,caught) {
     if(stage>=3) {
         const returnDistance=stage===3 && effect==='return'?(1-arrival)*85:0;
         x=bobber.x+8+returnDistance+Math.sin(t*2.2)*(stage===4?8:3);y=bobber.y+17+Math.cos(t*1.7)*3;
+        if(stage===3&&anglerState.snapshot.setup===2){x+=30*(1-arrival);y+=Math.sin(age*1.8)*12*(1-arrival);}
+        if(stage===3&&anglerState.snapshot.setup===4){x+=25*(1-arrival);y+=Math.sin(age*2.1)*3*(1-arrival);}
     }
     const tail=Math.sin(t*(stage===4?10:4));
     drawPondFish(ctx,x,y,31,Math.atan2(bobber.y-y,bobber.x-x),stage>=4?.48:.33,false,tail);
@@ -402,10 +421,7 @@ function drawPondReeds(ctx,t) {
 }
 
 function readPondSchedule() {
-    return [...document.querySelectorAll('[data-pond-schedule]')].map(e=>({
-        start:Number(e.dataset.start),end:Number(e.dataset.end),label:e.dataset.label,
-        active:e.dataset.active==='true',usShift:e.dataset.usShift==='true',startOnly:e.dataset.startOnly==='true'
-    })).filter(w=>Number.isFinite(w.start) && Number.isFinite(w.end));
+    return PondSchedule.windows;
 }
 
 function restorePondPreferences() {
@@ -436,6 +452,15 @@ function updatePondClock(now=new Date(),instant=false) {
     activity.textContent='Lịch dự án · '+clock.activity.label;
     activity.dataset.active=String(clock.activity.active);
     activity.title='Theo giờ thực ở Việt Nam; chọn ánh sáng xem thử không đổi lịch hoạt động.';
+    for(let setup=1;setup<=4;setup++) {
+        const label=document.querySelector('#checklist-setup-'+setup+' > div:first-child > span:first-child');
+        if(label)label.textContent='Theo playbook: '+PondSchedule.describeSetup(setup,now)+' (GMT+7)';
+    }
+    document.querySelectorAll('[data-pond-schedule]').forEach((card,i)=>{
+        const window=PondSchedule.effective(now)[i],heading=card.querySelector('div > strong');
+        if(window&&heading)heading.textContent=window.label+' · '+PondSchedule.format(window.start)+'–'+PondSchedule.format(window.end);
+    });
+    document.dispatchEvent(new Event('pond-clock-updated'));
 }
 
 function schedulePondClock() {

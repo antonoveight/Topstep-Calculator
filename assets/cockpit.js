@@ -1999,7 +1999,7 @@ const accountData = TradingRules.accounts;
                     exportDate: new Date().toISOString(),
                     accountsList: accountsList,
                     activeAccountId: activeAccountId,
-                    preferences: Object.fromEntries(['topstep_theme_mode','topstep_active_app_view','topstep_active_checklist_setup','topstep_checklist_state','topstep_angler_collapsed','topstep_angler_motion_paused','topstep_angler_time_mode'].map(key=>[key,localStorage.getItem(key)]))
+                    preferences: Object.fromEntries(['topstep_theme_mode','topstep_active_app_view','topstep_active_checklist_setup','topstep_checklist_state','topstep_angler_collapsed','topstep_angler_motion_paused','topstep_angler_time_mode','topstep_pond_outcomes_v1','topstep_pond_sessions_v1'].map(key=>[key,localStorage.getItem(key)]))
                 };
                 const jsonStr = JSON.stringify(backupData, null, 2);
                 const blob = new Blob([jsonStr], { type: "application/json" });
@@ -2027,17 +2027,29 @@ const accountData = TradingRules.accounts;
                     const data = JSON.parse(e.target.result);
                     if (data && Array.isArray(data.accountsList) && data.accountsList.length > 0) {
                         if (confirm(`Khôi phục ${data.accountsList.length} tài khoản từ file sao lưu ngày ${data.exportDate || 'trước đó'}? Dữ liệu hiện tại sẽ được cập nhật.`)) {
+                            const prefs = data.preferences || {};
+                            if (typeof prefs.topstep_pond_outcomes_v1 === 'string') PondExecution.validate(JSON.parse(prefs.topstep_pond_outcomes_v1));
+                            if (typeof prefs.topstep_pond_sessions_v1 === 'string') PondLive.validate(JSON.parse(prefs.topstep_pond_sessions_v1));
                             const validated = normalizeAccounts(data.accountsList);
                             const restoredId = validated.some(a => a.id === data.activeAccountId) ? data.activeAccountId : validated[0].id;
-                            accountStorageInvalid = false;
-                            accountsList = validated;
-                            activeAccountId = restoredId;
-                            window.accountSaveReason = 'Nhập bản sao lưu JSON';
-                            try { saveAccounts(); } finally { window.accountSaveReason = ''; }
-                            const prefs = data.preferences || {};
-                            for (const key of ['topstep_theme_mode','topstep_active_app_view','topstep_active_checklist_setup','topstep_checklist_state','topstep_angler_collapsed','topstep_angler_motion_paused','topstep_angler_time_mode']) {
-                                if (typeof prefs[key] === 'string') localStorage.setItem(key,prefs[key]);
-                            }
+                            const preferenceKeys = ['topstep_theme_mode','topstep_active_app_view','topstep_active_checklist_setup','topstep_checklist_state','topstep_angler_collapsed','topstep_angler_motion_paused','topstep_angler_time_mode','topstep_pond_outcomes_v1','topstep_pond_sessions_v1'];
+                            const priorPrefs = Object.fromEntries(preferenceKeys.map(key=>[key,localStorage.getItem(key)]));
+                            const priorInvalid = accountStorageInvalid, priorActive = activeAccountId;
+                            try {
+                                for (const key of preferenceKeys) if (typeof prefs[key] === 'string') localStorage.setItem(key,prefs[key]);
+                                accountStorageInvalid = false;
+                                accountsList = validated;
+                                activeAccountId = restoredId;
+                                window.accountSaveReason = 'Nhập bản sao lưu JSON';
+                                saveAccounts();
+                            } catch (err) {
+                                const changed = preferenceKeys.filter(key=>localStorage.getItem(key)!==priorPrefs[key]);
+                                changed.forEach(key=>localStorage.removeItem(key));
+                                changed.forEach(key=>{if(priorPrefs[key]!==null)localStorage.setItem(key,priorPrefs[key]);});
+                                accountStorageInvalid = priorInvalid;activeAccountId = priorActive;
+                                throw err;
+                            } finally { window.accountSaveReason = ''; }
+                            PondExecution.reload();PondLive.reload();
                             loadActiveAccountState();
                             loadChecklistState();
                             initTheme();
