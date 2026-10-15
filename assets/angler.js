@@ -294,6 +294,8 @@ function renderQuietPond() {
     if(image.style.filter!==filter)image.style.filter=filter;
     if(layered)ctx.drawImage(sceneBase,0,0,w,h);
     const outcome=window.PondExecution?.current(),manual=outcome?.outcome==='manual',ended=outcome&&!PondExecution.isCatch(outcome);
+    const loss=outcome&&['half','sl'].includes(outcome.outcome);
+    const lossAge=loss?(isAnglerMotionPaused()?99:PondExecution.age()):0;
     if(manual)anglerState.catchProgress=isAnglerMotionPaused()?1:Math.min(1,PondExecution.age()/PondCatch.duration);
     if(ended)anglerState.fish.state=PondExecution.age()<2?'departing':'idle';
     const parked=ended&&PondExecution.age()>=1.4||(anglerState.stage===7||manual)&&anglerState.catchProgress>=1;
@@ -319,6 +321,9 @@ function renderQuietPond() {
     const idleSway=Math.sin(t*1.1)*1.8*PondScene.gain();
     const tip=parked?{x:460,y:515}:catchPose?catchPose.tip:{x:active?477+tension*8+motion.tipX:460+idleSway*.4,y:active?296+tension*31+motion.tipY:321+idleSway};
     const castPose=casting?PondCast.sample(anglerState.castProgress,hand,tip,anchor,anglerState.snapshot.setup,PondScene.gain()):null;
+    const lossPose=loss?PondLoss.sample(outcome.outcome,lossAge,hand,{x:anchor.x,y:anchor.y+24}):null;
+    if(lossPose)Object.assign(tip,lossPose.tip);
+    anglerState.lossPose=lossPose;
     if(castPose)Object.assign(tip,castPose.tip);
     const bobber=castPose?{...castPose.bobber}:catchPose?catchPose.float:{x:hand.x+(anchor.x-hand.x)*cast-anglerState.reelAmount*22,
         y:hand.y+(anchor.y-hand.y)*cast-Math.sin(cast*Math.PI)*94+Math.sin(t*1.8)*1.6};
@@ -340,7 +345,7 @@ function renderQuietPond() {
             for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(-p.size*.6,side*4);ctx.quadraticCurveTo(-p.size,side*8,-p.size*1.2,side*7);ctx.stroke();}ctx.restore();
         }
     });
-    drawPondTargetFish(ctx,bobber,t,caught||casting);
+    drawPondTargetFish(ctx,bobber,t,caught||casting||loss);
     const ripple=(x,y,radius,opacity)=>{
         ctx.strokeStyle=`rgba(220,243,218,${opacity})`;ctx.lineWidth=1;
         ctx.beginPath();ctx.ellipse(x,y,radius,radius*.3,-.12,0,Math.PI*2);ctx.stroke();
@@ -389,7 +394,7 @@ function renderQuietPond() {
         if(castBehind)PondScene.drawActor(ctx,actor,filter);
         PondScene.drawGrip(ctx,actor,filter);
     }
-    if(active) {
+    if(active&&!loss) {
         ctx.beginPath();ctx.moveTo(tip.x,tip.y);
         const sag=catchPose?(catchPose.progress<.12?0:6):motion.lineSag;
         ctx.quadraticCurveTo(castPose?castPose.line.x:(tip.x+bobber.x)/2,castPose?castPose.line.y:(tip.y+bobber.y)/2+sag,bobber.x,bobber.y-9);
@@ -406,7 +411,16 @@ function renderQuietPond() {
         ctx.fillStyle='#f5e7bf';ctx.beginPath();ctx.ellipse(0,-2,3.6,5.3,0,0,Math.PI);ctx.fill();
         ctx.restore();
     }
+    const creel=window.PondExecution?.creel()||[];
+    canvas.dataset.creelCount=String(creel.length);
+    PondFish.drawCreel(ctx,creel,catchPose&&!catchPose.deposited?outcome?.id:null);
     if(catchPose) drawPondLanding(ctx,catchPose,t,filter);
+    if(lossPose){
+        PondLoss.draw(ctx,lossPose,PondFish.profile(outcome.fishSeed??1,outcome.catchStage??4));
+        const label=lossPose.kind==='sl'?(lossPose.broken?'Gãy ngọn cần · Lượt câu kết thúc':'Cần đang chịu lực'):
+            !lossPose.broken?'Giật cá · Cước đang căng':lossPose.age<1.8?'Đứt cước · Cá thoát về hồ':'Cá đã thoát · Lượt câu kết thúc';
+        const status=document.getElementById('anglerStatusText');if(status.textContent!==label)status.textContent=label;
+    }
     PondFish.drawBasket(ctx,true,grade.night);
     if(!layered)drawPondReeds(ctx,t);
     PondScene.drawForeground(ctx,t,filter,grade.night);
@@ -577,14 +591,14 @@ function drawPondLanding(ctx,pose,t,filter) {
         ctx.beginPath();ctx.ellipse(b.x,b.y,b.rx-3,b.ry-3,0,0,Math.PI*2);ctx.clip();
     }
     const reveal=PondFish.reveal(p,anglerState.catchOrigin.y,fish.y);
-    if(reveal<1){
+    if(!pose.deposited&&reveal<1){
         const offset=PondFish.shadow.size*PondFish.shadow.mouth;
         PondFish.drawShadow(ctx,pose.mouth.x-Math.cos(angle)*offset,pose.mouth.y-Math.sin(angle)*offset,angle,PondFish.shadow.opacity*(1-reveal),Math.sin(t*16));
     }
-    if(reveal>0){
+    if(!pose.deposited&&reveal>0){
         ctx.save();
         if(p<.065){ctx.beginPath();ctx.rect(0,0,1000,Math.max(0,anglerState.catchOrigin.y-18));ctx.clip();}
-        PondFish.draw(ctx,drawX,drawY,profile,angle,.98*reveal,Math.sin(t*16)*(1-p));
+        PondFish.draw(ctx,drawX,drawY,{...profile,size:profile.size*(1-.3*Math.max(0,Math.min(1,(p-.81)/.13)))},angle,.98*reveal,Math.sin(t*16)*(1-p));
         ctx.restore();
     }
     ctx.restore();

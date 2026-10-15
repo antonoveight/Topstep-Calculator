@@ -1,7 +1,7 @@
 /* Compact broadcast copy. Journal/account data and chart pixels remain independent. */
 const PondPublic=(()=>{
     function copy(stage=0,record=null,rest=false,reeling=false,pending=false){
-        const status=reeling?'Reeling in':rest?'Session paused':record?.outcome==='skip'?'Skipped':record?'Close logged':pending?'Checks pending':stage===0?'Watching':stage<4?'Waiting':'Managing';
+        const status=reeling?'Reeling in':rest?'Session paused':record?.outcome==='skip'?'Skipped':record?.outcome==='half'?'Line broke':record?.outcome==='sl'?'Rod broke':record?'Close logged':pending?'Checks pending':stage===0?'Watching':stage<4?'Waiting':'Managing';
         const action=rest?'Paused':record?'New round':pending?'Mark check':['Cast','Observe','Mark check','Log entry','Log +1R','Log BE','Log TP','New round'][stage]||'Observe';
         return {status,action};
     }

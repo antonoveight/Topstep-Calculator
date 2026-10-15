@@ -3,13 +3,14 @@ const PondExecution=(()=>{
     const storageKey='topstep_pond_outcomes_v1';
     const outcomes={manual:'Đóng lệnh thủ công',tp:'Full TP',be:'Hòa vốn · BE',half:'Dừng lỗ · −0.5R',sl:'Dừng lỗ · −1R',skip:'Bỏ qua setup'};
     const fallbackSeeds=new Map();
+    let creelCache=null;
     let data={current:{},history:[],reopened:{},fishSeeds:{}},invalid=false,started=-99,sceneKey='';
     try {
         const saved=JSON.parse(localStorage.getItem(storageKey)||'null');
         if(saved) {data=validate(saved);}
     }catch{invalid=true;}
     function validate(value){
-        const valid=r=>r&&typeof r.id==='string'&&typeof r.account==='string'&&['combine','xfa'].includes(r.stage)&&[1,2,3,4].includes(r.setup)&&Object.hasOwn(outcomes,r.outcome)&&['yes','no','unrated'].includes(r.rating)&&Number.isFinite(Date.parse(r.at))&&(r.outcome!=='manual'||Number.isInteger(r.catchStage)&&r.catchStage>=4&&r.catchStage<=6);
+        const valid=r=>r&&typeof r.id==='string'&&typeof r.account==='string'&&['combine','xfa'].includes(r.stage)&&[1,2,3,4].includes(r.setup)&&Object.hasOwn(outcomes,r.outcome)&&['yes','no','unrated'].includes(r.rating)&&Number.isFinite(Date.parse(r.at))&&(r.catchActive===undefined||typeof r.catchActive==='boolean')&&(r.outcome!=='manual'||Number.isInteger(r.catchStage)&&r.catchStage>=4&&r.catchStage<=6);
         if(!value||!value.current||Array.isArray(value.current)||!Array.isArray(value.history)||value.history.length>300||!Object.values(value.current).every(valid)||!value.history.every(valid))throw new Error('Dữ liệu kết quả hồ câu không hợp lệ.');
         if(value.reopened&&(!Object.values(value.reopened).every(id=>typeof id==='string')||Array.isArray(value.reopened)))throw new Error('Lượt đang sửa không hợp lệ.');
         if(value.fishSeeds&&(!value.fishSeeds||Array.isArray(value.fishSeeds)||typeof value.fishSeeds!=='object'||!Object.values(value.fishSeeds).every(n=>Number.isInteger(n)&&n>=0&&n<=4294967295)))throw new Error('Invalid fish seeds');
@@ -39,7 +40,7 @@ const PondExecution=(()=>{
     function finish(outcome) {
         if(!Object.hasOwn(outcomes,outcome)||data.current[key()]||outcome==='manual'&&readPondChecklist().stage<4)return false;
         const a=getActiveAccount(),record={id:data.reopened[key()]||crypto.randomUUID(),account:a.id,stage:a.stage,setup:activeChecklistSetup,
-            outcome,...(outcome==='manual'?{catchStage:readPondChecklist().stage}:{}),fishSeed:fishSeed(),rating:'unrated',at:new Date().toISOString()};
+            outcome,...(['manual','half','sl'].includes(outcome)?{catchStage:readPondChecklist().stage}:{}),fishSeed:fishSeed(),rating:'unrated',at:new Date().toISOString()};
         const next=structuredClone(data);next.current[key()]=record;delete next.reopened[key()];
         const old=next.history.findIndex(r=>r.id===record.id);if(old>=0)next.history[old]=record;else next.history.push(record);next.history=next.history.slice(-300);
         if(!save(next))return false;
@@ -50,10 +51,21 @@ const PondExecution=(()=>{
         if(next.risk[2]&&!options.restore&&(!prev||prev.setup!==next.setup||!prev.risk[2]))finish('tp');
         // Unchecking TP explicitly reopens the same checklist, but keeps the observation in history.
         if(!next.risk[2]&&data.current[key()]?.outcome==='tp') {
-            const draft=structuredClone(data);draft.reopened[key()]=draft.current[key()].id;delete draft.current[key()];save(draft);
+            const draft=structuredClone(data);draft.reopened[key()]=draft.current[key()].id;const item=draft.history.find(r=>r.id===draft.reopened[key()]);if(item)item.catchActive=false;delete draft.current[key()];save(draft);
         }
     }
     function isCatch(record=current()){return record?.outcome==='tp'||record?.outcome==='manual';}
+    const dayFormat=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'});
+    const dayKey=at=>dayFormat.format(new Date(at));
+    function creel(){
+        const a=getActiveAccount(),today=dayKey(Date.now()),scope=JSON.stringify([a.id,a.stage,today]);
+        if(creelCache?.data===data&&creelCache.scope===scope)return creelCache.items;
+        const ids=new Set(),items=data.history.filter(r=>{
+            if(!isCatch(r)||r.catchActive===false||r.account!==a.id||r.stage!==a.stage||dayKey(r.at)!==today||ids.has(r.id))return false;
+            ids.add(r.id);return true;
+        }).map(r=>({...r,fishSeed:Number.isInteger(r.fishSeed)?r.fishSeed:Array.from(r.id).reduce((n,c)=>(Math.imul(n,31)+c.charCodeAt(0))>>>0,0)}));
+        creelCache={data,scope,items};return items;
+    }
     function age(){return sceneKey===key()?Math.max(0,anglerState.time-started):99;}
     function refresh() {
         const record=current(),select=document.getElementById('pondOutcomeRating'),status=document.getElementById('pondOutcomeStatus');
@@ -107,6 +119,6 @@ const PondExecution=(()=>{
     const reset=resetChecklist;
     window.resetChecklist=function(){if(clearCurrent())reset();};
     window.addEventListener('load',mount);
-    return {current,isCatch,fishSeed,onChecklist,refresh,choose,newRound,age,history:()=>structuredClone(data.history),labels:outcomes,validate,reload};
+    return {current,isCatch,creel,dayKey,fishSeed,onChecklist,refresh,choose,newRound,age,history:()=>structuredClone(data.history),labels:outcomes,validate,reload};
 })();
 window.PondExecution=PondExecution;

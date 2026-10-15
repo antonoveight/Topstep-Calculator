@@ -65,14 +65,14 @@ const PondFish=(()=>{
         ctx.restore();ctx.restore();
     }
     // Narrow, deep fishing creel. The lamp occupies x28..71, outside its footprint.
-    const basket={x:134,y:493,rx:58,ry:24};
+    const basket={x:134,y:493,rx:49.88,ry:20.64,scale:.86};
     function basketWall(ctx){
         ctx.beginPath();ctx.moveTo(76,493);ctx.bezierCurveTo(80,520,83,543,96,548);
         ctx.quadraticCurveTo(134,560,172,548);ctx.bezierCurveTo(185,543,188,520,192,493);
         ctx.ellipse(134,493,58,24,0,0,Math.PI);ctx.closePath();
     }
     function drawBasket(ctx,front=false,night=0){
-        ctx.save();
+        ctx.save();ctx.translate(basket.x,basket.y);ctx.scale(basket.scale,basket.scale);ctx.translate(-basket.x,-basket.y);
         if(!front){
             ctx.fillStyle='rgba(24,20,12,.3)';ctx.beginPath();ctx.ellipse(137,552,59,11,-.08,0,Math.PI*2);ctx.fill();
             // Carry handle behind the opening: braided, with two attachment loops.
@@ -87,7 +87,7 @@ const PondFish=(()=>{
             basketWall(ctx);
             const wall=ctx.createLinearGradient(76,510,192,545);wall.addColorStop(0,'#705638');wall.addColorStop(.3,'#b59764');wall.addColorStop(.58,'#a18453');wall.addColorStop(1,'#57422b');
             ctx.fillStyle=wall;ctx.fill();ctx.save();ctx.clip();
-            ctx.lineWidth=1.15;
+            ctx.lineWidth=.8;
             for(let x=71;x<200;x+=4){ctx.strokeStyle=(x%3)?'rgba(38,27,15,.4)':'rgba(231,207,150,.3)';ctx.beginPath();ctx.moveTo(x,492);ctx.quadraticCurveTo(x+(134-x)*.08,527,x+(134-x)*.16,557);ctx.stroke();}
             for(let y=499;y<563;y+=3.6){ctx.strokeStyle='rgba(42,29,16,.4)';ctx.beginPath();ctx.ellipse(134,y,59,13,0,0,Math.PI);ctx.stroke();}
             const shade=ctx.createLinearGradient(0,512,0,553);shade.addColorStop(0,'rgba(24,19,12,.35)');shade.addColorStop(.2,'rgba(24,19,12,0)');shade.addColorStop(1,'rgba(24,19,12,.25)');ctx.fillStyle=shade;ctx.fillRect(75,511,120,48);
@@ -99,6 +99,15 @@ const PondFish=(()=>{
         if(night>0){ctx.globalAlpha=night*.25;ctx.fillStyle='#081639';if(front)basketWall(ctx);else{ctx.beginPath();ctx.ellipse(134,493,58,24,0,0,Math.PI*2);}ctx.fill();}
         ctx.restore();
     }
-    return {profile,draw,shadow,drawShadow,reveal,basket,drawBasket};
+    function drawCreel(ctx,records,excludeId){
+        const items=records.filter(r=>r.id!==excludeId).slice(-4),b=basket;
+        ctx.save();ctx.beginPath();ctx.ellipse(b.x,b.y,b.rx-3,b.ry-3,0,0,Math.PI*2);ctx.clip();
+        items.forEach((r,i)=>{
+            const f=profile(r.fishSeed,r.outcome==='tp'?7:r.catchStage);
+            PondFish.draw(ctx,b.x+(i%2?-8:6),b.y-5+i*3,{...f,size:f.size*.7},i%2?Math.PI+.12:-.16,.96,0);
+        });
+        ctx.restore();
+    }
+    return {profile,draw,drawCreel,shadow,drawShadow,reveal,basket,drawBasket};
 })();
 if(typeof module!=='undefined')module.exports=PondFish;
