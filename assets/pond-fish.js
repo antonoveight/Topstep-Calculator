@@ -1,4 +1,4 @@
-/* A round keeps its identity; R changes its size and colour family, never frame timing. */
+/* The reward stays hidden under water; its identity is revealed only on landing. */
 const PondFish=(()=>{
     const palettes=[
         [['#a9b7a2','#526c59'],['#a4bac5','#506a78'],['#b8ab86','#726346']],
@@ -10,6 +10,21 @@ const PondFish=(()=>{
         let hash=(seed^Math.imul(tier,2654435761))>>>0;hash=Math.imul(hash^(hash>>>16),2246822507)>>>0;
         const colors=palettes[tier-1][hash%palettes[tier-1].length];
         return {seed,tier,size:[0,32,47,64][tier]+(hash%5),colors,pattern:(hash>>>5)%3,depth:.9+((hash>>>8)%3)*.07,mouth:.55};
+    }
+    const shadow=Object.freeze({size:34,mouth:.55,opacity:.24});
+    function drawShadow(ctx,x,y,angle,opacity=shadow.opacity,tail=0){
+        const s=shadow.size;
+        ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.globalAlpha=Math.min(shadow.opacity,Math.max(0,opacity));
+        ctx.filter='blur(1.6px)';
+        ctx.fillStyle='#173f3d';ctx.beginPath();ctx.ellipse(0,0,s*.53,s*.19,0,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.moveTo(-s*.4,0);ctx.lineTo(-s*.77,-s*.19+tail*s*.06);
+        ctx.quadraticCurveTo(-s*.65,tail*s*.05,-s*.77,s*.19+tail*s*.06);ctx.closePath();ctx.fill();
+        ctx.restore();
+    }
+    function reveal(progress,originY,fishY){
+        if(progress>=.065)return 1; // After breaching, stays visible all the way into the creel.
+        const rise=Math.max(0,Math.min(1,(originY-fishY-24)/90));
+        return rise*rise*(3-2*rise);
     }
     function draw(ctx,x,y,fish,angle,opacity,tail=0){
         const s=fish.size;
@@ -84,6 +99,6 @@ const PondFish=(()=>{
         if(night>0){ctx.globalAlpha=night*.25;ctx.fillStyle='#081639';if(front)basketWall(ctx);else{ctx.beginPath();ctx.ellipse(134,493,58,24,0,0,Math.PI*2);}ctx.fill();}
         ctx.restore();
     }
-    return {profile,draw,basket,drawBasket};
+    return {profile,draw,shadow,drawShadow,reveal,basket,drawBasket};
 })();
 if(typeof module!=='undefined')module.exports=PondFish;

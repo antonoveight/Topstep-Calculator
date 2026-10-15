@@ -276,7 +276,11 @@ function renderQuietPond() {
     const caught=anglerState.stage===7||manual;
     const fishProfile=PondFish.profile(window.PondExecution?.fishSeed()??1,manual?outcome.catchStage:anglerState.stage);
     anglerState.fishProfile=fishProfile;
-    const catchPose=caught?PondCatch.sample(anglerState.catchProgress,anglerState.catchOrigin,fishProfile.size*fishProfile.mouth):null;
+    const catchPath=caught?PondCatch.sample(anglerState.catchProgress,anglerState.catchOrigin,0):null;
+    const exposed=catchPath?PondFish.reveal(catchPath.progress,anglerState.catchOrigin.y,catchPath.fish.y):0;
+    const hiddenMouth=PondFish.shadow.size*PondFish.shadow.mouth;
+    const mouthOffset=hiddenMouth+(fishProfile.size*fishProfile.mouth-hiddenMouth)*exposed;
+    const catchPose=caught?PondCatch.sample(anglerState.catchProgress,anglerState.catchOrigin,mouthOffset):null;
     anglerState.catchPose=catchPose;
     const tension=anglerState.rodBend;
     const motion=active&&!caught?PondBehavior.motion(anglerState.snapshot,t,anglerState.phaseTime,PondScene.gain(),anglerState.motionFrom):PondBehavior.motion(null,t,99);
@@ -403,18 +407,18 @@ function drawPondTargetFish(ctx,bobber,t,caught) {
     const outcome=window.PondExecution?.current();
     if(outcome&&!PondExecution.isCatch(outcome)) {
         const age=PondExecution.age();
-        if(age<2&&outcome.outcome!=='skip')drawPondFish(ctx,650+age*80,440+age*24,31,.25,(1-age/2)*.35,false,Math.sin(t*4));
+        if(age<2&&outcome.outcome!=='skip')PondFish.drawShadow(ctx,650+age*80,440+age*24,.25,(1-age/2)*PondFish.shadow.opacity,Math.sin(t*4));
         return;
     }
     const fish=PondBehavior.target(anglerState.snapshot,bobber,t,anglerState.phaseTime);
     if(fish){
-        const profile=anglerState.fishProfile;
+        const profile=PondFish.shadow;
         if(anglerState.stage>=4){
             const mouth={x:fish.x+Math.cos(fish.angle)*profile.size*profile.mouth,y:fish.y+Math.sin(fish.angle)*profile.size*profile.mouth};
             ctx.strokeStyle='rgba(224,240,215,.32)';ctx.lineWidth=.65;
             ctx.beginPath();ctx.moveTo(bobber.x,bobber.y+8);ctx.lineTo(mouth.x,mouth.y);ctx.stroke();
         }
-        PondFish.draw(ctx,fish.x,fish.y,profile,fish.angle,fish.opacity,fish.tail);
+        PondFish.drawShadow(ctx,fish.x,fish.y,fish.angle,profile.opacity,fish.tail);
     }
 
 }
@@ -532,7 +536,17 @@ function drawPondLanding(ctx,pose,t,filter) {
         const b=PondFish.basket;
         ctx.beginPath();ctx.ellipse(b.x,b.y,b.rx-3,b.ry-3,0,0,Math.PI*2);ctx.clip();
     }
-    PondFish.draw(ctx,drawX,drawY,profile,angle,.98,Math.sin(t*16)*(1-p));
+    const reveal=PondFish.reveal(p,anglerState.catchOrigin.y,fish.y);
+    if(reveal<1){
+        const offset=PondFish.shadow.size*PondFish.shadow.mouth;
+        PondFish.drawShadow(ctx,pose.mouth.x-Math.cos(angle)*offset,pose.mouth.y-Math.sin(angle)*offset,angle,PondFish.shadow.opacity*(1-reveal),Math.sin(t*16));
+    }
+    if(reveal>0){
+        ctx.save();
+        if(p<.065){ctx.beginPath();ctx.rect(0,0,1000,Math.max(0,anglerState.catchOrigin.y-18));ctx.clip();}
+        PondFish.draw(ctx,drawX,drawY,profile,angle,.98*reveal,Math.sin(t*16)*(1-p));
+        ctx.restore();
+    }
     ctx.restore();
     const splashDuration=.28;
     if(p*PondCatch.duration<splashDuration) {

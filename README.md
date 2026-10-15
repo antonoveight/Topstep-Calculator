@@ -164,7 +164,7 @@ Kế hoạch phiên đã được loại khỏi giao diện và phép tính. D�
 
 Kiểm tra nguồn chart dùng MediaStream giả trong bộ kiểm thử; phiên TikTok/Topstep thật không được phát trong quá trình phát triển.
 
-Trong hồ câu, +1R hiển thị cá thường, +2R hiển thị cá lớn, Full TP hiển thị cá lớn với màu và hoa văn nổi bật. Tick thẳng TP cũng dùng mức cao nhất. Màu, dáng và hoa văn được chọn ngẫu nhiên theo lượt, giữ nguyên khi tải lại hoặc bỏ tick rồi tick lại; bắt đầu lượt mới sẽ chọn lại. Cá có ánh sáng trên thân, vảy và vây để tạo chiều sâu. Giỏ đan sâu che một phần cá tự nhiên sau khi cất, chân đèn đứng riêng bên trái giỏ.
+Trong hồ câu, cá dưới nước luôn là cùng một bóng mờ với kích thước cố định, không lộ màu, vảy hay hoa văn khi chuyển +1R/+2R. Chỉ khi đóng tay hoặc TP, cá vượt khỏi mặt nước mới lộ hình dạng thật: mức +1R cá thường, +2R cá lớn, Full TP cá lớn với màu và hoa văn nổi bật; tick thẳng TP cũng dùng mức cao nhất. Màu, dáng và hoa văn được chọn ngẫu nhiên theo lượt, giữ nguyên khi tải lại hoặc bỏ tick rồi tick lại; bắt đầu lượt mới sẽ chọn lại. Cá được thu lên có ánh sáng trên thân, vảy và vây để tạo chiều sâu. Giỏ đan sâu che một phần cá tự nhiên sau khi cất, chân đèn đứng riêng bên trái giỏ. Kiểm tra bóng cá và thời điểm lộ hình bằng `node tests/pond-hidden-fish.cjs`.
 
 Nút **Đóng lệnh thủ công · Thu cá** dùng sau khi đã đóng lệnh trên chart, từ bước vào lệnh hoặc khi đang ở +1R/+2R. Nút thu cá theo mức đang chọn, giữ nguyên ô TP và không tự ghi lợi nhuận hay gửi lệnh giao dịch. Lượt được lưu là **Đóng lệnh thủ công**, tách với Full TP; tải lại trang giữ nguyên loại cá và không phát lại động tác. Studio cũng có lựa chọn này trong nhóm kết quả. Kiểm tra bằng `node tests/pond-fish.cjs` và `node tests/pond-manual.cjs`.
 
