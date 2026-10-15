@@ -10,7 +10,7 @@ assert.ok(fast.fish.y<origin.y-150,'Fish must burst upward within 100 ms');
 assert.ok(fast.tip.y<start.tip.y-150,'Rod must snap up within 100 ms');
 assert.ok(Catch.sample(.12,origin).tip.y>raised.tip.y,'Rod should recoil once after the strike');
 assert.equal(done.phase,'done');assert.equal(done.deposited,true);assert.equal(done.attached,false);
-assert.deepEqual(done.fish,{x:134,y:493});
+assert.deepEqual(done.fish,{x:134,y:504});
 let previous=start;
 for(let i=1;i<=2000;i++) {
  const p=Catch.sample(i/2000,origin);

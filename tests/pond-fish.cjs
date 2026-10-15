@@ -7,10 +7,9 @@ for(let seed=0;seed<200;seed++){
  assert.ok(normal.size<big.size&&big.size<tp.size);
  assert.deepEqual(tp,Fish.profile(seed,7));
  variants.add(JSON.stringify([tp.colors,tp.pattern,tp.depth]));
- // The entire landed silhouette, including fins and tail, fits the oval opening.
- const left=tp.size*.8,right=tp.size*.55,vertical=tp.size*.4*tp.depth;
- assert.ok((left/73)**2+(tp.size*.26/31)**2<1);
- assert.ok(right<73&&vertical<31);
+ // The creel holds the fish lengthwise; its wall may naturally hide the lower body.
+ assert.ok(tp.size*.8<Fish.basket.rx-3&&tp.size*.55<Fish.basket.rx-3);
+ assert.ok(Fish.basket.x-Fish.basket.rx>71,'Lamp post must stand outside the creel');
  const pose=Catch.sample(.4,{x:630,y:435},tp.size*tp.mouth);
  assert.ok(Math.abs(Math.hypot(pose.mouth.x-pose.fish.x,pose.mouth.y-pose.fish.y)-tp.size*.55)<1e-9);
 }

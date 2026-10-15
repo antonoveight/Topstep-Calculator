@@ -123,3 +123,7 @@
 .pond-scene-settings summary{cursor:pointer}.pond-scene-settings>div{display:flex;gap:16px;flex-wrap:wrap;padding:10px 0}
 .pond-scene-settings label{display:flex;gap:8px;align-items:center}.pond-scene-settings select{padding:5px;max-width:190px}
 #rusticAnglerCard[data-fullscreen="true"] .pond-scene-settings,#rusticAnglerCard[data-studio="true"] .pond-scene-settings{display:none}
+
+.pond-controls{flex-wrap:wrap}.pond-manual-close{padding:0;display:flex;justify-content:flex-end}.pond-manual-close button{font-size:11px;min-height:38px;white-space:nowrap}
+.pond-manual-close button:disabled{opacity:.45;cursor:default}
+#rusticAnglerCard[data-fullscreen="true"] .pond-manual-close,#rusticAnglerCard[data-studio="true"] .pond-manual-close{display:none!important}

@@ -12,8 +12,8 @@ const PondCatch=(()=>{
             {p:.12,fish:[566,242],tip:[428,181]},
             {p:.5,fish:[354,286],tip:[351,233]},
             {p:.8,fish:[134,431],tip:[151,352]},
-            {p:.94,fish:[134,493],tip:[200,303]},
-            {p:1,fish:[134,493],tip:[345,256]}
+            {p:.94,fish:[134,504],tip:[200,303]},
+            {p:1,fish:[134,504],tip:[345,256]}
         ];
         let index=keys.findIndex(k=>k.p>=p);if(index<1)index=1;
         const a=keys[index-1],b=keys[index],local=clamp((p-a.p)/(b.p-a.p));
@@ -29,7 +29,7 @@ const PondCatch=(()=>{
         const float=attached?{x:mouth.x,y:mouth.y-17}:{x:tip.x+12,y:tip.y+28};
         return {progress:p,fish,tip,mouth,float,angle,attached,deposited,
             phase:p<.12?'lift':p<.5?'reel':p<.94?'basket':'done',
-            label:p<.12?'Giật cá khỏi mặt nước':p<.5?'Thu dây, đưa cá về bến':p<.94?'Đưa cá vào rổ':'Đã cất cá vào rổ'};
+            label:p<.12?'Giật cá khỏi mặt nước':p<.5?'Thu dây, đưa cá về bến':p<.94?'Đưa cá vào giỏ':'Đã cất cá vào giỏ'};
     }
     return {sample,duration};
 })();

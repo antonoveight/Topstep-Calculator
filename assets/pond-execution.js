@@ -1,7 +1,7 @@
 /* Outcomes are manual observations, independent of financial journal records. */
 const PondExecution=(()=>{
     const storageKey='topstep_pond_outcomes_v1';
-    const outcomes={tp:'Full TP',be:'Hòa vốn · BE',half:'Dừng lỗ · −0.5R',sl:'Dừng lỗ · −1R',skip:'Bỏ qua setup'};
+    const outcomes={manual:'Đóng lệnh thủ công',tp:'Full TP',be:'Hòa vốn · BE',half:'Dừng lỗ · −0.5R',sl:'Dừng lỗ · −1R',skip:'Bỏ qua setup'};
     const fallbackSeeds=new Map();
     let data={current:{},history:[],reopened:{},fishSeeds:{}},invalid=false,started=-99,sceneKey='';
     try {
@@ -9,7 +9,7 @@ const PondExecution=(()=>{
         if(saved) {data=validate(saved);}
     }catch{invalid=true;}
     function validate(value){
-        const valid=r=>r&&typeof r.id==='string'&&typeof r.account==='string'&&['combine','xfa'].includes(r.stage)&&[1,2,3,4].includes(r.setup)&&Object.hasOwn(outcomes,r.outcome)&&['yes','no','unrated'].includes(r.rating)&&Number.isFinite(Date.parse(r.at));
+        const valid=r=>r&&typeof r.id==='string'&&typeof r.account==='string'&&['combine','xfa'].includes(r.stage)&&[1,2,3,4].includes(r.setup)&&Object.hasOwn(outcomes,r.outcome)&&['yes','no','unrated'].includes(r.rating)&&Number.isFinite(Date.parse(r.at))&&(r.outcome!=='manual'||Number.isInteger(r.catchStage)&&r.catchStage>=4&&r.catchStage<=6);
         if(!value||!value.current||Array.isArray(value.current)||!Array.isArray(value.history)||value.history.length>300||!Object.values(value.current).every(valid)||!value.history.every(valid))throw new Error('Dữ liệu kết quả hồ câu không hợp lệ.');
         if(value.reopened&&(!Object.values(value.reopened).every(id=>typeof id==='string')||Array.isArray(value.reopened)))throw new Error('Lượt đang sửa không hợp lệ.');
         if(value.fishSeeds&&(!value.fishSeeds||Array.isArray(value.fishSeeds)||typeof value.fishSeeds!=='object'||!Object.values(value.fishSeeds).every(n=>Number.isInteger(n)&&n>=0&&n<=4294967295)))throw new Error('Invalid fish seeds');
@@ -37,9 +37,9 @@ const PondExecution=(()=>{
     }
     function notify(record,type='pond-outcome'){document.dispatchEvent(new CustomEvent(type,{detail:record}));}
     function finish(outcome) {
-        if(!Object.hasOwn(outcomes,outcome)||data.current[key()])return false;
+        if(!Object.hasOwn(outcomes,outcome)||data.current[key()]||outcome==='manual'&&readPondChecklist().stage<4)return false;
         const a=getActiveAccount(),record={id:data.reopened[key()]||crypto.randomUUID(),account:a.id,stage:a.stage,setup:activeChecklistSetup,
-            outcome,fishSeed:fishSeed(),rating:'unrated',at:new Date().toISOString()};
+            outcome,...(outcome==='manual'?{catchStage:readPondChecklist().stage}:{}),fishSeed:fishSeed(),rating:'unrated',at:new Date().toISOString()};
         const next=structuredClone(data);next.current[key()]=record;delete next.reopened[key()];
         const old=next.history.findIndex(r=>r.id===record.id);if(old>=0)next.history[old]=record;else next.history.push(record);next.history=next.history.slice(-300);
         if(!save(next))return false;
@@ -53,12 +53,13 @@ const PondExecution=(()=>{
             const draft=structuredClone(data);draft.reopened[key()]=draft.current[key()].id;delete draft.current[key()];save(draft);
         }
     }
+    function isCatch(record=current()){return record?.outcome==='tp'||record?.outcome==='manual';}
     function age(){return sceneKey===key()?Math.max(0,anglerState.time-started):99;}
     function refresh() {
         const record=current(),select=document.getElementById('pondOutcomeRating'),status=document.getElementById('pondOutcomeStatus');
         if(select){select.disabled=!record?.id;select.value=record?.rating||'unrated';}
         if(status)status.textContent=record?outcomes[record.outcome]+' · đánh giá quy trình riêng với kết quả lệnh':'Chỉ ghi nhận sau khi bạn xác nhận trên chart. Không tự tính hoặc gửi lệnh.';
-        document.querySelectorAll('[data-pond-outcome]').forEach(b=>{b.disabled=!!record;});
+        document.querySelectorAll('[data-pond-outcome]').forEach(b=>{b.disabled=!!record||b.dataset.pondOutcome==='manual'&&readPondChecklist().stage<4;});
         [...[1,2,3,4].map(i=>document.getElementById('chk-s'+activeChecklistSetup+'-'+i)),...['1r','2r','tp'].map(id=>document.getElementById('chk-risk-'+id))].forEach(input=>{if(input)input.disabled=!!record&&record.outcome!=='tp';});
         if(record){
             document.getElementById('anglerCastBtnText').textContent='Bắt đầu lượt mới';
@@ -74,7 +75,13 @@ const PondExecution=(()=>{
     function choose(outcome) {
         if(current())return;
         if(outcome==='tp'){document.getElementById('chk-risk-tp').checked=true;onChecklistChange();return;}
-        if(finish(outcome)){refresh();renderQuietPond();}
+        if(finish(outcome)){
+            if(outcome==='manual'){
+                anglerState.catchOrigin={x:anglerState.bobber.x,y:anglerState.bobber.y+24};
+                anglerState.catchProgress=0;playAnglerSound('catch');
+            }
+            refresh();renderQuietPond();
+        }
     }
     function newRound() {
         const draft=structuredClone(data);delete draft.current[key()];delete draft.reopened[key()];delete draft.fishSeeds[key()];if(!save(draft))return;fallbackSeeds.delete(key());
@@ -84,7 +91,8 @@ const PondExecution=(()=>{
     }
     function clearCurrent() {const draft=structuredClone(data);draft.current={};draft.reopened={};draft.fishSeeds={};const saved=save(draft);if(saved)fallbackSeeds.clear();return saved;}
     function mount() {
-        document.getElementById('rusticAnglerCard').insertAdjacentHTML('beforeend',`<details class="pond-execution"><summary>Kết thúc lượt &amp; đánh giá</summary><div class="pond-outcome-buttons">${Object.entries(outcomes).map(([value,label])=>`<button type="button" class="b-btn-secondary" data-pond-outcome="${value}">${label}</button>`).join('')}</div><label class="pond-rating">Tuân thủ điều kiện đã chọn?<select id="pondOutcomeRating"><option value="unrated">Chưa đánh giá</option><option value="yes">Có</option><option value="no">Có thay đổi / chưa đúng</option></select></label><p id="pondOutcomeStatus" class="ws-muted"></p></details>`);
+        document.getElementById('rusticAnglerCard').insertAdjacentHTML('beforeend',`<div class="pond-manual-close"><button type="button" class="b-btn-secondary" data-pond-outcome="manual" title="Ghi nhận bạn đã đóng trên chart và thu cá theo mức R hiện tại">Đóng lệnh thủ công · Thu cá</button></div><details class="pond-execution"><summary>Kết thúc lượt &amp; đánh giá</summary><div class="pond-outcome-buttons">${Object.entries(outcomes).filter(([value])=>value!=='manual').map(([value,label])=>`<button type="button" class="b-btn-secondary" data-pond-outcome="${value}">${label}</button>`).join('')}</div><label class="pond-rating">Tuân thủ điều kiện đã chọn?<select id="pondOutcomeRating"><option value="unrated">Chưa đánh giá</option><option value="yes">Có</option><option value="no">Có thay đổi / chưa đúng</option></select></label><p id="pondOutcomeStatus" class="ws-muted"></p></details>`);
+        document.querySelector('#rusticAnglerCard .pond-controls').append(document.querySelector('.pond-manual-close'));
         document.querySelectorAll('[data-pond-outcome]').forEach(b=>b.onclick=()=>choose(b.dataset.pondOutcome));
         document.getElementById('pondOutcomeRating').onchange=e=>{
             const record=current();if(!record?.id)return;
@@ -99,6 +107,6 @@ const PondExecution=(()=>{
     const reset=resetChecklist;
     window.resetChecklist=function(){if(clearCurrent())reset();};
     window.addEventListener('load',mount);
-    return {current,fishSeed,onChecklist,refresh,choose,newRound,age,history:()=>structuredClone(data.history),labels:outcomes,validate,reload};
+    return {current,isCatch,fishSeed,onChecklist,refresh,choose,newRound,age,history:()=>structuredClone(data.history),labels:outcomes,validate,reload};
 })();
 window.PondExecution=PondExecution;

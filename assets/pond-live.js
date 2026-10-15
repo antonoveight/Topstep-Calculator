@@ -39,7 +39,7 @@ const PondLive=(()=>{
         $('pondStudioContinue').hidden=!rest;$('btnAnglerCastReel').disabled=rest;
         if(rest){$('anglerCastBtnText').textContent='Đã nghỉ';$('btnAnglerCastReel').setAttribute('aria-label','Đã nghỉ theo điều kiện đã chọn');}
         else if($('anglerCastBtnText').textContent==='Đã nghỉ'){$('anglerCastBtnText').textContent=result?'Bắt đầu lượt mới':readPondChecklist().action;$('btnAnglerCastReel').setAttribute('aria-label',$('anglerCastBtnText').textContent);}
-        document.querySelectorAll('[data-studio-outcome]').forEach(b=>{b.disabled=!!result;});
+        document.querySelectorAll('[data-studio-outcome]').forEach(b=>{b.disabled=!!result||b.dataset.studioOutcome==='manual'&&readPondChecklist().stage<4;});
         $('studioRoundRating').disabled=!result?.id;
         $('studioChangeSetup').value=String(s?.setup||activeChecklistSetup);
         if($('btnPondStudio')){$('btnPondStudio').setAttribute('aria-pressed',String(!!s));$('btnPondStudio').title=s?'Mở lại buổi đang theo dõi':'Mở studio livestream';}

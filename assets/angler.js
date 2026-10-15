@@ -192,7 +192,7 @@ function handleCastReelButtonClick() {
 
 function getPondBend() {
     const result=window.PondExecution?.current();
-    return result&&result.outcome!=='tp' ? .04 : [0,0,.08,.28,1,.65,.35,.2][anglerState.stage];
+    return result&&!PondExecution.isCatch(result) ? .04 : [0,0,.08,.28,1,.65,.35,.2][anglerState.stage];
 }
 
 function updateAnglerState(_count,_risk1,_risk2,_tp,options={}) {
@@ -266,13 +266,14 @@ function renderQuietPond() {
     if(layered)document.getElementById('rusticCanvasContainer').classList.remove('pond-image-error');
     if(image.style.filter!==filter)image.style.filter=filter;
     if(layered)ctx.drawImage(sceneBase,0,0,w,h);
-    const outcome=window.PondExecution?.current(),ended=outcome&&outcome.outcome!=='tp';
+    const outcome=window.PondExecution?.current(),manual=outcome?.outcome==='manual',ended=outcome&&!PondExecution.isCatch(outcome);
+    if(manual)anglerState.catchProgress=anglerState.motionPaused||anglerState.reducedMotion?1:Math.min(1,PondExecution.age()/PondCatch.duration);
     if(ended)anglerState.fish.state=PondExecution.age()<2?'departing':'idle';
-    const parked=ended&&PondExecution.age()>=1.4||anglerState.stage===7&&anglerState.catchProgress>=1;
+    const parked=ended&&PondExecution.age()>=1.4||(anglerState.stage===7||manual)&&anglerState.catchProgress>=1;
     const active=anglerState.stage>0&&(!ended||PondExecution.age()<1.4)&&!parked;
     const cast=(1-Math.pow(1-anglerState.castProgress,3))*(ended?Math.max(0,1-PondExecution.age()/1.4):1);
-    const caught=anglerState.stage===7;
-    const fishProfile=PondFish.profile(window.PondExecution?.fishSeed()??1,anglerState.stage);
+    const caught=anglerState.stage===7||manual;
+    const fishProfile=PondFish.profile(window.PondExecution?.fishSeed()??1,manual?outcome.catchStage:anglerState.stage);
     anglerState.fishProfile=fishProfile;
     const catchPose=caught?PondCatch.sample(anglerState.catchProgress,anglerState.catchOrigin,fishProfile.size*fishProfile.mouth):null;
     anglerState.catchPose=catchPose;
@@ -393,7 +394,7 @@ function drawPondWater(ctx,t,filter) {
 function drawPondTargetFish(ctx,bobber,t,caught) {
     if(anglerState.stage<2 || caught) return;
     const outcome=window.PondExecution?.current();
-    if(outcome&&outcome.outcome!=='tp') {
+    if(outcome&&!PondExecution.isCatch(outcome)) {
         const age=PondExecution.age();
         if(age<2&&outcome.outcome!=='skip')drawPondFish(ctx,650+age*80,440+age*24,31,.25,(1-age/2)*.35,false,Math.sin(t*4));
         return;
@@ -487,7 +488,7 @@ function drawPondAtmosphere(ctx,t) {
     ctx.restore();
     if(night<.001) return;
     ctx.save();
-    [[137,437,48],[466,122,42]].forEach(([x,y,r])=>{
+    [[57,437,48],[466,122,42]].forEach(([x,y,r])=>{
         const pulse=.95+Math.sin(t*1.3+x)*.05;
         const glow=ctx.createRadialGradient(x,y,1,x,y,r);
         glow.addColorStop(0,`rgba(255,211,120,${night*.82*pulse})`);
@@ -511,7 +512,13 @@ function drawPondLanding(ctx,pose,t,filter) {
     const profile=anglerState.fishProfile,offset=profile.size*profile.mouth;
     const drawX=pose.attached?pose.mouth.x-Math.cos(angle)*offset:fish.x;
     const drawY=pose.attached?pose.mouth.y-Math.sin(angle)*offset:fish.y;
+    ctx.save();
+    if(p>.9){
+        const b=PondFish.basket;
+        ctx.beginPath();ctx.ellipse(b.x,b.y,b.rx-3,b.ry-3,0,0,Math.PI*2);ctx.clip();
+    }
     PondFish.draw(ctx,drawX,drawY,profile,angle,.98,Math.sin(t*16)*(1-p));
+    ctx.restore();
     const splashDuration=.28;
     if(p*PondCatch.duration<splashDuration) {
         const age=p*PondCatch.duration/splashDuration;
@@ -524,7 +531,7 @@ function drawPondLanding(ctx,pose,t,filter) {
         }
         ctx.restore();
     }
-    const label='Full TP · '+pose.label;
+    const label=(window.PondExecution?.current()?.outcome==='manual'?'Đóng thủ công':'Full TP')+' · '+pose.label;
     if(document.getElementById('anglerStatusText').textContent!==label) document.getElementById('anglerStatusText').textContent=label;
     anglerState.fish.state=pose.deposited?'basket':'lifted';
 }

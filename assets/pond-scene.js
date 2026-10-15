@@ -9,7 +9,7 @@ const PondScene=(()=>{
     function gain(){return motion==='gentle'?.55:1;}
     function viewport(width,height,studio=false){
         const scale=Math.max(width/1000,height/750)*(studio?1.08:1);
-        const x=studio?Math.min(0,Math.max(width-1000*scale,width/2-442*scale)):(width-1000*scale)/2;
+        const x=studio?Math.min(0,Math.max(width-1000*scale,width/2-413*scale)):(width-1000*scale)/2;
         const y=studio?Math.min(0,Math.max(height-750*scale,height/2-405*scale)):(height-750*scale)/2;
         return {scale,x,y};
     }
@@ -48,8 +48,8 @@ const PondScene=(()=>{
         swing(ctx,sprite('foliage',filter,[0,0,620,540]),[0,0,295,257],[0,257],wind*.011);
         swing(ctx,sprite('foliage',filter,[0,550,440,536]),[0,337,115,170],[0,507],wind*.036);
         swing(ctx,sprite('foliage',filter,[1000,640,448,446]),[780,500,220,250],[1000,750],-wind*.035);
-        ctx.drawImage(sprite('post',filter,[393,167,548,934]),108,388,43,91);
-        swing(ctx,sprite('lantern',filter,[399,64,447,1084]),[124,405,25,61],[135,405],wind*.033);
+        ctx.drawImage(sprite('post',filter,[393,167,548,934]),28,388,43,91);
+        swing(ctx,sprite('lantern',filter,[399,64,447,1084]),[44,405,25,61],[55,405],wind*.033);
     }
     function load(){
         for(const [name,file] of Object.entries(files)){
