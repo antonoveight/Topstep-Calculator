@@ -1,0 +1,14 @@
+.pond-copy-public,.pond-public-caption,.pond-public-note{display:none}
+#rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) :is(#anglerCastBtnText,.pond-copy-normal){display:none}
+#rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) .pond-copy-public{display:inline}
+#rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) .pond-public-caption{display:flex;position:absolute;inset:0 0 auto;z-index:3;align-items:flex-start;justify-content:space-between;gap:8px;padding:14px 12px 26px;pointer-events:none;background:linear-gradient(#082029c9,transparent);text-shadow:0 1px 3px #0008;color:#f2faf7}
+.pond-public-caption strong{display:block;font-size:11px;line-height:1.4;font-weight:650;letter-spacing:.045em}
+.pond-public-caption #pondPublicSource{display:block;font-size:10px;line-height:1.6;color:#d8e9e4;margin-top:3px}
+.pond-public-state{font-size:10px;line-height:1.4;padding:4px 7px;background:#082923b8;border:1px solid #a0c4b53b;border-radius:20px;white-space:nowrap}
+#rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) .pond-public-note{display:block;position:absolute;inset:auto 0 4px;z-index:3;pointer-events:none;text-align:center;color:#e4f1ed;font-size:9px;line-height:1.5;text-shadow:0 1px 3px #000;background:#08202980;padding:3px 6px}
+.pond-live-caption,.pond-live-principle{display:none}
+#rusticAnglerCard[data-studio="true"] .pond-controls{bottom:32px;padding:0 8px}
+#rusticAnglerCard[data-fullscreen="true"] .pond-controls{padding-bottom:max(28px,env(safe-area-inset-bottom))}
+.pond-source-setting{display:flex;flex-direction:column;gap:6px;margin:10px 0;font-size:12px;color:var(--text-muted)}
+.pond-source-setting select{padding:8px;background:var(--bg-card-inner);color:var(--text-primary);border:1px solid var(--border-card);border-radius:8px;max-width:100%}
+@media(max-width:420px){.pond-public-caption strong{font-size:9px}.pond-public-caption #pondPublicSource,.pond-public-state{font-size:9px}#rusticAnglerCard:is([data-fullscreen="true"],[data-studio="true"]) .pond-public-caption{padding:10px 8px 22px}}

@@ -394,6 +394,7 @@ function renderQuietPond() {
     PondScene.drawForeground(ctx,t,filter,grade.night);
     PondAmbient.draw(ctx,t,image,filter,grade.night,layered);
     drawPondAtmosphere(ctx,t);
+    window.PondPublic?.refresh();
 }
 
 function drawPondFish(ctx,x,y,size,angle,opacity,golden,tail=0) {
