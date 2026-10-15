@@ -1,4 +1,4 @@
-/* One scene, two controls. Native fullscreen with an accessible modal fallback. */
+/* One scene with compact controls. Native fullscreen and an accessible modal fallback. */
 (() => {
     let session=null;
     const card=()=>document.getElementById('rusticAnglerCard');

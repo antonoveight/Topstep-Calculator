@@ -44,7 +44,8 @@ assert.equal(Public.copy(7,{outcome:'tp'},true,true).status,'Reeling in');
     await page.evaluate(step=>triggerCastStep(step),step);
     assert.equal(await page.locator('#pondPublicState').textContent(),step<4?'Waiting':'Managing');
    }
-   await page.locator('.pond-copy-public').filter({hasText:'Log close'}).click();
+   await page.evaluate(()=>{document.getElementById('chk-risk-1r').checked=true;onChecklistChange();});
+   await manual.click();
    await page.waitForFunction(()=>anglerState.catchProgress===1&&PondExecution.current()?.outcome==='manual');
    assert.equal(await page.locator('#pondPublicState').textContent(),'Close logged');
   }
@@ -61,7 +62,7 @@ assert.equal(Public.copy(7,{outcome:'tp'},true,true).status,'Reeling in');
   }
   await page.locator('#swapPondPanes').click();assert.equal(await page.locator('#pondPublicSource').isVisible(),true);
   await page.locator('#closePondStudio').click();assert.equal(await page.locator('#anglerCastBtnText').isVisible(),true);
-  assert.equal(await page.locator('.pond-copy-normal').isVisible(),true);
+  assert.equal(await manual.locator('.pond-copy-normal').isVisible(),true);
   await page.evaluate(()=>PondPublic.setSource('xfa'));
   await page.locator('#btnPondFullscreen').click();assert.equal(await page.locator('#pondPublicSource').textContent(),'XFA · SIMULATED');
   assert.equal(await page.locator('#pondPublicAction').isVisible(),true);

@@ -16,7 +16,7 @@ const {chromium}=require('../.review-tools/node_modules/playwright');
   assert.equal(await page.evaluate(()=>anglerState.reducedMotion),true,'Do not change the system setting');
   await page.evaluate(()=>triggerCastStep(1));
   assert.ok(await page.evaluate(()=>anglerState.castProgress<1),'Override plays the actual casting animation');
-  await page.evaluate(()=>{triggerCastStep(2);triggerCastStep(3);triggerCastStep(4);PondExecution.choose('manual');});
+  await page.evaluate(()=>{triggerCastStep(2);triggerCastStep(3);triggerCastStep(4);document.getElementById('chk-risk-1r').checked=true;onChecklistChange();PondExecution.choose('manual');});
   await page.waitForFunction(()=>anglerState.catchPose?.phase==='lift');
   await page.waitForFunction(()=>anglerState.catchPose?.deposited);
   await page.reload();await page.waitForFunction(()=>anglerState.isLoopRunning&&anglerState.rafId!==null);

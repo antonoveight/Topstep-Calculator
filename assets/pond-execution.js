@@ -37,8 +37,9 @@ const PondExecution=(()=>{
         catch{alert('Chưa lưu được kết quả hồ câu. Dữ liệu trước đó được giữ nguyên.');return false;}
     }
     function notify(record,type='pond-outcome'){document.dispatchEvent(new CustomEvent(type,{detail:record}));}
+    function canReelManual(){const snapshot=readPondChecklist();return snapshot.risk[0]||snapshot.risk[1];}
     function finish(outcome) {
-        if(!Object.hasOwn(outcomes,outcome)||data.current[key()]||outcome==='manual'&&readPondChecklist().stage<4)return false;
+        if(!Object.hasOwn(outcomes,outcome)||data.current[key()]||outcome==='manual'&&!canReelManual())return false;
         const a=getActiveAccount(),record={id:data.reopened[key()]||crypto.randomUUID(),account:a.id,stage:a.stage,setup:activeChecklistSetup,
             outcome,...(['manual','half','sl'].includes(outcome)?{catchStage:readPondChecklist().stage}:{}),fishSeed:fishSeed(),rating:'unrated',at:new Date().toISOString()};
         const next=structuredClone(data);next.current[key()]=record;delete next.reopened[key()];
@@ -71,7 +72,9 @@ const PondExecution=(()=>{
         const record=current(),select=document.getElementById('pondOutcomeRating'),status=document.getElementById('pondOutcomeStatus');
         if(select){select.disabled=!record?.id;select.value=record?.rating||'unrated';}
         if(status)status.textContent=record?outcomes[record.outcome]+' · đánh giá quy trình riêng với kết quả lệnh':'Chỉ ghi nhận sau khi bạn xác nhận trên chart. Không tự tính hoặc gửi lệnh.';
-        document.querySelectorAll('[data-pond-outcome]').forEach(b=>{b.disabled=!!record||b.dataset.pondOutcome==='manual'&&readPondChecklist().stage<4;});
+        document.querySelectorAll('[data-pond-outcome]').forEach(b=>{b.disabled=!!record||b.dataset.pondOutcome==='manual'&&!canReelManual();});
+        const manualButton=document.querySelector('[data-pond-outcome="manual"]');
+        if(manualButton)manualButton.title='Cần đánh dấu 1R hoặc BE / +2R trước khi đóng thủ công và thu cá';
         [...[1,2,3,4].map(i=>document.getElementById('chk-s'+activeChecklistSetup+'-'+i)),...['1r','2r','tp'].map(id=>document.getElementById('chk-risk-'+id))].forEach(input=>{if(input)input.disabled=!!record&&record.outcome!=='tp';});
         if(record){
             document.getElementById('anglerCastBtnText').textContent='Bắt đầu lượt mới';
@@ -105,6 +108,14 @@ const PondExecution=(()=>{
     function mount() {
         document.getElementById('rusticAnglerCard').insertAdjacentHTML('beforeend',`<div class="pond-manual-close"><button type="button" class="b-btn-secondary" data-pond-outcome="manual" title="Ghi nhận bạn đã đóng trên chart và thu cá theo mức R hiện tại">Đóng lệnh thủ công · Thu cá</button></div><details class="pond-execution"><summary>Kết thúc lượt &amp; đánh giá</summary><div class="pond-outcome-buttons">${Object.entries(outcomes).filter(([value])=>value!=='manual').map(([value,label])=>`<button type="button" class="b-btn-secondary" data-pond-outcome="${value}">${label}</button>`).join('')}</div><label class="pond-rating">Tuân thủ điều kiện đã chọn?<select id="pondOutcomeRating"><option value="unrated">Chưa đánh giá</option><option value="yes">Có</option><option value="no">Có thay đổi / chưa đúng</option></select></label><p id="pondOutcomeStatus" class="ws-muted"></p></details>`);
         document.querySelector('#rusticAnglerCard .pond-controls').append(document.querySelector('.pond-manual-close'));
+        const losses=document.createElement('div');losses.className='pond-loss-controls';
+        for(const [value,label,english] of [['half','Đóng −0.5R','Close −0.5R'],['sl','SL −1R','SL −1R']]){
+            const button=document.querySelector(`[data-pond-outcome="${value}"]`);
+            button.innerHTML=`<span class="pond-copy-normal">${label}</span><span class="pond-copy-public" aria-hidden="true">${english}</span>`;
+            button.title=value==='half'?'Ghi nhận lỗ −0.5R · Đứt cước, cá thoát':'Ghi nhận SL −1R · Gãy ngọn cần';
+            losses.append(button);
+        }
+        document.querySelector('#rusticAnglerCard .pond-controls').append(losses);
         document.querySelectorAll('[data-pond-outcome]').forEach(b=>b.onclick=()=>choose(b.dataset.pondOutcome));
         document.getElementById('pondOutcomeRating').onchange=e=>{
             const record=current();if(!record?.id)return;

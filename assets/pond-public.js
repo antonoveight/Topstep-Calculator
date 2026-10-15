@@ -22,11 +22,11 @@ const PondPublic=(()=>{
         if(wide){
             const title=rest?'Session paused by my personal rules':record?'Start a new round in my journal':'Record my next checklist step; this does not place a trade';
             button.title=title;button.setAttribute('aria-label',text.action+'. '+title);
-            if(manual){manual.title='Record a trade I already closed on the chart and reel in the illustrated fish';manual.setAttribute('aria-label','Log close and reel in the illustrated fish');}
+            if(manual){manual.title='Requires a checked +1R or BE / +2R milestone; record a trade already closed on the chart';manual.setAttribute('aria-label','Log close after +1R and reel in the illustrated fish');}
             canvas.setAttribute('aria-label','Illustrated personal trading journal. '+text.status+'. Steps are manually logged.');
         }else if(wasWide){
             button.title=$('anglerCastBtnText').textContent;button.setAttribute('aria-label',button.title);
-            if(manual){manual.title='Ghi nhận bạn đã đóng trên chart và thu cá theo mức R hiện tại';manual.setAttribute('aria-label','Đã đóng trên chart · Thu cá');}
+            if(manual){manual.title='Cần đánh dấu 1R hoặc BE / +2R trước khi đóng thủ công và thu cá';manual.setAttribute('aria-label','Đóng thủ công từ 1R · Thu cá');}
             canvas.setAttribute('aria-label',$('anglerStatusText').textContent);
         }
         wasWide=wide;
@@ -35,7 +35,7 @@ const PondPublic=(()=>{
         $('rusticCanvasContainer').insertAdjacentHTML('beforeend','<div class="pond-public-caption"><div><strong>PERSONAL TRADING JOURNAL</strong><span id="pondPublicSource">SOURCE NOT CONFIRMED</span></div><span id="pondPublicState" class="pond-public-state"></span></div><div class="pond-public-note">Manually logged · Not investment advice</div>');
         $('anglerCastBtnText').insertAdjacentHTML('afterend','<span class="pond-copy-public" id="pondPublicAction" aria-hidden="true"></span>');
         const manual=document.querySelector('.pond-manual-close button');
-        manual.textContent='';manual.insertAdjacentHTML('beforeend','<span class="pond-copy-normal">Đóng lệnh thủ công · Thu cá</span><span class="pond-copy-public" aria-hidden="true">Log close · Reel in</span>');
+        manual.textContent='';manual.insertAdjacentHTML('beforeend','<span class="pond-copy-normal">Đóng thủ công ≥1R</span><span class="pond-copy-public" aria-hidden="true">Close ≥1R</span>');
         const options='<option value="">Chưa xác nhận nguồn chart</option><option value="combine">Trading Combine · Mô phỏng</option><option value="xfa">XFA · Mô phỏng</option>';
         const control=id=>'<label class="pond-source-setting">Loại tài khoản của nguồn chart<select id="'+id+'">'+options+'</select></label>';
         document.querySelector('.pond-scene-settings > div').insertAdjacentHTML('beforeend',control('pondSourceType'));

@@ -9,6 +9,14 @@ const {chromium}=require('../.review-tools/node_modules/playwright');
   await page.waitForFunction(()=>anglerState.isLoopRunning&&PondScene.ready());
   const manual=page.locator('[data-pond-outcome="manual"]');
   assert.equal(await manual.isDisabled(),true);
+  await page.evaluate(()=>{for(let step=1;step<=4;step++)triggerCastStep(step);});
+  assert.equal(await manual.isDisabled(),true,'Entry alone cannot award a fish');
+  const before=await page.evaluate(()=>PondExecution.history().length);
+  await page.evaluate(()=>PondExecution.choose('manual'));
+  assert.equal(await page.evaluate(()=>PondExecution.current()),null,'Direct calls must obey the same milestone requirement');
+  assert.equal(await page.evaluate(()=>PondExecution.history().length),before);
+  await page.locator('#chk-risk-1r').check();await page.locator('#chk-risk-1r').uncheck();
+  assert.equal(await manual.isDisabled(),true,'Removing 1R disables manual catch again');
   for(const [risk,tier] of [['1r',1],['2r',2]]){
    await page.evaluate(()=>PondExecution.newRound());
    await page.locator('#chk-risk-'+risk).check();
@@ -32,7 +40,7 @@ const {chromium}=require('../.review-tools/node_modules/playwright');
    assert.equal(await page.evaluate(()=>anglerState.fishProfile.tier),tier);
    assert.equal(await page.evaluate(()=>anglerState.catchPose.progress),1);
   }
-  await page.evaluate(()=>{PondExecution.newRound();triggerCastStep(1);triggerCastStep(2);triggerCastStep(3);triggerCastStep(4);toggleAnglerMotion();});
+  await page.evaluate(()=>{PondExecution.newRound();triggerCastStep(1);triggerCastStep(2);triggerCastStep(3);triggerCastStep(4);document.getElementById('chk-risk-1r').checked=true;onChecklistChange();toggleAnglerMotion();});
   await manual.click();assert.equal(await page.evaluate(()=>anglerState.catchPose.progress),1);
   await page.locator('#rusticAnglerCard').screenshot({path:'output/pond-manual-creel.png'});
   await page.evaluate(()=>{
