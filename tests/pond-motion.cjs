@@ -1,0 +1,42 @@
+const assert=require('node:assert/strict'),path=require('node:path');
+const {chromium}=require('../.review-tools/node_modules/playwright');
+(async()=>{
+ const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+ try{
+  const page=await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),errors=[];
+  page.on('pageerror',e=>errors.push(e.message));await page.route('https://**/*',r=>r.abort());
+  await page.goto('file:///'+path.resolve('index.html').replaceAll('\\','/')+'#checklist');
+  await page.waitForFunction(()=>anglerState.isLoopRunning&&anglerState.reducedMotion&&anglerState.visible);
+  const button=page.locator('#btnToggleAnglerMotion');
+  assert.equal(await page.evaluate(()=>anglerState.motionMode),'system');
+  assert.equal(await page.evaluate(()=>anglerState.rafId),null);
+  assert.equal(await button.isEnabled(),true,'Reduced-motion preference must not lock the override');
+  await button.click();await page.waitForFunction(()=>anglerState.rafId!==null);
+  assert.equal(await page.evaluate(()=>anglerState.motionMode),'on');
+  assert.equal(await page.evaluate(()=>anglerState.reducedMotion),true,'Do not change the system setting');
+  await page.evaluate(()=>triggerCastStep(1));
+  assert.ok(await page.evaluate(()=>anglerState.castProgress<1),'Override plays the actual casting animation');
+  await page.evaluate(()=>{triggerCastStep(2);triggerCastStep(3);triggerCastStep(4);PondExecution.choose('manual');});
+  await page.waitForFunction(()=>anglerState.catchPose?.phase==='lift');
+  await page.waitForFunction(()=>anglerState.catchPose?.deposited);
+  await page.reload();await page.waitForFunction(()=>anglerState.isLoopRunning&&anglerState.rafId!==null);
+  assert.equal(await page.evaluate(()=>anglerState.motionMode),'on');
+  await page.emulateMedia({reducedMotion:'no-preference'});await page.emulateMedia({reducedMotion:'reduce'});
+  assert.equal(await page.evaluate(()=>anglerState.rafId!==null),true,'System changes must respect an explicit On choice');
+  await button.click();assert.equal(await page.evaluate(()=>anglerState.rafId),null);
+  await page.reload();await page.waitForFunction(()=>anglerState.isLoopRunning);
+  assert.equal(await page.evaluate(()=>anglerState.motionMode),'off');
+  await page.locator('.pond-scene-settings summary').click();
+  await page.locator('#pondMotionMode').selectOption('system');
+  assert.equal(await page.evaluate(()=>anglerState.rafId),null);
+  await page.emulateMedia({reducedMotion:'no-preference'});await page.waitForFunction(()=>anglerState.rafId!==null);
+  await page.emulateMedia({reducedMotion:'reduce'});await page.waitForFunction(()=>anglerState.rafId===null);
+  await page.locator('#pondMotionMode').selectOption('on');await page.waitForFunction(()=>anglerState.rafId!==null);
+  await page.locator('.pond-scene-settings summary').click();
+  await page.locator('#btnPondFullscreen').click();await page.waitForFunction(()=>document.fullscreenElement&&anglerState.rafId!==null);
+  await page.keyboard.press('Escape');
+  await page.evaluate(()=>switchAppView('dashboard'));assert.equal(await page.evaluate(()=>anglerState.rafId),null,'Forced On still stops off screen');
+  assert.deepEqual(errors,[]);
+  console.log('PASS reduced-motion default, clickable override, real cast/manual landing, reload persistence, system changes, selector and off-screen stop');
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

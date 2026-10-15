@@ -67,6 +67,9 @@ const PondScene=(()=>{
         const bar=document.querySelector('.pond-timebar');
         bar.insertAdjacentHTML('afterend','<details class="pond-scene-settings"><summary>Chuyển động &amp; hiển thị</summary><div><label>Chuyển động<select id="pondMotionLevel"><option value="gentle">Nhẹ</option><option value="balanced">Vừa</option></select></label><label>Tải máy<select id="pondPerformance"><option value="auto">Tự động</option><option value="light">Nhẹ — khi đang live</option></select></label><a href="assets/pond/preview-v2.webm" target="_blank" rel="noopener">Xem đoạn mẫu 25 giây ↗</a></div></details>');
         document.getElementById('pondMotionLevel').value=motion;document.getElementById('pondPerformance').value=performance;
+        bar.nextElementSibling.querySelector('div').insertAdjacentHTML('afterbegin','<label>Phát hiệu ứng<select id="pondMotionMode"><option value="system">Theo hệ thống</option><option value="on">Luôn bật cho hồ</option><option value="off">Tắt hiệu ứng</option></select></label>');
+        document.getElementById('pondMotionMode').value=anglerState.motionMode;
+        document.getElementById('pondMotionMode').onchange=e=>setAnglerMotionMode(e.target.value);
         document.getElementById('pondMotionLevel').onchange=e=>{motion=e.target.value;try{localStorage.setItem('topstep_pond_motion_level',motion);}catch{}renderQuietPond();};
         document.getElementById('pondPerformance').onchange=e=>{performance=e.target.value;try{localStorage.setItem('topstep_pond_performance',performance);}catch{}syncAnglerMotion();};
     }

@@ -2,7 +2,7 @@
 let anglerState = {
     stepCount:0, isRisk1r:false, isRisk2r:false, isRiskTp:false,
     isLoopRunning:false, audioEnabled:false, audioCtx:null,
-    motionPaused:false, reducedMotion:false, visible:false, rafId:null,
+    motionPaused:false, motionMode:'system', reducedMotion:false, visible:false, rafId:null,
     time:0, lastFrame:0, castProgress:0, catchProgress:0,
     ripples:[], bobber:{x:650,y:412}, fish:{state:'idle'},
     geometry:null, catchOrigin:{x:630,y:435}, catchPose:null, snapshot:null, phase:0, stage:0, phaseTime:99, transitionSerial:0, lastEffect:null,
@@ -17,7 +17,7 @@ function initRusticAngler() {
     anglerState.isLoopRunning=true;
     try {anglerState.timeMode=PondClock.normalizeMode(localStorage.getItem('topstep_angler_time_mode'));} catch (_) {}
     updatePondClock(new Date(),true);
-    try { anglerState.motionPaused=localStorage.getItem('topstep_angler_motion_paused')==='true'; } catch (_) {}
+    restoreAnglerMotionPreference();
     const media=window.matchMedia('(prefers-reduced-motion: reduce)');
     anglerState.reducedMotion=media.matches;
     media.addEventListener('change',e=>{anglerState.reducedMotion=e.matches; syncAnglerMotion();});
@@ -68,6 +68,18 @@ function initRusticAngler() {
     updateAnglerState(anglerState.stepCount,anglerState.isRisk1r,anglerState.isRisk2r,anglerState.isRiskTp,{restore:true});
 }
 
+function restoreAnglerMotionPreference() {
+    try {
+        const value=localStorage.getItem('topstep_angler_motion_paused');
+        anglerState.motionMode=value==='true'?'off':value==='false'?'on':'system';
+        anglerState.motionPaused=anglerState.motionMode==='off';
+    }catch (_) {}
+}
+
+function isAnglerMotionPaused() {
+    return anglerState.motionPaused||(anglerState.motionMode!=='on'&&anglerState.reducedMotion);
+}
+
 function syncAnglerMotion() {
     const stage=document.getElementById('rusticCanvasContainer');
     if(!stage || !anglerState.isLoopRunning) return;
@@ -77,14 +89,15 @@ function syncAnglerMotion() {
         if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
     }
     const animate=anglerState.visible && !document.hidden && stage.style.display!=='none' &&
-        document.getElementById('view-checklist').style.display!=='none' && !anglerState.motionPaused && !anglerState.reducedMotion;
+        document.getElementById('view-checklist').style.display!=='none' && !isAnglerMotionPaused();
     const button=document.getElementById('btnToggleAnglerMotion');
-    const paused=anglerState.motionPaused || anglerState.reducedMotion;
+    const paused=isAnglerMotionPaused();
     schedulePondClock();
     button.setAttribute('aria-pressed',String(paused));
-    button.setAttribute('aria-label',anglerState.reducedMotion ? 'Chuyển động giảm theo cài đặt hệ thống' : (paused ? 'Tiếp tục chuyển động' : 'Tạm dừng chuyển động'));
+    button.setAttribute('aria-label',paused&&anglerState.motionMode==='system'&&anglerState.reducedMotion ? 'Bật chuyển động cho hồ (hệ thống đang giảm chuyển động)' : (paused ? 'Tiếp tục chuyển động' : 'Tạm dừng chuyển động'));
     button.title=button.getAttribute('aria-label');
-    button.disabled=anglerState.reducedMotion;
+    button.disabled=false;
+    const mode=document.getElementById('pondMotionMode');if(mode)mode.value=anglerState.motionMode;
     document.getElementById('anglerPauseGlyph').style.display=paused?'none':'block';
     document.getElementById('anglerPlayGlyph').style.display=paused?'block':'none';
     if(!animate && anglerState.rafId!==null) {
@@ -127,8 +140,13 @@ function quietPondLoop(timestamp) {
 }
 
 function toggleAnglerMotion() {
-    anglerState.motionPaused=!anglerState.motionPaused;
-    try {localStorage.setItem('topstep_angler_motion_paused',String(anglerState.motionPaused));} catch (_) {}
+    setAnglerMotionMode(isAnglerMotionPaused()?'on':'off');
+}
+
+function setAnglerMotionMode(mode) {
+    if(!['system','on','off'].includes(mode))return;
+    anglerState.motionMode=mode;anglerState.motionPaused=mode==='off';
+    try {localStorage.setItem('topstep_angler_motion_paused',mode==='system'?'system':String(mode==='off'));} catch (_) {}
     syncAnglerMotion();
 }
 
@@ -247,7 +265,7 @@ function updateAnglerState(_count,_risk1,_risk2,_tp,options={}) {
         : next.phase===0?'Kiên nhẫn cũng là một vị thế.':'Bước tiếp theo: '+next.nextLabel+'.';
     document.getElementById('anglerStatusDot').style.background=next.phase===3?'#d4ac6f':'#45c3b4';
     document.getElementById('rusticAnglerCanvas').setAttribute('aria-label',next.status);
-    if(anglerState.motionPaused || anglerState.reducedMotion) {
+    if(isAnglerMotionPaused()) {
         anglerState.castProgress=next.stage>0?1:0;anglerState.catchProgress=next.stage===7?1:0;
         anglerState.rodBend=getPondBend();anglerState.reelAmount=next.stage>=6?1:0;
     }
@@ -276,7 +294,7 @@ function renderQuietPond() {
     if(image.style.filter!==filter)image.style.filter=filter;
     if(layered)ctx.drawImage(sceneBase,0,0,w,h);
     const outcome=window.PondExecution?.current(),manual=outcome?.outcome==='manual',ended=outcome&&!PondExecution.isCatch(outcome);
-    if(manual)anglerState.catchProgress=anglerState.motionPaused||anglerState.reducedMotion?1:Math.min(1,PondExecution.age()/PondCatch.duration);
+    if(manual)anglerState.catchProgress=isAnglerMotionPaused()?1:Math.min(1,PondExecution.age()/PondCatch.duration);
     if(ended)anglerState.fish.state=PondExecution.age()<2?'departing':'idle';
     const parked=ended&&PondExecution.age()>=1.4||(anglerState.stage===7||manual)&&anglerState.catchProgress>=1;
     const active=anglerState.stage>0&&(!ended||PondExecution.age()<1.4)&&!parked;
@@ -464,7 +482,7 @@ function readPondSchedule() {
 function restorePondPreferences() {
     try {
         anglerState.timeMode=PondClock.normalizeMode(localStorage.getItem('topstep_angler_time_mode'));
-        anglerState.motionPaused=localStorage.getItem('topstep_angler_motion_paused')==='true';
+        restoreAnglerMotionPreference();
         const collapsed=localStorage.getItem('topstep_angler_collapsed')==='true';
         document.getElementById('rusticCanvasContainer').style.display=collapsed?'none':'block';
         const button=document.getElementById('btnToggleAnglerCollapse');
@@ -479,7 +497,7 @@ function restorePondPreferences() {
 function updatePondClock(now=new Date(),instant=false) {
     const clock=PondClock.context(now,anglerState.timeMode,readPondSchedule());
     anglerState.clock=clock;anglerState.lightingTarget={...clock.palette};
-    if(instant || anglerState.motionPaused || anglerState.reducedMotion) anglerState.lighting={...clock.palette};
+    if(instant || isAnglerMotionPaused()) anglerState.lighting={...clock.palette};
     document.getElementById('pondTimeMode').value=clock.mode;
     const period=document.getElementById('pondPeriodText');
     period.textContent=clock.label+(clock.preview?' · Xem thử':'');

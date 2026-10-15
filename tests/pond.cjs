@@ -58,6 +58,7 @@ const path=require('node:path');
   await page.waitForFunction(()=>anglerState.rafId!==null);
   console.log('PASS pause persistence, collapse/resume, no animation on dashboard');
 
+  await page.evaluate(()=>setAnglerMotionMode('system'));
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.waitForFunction(()=>anglerState.reducedMotion);
   assert.equal(await page.evaluate(()=>anglerState.rafId),null);
