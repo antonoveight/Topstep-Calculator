@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TopstepX to Cockpit Sync (1-Click Sync)
 // @namespace    https://topstep.cockpit/
-// @version      1.1
+// @version      1.2
 // @description  Tự động đồng bộ số dư, PnL ngày và lệnh từ TopstepX sang Cockpit cá nhân
 // @author       Topstep Cockpit
 // @match        https://topstepx.com/*
@@ -62,29 +62,71 @@
         document.body.appendChild(btn);
     }
 
+        function getActiveTopstepTradeDate(now = new Date()) {
+            try {
+                let ctDateStr = now.toLocaleString("en-US", { timeZone: "America/Chicago" });
+                let ctDate = new Date(ctDateStr);
+
+                let year = ctDate.getFullYear();
+                let month = ctDate.getMonth();
+                let day = ctDate.getDate();
+                let dayOfWeek = ctDate.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+                let hours = ctDate.getHours();
+                let minutes = ctDate.getMinutes();
+
+                let isAfterCutoff = hours >= 17;
+                let tradeDate = new Date(year, month, day);
+
+                if (dayOfWeek === 6) {
+                    // Saturday -> Next trade date is Monday (+2 days)
+                    tradeDate.setDate(day + 2);
+                } else if (dayOfWeek === 0) {
+                    // Sunday -> Next trade date is Monday (+1 day)
+                    tradeDate.setDate(day + 1);
+                } else if (dayOfWeek === 5 && isAfterCutoff) {
+                    // Friday after 3:10 PM CT -> Friday market closed EOD! Next trade date is Monday (+3 days)
+                    tradeDate.setDate(day + 3);
+                } else if (isAfterCutoff) {
+                    // Mon-Thu after 3:10 PM CT -> Market closed EOD! Next trade date is tomorrow (+1 day)
+                    tradeDate.setDate(day + 1);
+                }
+
+                let yyyy = tradeDate.getFullYear();
+                let mm = String(tradeDate.getMonth() + 1).padStart(2, '0');
+                let dd = String(tradeDate.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            } catch (e) {
+                let yyyy = now.getFullYear();
+                let mm = String(now.getMonth() + 1).padStart(2, '0');
+                let dd = String(now.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            }
+        }
+
+
     // 2. Tự động cào dữ liệu từ màn hình TopstepX
     function scrapeTopstepXData() {
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
-        const todayStr = `${year}-${month}-${day}`;
+        const todayStr = getActiveTopstepTradeDate(now);
 
-        let scrapedPnl = 0;
+        let scrapedPnl = null;
         let scrapedSymbol = 'MGC';
         let scrapedAccount = '';
 
         try {
-            const allElements = Array.from(document.querySelectorAll('*'));
+            const allElements = Array.from(document.querySelectorAll('body *:not(script):not(style):not(noscript)'));
 
             // 1. Tìm RP&L hoặc Total P&L
             for (const el of allElements) {
                 const text = (el.textContent || '').trim();
                 // Ví dụ: RP&L: $855.30 hoặc Total P&L $855.30
-                if (text.includes("RP&L:") || text.includes("Total P&L") || text.includes("Realized P&L")) {
-                    const match = text.match(/([+-]?\$[\d,]+(?:\.\d+)?)/);
+                if (text.length < 160 && (text.includes("RP&L") || text.includes("Total P&L") || text.includes("Realized P&L"))) {
+                    const match = text.match(/(?:RP&L:?|Total P&L|Realized P&L)\s*:?\s*([+-]?\$\s*-?[\d,]+(?:\.\d+)?)/);
                     if (match) {
-                        const val = parseFloat(match[1].replace(/[$,]/g, ''));
+                        const val = parseFloat(match[1].replace(/[$,\s]/g, ''));
                         if (!isNaN(val)) {
                             scrapedPnl = val;
                             break;
@@ -96,7 +138,7 @@
             // 2. Tìm mã tài khoản EXPRESS-V2-DLL...
             for (const el of allElements) {
                 const text = (el.textContent || '').trim();
-                if (text.includes("EXPRESS-") || text.includes("50K DLL EXPRESS") || text.includes("TS-")) {
+                if (text.length < 200 && (text.includes("EXPRESS-") || text.includes("50K DLL EXPRESS") || text.includes("TS-"))) {
                     const m = text.match(/EXPRESS-[A-Za-z0-9-]+/) || text.match(/TS-[A-Za-z0-9-]+/);
                     if (m) {
                         scrapedAccount = m[0];
@@ -108,7 +150,7 @@
             // 3. Tìm mã hợp đồng (MGC, GC, MNQ, NQ, MES...)
             for (const el of allElements) {
                 const text = (el.textContent || '').trim();
-                const m = text.match(/\b(MGC|GC|MNQ|NQ|MES|ES|MCL|CL|MYM|YM|M2K|RTY|MBT|BTC)\b/);
+                const m = text.length < 200 && text.match(/\b(MGC|GC|MNQ|NQ|MES|ES|MCL|CL|MYM|YM|M2K|RTY|MBT|BTC)\b/);
                 if (m) {
                     scrapedSymbol = m[1];
                     break;
@@ -182,7 +224,7 @@
                     </div>
                     <div>
                         <label style="font-size: 11px; font-weight: 600; color: #94A3B8; display: block; margin-bottom: 4px;">Lãi / Lỗ Chốt Phiên ($ USD)</label>
-                        <input id="sync-input-pnl" type="number" step="0.01" value="${data.pnl || 350}" style="width: 100%; background: #1A2234; border: 1px solid #1F2937; border-radius: 8px; padding: 8px 12px; color: #10B981; font-weight: 800; font-size: 16px; outline: none;">
+                        <input id="sync-input-pnl" type="number" step="0.01" value="${data.pnl ?? ''}" style="width: 100%; background: #1A2234; border: 1px solid #1F2937; border-radius: 8px; padding: 8px 12px; color: #10B981; font-weight: 800; font-size: 16px; outline: none;">
                     </div>
                 </div>
 
@@ -201,7 +243,8 @@
         document.getElementById('ts-submit-sync-btn').onclick = () => {
             const date = document.getElementById('sync-input-date').value;
             const symbol = document.getElementById('sync-input-symbol').value;
-            const pnl = parseFloat(document.getElementById('sync-input-pnl').value) || 0;
+            const pnl = parseFloat(document.getElementById('sync-input-pnl').value);
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(pnl)) { alert('Vui lòng kiểm tra ngày và nhập PnL hợp lệ.'); return; }
 
             const payload = {
                 date: date,
@@ -216,7 +259,8 @@
             const targetUrl = `${COCKPIT_URL}#topstepx=${base64}`;
 
             // Mở hoặc chuyển tab sang Cockpit
-            window.open(targetUrl, '_blank');
+            if (typeof GM_openInTab === 'function') GM_openInTab(targetUrl, {active:true, insert:true});
+            else window.open(targetUrl, '_blank', 'noopener');
             modal.remove();
         };
     }

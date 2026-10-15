@@ -12,9 +12,10 @@
 function setupTopstepTracker() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getActiveSheet();
+  if (SpreadsheetApp.getUi().alert("Khởi tạo bảng Topstep", "Toàn bộ dữ liệu trong tab hiện tại sẽ bị xóa. Tiếp tục?", SpreadsheetApp.getUi().ButtonSet.YES_NO) !== SpreadsheetApp.getUi().Button.YES) return;
   sheet.setName("Topstep Risk Dashboard");
   sheet.clear();
-  sheet.setGridlines(true);
+  sheet.setHiddenGridlines(false);
 
   // 1. Header Title
   sheet.getRange("A1:K1").merge()
@@ -49,7 +50,7 @@ function setupTopstepTracker() {
   sheet.getRange("I3:K3").merge().setValue("🛡️ KIỂM TRA CONSISTENCY & SỐ NGÀY").setFontWeight("bold").setBackground("#1e293b").setFontColor("#94a3b8");
   sheet.getRange("I4").setValue("Tổng Lãi Ngày Cao Nhất:"); sheet.getRange("J4").setFormula("=MAX(E12:E100)");
   sheet.getRange("I5").setValue("% Ngày Cao Nhất / Lãi Tổng:"); sheet.getRange("J5").setFormula("=IF(F4>0, J4/F4, 0)");
-  sheet.getRange("I6").setValue("Số Ngày Giao Dịch Riêng Biệt:"); sheet.getRange("J6").setFormula("=COUNTUNIQUE(A12:A100)");
+  sheet.getRange("I6").setValue("Số Ngày Giao Dịch Riêng Biệt:"); sheet.getRange("J6").setFormula('=IFERROR(COUNTUNIQUE(FILTER(A12:A100,A12:A100<>"")),0)');
   sheet.getRange("I7").setValue("Trạng Thái Trình Đỗ Combine:"); 
   sheet.getRange("J7:K7").merge().setFormula('=IF(AND(F4>=F6, J5<=0.55, J6>=2), "🎉 ĐỦ ĐIỀU KIỆN CẤP VỐN!", IF(AND(F4>=F6, J6<2), "ℹ️ CẦN THÊM NGÀY (Mới đạt " & J6 & "/2 ngày)", IF(J4>B6*0.55, "ℹ️ TARGET SCALE LÊN " & TEXT(F6, "$#,##0") & " (Cần " & TEXT(F6-F4, "$#,##0") & ")", "🟢 ĐANG THI (<=55%)")))');
 
@@ -78,7 +79,7 @@ function setupTopstepTracker() {
   sheet.setRowHeight(11, 32);
 
   // Formulas for Daily Rows
-  for (var i = 12; i <= 30; i++) {
+  for (var i = 12; i <= 100; i++) {
     sheet.getRange(i, 6).setFormula('=IF(ISBLANK(A' + i + '), "", IF(ROW()=12, B5+E12, F' + (i-1) + '+E' + i + '))');
     sheet.getRange(i, 7).setFormula('=IF(ISBLANK(A' + i + '), "", MIN(B$5, B$5-B$7+MAX(0, MAX(F$12:F' + i + ')-B$5)))');
     sheet.getRange(i, 8).setFormula('=IF(ISBLANK(A' + i + '), "", F' + i + '-G' + i + ')');
@@ -87,8 +88,8 @@ function setupTopstepTracker() {
   }
 
   // Formatting Numbers
-  sheet.getRange("E12:H50").setNumberFormat("$#,##0.00");
-  sheet.getRange("J12:J50").setNumberFormat("0.0%");
+  sheet.getRange("E12:H100").setNumberFormat("$#,##0.00");
+  sheet.getRange("J12:J100").setNumberFormat("0.0%");
 
   // Auto column widths
   for (var col = 1; col <= 11; col++) {

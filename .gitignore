@@ -4,3 +4,5 @@
 extracted_doc.txt
 *.docx
 *.pdf
+.review-tools/
+output/

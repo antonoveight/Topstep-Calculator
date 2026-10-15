@@ -1,31 +1,140 @@
-# 📊 Topstep® Multi-Account Risk & Payout Dashboard (2026)
+# Finpoint Cockpit · Topstep
 
-Hệ thống quản trị rủi ro đa tài khoản, theo dõi Target Scaling và mô phỏng đợt rút tiền Payout chuẩn quy định Topstep® Combine & Express Funded Account (XFA).
+Ứng dụng web tĩnh quản lý nhật ký giao dịch, rủi ro và lịch sử payout cá nhân cho tài khoản Combine/XFA. HTML nằm trong `index.html`; quy tắc, lưu trữ và giao diện nâng cao được tách trong `assets/`. `topstep.html` là bản sao tương thích.
 
-## 🌟 Tính Năng Nổi Bật
+## Chạy ứng dụng
 
-- **💳 Quản Lý Đa Tài Khoản (Multi-Account Engine)**: Quản lý nhiều tài khoản cùng lúc với mã ID chuỗi tùy chỉnh (VD: `TS-50K-001`, `XFA-100K-MAIN`).
-- **🎯 Bảng Tính Target Scaling (Combine®)**: Tự động đếm ngày thi, tính mức PnL an toàn hàng ngày giúp đỗ Combine mà không bị vi phạm quy tắc Consistency 55%.
-- **🏷️ Bảng Giá & Thông Số 3 Gói Vốn Topstep®**: Cập nhật chuẩn gói $50K ($85/tháng), $100K ($129/tháng), $150K ($199/tháng) với quyền lợi Responsible Trading Advantage (DOUBLE Payout Caps, miễn phí kích hoạt XFA $0).
-- **💰 Mô Phỏng Payout XFA®**: Tự động đếm ngày thắng ($\ge +\$150$ EOD), kiểm tra tỷ lệ Consistency và tính hạn mức tiền rút tối đa đợt hiện tại dựa trên $50\%$ lợi nhuận và Payout Cap ($2K-$4K / $3K-$6K / $5K-$10K).
-- **⚡ Calculator Vị Thế An Toàn**: Tính khối lượng Lot Micro / Mini tối đa dựa theo số tiền cắt lỗ ($ USD) và số Ticks Stop Loss.
-- **📊 Đồng Bộ Bảng Tính Google Sheets**: Hỗ trợ xuất file CSV nhật ký EOD và hỗ trợ mã Google Apps Script tự động.
+Mở `index.html` bằng Chrome hoặc Edge. Không cần Node.js hay backend để sử dụng. Tailwind CSS có sẵn trong `assets/tailwind.css`; Google Fonts là tùy chọn qua mạng; phân tích ảnh cần kết nối Gemini và API key của bạn.
 
-## 🚀 Hướng Dẫn Chạy Trang Web
+Dữ liệu lưu trong LocalStorage. Hãy dùng cùng trình duyệt và cùng địa chỉ mở ứng dụng: `file://`, localhost hoặc tên miền khác nhau có thể có vùng dữ liệu riêng. Hai tệp HTML cũng có thể có vùng lưu riêng khi mở trực tiếp.
 
-Trang web được xây dựng thuần **HTML5 + TailwindCSS + JavaScript**. Không cần cài đặt NodeJS hay Server.
-1. Mở file `topstep.html` bằng bất kỳ trình duyệt web nào (Chrome, Edge, Brave, Safari).
-2. Lưu dữ liệu tự động 100% vào LocalStorage của trình duyệt.
+## Chức năng
 
-## 📂 Cấu Trúc Dự Án
+- Quản lý nhiều tài khoản $50K/$100K/$150K, chuyển vòng Combine/XFA, lưu trữ tài khoản đã đóng.
+- Nhật ký mặc định chỉ nhập ngày, sản phẩm, PnL. **Ghi chú & tùy chọn** thu gọn các trường bổ sung; **Sửa** chỉnh bản ghi, **⋯** mở chi tiết/lịch sử và xóa. Nhật ký EOD hoặc từng lệnh: sửa, ghi chú, liên kết chart, setup, risk ban đầu, đánh giá tuân thủ; lưu tối đa 30 lần sửa gần nhất.
+- Phiên tạm tính không nâng MLL trailing và chưa đủ điều kiện payout; sửa phiên đã chốt cần xác nhận.
+- Thống kê theo bốn setup: số lệnh, PnL, tỷ lệ thắng, tổng R đã biết và tuân thủ đã đánh giá. Tổng kết EOD và bản ghi cũ không được tính thành lệnh.
+- Tự giữ mốc trước khi thay dữ liệu; xem, tải JSON và khôi phục trong **Nhật ký → Khôi phục**. Tối đa 12 mốc; giảm số mốc khi thiếu dung lượng, không ghi tiếp nếu không giữ được mốc mới nhất. Phát hiện tab khác đã thay dữ liệu và yêu cầu tải lại.
+- Combine: mục tiêu điều chỉnh theo Consistency 55%; ghi nhớ việc chạm MLL trong lịch sử.
+- XFA: số dư bắt đầu $0, MLL ban đầu âm theo gói; khóa MLL tại $0 sau payout đầu tiên.
+- Standard/Consistency payout theo từng chu kỳ: kiểm tra số ngày, lợi nhuận và hạn mức. Đây là **ghi nhận cá nhân**, không gửi yêu cầu rút hay đặt lệnh lên Topstep.
+- Calculator tính Micro và hợp đồng lớn theo ngân sách SL và ticks/points; trả về 0 khi không đủ ngân sách.
+- Checklist CRT–FRVP, Trend, AMD, Break; lưu trạng thái sau khi tải lại; mô phỏng hồ câu bằng Canvas.
+- Hồ câu có nút **Toàn màn hình 16:9**: chỉ hiện cảnh hồ và một nút thao tác như “Thả câu”. Nhấn **Esc** hoặc chạm đúp mặt hồ để thoát; giữ nguyên tiến độ checkbox. Nếu trình duyệt chặn Fullscreen API, ứng dụng mở chế độ phủ toàn màn hình trong trang. Màn hình khác tỷ lệ 16:9 có viền tối để giữ tỷ lệ cảnh.
+- Hồ Câu Tĩnh Tâm dùng cảnh minh họa 2.5D theo mẫu đã duyệt, với cần/dây/phao và gợn nước bằng Canvas. Điều khiển nằm ngoài cảnh; hỗ trợ tạm dừng, giảm chuyển động theo hệ thống và tự dừng khi không hiển thị. Trên điện thoại, checklist nằm ngay sau hồ câu.
+- Hồ có nước dao động, lau nhẹ, cá nền xuất hiện ngẫu nhiên và cá mục tiêu riêng. Các bước vào lệnh đọc theo setup và điều kiện trước đó; tích sai thứ tự không tự hoàn thành bước còn thiếu. Các ô quản lý +1R/BE/TP **độc lập**, được lưu riêng theo từng setup: có thể tick BE hoặc TP trực tiếp mà không cần trailing trước. TP được ưu tiên khi vẫn có các ô khác được tích.
+- TP có cú giật mạnh khoảng 0,2 giây, cần bật lên trước rồi cá vọt khỏi nước, có nhịp hồi cần ngắn. Sau đó thu dây về bến → đưa cá vào rổ → thu cần; toàn chuỗi khoảng 3,2 giây. Khôi phục trang hiển thị cá đã nằm trong rổ, không phát lại sự kiện. Tạm dừng/giảm chuyển động hiển thị ngay kết quả cuối.
+- Trên desktop, hồ ghim bên trái và quản lý lệnh nằm dưới checklist bên phải. Trên màn hình nhỏ, hồ ghim ở dạng gọn để vẫn tick được các ô bên dưới; nút phóng to cho phép xem cảnh lớn khi cần. Thanh đầu trang cuộn đi trong chế độ Checklist để không che hồ.
+- Ánh sáng **Tự động / Sáng / Trưa / Chiều / Tối**: tự động dùng giờ Việt Nam, sáng 05–10h, trưa 10–14h, chiều 14–18h, tối 18–05h. Chọn xem thử chỉ đổi cảnh, không đổi đồng hồ, checklist hoặc lịch hoạt động. Nhãn lịch đọc các khung giờ có sẵn trong dự án; khung Mỹ tính độ lệch giờ Chicago mùa đông. Đây là lịch hiển thị của dự án, không phải dữ liệu thị trường trực tiếp.
+- Gemini Chart Lens: tải/dán ảnh, chọn mô hình và đọc kết quả phân tích.
+- Xuất CSV EOD; sao lưu/khôi phục JSON gồm cả hai vòng, payout và tùy chọn checklist/giao diện.
+- Userscript Tampermonkey hỗ trợ lấy PnL từ giao diện TopstepX.
 
+## Quy tắc tính toán
+
+MLL dựa trên **số dư chốt ngày**, không lấy đỉnh của từng bản ghi trong cùng ngày. Chu kỳ payout loại ngày yêu cầu payout trước. Standard cần 5 ngày thắng từ $150; sau payout đầu, phải có lợi nhuận ròng dương trong chu kỳ mới. Consistency cần 3 ngày và ngày lãi cao nhất không quá 40% lợi nhuận ròng chu kỳ. Payout tối đa bằng 50% số dư XFA và chịu trần theo gói.
+
+| Gói | Standard | Consistency | Standard ưu đãi DLL | Consistency ưu đãi DLL |
+| --- | ---: | ---: | ---: | ---: |
+| $50K | $2,000 | $3,000 | $4,000 | $6,000 |
+| $100K | $3,000 | $4,000 | $6,000 | $8,000 |
+| $150K | $5,000 | $6,000 | $10,000 | $12,000 |
+
+Trong **Sửa tài khoản**, chỉ bật ưu đãi gấp đôi trần khi tài khoản thực tế được hưởng ưu đãi DLL lúc mua Combine. Ưu đãi độc lập với phí kích hoạt; dữ liệu cũ mặc định dùng trần cơ bản.
+
+Nguồn đối chiếu ngày **15/10/2026**: [Combine Parameters](https://help.topstep.com/en/articles/8284197-trading-combine-parameters), [Maximum Loss Limit](https://help.topstep.com/en/articles/8284204-what-is-the-maximum-loss-limit), [Payout Policy](https://help.topstep.com/en/articles/8284233-topstep-payout-policy).
+
+Ứng dụng dùng EOD do người dùng ghi nhận, không quan sát lỗ chưa chốt trong phiên hoặc tự xác nhận ngày đã khóa trên Topstep. Calculator xét ngân sách SL, đệm MLL (chừa $0.01 trước ngưỡng), DLL nếu bật và giới hạn hợp đồng. DLL có thể ghi nhận bật/tắt trong **Calculator → Giới hạn tài khoản**. Với XFA, nhập số mini được TopstepX Risk Settings cho phép và ngày phiên áp dụng; chưa xác nhận hoặc khác ngày sẽ trả về 0 hợp đồng. Không tự tăng tier giữa phiên. MBT dùng giới hạn sản phẩm riêng. Xem [Scaling Plan](https://help.topstep.com/en/articles/8284223-what-is-the-scaling-plan) và [DLL](https://help.topstep.com/en/articles/10490293-daily-loss-limit-in-the-trading-combine-and-express-funded-account). Calculator chưa tính phí, trượt giá hoặc vị thế đang mở. Phí gói hiển thị là cấu hình có sẵn, chưa được xác minh trong đợt rà soát này. Thực nhận dùng 90/10, chưa tính phí chuyển tiền/ưu đãi tài khoản cũ. Ngày giao dịch dùng Chicago, đổi phiên lúc 17:00 CT, xử lý cuối tuần; chưa tích hợp lịch nghỉ lễ CME.
+
+## Đồng bộ TopstepX
+
+1. Cài `topstepx_cockpit_sync.user.js` bằng Tampermonkey.
+2. Sửa `COCKPIT_URL` đầu script thành địa chỉ `index.html` của bạn. Nếu dùng `file://`, cho phép extension mở file cục bộ trong cài đặt trình duyệt khi cần.
+3. Tạo tài khoản Cockpit có ID khớp TopstepX và chọn đúng vòng Combine/XFA.
+4. Bấm **Đồng Bộ Cockpit** trên TopstepX, kiểm tra ngày, sản phẩm, PnL rồi xác nhận. PnL bằng 0 được giữ nguyên; nếu không đọc được, ô PnL để trống để bạn nhập.
+5. Cockpit hiển thị tài khoản/ngày, số bản ghi và PnL hiện tại so với PnL mới trước khi xác nhận. Đồng bộ thay toàn bộ bản ghi ngày đó bằng một tổng kết EOD và có mốc khôi phục trước khi ghi. ID không tìm thấy hoặc tài khoản lưu trữ sẽ bị từ chối.
+
+Userscript đọc DOM, không dùng API TopstepX; cần kiểm tra lại khi giao diện TopstepX thay đổi. Đồng bộ qua URL fragment và LocalStorage, không qua backend.
+
+## Sao lưu và Google Sheets
+
+Xuất JSON trước khi xóa dữ liệu trình duyệt hoặc chuyển máy. Import kiểm tra tài khoản, ngày, PnL và payout trước khi thay dữ liệu. API key Gemini không nằm trong backup; key lưu trong LocalStorage và ảnh được gửi đến Google khi chạy phân tích.
+
+`topstep_google_sheets_setup.js` là tiện ích **độc lập**, không tự đồng bộ hai chiều. Trong tab Sheets trống, mở Extensions → Apps Script, dán mã rồi chạy `setupTopstepTracker`. Script hỏi trước khi xóa tab hiện tại, tạo cấu hình Combine $50K và công thức cho dòng 12–100. Nhập mỗi ngày một dòng EOD, theo thứ tự ngày và liên tục. CSV xuất từ dashboard cùng cấu trúc 11 cột với `topstep_tracker_template.csv`.
+
+## Cấu trúc
+
+```text
+index.html                        Ứng dụng chính
+assets/cockpit.js                 Logic giao diện chính và tích hợp
+assets/trading-rules.js           Cấu hình, nguồn quy tắc, ledger và payout thuần
+assets/account-store.js           Ghi dữ liệu, mốc khôi phục và phát hiện xung đột
+assets/workspace.js               Nhật ký gọn, giới hạn, thống kê và khôi phục
+assets/workspace.css              Bố cục các phần quản lý mới
+assets/tailwind.css               CSS Tailwind cục bộ
+assets/angler.css                 Giao diện hồ câu và bố cục checklist
+assets/angler.js                  Lớp chuyển động tương tác hồ câu
+assets/pond-fullscreen.js         Toàn màn hình 16:9, một nút thao tác và khôi phục
+assets/pond-model.js              Trạng thái checkbox và điều kiện theo setup
+assets/pond-life.js               Cá nền, đường bơi và vùng nước
+assets/pond-clock.js              Giờ Việt Nam, buổi trong ngày và lịch dự án
+assets/pond-catch.js              Quỹ đạo giật cá, thu dây và đưa vào rổ
+assets/pond-time.css              Điều khiển ánh sáng và đồng hồ hồ câu
+assets/pond/quiet-pond.png         Cảnh minh họa đã duyệt
+topstep.html                      Bản sao tương thích
+topstepx_cockpit_sync.user.js      Tampermonkey TopstepX → Cockpit
+topstep_google_sheets_setup.js    Tiện ích Google Apps Script
+topstep_tracker_template.csv     CSV mẫu
+trading_playbook.md               Sổ tay giao dịch
+phamngocanhthong-topstep.*         Hình ảnh/tài liệu tham khảo
+tests/review.cjs                  Kiểm tra ứng dụng bằng Chrome
+tests/workspace.cjs               Nhập nhanh/sửa nhật ký, khôi phục, sizing và thống kê
+tests/integrations.cjs            Kiểm tra userscript và mock Apps Script
+tests/pond.cjs                    Kiểm tra hồ câu, chuyển động và responsive
+tests/pond-model.cjs              Kiểm tra 512 tổ hợp checkbox
+tests/pond-life.cjs               Mô phỏng cá bơi và giới hạn vùng nước
+tests/pond-clock.cjs              Mốc sáng/trưa/chiều/tối và đổi giờ Mỹ
+tests/pond-behavior.cjs            Tích sai thứ tự, khôi phục và đổi setup
+tests/pond-time.cjs               Đồng hồ tự cập nhật và xem thử ánh sáng
+tests/pond-catch.cjs              Quỹ đạo TP và kết quả trong rổ
+tests/pond-landing.cjs            TP trực tiếp, hồ ghim và ô quản lý khi cuộn
+tools/sync-html.cjs               Đồng bộ hai tệp HTML
+tools/build-css.cjs               Biên dịch lại CSS Tailwind cục bộ
+REVIEW.md                        Kết quả rà soát
 ```
-topstep/
-├── topstep.html                   # Trình quản lý Risk & Payout Dashboard
-├── topstep_tracker_template.csv   # File CSV mẫu nhật ký EOD
-├── topstep_google_sheets_setup.js # Mã Google Apps Script hỗ trợ
-└── README.md                      # Tài liệu hướng dẫn
+
+## Phát triển và kiểm tra
+
+Chỉnh `index.html`, sau đó đồng bộ bản tương thích. Chỉ phần phát triển/kiểm tra cần Node.js và Playwright:
+
+```powershell
+npm install --prefix .review-tools --no-save playwright
+node tools/sync-html.cjs
+node tests/review.cjs
+node tests/workspace.cjs
+node tests/integrations.cjs
+node tests/pond.cjs
+node tests/pond-model.cjs
+node tests/pond-life.cjs
+node tests/pond-clock.cjs
+node tests/pond-behavior.cjs
+node tests/pond-time.cjs
+node tests/pond-catch.cjs
+node tests/pond-landing.cjs
+node tests/pond-fullscreen.cjs
+node --check topstepx_cockpit_sync.user.js
+node --check topstep_google_sheets_setup.js
 ```
 
----
-*Disclaimer: Topstep® là thương hiệu đã được đăng ký. Công cụ được phát triển phục vụ mục đích quản trị rủi ro cá nhân.*
+Nếu thay đổi class Tailwind, tải trình biên dịch chính thức một lần rồi tạo lại CSS:
+
+```powershell
+Invoke-WebRequest https://cdn.tailwindcss.com/3.4.17 -OutFile .review-tools/tailwind-cdn.js
+node tools/build-css.cjs
+```
+
+Kiểm tra dùng Chrome tại đường dẫn mặc định Windows, có thể đổi bằng `CHROME_PATH`. Bộ kiểm tra tạo ngữ cảnh trình duyệt riêng, không truy cập hồ sơ cá nhân. Gemini, TopstepX và Sheets thật không được gọi trong bộ kiểm tra.
+
+Topstep® là thương hiệu của chủ sở hữu tương ứng. Dự án là công cụ quản lý cá nhân.
+
+Kế hoạch phiên đã được loại khỏi giao diện và phép tính. Dữ liệu kế hoạch cũ được giữ trong bản sao lưu để tương thích, không giới hạn calculator.

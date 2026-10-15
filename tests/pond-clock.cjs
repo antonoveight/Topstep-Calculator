@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict');
+const Clock=require('../assets/pond-clock.js');
+const at=(hour,minute=0,mode='auto')=>Clock.context(new Date(Date.UTC(2026,9,15,hour-7,minute)),mode);
+for(const [hour,minute,part]of [[4,59,'evening'],[5,0,'morning'],[9,59,'morning'],[10,0,'noon'],[13,59,'noon'],[14,0,'afternoon'],[17,59,'afternoon'],[18,0,'evening'],[23,59,'evening']]) assert.equal(at(hour,minute).part,part);
+assert.equal(at(8,20,'evening').clockText,'08:20');assert.equal(at(8,20,'evening').preview,true);
+assert.equal(at(8,20,'invalid').mode,'auto');
+const windows=[{start:1215,end:1350,usShift:true,label:'US',active:true},{start:1350,end:465,usShift:true,startOnly:true,label:'Rest',active:false}];
+assert.equal(Clock.context(new Date('2026-10-15T13:15:00Z'),'auto',windows).activity.label,'US');
+assert.equal(Clock.context(new Date('2026-12-15T13:15:00Z'),'auto',windows).activity.label,'Giữa các khung giờ');
+assert.equal(Clock.context(new Date('2026-12-15T14:15:00Z'),'auto',windows).activity.label,'US');
+assert.equal(Clock.context(new Date('2026-12-15T16:30:00Z'),'auto',windows).activity.label,'Rest');
+assert.equal(Clock.context(new Date('2026-12-15T18:00:00Z'),'auto',windows).activity.label,'Rest');
+console.log('PASS Vietnam daypart boundaries, preview isolation, Chicago DST offset, overnight schedule');

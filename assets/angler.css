@@ -1,0 +1,117 @@
+/* Quiet Pond: scoped presentation; the background and interactive layer share a 4:3 stage. */
+.finpoint-workspace { min-width:0; }
+.finpoint-workspace[data-view="checklist"] > .workspace-header { position:relative !important; top:auto !important; z-index:1 !important; }
+.pond-icon-button.pond-expand-button { display:none; }
+.pond-management-note { margin:0 0 12px; color:var(--text-muted); font-size:11px; line-height:1.6; }
+#checklist-section { display:grid; grid-template-columns:minmax(0,1fr); gap:24px; align-items:start; }
+.pond-column,.checklist-column,.checklist-stack,.checklist-knowledge { display:flex; flex-direction:column; gap:20px; min-width:0; }
+#rusticAnglerCard { padding:0; overflow:hidden; border:1px solid var(--border-card); background:var(--bg-card); box-shadow:0 14px 48px rgb(0 0 0 / .12); border-radius:18px; }
+.pond-header { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:20px 22px; }
+.pond-heading { display:flex; align-items:center; gap:12px; min-width:0; }
+.pond-mark { width:30px; height:30px; color:#40c8bc; flex:none; }
+.pond-title { margin:0; color:var(--text-primary); font-size:16px; font-weight:750; letter-spacing:.045em; line-height:1.4; }
+.pond-subtitle { margin-top:3px; color:var(--text-muted); font-size:11.5px; }
+.pond-tools { display:flex; gap:5px; flex-shrink:0; }
+.pond-icon-button { display:inline-flex; justify-content:center; align-items:center; width:32px; height:32px; border:1px solid transparent; border-radius:8px; background:transparent; color:var(--text-muted); cursor:pointer; transition:background .2s,color .2s; }
+.pond-icon-button:hover { background:var(--bg-card-inner); color:var(--text-primary); }
+.pond-icon-button[aria-pressed="true"] { color:#30bdb0; background:rgb(48 189 176 / .1); }
+.pond-icon-button svg { width:16px; height:16px; }
+.pond-icon-button:focus-visible,.pond-action:focus-visible { outline:2px solid #64d9cb; outline-offset:4px; }
+#rusticCanvasContainer { position:relative; width:100%; aspect-ratio:4/3; overflow:hidden; background:#254f4b; isolation:isolate; }
+.pond-background,#rusticAnglerCanvas { display:block; width:100%; height:100%; position:absolute; inset:0; }
+.pond-background { object-fit:fill; user-select:none; pointer-events:none; }
+#rusticAnglerCanvas { touch-action:pan-y; }
+.pond-image-fallback { display:none; position:absolute; inset:0; align-items:center; justify-content:center; padding:30px; text-align:center; color:#d4ede6; background:linear-gradient(145deg,#284d48,#153336); }
+.pond-image-error .pond-image-fallback { display:flex; }
+.pond-controls { display:flex; gap:16px; align-items:center; justify-content:space-between; padding:17px 22px; border-top:1px solid var(--border-inner); }
+.pond-status { display:flex; align-items:center; gap:10px; min-width:0; }
+#anglerStatusDot { width:8px; height:8px; flex-shrink:0; border-radius:50%; background:#45c3b4; box-shadow:0 0 12px rgb(69 195 180 / .18); }
+#anglerStatusText { display:block; color:var(--text-primary); font-size:12px; font-weight:600; line-height:1.5; }
+#anglerStageText { display:block; color:var(--text-muted); font-size:10.5px; margin-top:2px; }
+.pond-action { flex-shrink:0; min-width:135px; min-height:42px; display:inline-flex; justify-content:center; align-items:center; gap:9px; padding:10px 16px; color:#f4fffd; background:linear-gradient(135deg,#22b8ae,#178f88); border:1px solid rgb(111 233 215 / .25); border-radius:10px; font-size:12px; font-weight:650; box-shadow:0 4px 14px rgb(12 133 124 / .12); cursor:pointer; transition:filter .2s,transform .2s; }
+.pond-action:hover { filter:brightness(1.1); transform:translateY(-1px); }
+.pond-action:active { transform:translateY(0); }
+.pond-action svg { width:16px; height:16px; flex-shrink:0; }
+.pond-reflection { display:flex; gap:12px; align-items:center; justify-content:space-between; padding:13px 22px; background:var(--bg-card-inner); border-top:1px solid var(--border-inner); color:var(--text-muted); font-size:10.5px; line-height:1.6; }
+#anglerQuoteText { font-style:italic; }
+.pond-playbook { color:var(--text-muted); text-decoration:none; white-space:nowrap; }
+.pond-playbook:hover { color:#40c8bc; }
+#preTradeChecklistCard { border-radius:18px; padding:22px; }
+#preTradeChecklistCard .chk-step-card { padding:15px 13px; border-radius:11px; line-height:1.6; border-color:var(--border-inner); transition:background .2s,border-color .2s; }
+#preTradeChecklistCard .chk-step-card:has(input:checked) { background:rgb(39 180 165 / .075); border-color:rgb(71 191 175 / .3); }
+#preTradeChecklistCard input[type=checkbox] { accent-color:#25b7a8 !important; }
+#preTradeChecklistCard #checklistProgressFill { background:#2dbdaf !important; }
+#preTradeChecklistCard .checklist-panel-title { font-size:15px; font-weight:750; letter-spacing:.025em; }
+.pond-panel-footnote { margin:20px 0 0; padding-top:16px; border-top:1px solid var(--border-inner); color:var(--text-muted); font-size:11px; font-style:italic; line-height:1.7; }
+@media(min-width:1180px) {
+ #checklist-section { grid-template-columns:minmax(0,1.48fr) minmax(0,1fr); }
+ .pond-column { position:sticky; top:16px; align-self:start; }
+ #rusticCanvasContainer { max-width:min(100%,calc((100dvh - 280px) * 4 / 3)); margin-inline:auto; }
+}
+@media(min-width:1700px) { #checklist-section { grid-template-columns:minmax(0,1.65fr) minmax(0,1fr); } }
+@media(max-width:1179px) {
+ .pond-column,.checklist-column,.checklist-stack { display:contents; }
+ #rusticAnglerCard { order:0; position:sticky; top:8px; z-index:25; box-shadow:0 8px 30px rgb(0 0 0 / .28); }
+ #rusticCanvasContainer { max-width:min(100%,calc(28dvh * 4 / 3)); margin-inline:auto; }
+ .pond-header { padding:10px 14px; }
+ .pond-subtitle,.pond-reflection { display:none; }
+ .pond-title { font-size:13px; }
+ .pond-controls { padding:10px 14px; }
+ .pond-action { min-height:36px; }
+ .pond-icon-button.pond-expand-button { display:inline-flex; }
+ .finpoint-workspace { scroll-padding-top:calc(var(--pond-sticky-height,350px) + 16px); }
+ #rusticAnglerCard[data-expanded="true"] { position:relative; top:auto; }
+ #rusticAnglerCard[data-expanded="true"] #rusticCanvasContainer { max-width:100%; }
+ .finpoint-workspace[data-pond-expanded="true"] { scroll-padding-top:0; }
+ #preTradeChecklistCard { order:1; }
+ #pondRiskManagement { order:2; }
+ .checklist-knowledge { order:3; }
+}
+@media(max-width:1023px) {
+ .finpoint-sidebar { display:none; }
+ .workspace-header { padding:16px !important; gap:14px !important; }
+ .workspace-main { padding:18px 14px 40px !important; }
+ .workspace-header h1 { font-size:18px !important; }
+}
+@media(max-width:600px) {
+ #checklist-section { gap:18px; }
+ .pond-header { padding:10px 14px; gap:8px; }
+ .pond-heading { gap:8px; }
+ .pond-title { font-size:13px; letter-spacing:.02em; }
+ .pond-subtitle { font-size:10px; }
+ .pond-mark { width:24px; height:24px; }
+ .pond-tools { gap:0; }
+ .pond-icon-button { width:28px; height:32px; }
+ .pond-controls { padding:10px 14px; gap:12px; flex-wrap:wrap; }
+ .pond-action { min-width:112px; min-height:42px; font-size:11px; padding:10px 12px; }
+ .pond-status { flex:1 1 125px; }
+ #anglerStatusText { font-size:11px; }
+ .pond-reflection { padding:12px 14px; font-size:10px; }
+ #preTradeChecklistCard { padding:18px 14px; }
+}
+@media(prefers-reduced-motion:reduce) { .pond-action,.pond-icon-button,#preTradeChecklistCard .chk-step-card { transition:none; } }
+
+/* The background and animation share a uniform, centered 16:9 crop. */
+#rusticAnglerCard[data-fullscreen="true"] {
+ width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;
+ position:fixed!important;inset:0!important;z-index:2147483647;margin:0!important;padding:0!important;
+ border:0;border-radius:0;background:#081b1b;box-shadow:none;display:grid!important;
+ grid-template-columns:min(100vw,177.777778dvh);grid-template-rows:min(56.25vw,100dvh);
+ justify-content:center;align-content:center;overflow:hidden;
+}
+#rusticAnglerCard[data-fullscreen="true"] :is(.pond-header,.pond-timebar,.pond-status,.pond-reflection){display:none!important}
+#rusticAnglerCard[data-fullscreen="true"] #rusticCanvasContainer{
+ grid-area:1/1;width:100%;height:100%;max-width:none;aspect-ratio:16/9;margin:0;
+}
+#rusticAnglerCard[data-fullscreen="true"] .pond-background{object-fit:cover;object-position:center}
+#rusticAnglerCard[data-fullscreen="true"] .pond-controls{
+ grid-area:1/1;align-self:end;z-index:2;justify-content:center;border:0;
+ padding:0 16px max(20px,env(safe-area-inset-bottom));pointer-events:none;
+}
+#rusticAnglerCard[data-fullscreen="true"] .pond-action{
+ pointer-events:auto;min-width:151px;min-height:48px;border-radius:12px;padding:12px 22px;
+ font-size:14px;gap:11px;box-shadow:0 6px 24px rgb(8 85 78 / .22);
+}
+.pond-fullscreen-fallback{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;border:0;margin:0;padding:0;background:#081b1b;overflow:hidden}
+.pond-fullscreen-fallback::backdrop{background:#081b1b}
+@media(max-height:450px){#rusticAnglerCard[data-fullscreen="true"] .pond-controls{padding-bottom:max(10px,env(safe-area-inset-bottom))}}
