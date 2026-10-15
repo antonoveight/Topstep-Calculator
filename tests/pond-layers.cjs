@@ -9,7 +9,7 @@ for(let t=0;t<180;t+=.2){
  const p=Scene.pose(t,0,false,1),small=Scene.pose(t,0,false,.55);
  assert.ok(Math.abs(p.angle)<.03&&Math.abs(p.breath)<1.26);
  assert.ok(Math.abs(small.y)<=Math.abs(p.y)+1e-10);
- const dx=303-p.pivot.x,dy=443-p.pivot.y;
+ const dx=303-p.pivot.x,dy=439-p.pivot.y;
  assert.ok(Math.abs(p.hand.x-(p.pivot.x+dx*Math.cos(p.angle)-dy*Math.sin(p.angle)+p.x))<1e-9,'Rod hand must share the actor transform');
  for(let y=195;y<650;y+=30){const w=Water.wave(y,t);assert.ok(Math.abs(w.x)<2.36&&Math.abs(w.y)<.86);}
 }

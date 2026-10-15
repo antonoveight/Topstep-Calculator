@@ -26,7 +26,7 @@ const PondScene=(()=>{
         const x=shift*.7*gain,y=breath*(stage>=4?.45:1)+(rest?0:action.bodyY||0),pivot={x:260,y:480};
         const transform=p=>({x:pivot.x+(p.x-pivot.x)*Math.cos(angle)-(p.y-pivot.y)*Math.sin(angle)+x,
             y:pivot.y+(p.x-pivot.x)*Math.sin(angle)+(p.y-pivot.y)*Math.cos(angle)+y});
-        return {angle,x,y,pivot,hand:transform({x:303,y:443}),breath,shift};
+        return {angle,x,y,pivot,hand:transform({x:303,y:439}),breath,shift};
     }
     function sprite(name,filter,crop){
         const key=name+':'+crop.join(','),cached=cache.get(key);
@@ -40,6 +40,14 @@ const PondScene=(()=>{
         if(!ready())return;
         ctx.save();ctx.translate(p.pivot.x+p.x,p.pivot.y+p.y);ctx.rotate(p.angle);ctx.translate(-p.pivot.x,-p.pivot.y);
         ctx.drawImage(sprite('actor',filter,[293,527,197,301]),220,362,91,139);ctx.restore();
+    }
+    function drawGrip(ctx,p,filter){
+        if(!ready())return;
+        // Reuse the original fingers over the handle, in the exact same actor transform.
+        ctx.save();ctx.translate(p.pivot.x+p.x,p.pivot.y+p.y);ctx.rotate(p.angle);ctx.translate(-p.pivot.x,-p.pivot.y);
+        const crop=[472,688,14,20],sx=91/197,sy=139/301;
+        ctx.drawImage(sprite('actor',filter,crop),220+(crop[0]-293)*sx,362+(crop[1]-527)*sy,crop[2]*sx,crop[3]*sy);
+        ctx.restore();
     }
     function swing(ctx,img,dest,pivot,angle){ctx.save();ctx.translate(...pivot);ctx.rotate(angle);ctx.translate(-pivot[0],-pivot[1]);ctx.drawImage(img,...dest);ctx.restore();}
     function drawForeground(ctx,t,filter,night){
@@ -63,6 +71,6 @@ const PondScene=(()=>{
         document.getElementById('pondPerformance').onchange=e=>{performance=e.target.value;try{localStorage.setItem('topstep_pond_performance',performance);}catch{}syncAnglerMotion();};
     }
     if(typeof window!=='undefined')window.addEventListener('load',load);
-    return {ready,base,drawActor,drawForeground,pose,gain,light,viewport,reload,fps:()=>light()?24:30};
+    return {ready,base,drawActor,drawGrip,drawForeground,pose,gain,light,viewport,reload,fps:()=>light()?24:30};
 })();
 if(typeof module!=='undefined')module.exports=PondScene;

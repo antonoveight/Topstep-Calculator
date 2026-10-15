@@ -114,7 +114,12 @@ function quietPondLoop(timestamp) {
     anglerState.phaseTime+=dt;
     anglerState.rodBend+=(getPondBend()-anglerState.rodBend)*Math.min(1,dt*5);
     anglerState.reelAmount+=((anglerState.stage>=6?1:0)-anglerState.reelAmount)*Math.min(1,dt*2);
-    anglerState.castProgress=Math.min(1,anglerState.castProgress+dt*1.25);
+    const beforeCast=anglerState.castProgress;
+    anglerState.castProgress=Math.min(1,anglerState.castProgress+dt/PondCast.duration);
+    if(beforeCast<1&&anglerState.castProgress===1&&anglerState.stage>0&&anglerState.stage<4){
+        const anchor=PondBehavior.anchor(anglerState.snapshot?.setup);
+        anglerState.ripples.push({...anchor,born:anglerState.time});
+    }
     anglerState.catchProgress=anglerState.stage===7?Math.min(1,anglerState.catchProgress+dt/PondCatch.duration):0;
     anglerState.ripples=anglerState.ripples.filter(r=>anglerState.time-r.born<3);
     renderQuietPond();
@@ -211,7 +216,10 @@ function updateAnglerState(_count,_risk1,_risk2,_tp,options={}) {
         anglerState.catchProgress=advance && next.stage===7?0:(next.stage===7?1:0);
         if(advance && next.stage===7) {
             anglerState.catchOrigin={x:anglerState.bobber.x,y:anglerState.bobber.y+24};
-            if(!prev || prev.stage===0) anglerState.catchOrigin={x:630,y:435};
+            if(!prev || prev.stage===0 || anglerState.geometry?.castPose){
+                const anchor=PondBehavior.anchor(next.setup);
+                anglerState.catchOrigin={x:anchor.x,y:anchor.y+24};
+            }
         }
         if(restored || !advance) {
             anglerState.rodBend=getPondBend();anglerState.reelAmount=next.stage>=6?1:0;
@@ -221,7 +229,7 @@ function updateAnglerState(_count,_risk1,_risk2,_tp,options={}) {
     anglerState.lastEffect=null;
     if(advance) {
         anglerState.lastEffect=next.effect;anglerState.transitionSerial++;
-        if(next.phase>0) anglerState.ripples.push({x:650,y:412,born:anglerState.time});
+        if(next.phase>0&&!(prev.stage===0&&next.stage<4)) anglerState.ripples.push({...PondBehavior.anchor(next.setup),born:anglerState.time});
         playAnglerSound(next.stage===7?'catch':next.stage===4?'strike':'plop');
     }
     document.getElementById('anglerStatusText').textContent=next.status;
@@ -284,16 +292,21 @@ function renderQuietPond() {
     anglerState.catchPose=catchPose;
     const tension=anglerState.rodBend;
     const motion=active&&!caught?PondBehavior.motion(anglerState.snapshot,t,anglerState.phaseTime,PondScene.gain(),anglerState.motionFrom):PondBehavior.motion(null,t,99);
+    const casting=active&&!ended&&!caught&&anglerState.castProgress<1;
+    const anchor=PondBehavior.anchor(anglerState.snapshot?.setup);
+    const action={...motion,lean:motion.lean+(casting?-Math.sin(anglerState.castProgress*Math.PI*2)*.022*PondScene.gain():0)};
     // Anchors are aligned to the hands and perspective in quiet-pond.png (1448 × 1086).
-    const actor=PondScene.pose(t,anglerState.stage,parked,PondScene.gain(),motion);
-    const hand=parked?{x:300,y:505}:layered?actor.hand:{x:303,y:443};
+    const actor=PondScene.pose(t,anglerState.stage,parked,PondScene.gain(),action);
+    const hand=layered?actor.hand:{x:303,y:439};
     const idleSway=Math.sin(t*1.1)*1.8*PondScene.gain();
     const tip=parked?{x:460,y:515}:catchPose?catchPose.tip:{x:active?477+tension*8+motion.tipX:460+idleSway*.4,y:active?296+tension*31+motion.tipY:321+idleSway};
-    const bobber=catchPose?catchPose.float:{x:hand.x+(650-hand.x)*cast-anglerState.reelAmount*22,
-        y:hand.y+(412-hand.y)*cast-Math.sin(cast*Math.PI)*94+Math.sin(t*1.8)*1.6};
+    const castPose=casting?PondCast.sample(anglerState.castProgress,hand,tip,anchor,anglerState.snapshot.setup,PondScene.gain()):null;
+    if(castPose)Object.assign(tip,castPose.tip);
+    const bobber=castPose?{...castPose.bobber}:catchPose?catchPose.float:{x:hand.x+(anchor.x-hand.x)*cast-anglerState.reelAmount*22,
+        y:hand.y+(anchor.y-hand.y)*cast-Math.sin(cast*Math.PI)*94+Math.sin(t*1.8)*1.6};
     if(!caught){bobber.x+=motion.bobberX;bobber.y+=motion.bobberY;}
     anglerState.bobber=bobber;
-    anglerState.geometry={hand,tip,bobber,catchPose,motion};
+    anglerState.geometry={hand,tip,bobber,catchPose,castPose,motion};
 
     drawPondWater(ctx,t,filter);
     if(grade.night>.001) {ctx.fillStyle=`rgba(8,22,57,${grade.night*.24})`;ctx.fillRect(0,0,w,h);}
@@ -309,12 +322,12 @@ function renderQuietPond() {
             for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(-p.size*.6,side*4);ctx.quadraticCurveTo(-p.size,side*8,-p.size*1.2,side*7);ctx.stroke();}ctx.restore();
         }
     });
-    drawPondTargetFish(ctx,bobber,t,caught);
+    drawPondTargetFish(ctx,bobber,t,caught||casting);
     const ripple=(x,y,radius,opacity)=>{
         ctx.strokeStyle=`rgba(220,243,218,${opacity})`;ctx.lineWidth=1;
         ctx.beginPath();ctx.ellipse(x,y,radius,radius*.3,-.12,0,Math.PI*2);ctx.stroke();
     };
-    if(active && cast>.9 && !caught) {
+    if(active && cast>.9 && !caught && !casting) {
         for(let i=0;i<3;i++) {
             const phase=(t*(anglerState.stage===4?.85:.3)+i/3)%1;
             const spread=anglerState.stage===3?10:anglerState.stage===4?45:anglerState.stage===5?24:42;
@@ -336,7 +349,8 @@ function renderQuietPond() {
     ctx.restore();
 
     PondFish.drawBasket(ctx,false,grade.night);
-    if(layered)PondScene.drawActor(ctx,actor,filter);
+    const castBehind=castPose&&anglerState.castProgress<.44;
+    if(layered&&!castBehind)PondScene.drawActor(ctx,actor,filter);
 
     // One continuous tapered rod and one line; every endpoint shares the same geometry.
     const rodPath=()=>{
@@ -348,12 +362,19 @@ function renderQuietPond() {
     rodPath();ctx.strokeStyle='rgba(27,42,30,.5)';ctx.lineWidth=4;ctx.stroke();
     rodPath();ctx.strokeStyle='#996034';ctx.lineWidth=2.5;ctx.stroke();
     rodPath();ctx.strokeStyle='#e6b76c';ctx.lineWidth=.75;ctx.stroke();
-    ctx.beginPath();ctx.moveTo(hand.x-7,hand.y+9);ctx.lineTo(hand.x+9,hand.y-13);
+    const rodAngle=Math.atan2(tip.y-hand.y,tip.x-hand.x),ux=Math.cos(rodAngle),uy=Math.sin(rodAngle);
+    ctx.beginPath();ctx.moveTo(hand.x-ux*18,hand.y-uy*18);ctx.lineTo(hand.x+ux*10,hand.y+uy*10);
     ctx.strokeStyle='#422e22';ctx.lineWidth=4.6;ctx.stroke();
+    ctx.save();ctx.translate(hand.x-ux*9-uy*4,hand.y-uy*9+ux*4);
+    ctx.fillStyle='#63513b';ctx.strokeStyle='#c4a370';ctx.lineWidth=.8;ctx.beginPath();ctx.ellipse(0,0,4,3,rodAngle,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+    if(layered){
+        if(castBehind)PondScene.drawActor(ctx,actor,filter);
+        PondScene.drawGrip(ctx,actor,filter);
+    }
     if(active) {
         ctx.beginPath();ctx.moveTo(tip.x,tip.y);
         const sag=catchPose?(catchPose.progress<.12?0:6):motion.lineSag;
-        ctx.quadraticCurveTo((tip.x+bobber.x)/2,(tip.y+bobber.y)/2+sag,bobber.x,bobber.y-9);
+        ctx.quadraticCurveTo(castPose?castPose.line.x:(tip.x+bobber.x)/2,castPose?castPose.line.y:(tip.y+bobber.y)/2+sag,bobber.x,bobber.y-9);
         ctx.strokeStyle='rgba(246,239,214,.72)';ctx.lineWidth=.8;ctx.stroke();
         if(catchPose?.attached) {
             ctx.beginPath();ctx.moveTo(bobber.x,bobber.y+6);ctx.lineTo(catchPose.mouth.x,catchPose.mouth.y);

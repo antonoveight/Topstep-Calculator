@@ -17,7 +17,7 @@ const path=require('node:path');
   assert.equal(await page.locator('#anglerCoinText').count(),0);
   assert.equal(await page.locator('#anglerCastBtnText').innerText(),'Thả câu');
   await page.locator('#btnAnglerCastReel').click();
-  await page.waitForTimeout(950);
+  await page.waitForFunction(()=>anglerState.castProgress===1,null,{timeout:4000});
   const cast=await page.evaluate(()=>({steps:anglerState.stepCount,cast:anglerState.castProgress,geometry:anglerState.geometry,dpr:devicePixelRatio,canvas:document.getElementById('rusticAnglerCanvas').width}));
   assert.equal(cast.steps,1);assert.equal(cast.cast,1);
   assert.ok(cast.geometry.bobber.x>cast.geometry.tip.x);

@@ -8,7 +8,7 @@ for(let setup=1;setup<=4;setup++){
   assert.ok(Object.values(m).every(Number.isFinite));samples[stage].push(m);
   const gentle=Behavior.motion({setup,stage},t,20,.55);
   assert.ok(Math.abs(gentle.tipY)<=Math.abs(m.tipY)+1e-9);
-  const actor=Scene.pose(t,stage,false,1,m),dx=303-actor.pivot.x,dy=443-actor.pivot.y;
+  const actor=Scene.pose(t,stage,false,1,m),dx=303-actor.pivot.x,dy=439-actor.pivot.y;
   assert.ok(Math.abs(actor.hand.x-(actor.pivot.x+dx*Math.cos(actor.angle)-dy*Math.sin(actor.angle)+actor.x))<1e-9);
  }
  assert.ok(range(samples[3].map(m=>m.tipY))<2,'Waiting angler must not fight or reel');
