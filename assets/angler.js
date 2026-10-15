@@ -272,7 +272,9 @@ function renderQuietPond() {
     const active=anglerState.stage>0&&(!ended||PondExecution.age()<1.4)&&!parked;
     const cast=(1-Math.pow(1-anglerState.castProgress,3))*(ended?Math.max(0,1-PondExecution.age()/1.4):1);
     const caught=anglerState.stage===7;
-    const catchPose=caught?PondCatch.sample(anglerState.catchProgress,anglerState.catchOrigin):null;
+    const fishProfile=PondFish.profile(window.PondExecution?.fishSeed()??1,anglerState.stage);
+    anglerState.fishProfile=fishProfile;
+    const catchPose=caught?PondCatch.sample(anglerState.catchProgress,anglerState.catchOrigin,fishProfile.size*fishProfile.mouth):null;
     anglerState.catchPose=catchPose;
     const tension=anglerState.rodBend;
     // Anchors are aligned to the hands and perspective in quiet-pond.png (1448 × 1086).
@@ -322,6 +324,7 @@ function renderQuietPond() {
     }
     ctx.restore();
 
+    PondFish.drawBasket(ctx,false,grade.night);
     if(layered)PondScene.drawActor(ctx,actor,filter);
 
     // One continuous tapered rod and one line; every endpoint shares the same geometry.
@@ -353,6 +356,7 @@ function renderQuietPond() {
         ctx.restore();
     }
     if(catchPose) drawPondLanding(ctx,catchPose,t,filter);
+    PondFish.drawBasket(ctx,true,grade.night);
     if(!layered)drawPondReeds(ctx,t);
     PondScene.drawForeground(ctx,t,filter,grade.night);
     PondAmbient.draw(ctx,t,image,filter,grade.night,layered);
@@ -395,7 +399,7 @@ function drawPondTargetFish(ctx,bobber,t,caught) {
         return;
     }
     const fish=PondBehavior.target(anglerState.snapshot,bobber,t,anglerState.phaseTime);
-    if(fish)drawPondFish(ctx,fish.x,fish.y,31,fish.angle,fish.opacity,false,fish.tail);
+    if(fish)PondFish.draw(ctx,fish.x,fish.y,anglerState.fishProfile,fish.angle,fish.opacity,fish.tail);
 
 }
 
@@ -504,21 +508,10 @@ function drawPondLanding(ctx,pose,t,filter) {
     const {fish,progress:p}=pose;
     const swing=pose.attached?Math.sin(t*12)*.12*(1-p):0;
     const angle=pose.angle+swing;
-    const drawX=pose.attached?pose.mouth.x-Math.cos(angle)*20.9:fish.x;
-    const drawY=pose.attached?pose.mouth.y-Math.sin(angle)*20.9:fish.y;
-    drawPondFish(ctx,drawX,drawY,38,angle,.98,true,Math.sin(t*16)*(1-p));
-    // Repaint the existing basket's woven front over the fish as it drops inside.
-    if(p>.86) {
-        const cached=PondScene.base(filter),image=cached||document.getElementById('quietPondBackground');
-        if(cached || image.complete && image.naturalWidth) {
-            ctx.save();ctx.beginPath();ctx.moveTo(106,493);ctx.lineTo(158,490);ctx.lineTo(158,529);ctx.lineTo(106,529);ctx.closePath();ctx.clip();
-            ctx.filter=cached?'none':filter;
-            ctx.drawImage(image,0,0,image.naturalWidth||image.width,image.naturalHeight||image.height,0,0,1000,750);
-            ctx.filter='none';
-            ctx.fillStyle=`rgba(8,22,57,${anglerState.lighting.night*.24})`;ctx.fillRect(106,490,52,40);
-            ctx.restore();
-        }
-    }
+    const profile=anglerState.fishProfile,offset=profile.size*profile.mouth;
+    const drawX=pose.attached?pose.mouth.x-Math.cos(angle)*offset:fish.x;
+    const drawY=pose.attached?pose.mouth.y-Math.sin(angle)*offset:fish.y;
+    PondFish.draw(ctx,drawX,drawY,profile,angle,.98,Math.sin(t*16)*(1-p));
     const splashDuration=.28;
     if(p*PondCatch.duration<splashDuration) {
         const age=p*PondCatch.duration/splashDuration;

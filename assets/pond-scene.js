@@ -9,7 +9,7 @@ const PondScene=(()=>{
     function gain(){return motion==='gentle'?.55:1;}
     function viewport(width,height,studio=false){
         const scale=Math.max(width/1000,height/750)*(studio?1.08:1);
-        const x=studio?Math.min(0,Math.max(width-1000*scale,width/2-490*scale)):(width-1000*scale)/2;
+        const x=studio?Math.min(0,Math.max(width-1000*scale,width/2-442*scale)):(width-1000*scale)/2;
         const y=studio?Math.min(0,Math.max(height-750*scale,height/2-405*scale)):(height-750*scale)/2;
         return {scale,x,y};
     }

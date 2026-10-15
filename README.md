@@ -163,3 +163,5 @@ Kế hoạch phiên đã được loại khỏi giao diện và phép tính. D�
 7. Dữ liệu lưu cục bộ: tối đa 300 kết quả lượt gần nhất và 30 buổi đã kết thúc. Tổng kết buổi giữ ảnh chụp dữ liệu kết quả khi kết thúc. Có nút tải nhật ký buổi JSON; bản sao lưu JSON đầy đủ cũng bao gồm kết quả và buổi theo dõi, không gồm nguồn video. Dữ liệu buổi tách theo tài khoản/vòng, không cộng vào nhật ký tài chính.
 
 Kiểm tra nguồn chart dùng MediaStream giả trong bộ kiểm thử; phiên TikTok/Topstep thật không được phát trong quá trình phát triển.
+
+Trong hồ câu, +1R hiển thị cá thường, +2R hiển thị cá lớn, Full TP hiển thị cá lớn với màu và hoa văn nổi bật. Tick thẳng TP cũng dùng mức cao nhất. Màu, dáng và hoa văn được chọn ngẫu nhiên theo lượt, giữ nguyên khi tải lại hoặc bỏ tick rồi tick lại; bắt đầu lượt mới sẽ chọn lại. Cá chỉ được thu vào rổ khi TP, không tự ghi lợi nhuận hay tạo lệnh giao dịch. Rổ có lòng đủ chứa trọn cá lớn và vẫn nằm trong khung Studio. Kiểm tra bằng `node tests/pond-fish.cjs`.

@@ -4,7 +4,7 @@ const PondCatch=(()=>{
     const clamp=v=>Math.max(0,Math.min(1,v));
     const smooth=v=>{v=clamp(v);return v*v*(3-2*v);};
     const lerp=(a,b,t)=>a+(b-a)*t;
-    function sample(progress,origin={x:630,y:435}) {
+    function sample(progress,origin={x:630,y:435},mouthOffset=20.9) {
         const p=clamp(progress);
         const keys=[
             {p:0,fish:[origin.x,origin.y],tip:[485,327]},
@@ -25,7 +25,7 @@ const PondCatch=(()=>{
         const tip={x:lerp(a.tip[0],b.tip[0],rodEase),y:lerp(a.tip[1],b.tip[1],rodEase)};
         const attached=p<.88, deposited=p>=.94;
         const angle=lerp(-Math.PI/2,0,smooth((p-.84)/.1));
-        const mouth={x:fish.x+Math.cos(angle)*20.9,y:fish.y+Math.sin(angle)*20.9};
+        const mouth={x:fish.x+Math.cos(angle)*mouthOffset,y:fish.y+Math.sin(angle)*mouthOffset};
         const float=attached?{x:mouth.x,y:mouth.y-17}:{x:tip.x+12,y:tip.y+28};
         return {progress:p,fish,tip,mouth,float,angle,attached,deposited,
             phase:p<.12?'lift':p<.5?'reel':p<.94?'basket':'done',

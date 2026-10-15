@@ -22,7 +22,7 @@ assert.equal(new Set(names).size,4);
 for(const [width,height] of [[720,640],[400,355.55],[1920,1080]]){
  const v=Scene.viewport(width,height,true);
  assert.ok(v.x<=0&&v.y<=0&&v.x+1000*v.scale>=width-.01&&v.y+750*v.scale>=height-.01,'Camera stays inside artwork');
- assert.ok(134*v.scale+v.x>0&&650*v.scale+v.x<width,'Basket and float remain visible together');
+ assert.ok(53*v.scale+v.x>=0&&215*v.scale+v.x<width&&650*v.scale+v.x<width,'Entire large basket and float remain visible together');
 }
 assert.equal(Behavior.target({setup:1,stage:7},{x:650,y:412},1,1),null);
 console.log('PASS layered actor/hand transform, gentle intensity bounds, two-scale wave bounds and four setup narratives.');
