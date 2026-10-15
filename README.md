@@ -24,6 +24,7 @@ Dữ liệu lưu trong LocalStorage. Hãy dùng cùng trình duyệt và cùng �
 - Hồ Câu Tĩnh Tâm dùng cảnh minh họa 2.5D theo mẫu đã duyệt, với cần/dây/phao và gợn nước bằng Canvas. Điều khiển nằm ngoài cảnh; hỗ trợ tạm dừng, giảm chuyển động theo hệ thống và tự dừng khi không hiển thị. Trên điện thoại, checklist nằm ngay sau hồ câu.
 - Hồ có nước dao động, lau nhẹ, cá nền xuất hiện ngẫu nhiên và cá mục tiêu riêng. Các bước vào lệnh đọc theo setup và điều kiện trước đó; tích sai thứ tự không tự hoàn thành bước còn thiếu. Các ô quản lý +1R/BE/TP **độc lập**, được lưu riêng theo từng setup: có thể tick BE hoặc TP trực tiếp mà không cần trailing trước. TP được ưu tiên khi vẫn có các ô khác được tích.
 - Chuyển động nền có hơi thở nhẹ của nhân vật, đầu cần, lau theo gió, lá rơi và chuồn chuồn thưa. Cá nền không phát âm báo hoặc xác nhận tín hiệu.
+- Hồ v2 dùng nền sạch và các lớp PNG trong suốt riêng cho nhân vật, tán cây, cỏ và đèn. Tay/cần dùng cùng phép biến đổi; nước có hai lớp sóng, phản chiếu chuyển động, bóng cá và vệt nước nhẹ. **Chuyển động & hiển thị** cho chọn Nhẹ/Vừa và chế độ giảm tải khi live. [Xem clip khoảng 25 giây](assets/pond/preview-v2.webm).
 - **Kết thúc lượt & đánh giá** ghi nhận Full TP / BE / −0.5R / −1R / bỏ qua. Kết quả và tuân thủ được đánh giá riêng; không tự tạo bản ghi PnL hoặc gửi lệnh. Lượt mới làm mới setup hiện tại, giữ các setup khác.
 - TP có cú giật mạnh khoảng 0,2 giây, cần bật lên trước rồi cá vọt khỏi nước, có nhịp hồi cần ngắn. Sau đó thu dây về bến → đưa cá vào rổ → thu cần; toàn chuỗi khoảng 3,2 giây. Khôi phục trang hiển thị cá đã nằm trong rổ, không phát lại sự kiện. Tạm dừng/giảm chuyển động hiển thị ngay kết quả cuối.
 - Trên desktop, hồ ghim bên trái và quản lý lệnh nằm dưới checklist bên phải. Trên màn hình nhỏ, hồ ghim ở dạng gọn để vẫn tick được các ô bên dưới; nút phóng to cho phép xem cảnh lớn khi cần. Thanh đầu trang cuộn đi trong chế độ Checklist để không che hồ.
@@ -78,6 +79,9 @@ assets/angler.css                 Giao diện hồ câu và bố cục checklist
 assets/angler.js                  Lớp chuyển động tương tác hồ câu
 assets/pond-fullscreen.js         Toàn màn hình 16:9, một nút thao tác và khôi phục
 assets/pond-ambient.js            Chuyển động môi trường và nhân vật
+assets/pond-scene.js              Ghép lớp cảnh, tư thế, tay/cần và chất lượng
+assets/pond-water.js              Sóng, phản chiếu và gợn mặt hồ
+assets/pond-behavior.js           Hành vi cá theo bốn setup đã xác nhận
 assets/pond-schedule.js           Lịch dùng chung theo mục 7 của playbook
 assets/pond-execution.js          Kết quả lượt câu, đánh giá và lưu khôi phục
 assets/pond-live.js               Studio, nguồn chart và cam kết/tổng kết buổi
@@ -130,6 +134,7 @@ node tests/pond-catch.cjs
 node tests/pond-landing.cjs
 node tests/pond-fullscreen.cjs
 node tests/pond-studio.cjs
+node tests/pond-layers.cjs
 node --check topstepx_cockpit_sync.user.js
 node --check topstep_google_sheets_setup.js
 ```

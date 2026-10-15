@@ -1999,7 +1999,7 @@ const accountData = TradingRules.accounts;
                     exportDate: new Date().toISOString(),
                     accountsList: accountsList,
                     activeAccountId: activeAccountId,
-                    preferences: Object.fromEntries(['topstep_theme_mode','topstep_active_app_view','topstep_active_checklist_setup','topstep_checklist_state','topstep_angler_collapsed','topstep_angler_motion_paused','topstep_angler_time_mode','topstep_pond_outcomes_v1','topstep_pond_sessions_v1'].map(key=>[key,localStorage.getItem(key)]))
+                    preferences: Object.fromEntries(['topstep_theme_mode','topstep_active_app_view','topstep_active_checklist_setup','topstep_checklist_state','topstep_angler_collapsed','topstep_angler_motion_paused','topstep_angler_time_mode','topstep_pond_outcomes_v1','topstep_pond_sessions_v1','topstep_pond_motion_level','topstep_pond_performance'].map(key=>[key,localStorage.getItem(key)]))
                 };
                 const jsonStr = JSON.stringify(backupData, null, 2);
                 const blob = new Blob([jsonStr], { type: "application/json" });
@@ -2032,7 +2032,7 @@ const accountData = TradingRules.accounts;
                             if (typeof prefs.topstep_pond_sessions_v1 === 'string') PondLive.validate(JSON.parse(prefs.topstep_pond_sessions_v1));
                             const validated = normalizeAccounts(data.accountsList);
                             const restoredId = validated.some(a => a.id === data.activeAccountId) ? data.activeAccountId : validated[0].id;
-                            const preferenceKeys = ['topstep_theme_mode','topstep_active_app_view','topstep_active_checklist_setup','topstep_checklist_state','topstep_angler_collapsed','topstep_angler_motion_paused','topstep_angler_time_mode','topstep_pond_outcomes_v1','topstep_pond_sessions_v1'];
+                            const preferenceKeys = ['topstep_theme_mode','topstep_active_app_view','topstep_active_checklist_setup','topstep_checklist_state','topstep_angler_collapsed','topstep_angler_motion_paused','topstep_angler_time_mode','topstep_pond_outcomes_v1','topstep_pond_sessions_v1','topstep_pond_motion_level','topstep_pond_performance'];
                             const priorPrefs = Object.fromEntries(preferenceKeys.map(key=>[key,localStorage.getItem(key)]));
                             const priorInvalid = accountStorageInvalid, priorActive = activeAccountId;
                             try {
@@ -2049,7 +2049,7 @@ const accountData = TradingRules.accounts;
                                 accountStorageInvalid = priorInvalid;activeAccountId = priorActive;
                                 throw err;
                             } finally { window.accountSaveReason = ''; }
-                            PondExecution.reload();PondLive.reload();
+                            PondExecution.reload();PondLive.reload();PondScene.reload();
                             loadActiveAccountState();
                             loadChecklistState();
                             initTheme();

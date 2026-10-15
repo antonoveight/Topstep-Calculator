@@ -10,6 +10,13 @@ for(let t=0;t<600;t+=.2){const p=ambient.pose(t);assert.ok(Math.abs(p.breath)<=.
   page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());await page.route('https://**/*',r=>r.abort());
   await page.goto('file:///'+path.resolve('index.html').replaceAll('\\','/')+'#checklist');
   await page.waitForFunction(()=>anglerState.isLoopRunning);
+  await page.waitForFunction(()=>PondScene.ready()&&document.getElementById('rusticAnglerCanvas').dataset.layered==='true');
+  await page.locator('.pond-scene-settings summary').click();
+  await page.locator('#pondMotionLevel').selectOption('gentle');await page.locator('#pondPerformance').selectOption('light');
+  assert.equal(await page.evaluate(()=>PondScene.fps()),24);assert.equal(await page.evaluate(()=>PondScene.gain()),.55);
+  await page.reload();await page.waitForFunction(()=>anglerState.isLoopRunning);
+  assert.equal(await page.evaluate(()=>PondScene.gain()),.55);
+  await page.locator('.pond-scene-settings summary').click();await page.locator('#pondMotionLevel').selectOption('balanced');await page.locator('#pondPerformance').selectOption('auto');
   // Every result is explicit, idempotent and independent of account journal entries.
   const before=await page.evaluate(()=>localStorage.getItem('topstep_multi_accounts_v3'));
   for(const outcome of ['be','half','sl','skip']){

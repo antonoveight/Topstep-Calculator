@@ -25,7 +25,7 @@ function initRusticAngler() {
     const resize=()=>{
         const width=stage.getBoundingClientRect().width;
         if(width>0) {
-            const ratio=Math.min(window.devicePixelRatio || 1,2);
+            const ratio=Math.min(window.devicePixelRatio || 1,PondScene.light()?1.25:2);
             canvas.width=Math.round(width*ratio);
             canvas.height=Math.round(stage.getBoundingClientRect().height*ratio);
         }
@@ -43,9 +43,9 @@ function initRusticAngler() {
     canvas.addEventListener('pointerup',event=>{
         const rect=canvas.getBoundingClientRect();
         const wide=document.getElementById('rusticAnglerCard').dataset.fullscreen==='true'||document.getElementById('rusticAnglerCard').dataset.studio==='true';
-        const scale=wide?Math.max(rect.width/1000,rect.height/750):rect.width/1000;
-        const x=(event.clientX-rect.left-(rect.width-1000*scale)/2)/scale;
-        const y=(event.clientY-rect.top-(rect.height-750*scale)/2)/scale;
+        const view=wide?PondScene.viewport(rect.width,rect.height,document.getElementById('rusticAnglerCard').dataset.studio==='true'):{scale:rect.width/1000,x:0,y:0};
+        const x=(event.clientX-rect.left-view.x)/view.scale;
+        const y=(event.clientY-rect.top-view.y)/view.scale;
         if(PondLife.contains([x,y])) {
             anglerState.ripples.push({x,y,born:anglerState.time});
             anglerState.ripples=anglerState.ripples.slice(-8);
@@ -54,7 +54,7 @@ function initRusticAngler() {
         }
     });
     const image=document.getElementById('quietPondBackground');
-    const showImageError=()=>stage.classList.add('pond-image-error');
+    const showImageError=()=>{if(!PondScene.ready())stage.classList.add('pond-image-error');};
     image.addEventListener('error',showImageError);
     if(image.complete && !image.naturalWidth) showImageError();
     try {
@@ -71,6 +71,11 @@ function initRusticAngler() {
 function syncAnglerMotion() {
     const stage=document.getElementById('rusticCanvasContainer');
     if(!stage || !anglerState.isLoopRunning) return;
+    const bounds=stage.getBoundingClientRect(),ratio=Math.min(window.devicePixelRatio||1,PondScene.light()?1.25:2);
+    if(bounds.width>0&&bounds.height>0){
+        const canvas=document.getElementById('rusticAnglerCanvas'),width=Math.round(bounds.width*ratio),height=Math.round(bounds.height*ratio);
+        if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
+    }
     const animate=anglerState.visible && !document.hidden && stage.style.display!=='none' &&
         document.getElementById('view-checklist').style.display!=='none' && !anglerState.motionPaused && !anglerState.reducedMotion;
     const button=document.getElementById('btnToggleAnglerMotion');
@@ -95,14 +100,14 @@ function syncAnglerMotion() {
 }
 
 function quietPondLoop(timestamp) {
-    if(anglerState.lastFrame && timestamp-anglerState.lastFrame<1000/30-1) {
+    if(anglerState.lastFrame && timestamp-anglerState.lastFrame<1000/PondScene.fps()-1) {
         anglerState.rafId=requestAnimationFrame(quietPondLoop);return;
     }
     const dt=anglerState.lastFrame ? Math.min((timestamp-anglerState.lastFrame)/1000,.05) : 0;
     anglerState.lastFrame=timestamp;
     anglerState.time+=dt;
     anglerState.frameCount++;
-    PondLife.step(anglerState.world,dt,innerWidth<600);
+    PondLife.step(anglerState.world,dt,PondScene.light());
     for(const key of Object.keys(anglerState.lighting)) {
         anglerState.lighting[key]+=(anglerState.lightingTarget[key]-anglerState.lighting[key])*Math.min(1,dt*1.4);
     }
@@ -249,23 +254,33 @@ function renderQuietPond() {
     const w=1000,h=750,t=anglerState.time;
     ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
     if(document.getElementById('rusticAnglerCard').dataset.fullscreen==='true'||document.getElementById('rusticAnglerCard').dataset.studio==='true') {
-        const scale=Math.max(canvas.width/w,canvas.height/h);
-        ctx.setTransform(scale,0,0,scale,(canvas.width-w*scale)/2,(canvas.height-h*scale)/2);
+        const view=PondScene.viewport(canvas.width,canvas.height,document.getElementById('rusticAnglerCard').dataset.studio==='true');
+        ctx.setTransform(view.scale,0,0,view.scale,view.x,view.y);
     } else ctx.setTransform(canvas.width/w,0,0,canvas.height/h,0,0);
     ctx.clearRect(0,0,w,h);
+    const grade=anglerState.lighting;
+    const image=document.getElementById('quietPondBackground');
+    const filter=`brightness(${grade.brightness.toFixed(2)}) saturate(${grade.saturation.toFixed(2)}) sepia(${grade.sepia.toFixed(2)})`;
+    const sceneBase=PondScene.base(filter),layered=!!sceneBase;
+    canvas.dataset.layered=String(layered);
+    if(layered)document.getElementById('rusticCanvasContainer').classList.remove('pond-image-error');
+    if(image.style.filter!==filter)image.style.filter=filter;
+    if(layered)ctx.drawImage(sceneBase,0,0,w,h);
     const outcome=window.PondExecution?.current(),ended=outcome&&outcome.outcome!=='tp';
     if(ended)anglerState.fish.state=PondExecution.age()<2?'departing':'idle';
-    const active=anglerState.stage>0&&(!ended||PondExecution.age()<1.4);
+    const parked=ended&&PondExecution.age()>=1.4||anglerState.stage===7&&anglerState.catchProgress>=1;
+    const active=anglerState.stage>0&&(!ended||PondExecution.age()<1.4)&&!parked;
     const cast=(1-Math.pow(1-anglerState.castProgress,3))*(ended?Math.max(0,1-PondExecution.age()/1.4):1);
     const caught=anglerState.stage===7;
     const catchPose=caught?PondCatch.sample(anglerState.catchProgress,anglerState.catchOrigin):null;
     anglerState.catchPose=catchPose;
     const tension=anglerState.rodBend;
     // Anchors are aligned to the hands and perspective in quiet-pond.png (1448 × 1086).
-    const hand={x:303,y:443};
+    const actor=PondScene.pose(t,anglerState.stage,parked,PondScene.gain());
+    const hand=parked?{x:300,y:505}:layered?actor.hand:{x:303,y:443};
     const struggle=anglerState.stage===4?Math.sin(t*4)*2.5:anglerState.stage===5?Math.sin(t*2.3):0;
-    const idleSway=Math.sin(t*1.1)*1.5;
-    const tip=catchPose?catchPose.tip:{x:active?477+tension*8+struggle:460+idleSway*.4,y:active?296+tension*31:321+idleSway};
+    const idleSway=Math.sin(t*1.1)*1.8*PondScene.gain();
+    const tip=parked?{x:460,y:515}:catchPose?catchPose.tip:{x:active?477+tension*8+struggle:460+idleSway*.4,y:active?296+tension*31:321+idleSway};
     const bobber=catchPose?catchPose.float:{x:hand.x+(650-hand.x)*cast-anglerState.reelAmount*22,
         y:hand.y+(412-hand.y)*cast-Math.sin(cast*Math.PI)*94+Math.sin(t*1.8)*1.6};
     if(anglerState.stage===3) {
@@ -276,17 +291,19 @@ function renderQuietPond() {
     anglerState.bobber=bobber;
     anglerState.geometry={hand,tip,bobber,catchPose};
 
-    const grade=anglerState.lighting;
-    const image=document.getElementById('quietPondBackground');
-    const filter=`brightness(${grade.brightness.toFixed(3)}) saturate(${grade.saturation.toFixed(3)}) sepia(${grade.sepia.toFixed(3)})`;
-    if(image.style.filter!==filter) image.style.filter=filter;
     drawPondWater(ctx,t,filter);
     if(grade.night>.001) {ctx.fillStyle=`rgba(8,22,57,${grade.night*.24})`;ctx.fillRect(0,0,w,h);}
     ctx.save();tracePondWater(ctx);ctx.clip();
-    const limit=innerWidth<600?3:5;
+    const limit=PondScene.light()?3:5;
     anglerState.world.fish.slice(0,limit).forEach(f=>{
         const p=PondLife.pose(f,anglerState.world.time);
+        ctx.save();ctx.translate(p.x+3,p.y+5);ctx.rotate(p.angle);ctx.fillStyle=`rgba(6,34,30,${p.opacity*.3})`;
+        ctx.beginPath();ctx.ellipse(0,0,p.size*.6,p.size*.17,0,0,Math.PI*2);ctx.fill();ctx.restore();
         drawPondFish(ctx,p.x,p.y,p.size,p.angle,p.opacity,false,p.tail);
+        if(p.surface>.72&&p.opacity>.12){
+            ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle);ctx.strokeStyle=`rgba(210,234,209,${p.opacity*.32})`;ctx.lineWidth=.8;
+            for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(-p.size*.6,side*4);ctx.quadraticCurveTo(-p.size,side*8,-p.size*1.2,side*7);ctx.stroke();}ctx.restore();
+        }
     });
     drawPondTargetFish(ctx,bobber,t,caught);
     const ripple=(x,y,radius,opacity)=>{
@@ -304,6 +321,8 @@ function renderQuietPond() {
         const age=anglerState.phaseTime;ripple(bobber.x,bobber.y+4,8+age*32,Math.max(0,1-age/2)*.45);
     }
     ctx.restore();
+
+    if(layered)PondScene.drawActor(ctx,actor,filter);
 
     // One continuous tapered rod and one line; every endpoint shares the same geometry.
     const rodPath=()=>{
@@ -334,8 +353,9 @@ function renderQuietPond() {
         ctx.restore();
     }
     if(catchPose) drawPondLanding(ctx,catchPose,t,filter);
-    drawPondReeds(ctx,t);
-    PondAmbient.draw(ctx,t,image,filter,grade.night);
+    if(!layered)drawPondReeds(ctx,t);
+    PondScene.drawForeground(ctx,t,filter,grade.night);
+    PondAmbient.draw(ctx,t,image,filter,grade.night,layered);
     drawPondAtmosphere(ctx,t);
 }
 
@@ -359,28 +379,10 @@ function tracePondWater(ctx) {
 }
 
 function drawPondWater(ctx,t,filter) {
-    const image=document.getElementById('quietPondBackground');
-    ctx.save();tracePondWater(ctx);ctx.clip();
-    // Move only water pixels. The shore, dock and fisherman stay anchored.
-    if(image.complete && image.naturalWidth) {
-        ctx.filter=filter;
-        for(let y=200;y<645;y+=10) {
-            const shift=Math.sin(y*.033+t*.7)*2+Math.sin(y*.071-t*.45)*.85;
-            ctx.drawImage(image,0,y/750*image.naturalHeight,image.naturalWidth,10.5/750*image.naturalHeight,shift,y,1000,10.5);
-        }
-    }
-    ctx.filter='none';
-    for(let i=0;i<28;i++) {
-        const x=330+(i*89)%630+Math.sin(t*.35+i)*12, y=260+(i*43)%350;
-        const alpha=.035+Math.sin(t*.9+i*.8)**2*.09;
-        ctx.strokeStyle=`rgba(242,238,200,${alpha})`;ctx.lineWidth=1;
-        ctx.beginPath();ctx.moveTo(x-7,y);ctx.quadraticCurveTo(x,y-1.8,x+10+Math.sin(t+i)*3,y);ctx.stroke();
-    }
-    for(let i=0;i<5;i++) {
-        const phase=(t*.09+i*.21)%1,x=420+i*99,y=340+((i*57)%155)+phase*35;
-        ctx.strokeStyle=`rgba(184,220,192,${Math.sin(phase*Math.PI)*.085})`;ctx.lineWidth=1;
-        ctx.beginPath();ctx.ellipse(x,y,14+phase*24,2+phase*4,-.1,0,Math.PI*1.4);ctx.stroke();
-    }
+    const original=document.getElementById('quietPondBackground'),source=PondScene.base(filter)||original;
+    ctx.save();ctx.filter=source===original?filter:'none';
+    if(source.complete===false||source instanceof HTMLImageElement&&!source.naturalWidth){ctx.restore();return;}
+    PondWater.draw(ctx,source,t,PondScene.gain(),PondScene.light());
     ctx.restore();
 }
 
@@ -392,20 +394,9 @@ function drawPondTargetFish(ctx,bobber,t,caught) {
         if(age<2&&outcome.outcome!=='skip')drawPondFish(ctx,650+age*80,440+age*24,31,.25,(1-age/2)*.35,false,Math.sin(t*4));
         return;
     }
-    const stage=anglerState.stage, effect=anglerState.snapshot?.effect, age=anglerState.phaseTime;
-    const arrival=1-Math.exp(-age*.8);
-    let x=bobber.x+16+(1-arrival)*115+Math.sin(t*.8)*10, y=bobber.y+20+Math.cos(t*.7)*6;
-    if(effect==='sweep') {x=bobber.x+85+Math.sin(t*1.1)*25;y=bobber.y+45+Math.sin(t)*10;}
-    if(effect==='pullback') {x+=Math.sin(age*.8)*20*(1-arrival);y+=35*(1-arrival);}
-    if(effect==='breakout') {x+=Math.sin(age*2)*50*Math.exp(-age*.8);}
-    if(stage>=3) {
-        const returnDistance=stage===3 && effect==='return'?(1-arrival)*85:0;
-        x=bobber.x+8+returnDistance+Math.sin(t*2.2)*(stage===4?8:3);y=bobber.y+17+Math.cos(t*1.7)*3;
-        if(stage===3&&anglerState.snapshot.setup===2){x+=30*(1-arrival);y+=Math.sin(age*1.8)*12*(1-arrival);}
-        if(stage===3&&anglerState.snapshot.setup===4){x+=25*(1-arrival);y+=Math.sin(age*2.1)*3*(1-arrival);}
-    }
-    const tail=Math.sin(t*(stage===4?10:4));
-    drawPondFish(ctx,x,y,31,Math.atan2(bobber.y-y,bobber.x-x),stage>=4?.48:.33,false,tail);
+    const fish=PondBehavior.target(anglerState.snapshot,bobber,t,anglerState.phaseTime);
+    if(fish)drawPondFish(ctx,fish.x,fish.y,31,fish.angle,fish.opacity,false,fish.tail);
+
 }
 
 function drawPondReeds(ctx,t) {
@@ -518,11 +509,11 @@ function drawPondLanding(ctx,pose,t,filter) {
     drawPondFish(ctx,drawX,drawY,38,angle,.98,true,Math.sin(t*16)*(1-p));
     // Repaint the existing basket's woven front over the fish as it drops inside.
     if(p>.86) {
-        const image=document.getElementById('quietPondBackground');
-        if(image.complete && image.naturalWidth) {
+        const cached=PondScene.base(filter),image=cached||document.getElementById('quietPondBackground');
+        if(cached || image.complete && image.naturalWidth) {
             ctx.save();ctx.beginPath();ctx.moveTo(106,493);ctx.lineTo(158,490);ctx.lineTo(158,529);ctx.lineTo(106,529);ctx.closePath();ctx.clip();
-            ctx.filter=filter;
-            ctx.drawImage(image,0,0,image.naturalWidth,image.naturalHeight,0,0,1000,750);
+            ctx.filter=cached?'none':filter;
+            ctx.drawImage(image,0,0,image.naturalWidth||image.width,image.naturalHeight||image.height,0,0,1000,750);
             ctx.filter='none';
             ctx.fillStyle=`rgba(8,22,57,${anglerState.lighting.night*.24})`;ctx.fillRect(106,490,52,40);
             ctx.restore();

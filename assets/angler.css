@@ -119,3 +119,7 @@
 .pond-execution summary{cursor:pointer;font-weight:600}.pond-outcome-buttons{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
 .pond-rating{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:8px}.pond-rating select{padding:6px;max-width:100%}
 #rusticAnglerCard[data-fullscreen="true"] .pond-execution{display:none}
+.pond-scene-settings{padding:8px 20px;border-top:1px solid var(--border-inner);color:var(--text-muted);font-size:11px}
+.pond-scene-settings summary{cursor:pointer}.pond-scene-settings>div{display:flex;gap:16px;flex-wrap:wrap;padding:10px 0}
+.pond-scene-settings label{display:flex;gap:8px;align-items:center}.pond-scene-settings select{padding:5px;max-width:190px}
+#rusticAnglerCard[data-fullscreen="true"] .pond-scene-settings,#rusticAnglerCard[data-studio="true"] .pond-scene-settings{display:none}

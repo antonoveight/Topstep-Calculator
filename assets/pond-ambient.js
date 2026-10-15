@@ -8,17 +8,11 @@ const PondAmbient=(()=>{
                     angle:age*.5+i,alpha:visible?Math.min(1,age/2,(17-age)/3)*.6:0};
             }),insect:{x:705+Math.sin(t*.24)*85,y:292+Math.cos(t*.36)*30,visible:t%36>21}};
     }
-    function draw(ctx,t,image,filter,night) {
+    function draw(ctx,t,image,filter,night,layered=false) {
         const p=pose(t);
         ctx.save();
-        // A small torso-only breath. The rod hand is deliberately outside this mask.
-        if(image.complete&&image.naturalWidth) {
-            ctx.save();ctx.beginPath();ctx.moveTo(241,382);ctx.quadraticCurveTo(264,374,282,398);
-            ctx.lineTo(290,426);ctx.lineTo(275,449);ctx.lineTo(235,441);ctx.closePath();ctx.clip();
-            ctx.filter=filter;ctx.translate(0,p.breath);ctx.drawImage(image,0,0,1000,750);ctx.restore();
-        }
         // Reeds share the breeze but differ in phase, so they do not move in unison.
-        for(let i=0;i<15;i++) {
+        if(!layered)for(let i=0;i<15;i++) {
             const right=i>6,x=right?865+(i-7)*13:15+i*13,y=right?653+(i%3)*12:411+(i%4)*13;
             const height=25+(i*19)%56,sway=(p.gust+Math.sin(t*.65+i)*.6)*3;
             ctx.strokeStyle=night>.4?'rgba(133,158,119,.27)':'rgba(190,185,107,.48)';ctx.lineWidth=1.2;

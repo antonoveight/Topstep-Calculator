@@ -109,3 +109,13 @@ Dự án là nhật ký EOD, không xác nhận việc khóa ngày hoặc theo d
 - Bước 4: cam kết ngắn trước buổi, lý do khi đổi setup/tiếp tục ngoài điều kiện nghỉ, trạng thái chờ/quản lý/nghỉ, tự đánh giá từng lượt/cuối buổi và tổng kết không có lệnh. Điều kiện nghỉ chỉ chặn lượt mới trong hồ, không tác động Topstep. Có lưu buổi qua reload, xuất JSON và kiểm tra dữ liệu trước khi import backup.
 - `tests/pond-studio.cjs`: chuyển động có giới hạn; kết quả/idempotence/reload; giữ dữ liệu tài chính; lịch DST; TP; tỷ lệ/chia đôi; thao tác cam kết/đổi setup/lý do; hai SL chuyển nghỉ; buổi không lệnh; khôi phục buổi; mock quyền chia sẻ/video và dừng track; desktop/tablet/mobile; backup đầy đủ và từ chối metadata lỗi trước khi ghi.
 - 13 tệp kiểm thử chạy đạt trong đợt này; lượt cuối chạy lại studio/review sau khi thêm rollback import khi quota lỗi và version URL tài nguyên để cập nhật cache. Không thực hiện phiên phát TikTok/Topstep thật.
+
+## Cảnh nhiều lớp v2
+
+- Tạo mới bằng image_gen: nền sạch, nhân vật RGBA, ba cụm cây/cỏ RGBA, đèn RGBA và trụ gỗ RGBA. Giữ bản gốc để dự phòng; prompt đầy đủ nằm cạnh tài nguyên trong `assets/pond/`.
+- Ghép ảnh theo lớp trên Canvas; nhân vật thở/dịch trọng tâm nhẹ, bàn tay và cần chung phép biến đổi. Tán cây, cỏ và đèn cùng nhịp gió nhưng khác biên độ. Sau kết thúc lượt, cần được đặt xuống.
+- Hai tầng sóng, phản chiếu, dòng sáng và gợn cục bộ; cá đổi tốc độ/độ sâu, bóng và vệt mặt nước. Tách chuyển động mục tiêu theo CRT/Trend/AMD/Break, không tự thay điều kiện giao dịch.
+- Mức chuyển động Nhẹ/Vừa, giảm tải 24fps/số cá/số dải nước/DPR; giữ pause, reduced-motion và offscreen suspension. Studio crop cố định gần hơn, giữ phao và rổ trong cảnh.
+- Thêm kiểm tra pose/tay, giới hạn sóng, bốn hành vi, framing và lưu/khôi phục lựa chọn chất lượng. Kiểm tra trình duyệt khi một lớp ảnh tải lỗi; cảnh gốc và điều khiển tiếp tục hoạt động. Kiểm tra hình ảnh ghi nhận hơn 40.000 pixel thay đổi rõ trong khoảng 3 giây.
+- Xuất clip khoảng 25 giây theo bố cục studio, từ chờ tới thu cá vào rổ; phần chart là placeholder có nhãn, không phải phiên giao dịch thật.
+- Kết quả: 14 tệp kiểm thử chạy đạt, gồm bộ mới cho cảnh nhiều lớp và kiểm tra hồi quy đầy đủ. Các PNG tách lớp giữ alpha RGBA; các tài nguyên và clip đều nằm trong workspace để dùng trên GitHub Pages.
