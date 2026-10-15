@@ -18,12 +18,12 @@ const PondScene=(()=>{
         const m=document.getElementById('pondMotionLevel'),p=document.getElementById('pondPerformance');if(m)m.value=motion;if(p)p.value=performance;
         if(typeof syncAnglerMotion==='function')syncAnglerMotion();
     }
-    function pose(t,stage=0,rest=false,amount=1){
+    function pose(t,stage=0,rest=false,amount=1,action={}){
         const gain=amount,breath=Math.sin(t*1.35)*1.25*gain;
         // Infrequent weight shifts blend in and out rather than looping a large gesture.
         const cycle=t%31,shift=cycle>20&&cycle<27?Math.sin((cycle-20)/7*Math.PI):0;
-        const angle=(rest?.014:stage>=4?-.014:shift*.012+Math.sin(t*.31)*.005)*gain;
-        const x=shift*.7*gain,y=breath*(stage>=4?.45:1),pivot={x:260,y:480};
+        const angle=(rest?.014:stage>=4?-.014:shift*.012+Math.sin(t*.31)*.005)*gain+(rest?0:action.lean||0);
+        const x=shift*.7*gain,y=breath*(stage>=4?.45:1)+(rest?0:action.bodyY||0),pivot={x:260,y:480};
         const transform=p=>({x:pivot.x+(p.x-pivot.x)*Math.cos(angle)-(p.y-pivot.y)*Math.sin(angle)+x,
             y:pivot.y+(p.x-pivot.x)*Math.sin(angle)+(p.y-pivot.y)*Math.cos(angle)+y});
         return {angle,x,y,pivot,hand:transform({x:303,y:443}),breath,shift};

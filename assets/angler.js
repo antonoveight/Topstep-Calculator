@@ -205,6 +205,7 @@ function updateAnglerState(_count,_risk1,_risk2,_tp,options={}) {
         isRisk1r:next.risk[0],isRisk2r:next.risk[1],isRiskTp:next.risk[2]});
     anglerState.fish.state=next.fishState;
     if(changed) {
+        anglerState.motionFrom=restored||!advance?null:anglerState.geometry?.motion;
         anglerState.phaseTime=advance?0:99;
         anglerState.castProgress=advance && prev.stage===0 && next.stage<4?0:(next.stage>0?1:0);
         anglerState.catchProgress=advance && next.stage===7?0:(next.stage===7?1:0);
@@ -278,21 +279,17 @@ function renderQuietPond() {
     const catchPose=caught?PondCatch.sample(anglerState.catchProgress,anglerState.catchOrigin,fishProfile.size*fishProfile.mouth):null;
     anglerState.catchPose=catchPose;
     const tension=anglerState.rodBend;
+    const motion=active&&!caught?PondBehavior.motion(anglerState.snapshot,t,anglerState.phaseTime,PondScene.gain(),anglerState.motionFrom):PondBehavior.motion(null,t,99);
     // Anchors are aligned to the hands and perspective in quiet-pond.png (1448 × 1086).
-    const actor=PondScene.pose(t,anglerState.stage,parked,PondScene.gain());
+    const actor=PondScene.pose(t,anglerState.stage,parked,PondScene.gain(),motion);
     const hand=parked?{x:300,y:505}:layered?actor.hand:{x:303,y:443};
-    const struggle=anglerState.stage===4?Math.sin(t*4)*2.5:anglerState.stage===5?Math.sin(t*2.3):0;
     const idleSway=Math.sin(t*1.1)*1.8*PondScene.gain();
-    const tip=parked?{x:460,y:515}:catchPose?catchPose.tip:{x:active?477+tension*8+struggle:460+idleSway*.4,y:active?296+tension*31:321+idleSway};
+    const tip=parked?{x:460,y:515}:catchPose?catchPose.tip:{x:active?477+tension*8+motion.tipX:460+idleSway*.4,y:active?296+tension*31+motion.tipY:321+idleSway};
     const bobber=catchPose?catchPose.float:{x:hand.x+(650-hand.x)*cast-anglerState.reelAmount*22,
         y:hand.y+(412-hand.y)*cast-Math.sin(cast*Math.PI)*94+Math.sin(t*1.8)*1.6};
-    if(anglerState.stage===3) {
-        const amplitude=anglerState.snapshot.effect==='settle'?2:8;
-        bobber.y+=Math.sin(anglerState.phaseTime*8)*amplitude*Math.exp(-anglerState.phaseTime*1.2);
-    }
-    if(anglerState.stage===4) {bobber.x+=Math.sin(t*3.3)*5;bobber.y+=Math.sin(t*4)*2;}
+    if(!caught){bobber.x+=motion.bobberX;bobber.y+=motion.bobberY;}
     anglerState.bobber=bobber;
-    anglerState.geometry={hand,tip,bobber,catchPose};
+    anglerState.geometry={hand,tip,bobber,catchPose,motion};
 
     drawPondWater(ctx,t,filter);
     if(grade.night>.001) {ctx.fillStyle=`rgba(8,22,57,${grade.night*.24})`;ctx.fillRect(0,0,w,h);}
@@ -315,8 +312,17 @@ function renderQuietPond() {
     };
     if(active && cast>.9 && !caught) {
         for(let i=0;i<3;i++) {
-            const phase=(t*.35+i/3)%1;
-            ripple(bobber.x,bobber.y+6,7+phase*42,(1-phase)*.3);
+            const phase=(t*(anglerState.stage===4?.85:.3)+i/3)%1;
+            const spread=anglerState.stage===3?10:anglerState.stage===4?45:anglerState.stage===5?24:42;
+            const strength=anglerState.stage===3?.07+motion.nibble*.2:anglerState.stage===4?.42:anglerState.stage===5?.19:.3;
+            ripple(bobber.x,bobber.y+6,4+phase*spread,(1-phase)*strength);
+        }
+        if(motion.wake>0){
+            ctx.strokeStyle=`rgba(221,241,219,${motion.wake*.33})`;ctx.lineWidth=.9;
+            for(const side of [-1,1]){
+                ctx.beginPath();ctx.moveTo(bobber.x-3,bobber.y+side*3);
+                ctx.quadraticCurveTo(bobber.x+13,bobber.y+side*7,bobber.x+30,bobber.y+side*10);ctx.stroke();
+            }
         }
     }
     anglerState.ripples.forEach(r=>{const age=t-r.born;ripple(r.x,r.y,5+age*25,Math.max(0,1-age/3)*.35);});
@@ -332,7 +338,7 @@ function renderQuietPond() {
     const rodPath=()=>{
         const dx=tip.x-hand.x,dy=tip.y-hand.y;
         ctx.beginPath();ctx.moveTo(hand.x,hand.y);
-        ctx.bezierCurveTo(hand.x+dx*.33,hand.y+dy*.48-9,hand.x+dx*.78+tension*8,hand.y+dy*.87-14,tip.x,tip.y);
+        ctx.bezierCurveTo(hand.x+dx*.33,hand.y+dy*.48-9,hand.x+dx*.78+tension*8+motion.curve,hand.y+dy*.87-14+motion.curve*.35,tip.x,tip.y);
     };
     ctx.lineCap='round';
     rodPath();ctx.strokeStyle='rgba(27,42,30,.5)';ctx.lineWidth=4;ctx.stroke();
@@ -342,14 +348,15 @@ function renderQuietPond() {
     ctx.strokeStyle='#422e22';ctx.lineWidth=4.6;ctx.stroke();
     if(active) {
         ctx.beginPath();ctx.moveTo(tip.x,tip.y);
-        const sag=catchPose && catchPose.progress<.12?0:(tension?6:31);
+        const sag=catchPose?(catchPose.progress<.12?0:6):motion.lineSag;
         ctx.quadraticCurveTo((tip.x+bobber.x)/2,(tip.y+bobber.y)/2+sag,bobber.x,bobber.y-9);
         ctx.strokeStyle='rgba(246,239,214,.72)';ctx.lineWidth=.8;ctx.stroke();
         if(catchPose?.attached) {
             ctx.beginPath();ctx.moveTo(bobber.x,bobber.y+6);ctx.lineTo(catchPose.mouth.x,catchPose.mouth.y);
             ctx.strokeStyle='rgba(239,239,213,.8)';ctx.lineWidth=.85;ctx.stroke();
         }
-        ctx.save();ctx.translate(bobber.x,bobber.y);
+        ctx.save();ctx.translate(bobber.x,bobber.y+motion.dip);ctx.rotate(motion.floatAngle);
+        ctx.globalAlpha=1-motion.dip*.045;
         ctx.fillStyle='rgba(14,51,46,.19)';ctx.beginPath();ctx.ellipse(3,9,6,1.9,0,0,Math.PI*2);ctx.fill();
         ctx.strokeStyle='#ecc48c';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-11);ctx.lineTo(0,9);ctx.stroke();
         ctx.fillStyle='#e67a54';ctx.beginPath();ctx.ellipse(0,-2,3.6,5.3,0,Math.PI,Math.PI*2);ctx.fill();
@@ -400,7 +407,15 @@ function drawPondTargetFish(ctx,bobber,t,caught) {
         return;
     }
     const fish=PondBehavior.target(anglerState.snapshot,bobber,t,anglerState.phaseTime);
-    if(fish)PondFish.draw(ctx,fish.x,fish.y,anglerState.fishProfile,fish.angle,fish.opacity,fish.tail);
+    if(fish){
+        const profile=anglerState.fishProfile;
+        if(anglerState.stage>=4){
+            const mouth={x:fish.x+Math.cos(fish.angle)*profile.size*profile.mouth,y:fish.y+Math.sin(fish.angle)*profile.size*profile.mouth};
+            ctx.strokeStyle='rgba(224,240,215,.32)';ctx.lineWidth=.65;
+            ctx.beginPath();ctx.moveTo(bobber.x,bobber.y+8);ctx.lineTo(mouth.x,mouth.y);ctx.stroke();
+        }
+        PondFish.draw(ctx,fish.x,fish.y,profile,fish.angle,fish.opacity,fish.tail);
+    }
 
 }
 
