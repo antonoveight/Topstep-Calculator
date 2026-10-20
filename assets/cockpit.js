@@ -1601,29 +1601,53 @@ const accountData = TradingRules.accounts;
             document.querySelector('.finpoint-workspace').dataset.view=viewName;
             const viewDash = document.getElementById('view-dashboard');
             const viewCheck = document.getElementById('view-checklist');
+            const viewCal = document.getElementById('view-calendar');
             const navDash = document.getElementById('nav-dashboard');
             const navCheck = document.getElementById('nav-checklist');
+            const navCal = document.getElementById('nav-calendar');
             const topDash = document.getElementById('topBtnDashboard');
             const topCheck = document.getElementById('topBtnChecklist');
+            const topCal = document.getElementById('topBtnCalendar');
             const breadcrumbEl = document.getElementById('headerBreadcrumbCurrent');
             const headerTitleEl = document.getElementById('headerMainTitle');
 
             if (viewName === 'checklist') {
                 if (viewDash) viewDash.style.display = 'none';
                 if (viewCheck) viewCheck.style.display = 'flex';
+                if (viewCal) viewCal.style.display = 'none';
                 if (navDash) navDash.classList.remove('active');
                 if (navCheck) navCheck.classList.add('active');
+                if (navCal) navCal.classList.remove('active');
                 if (topDash) { topDash.className = 'b-badge b-badge-dim'; }
                 if (topCheck) { topCheck.className = 'b-badge b-badge-blue'; }
+                if (topCal) { topCal.className = 'b-badge b-badge-dim'; }
                 if (breadcrumbEl) breadcrumbEl.innerText = 'Checklist Thực Chiến';
                 if (headerTitleEl) headerTitleEl.innerText = 'Checklist Vào Lệnh Thực Chiến';
+            } else if (viewName === 'calendar') {
+                if (viewDash) viewDash.style.display = 'none';
+                if (viewCheck) viewCheck.style.display = 'none';
+                if (viewCal) viewCal.style.display = 'flex';
+                if (navDash) navDash.classList.remove('active');
+                if (navCheck) navCheck.classList.remove('active');
+                if (navCal) navCal.classList.add('active');
+                if (topDash) { topDash.className = 'b-badge b-badge-dim'; }
+                if (topCheck) { topCheck.className = 'b-badge b-badge-dim'; }
+                if (topCal) { topCal.className = 'b-badge b-badge-blue'; }
+                if (breadcrumbEl) breadcrumbEl.innerText = 'Lịch Kinh Tế';
+                if (headerTitleEl) headerTitleEl.innerText = 'Lịch Kinh Tế & Radar Cảnh Báo Tin Tức';
+                if (window.NewsRadar && typeof window.NewsRadar.onCalendarViewOpen === 'function') {
+                    window.NewsRadar.onCalendarViewOpen();
+                }
             } else {
                 if (viewDash) viewDash.style.display = 'flex';
                 if (viewCheck) viewCheck.style.display = 'none';
+                if (viewCal) viewCal.style.display = 'none';
                 if (navDash) navDash.classList.add('active');
                 if (navCheck) navCheck.classList.remove('active');
+                if (navCal) navCal.classList.remove('active');
                 if (topDash) { topDash.className = 'b-badge b-badge-blue'; }
                 if (topCheck) { topCheck.className = 'b-badge b-badge-dim'; }
+                if (topCal) { topCal.className = 'b-badge b-badge-dim'; }
                 if (breadcrumbEl) breadcrumbEl.innerText = 'Dashboard';
                 if (headerTitleEl) headerTitleEl.innerText = 'Welcome back, Trader!';
             }
@@ -1632,6 +1656,72 @@ const accountData = TradingRules.accounts;
             } catch (e) {}
             if (typeof syncAnglerMotion === 'function') syncAnglerMotion();
         }
+
+        function togglePushNotifications(event) {
+            if (event && event.stopPropagation) event.stopPropagation();
+            if (window.NewsRadar && typeof window.NewsRadar.togglePushNotifications === 'function') {
+                window.NewsRadar.togglePushNotifications();
+            }
+        }
+        function toggleSoundAlerts(event) {
+            if (event && event.stopPropagation) event.stopPropagation();
+            if (window.NewsRadar && typeof window.NewsRadar.toggleSoundAlerts === 'function') {
+                window.NewsRadar.toggleSoundAlerts();
+            }
+        }
+        function testNewsNotification(event) {
+            if (event && event.stopPropagation) event.stopPropagation();
+            if (window.NewsRadar && typeof window.NewsRadar.testNotification === 'function') {
+                window.NewsRadar.testNotification();
+            }
+        }
+        function openAddCustomNewsModal() {
+            const modal = document.getElementById('addCustomNewsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+            }
+        }
+        function closeAddCustomNewsModal() {
+            const modal = document.getElementById('addCustomNewsModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }
+        }
+        function submitCustomNews(e) {
+            if (e) e.preventDefault();
+            const nameEl = document.getElementById('customNewsName');
+            const dateEl = document.getElementById('customNewsDate');
+            const timeEl = document.getElementById('customNewsTime');
+            const impactEl = document.getElementById('customNewsImpact');
+            const symbols = Array.from(document.querySelectorAll('input[name="customNewsSymbol"]:checked')).map(el => el.value);
+
+            if (!nameEl || !dateEl || !timeEl) return;
+            const name = nameEl.value.trim();
+            const dateStr = dateEl.value;
+            const timeStr = timeEl.value;
+            const impact = impactEl ? impactEl.value : 'HIGH';
+
+            if (!name || !dateStr || !timeStr) {
+                alert('Vui lòng điền đủ tên sự kiện, ngày và giờ.');
+                return;
+            }
+
+            if (window.NewsRadar && typeof window.NewsRadar.addCustomEvent === 'function') {
+                window.NewsRadar.addCustomEvent(name, dateStr, timeStr, impact, symbols);
+            }
+            closeAddCustomNewsModal();
+            nameEl.value = '';
+        }
+
+        window.switchAppView = switchAppView;
+        window.togglePushNotifications = togglePushNotifications;
+        window.toggleSoundAlerts = toggleSoundAlerts;
+        window.testNewsNotification = testNewsNotification;
+        window.openAddCustomNewsModal = openAddCustomNewsModal;
+        window.closeAddCustomNewsModal = closeAddCustomNewsModal;
+        window.submitCustomNews = submitCustomNews;
 
         function navigateToDashboardSection(sectionId) {
             switchAppView('dashboard');
@@ -1647,6 +1737,8 @@ const accountData = TradingRules.accounts;
                 const saved = localStorage.getItem('topstep_active_app_view');
                 if (hash === '#checklist' || saved === 'checklist') {
                     switchAppView('checklist');
+                } else if (hash === '#calendar' || saved === 'calendar') {
+                    switchAppView('calendar');
                 } else {
                     switchAppView('dashboard');
                 }

@@ -6,3 +6,4 @@ extracted_doc.txt
 *.pdf
 .review-tools/
 output/
+scratch/
