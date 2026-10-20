@@ -5,7 +5,7 @@ const PondSchedule=(()=>{
         {id:'noon',start:630,end:810,label:'Nghỉ trưa',active:false},
         {id:'afternoon',start:840,end:960,label:'Khung chiều · MGC',active:true,setups:[1,3],symbols:['MGC']},
         {id:'break',start:990,end:1170,label:'Nghỉ chiều',active:false},
-        {id:'us',start:1215,end:1350,label:'Khung Mỹ',active:true,usShift:true,setups:[1,2,4],symbols:['MGC','MNQ']},
+        {id:'us',start:1215,end:1350,label:'Khung Mỹ',active:true,usShift:true,setups:[1,2,4],symbols:['MGC','MNQ','MES','MCLZ26','MCL']},
         {id:'night',start:1350,end:465,label:'Nghỉ đêm',active:false,usShift:true,startOnly:true}
     ];
     function format(minute){return String(Math.floor(minute/60)%24).padStart(2,'0')+':'+String(minute%60).padStart(2,'0');}

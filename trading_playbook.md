@@ -1,15 +1,19 @@
 # SỔ TAY GIAO DỊCH THỰC CHIẾN (TRADING PLAYBOOK)
 ### Phương Pháp: FRVP (Fixed Range Volume Profile) & SMC / CRT / AMD
-**Thị Trường:** Futures CME (Gold - MGC/GC & Nasdaq - MNQ/NQ)  
+**Thị Trường (Danh Mục Chính):** Futures CME / NYMEX — Chỉ giao dịch 4 sản phẩm Micro:
+1. **MGC** (Micro Gold)
+2. **MNQ** (Micro E-mini Nasdaq-100)
+3. **MES** (Micro E-mini S&P 500)
+4. **MCLZ26** (Micro WTI Crude Oil - Dec 2026)  
 **Tài Khoản:** Topstep® 50K DLL Express (Quy tắc DLL: -$1,000 | Mục tiêu ngày thắng: ≥ +$150)  
 **Tác Giả:** Trader Giản Hạ Thủy (Đinh Sửu 1997)  
-**Phiên Bản:** 1.0 (Chuẩn Hóa Kỷ Luật & Xác Suất)
+**Phiên Bản:** 2.0 (Chuẩn Hóa Danh Mục & Kỷ Luật Xác Suất)
 
 ---
 
 ## MỤC LỤC
 1. [Triết Lý Cốt Lõi & Mô Hình Xác Suất](#1-triết-lý-cốt-lõi--mô-hình-xác-suất)
-2. [Cấu Hình Chỉ Báo FRVP Chuẩn Cho Gold & NQ](#2-cấu-hình-chỉ-báo-frvp-chuẩn-cho-gold--nq)
+2. [Cấu Hình Chỉ Báo FRVP Chuẩn Cho 4 Sản Phẩm](#2-cấu-hình-chỉ-báo-frvp-chuẩn-cho-4-sản-phẩm)
 3. [Phân Tích 3 Vị Trí Của POC Trong Range Anchor](#3-phân-tích-3-vị-trí-của-poc-trong-range-anchor)
 4. [Chi Tiết 4 Setup Thực Chiến](#4-chi-tiết-4-setup-thực-chiến)
    - [Setup 1: CRT - FRVP (Candle Range Sweep & POC Break)](#setup-1-crt---frvp)
@@ -17,7 +21,8 @@
    - [Setup 3: AMD (Accumulation - Manipulation - Distribution)](#setup-3-amd)
    - [Setup 4: Break (Phá Vỡ Range Sideway & Retest)](#setup-4-break)
 5. [Quy Tắc Quản Trị Lệnh Real-time (Execution Rules)](#5-quy-tắc-quản-trị-lệnh-real-time)
-6. [Quản Trị Vốn & Kỷ Luật Topstep 50K](#6-quản-trị-vốn--kỷ-luật-topstep-50k)
+6. [Quản Trị Vốn & Bảng Thông Số Hợp Đồng (MGC, MNQ, MES, MCLZ26)](#6-quản-trị-vốn--bảng-thông-số-hợp-đồng)
+7. [Bản Đồ Thanh Khoản & Khung Giờ Săn Mồi](#7-bản-đồ-thanh-khoản--khung-giờ-săn-mồi)
 
 ---
 
@@ -38,18 +43,18 @@
 
 ---
 
-## 2. Cấu Hình Chỉ Báo FRVP Chuẩn Cho Gold & NQ
+## 2. Cấu Hình Chỉ Báo FRVP Chuẩn Cho 4 Sản Phẩm
 
 Cài đặt trên nền tảng TradingView / TopstepX:
 
-| Thông Số Cài Đặt | Vàng (GC / MGC) | Nasdaq (NQ / MNQ) | Mục Đích Thực Chiến |
-| :--- | :--- | :--- | :--- |
-| **Row Layout** | Number of Rows | Number of Rows | Chuẩn hóa theo chiều dọc |
-| **Row Size** | **70 – 100** | **120 – 150** | NQ biên độ điểm rộng (hàng trăm pt), cần row dày để cụm volume mịn và rõ nét. |
-| **Value Area Volume** | **70%** | **70%** | Chuẩn thống kê 1 độ lệch chuẩn Gaussian |
-| **POC Line** | Bật (Đỏ hoặc Xanh Coban, dày 2px) | Bật (Đỏ hoặc Xanh Coban, dày 2px) | Bật tùy chọn **Extend Right** để theo dõi điểm va đập giá trong tương lai. |
-| **VAH / VAL Line** | Tắt (hoặc để nét đứt mờ) | Tắt (hoặc để nét đứt mờ) | Giảm rác mắt, tập trung 100% sự chú ý vào đường POC. |
-| **Volume Bar Opacity** | **30% – 40%** | **30% – 40%** | Làm mờ cột volume để không che mất nến và cấu trúc râu nến. |
+| Thông Số Cài Đặt | Vàng (MGC) | Nasdaq (MNQ) | S&P 500 (MES) | Dầu Thô (MCLZ26) | Ghi Chú Kỹ Thuật |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Row Layout** | Number of Rows | Number of Rows | Number of Rows | Number of Rows | Chuẩn hóa theo chiều dọc |
+| **Row Size** | **70 – 100** | **120 – 150** | **80 – 100** | **60 – 80** | NQ biên độ rộng cần row dày; Dầu bước giá 0.01 cần row vừa phải để profile mịn. |
+| **Value Area Volume** | **70%** | **70%** | **70%** | **70%** | Chuẩn thống kê 1 độ lệch chuẩn Gaussian |
+| **POC Line** | Bật (Đỏ / Xanh, 2px) | Bật (Đỏ / Xanh, 2px) | Bật (Đỏ / Xanh, 2px) | Bật (Đỏ / Xanh, 2px) | Bật **Extend Right** để theo dõi điểm va đập giá. |
+| **VAH / VAL Line** | Tắt / Nét đứt mờ | Tắt / Nét đứt mờ | Tắt / Nét đứt mờ | Tắt / Nét đứt mờ | Giảm rác mắt, tập trung 100% vào đường POC. |
+| **Volume Bar Opacity** | **30% – 40%** | **30% – 40%** | **30% – 40%** | **30% – 40%** | Làm mờ volume để thấy rõ cấu trúc nến & râu sweep. |
 
 ---
 
@@ -156,7 +161,7 @@ Khi kéo FRVP từ **Open Anchor** đến **cây nến trước nến Sweep (ho�
 
 ---
 
-## 6. Quản Trị Vốn & Kỷ Luật Topstep 50K
+## 6. Quản Trị Vốn & Bảng Thông Số Hợp Đồng (MGC, MNQ, MES, MCLZ26)
 
 - **Tài khoản:** 50K DLL EXPRESS (Khóa ngày nếu lỗ $-1,000$).
 - **Quy mô 1R chuẩn:** **$150 – $200 USD / lệnh**.
@@ -166,18 +171,33 @@ Khi kéo FRVP từ **Open Anchor** đến **cây nến trước nến Sweep (ho�
   - Nếu đạt $+2\text{R}$ hoặc $+3\text{R}$ (lãi $\ge +\$300$) $\rightarrow$ **DỪNG TRADE NGAY HÔM ĐÓ.** Bảo toàn 1 ngày thắng hợp lệ để tích lũy 5 ngày rút tiền.
   - Nếu thua 2 lệnh liên tiếp ($-1\text{R}$ và $-1\text{R}$ = $-300$ to $-400$) $\rightarrow$ **DỪNG TRADE HÔM ĐÓ.** Giữ khoảng cách xa ngưỡng $-1,000$ DLL của Topstep.
 
+### Bảng Thông Số Hợp Đồng Chi Tiết (Position Sizer Reference)
+
+| Sản Phẩm | Tên Đầy Đủ | Sàn | Bước Giá (Tick Size) | Giá Trị 1 Tick (Micro) | Giá Trị 1 Point | Stop Loss Chuẩn (Gợi ý) | Rủi Ro / 1 Hợp Đồng |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **MGC** | Micro Gold | COMEX | **0.10 pt** | **$1.00** | $10.00 | **2.0 pt** (20 ticks) | **$20.00** |
+| **MNQ** | Micro E-mini Nasdaq-100 | CME | **0.25 pt** | **$0.50** | $2.00 | **20.0 pt** (80 ticks) | **$40.00** |
+| **MES** | Micro E-mini S&P 500 | CME | **0.25 pt** | **$1.25** | $5.00 | **5.0 pt** (20 ticks) | **$25.00** |
+| **MCLZ26** | Micro WTI Crude Oil (Dec 26) | NYMEX | **0.01 pt** ($0.01) | **$1.00** | $100.00 | **0.30 pt** (30 ticks) | **$30.00** |
+
+*Ví dụ tính số lot cho rủi ro $150 (1R):*
+- **MGC** (SL 2.0 pt = 20 ticks = $20/lot) $\rightarrow$ Đi **7 lot** ($140 rủi ro).
+- **MNQ** (SL 20.0 pt = 80 ticks = $40/lot) $\rightarrow$ Đi **3 lot** ($120 rủi ro) hoặc **4 lot** ($160 rủi ro).
+- **MES** (SL 5.0 pt = 20 ticks = $25/lot) $\rightarrow$ Đi **6 lot** ($150 rủi ro).
+- **MCLZ26** (SL 0.30 pt = 30 ticks = $30/lot) $\rightarrow$ Đi **5 lot** ($150 rủi ro).
+
 ---
 
-## 7. Bản Đồ Thanh Khoản & Khung Giờ Săn Mồi (MGC & MNQ - GMT+7)
+## 7. Bản Đồ Thanh Khoản & Khung Giờ Săn Mồi (GMT+7)
 
-| Khung Giờ | Trạng Thái | Trọng Tâm Giao Dịch & Setup |
-| :--- | :--- | :--- |
-| **07:45 – 10:00 (Sáng)** | 🟢 **SĂN LỆNH** | **Dòng tiền Á (Tokyo & Shanghai SGE)**: MGC & MNQ chạy mượt, tôn trọng kỹ thuật.<br>• Canh **Setup 1 (CRT)** quét râu đêm (ONH/ONL) hoặc **Setup 2 (Trend)** hồi POC sóng sáng. |
-| **10:30 – 13:30 (Trưa)** | 🛑 **NGỒI YÊN** | **Vùng chết (Deadzone)**: Cạn volume, thị trường ngủ đông. Tắt màn hình, tuyệt đối không cố tìm lệnh. |
-| **14:00 – 16:00 (Chiều)** | 🟡 **ƯU TIÊN MGC** | **London mở cửa (Vàng vật chất)**: MGC bùng nổ nhịp quét râu phiên Á. Canh **Setup 1 (CRT)** hoặc **Setup 3 (AMD)**.<br>• *Lưu ý:* MNQ biên hẹp, dễ bẫy $\rightarrow$ Khuyên đứng ngoài với MNQ. |
-| **16:30 – 19:30 (Chiều)** | 🛑 **NGHỈ NGƠI** | **Giữa phiên Âu & Mỹ**: Volume chững lại chờ tin. Tắt chart, ăn tối, nghỉ ngơi tái tạo năng lượng. |
-| **20:15 – 22:30 (Tối)\*** | 🔥 **GIỜ VÀNG MỸ** | **US Open (80% Volume ngày)**: Biến động cực mạnh cả MGC & MNQ, sóng dứt khoát nhanh tới TP.<br>• Canh **Setup 4 (Break)**, **Setup 1 (CRT)** hoặc **Setup 2 (Trend)**. |
-| **Sau 22:30 (Đêm)** | 🛑 **ĐÓNG MÁY** | Hết sóng chính, tắt chart đi ngủ để bảo toàn vốn và kỷ luật. |
+| Khung Giờ | Trạng Thái | Sản Phẩm Ưu Tiên | Trọng Tâm Giao Dịch & Setup |
+| :--- | :--- | :--- | :--- |
+| **07:45 – 10:00 (Sáng)** | 🟢 **SĂN LỆNH** | **MGC, MNQ** | **Dòng tiền Á (Tokyo & Shanghai SGE)**: MGC & MNQ chạy mượt, tôn trọng kỹ thuật.<br>• Canh **Setup 1 (CRT)** quét râu đêm (ONH/ONL) hoặc **Setup 2 (Trend)** hồi POC sóng sáng. |
+| **10:30 – 13:30 (Trưa)** | 🛑 **NGỒI YÊN** | — | **Vùng chết (Deadzone)**: Cạn volume, thị trường ngủ đông. Tắt màn hình, tuyệt đối không cố tìm lệnh. |
+| **14:00 – 16:00 (Chiều)** | 🟡 **ƯU TIÊN MGC** | **MGC** | **London mở cửa (Vàng vật chất)**: MGC bùng nổ nhịp quét râu phiên Á. Canh **Setup 1 (CRT)** hoặc **Setup 3 (AMD)**.<br>• *Lưu ý:* MNQ biên hẹp, dễ bẫy $\rightarrow$ Khuyên đứng ngoài với MNQ. |
+| **16:30 – 19:30 (Chiều)** | 🛑 **NGHỈ NGƠI** | — | **Giữa phiên Âu & Mỹ**: Volume chững lại chờ tin. Tắt chart, ăn tối, nghỉ ngơi tái tạo năng lượng. |
+| **20:15 – 22:30 (Tối)\*** | 🔥 **GIỜ VÀNG MỸ** | **MGC, MNQ, MES, MCLZ26** | **US Open (80% Volume ngày & Pit Dầu)**: Biến động cực mạnh cả 4 mã, sóng dứt khoát nhanh tới TP.<br>• Canh **Setup 4 (Break)**, **Setup 1 (CRT)** hoặc **Setup 2 (Trend)**. |
+| **Sau 22:30 (Đêm)** | 🛑 **ĐÓNG MÁY** | — | Hết sóng chính, tắt chart đi ngủ để bảo toàn vốn và kỷ luật. |
 
 > [!NOTE]
 > **(\*) Lưu ý chu kỳ giờ Mùa Đông (từ tháng 11 đến tháng 3):** Khung Giờ Vàng Mỹ sẽ lùi lại 1 tiếng: **21:15 – 23:30** (NYSE mở cửa lúc 21:30 VN thay vì 20:30 VN).

@@ -147,10 +147,10 @@
                 }
             }
 
-            // 3. Tìm mã hợp đồng (MGC, GC, MNQ, NQ, MES...)
+            // 3. Tìm mã hợp đồng (MGC, MNQ, MES, MCLZ26...)
             for (const el of allElements) {
                 const text = (el.textContent || '').trim();
-                const m = text.length < 200 && text.match(/\b(MGC|GC|MNQ|NQ|MES|ES|MCL|CL|MYM|YM|M2K|RTY|MBT|BTC)\b/);
+                const m = text.length < 200 && text.match(/\b(MGC|GC|MNQ|NQ|MES|ES|MCLZ26|MCL|CL|MYM|YM|M2K|RTY|MBT|BTC)\b/);
                 if (m) {
                     scrapedSymbol = m[1];
                     break;
@@ -208,18 +208,9 @@
                         <label style="font-size: 11px; font-weight: 600; color: #94A3B8; display: block; margin-bottom: 4px;">Sản Phẩm Trade</label>
                         <select id="sync-input-symbol" style="width: 100%; background: #1A2234; border: 1px solid #1F2937; border-radius: 8px; padding: 8px 12px; color: #F9FAFB; font-size: 13px; outline: none;">
                             <option value="MGC" ${data.symbol === 'MGC' ? 'selected' : ''}>MGC (Micro Gold)</option>
-                            <option value="GC" ${data.symbol === 'GC' ? 'selected' : ''}>GC (Gold Standard)</option>
                             <option value="MNQ" ${data.symbol === 'MNQ' ? 'selected' : ''}>MNQ (Micro Nasdaq)</option>
-                            <option value="NQ" ${data.symbol === 'NQ' ? 'selected' : ''}>NQ (E-mini Nasdaq)</option>
                             <option value="MES" ${data.symbol === 'MES' ? 'selected' : ''}>MES (Micro S&P 500)</option>
-                            <option value="ES" ${data.symbol === 'ES' ? 'selected' : ''}>ES (E-mini S&P 500)</option>
-                            <option value="MCL" ${data.symbol === 'MCL' ? 'selected' : ''}>MCL (Micro Crude Oil)</option>
-                            <option value="CL" ${data.symbol === 'CL' ? 'selected' : ''}>CL (Crude Oil)</option>
-                            <option value="MYM" ${data.symbol === 'MYM' ? 'selected' : ''}>MYM (Micro Dow Jones)</option>
-                            <option value="YM" ${data.symbol === 'YM' ? 'selected' : ''}>YM (E-mini Dow Jones)</option>
-                            <option value="M2K" ${data.symbol === 'M2K' ? 'selected' : ''}>M2K (Micro Russell)</option>
-                            <option value="RTY" ${data.symbol === 'RTY' ? 'selected' : ''}>RTY (E-mini Russell)</option>
-                            <option value="MBT" ${data.symbol === 'MBT' ? 'selected' : ''}>MBT (Micro Bitcoin)</option>
+                            <option value="MCLZ26" ${data.symbol === 'MCLZ26' || data.symbol === 'MCL' ? 'selected' : ''}>MCLZ26 (Micro Crude Oil)</option>
                         </select>
                     </div>
                     <div>

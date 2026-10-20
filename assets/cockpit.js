@@ -524,24 +524,21 @@ const accountData = TradingRules.accounts;
         }
 
         const symbolSpecs = {
-            "MGC": { name: "Micro Gold (MGC)", tickSize: 0.10, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Vàng", defaultSlPts: 2.0, defaultTicks: 20 },
+            "MGC":    { name: "Micro Gold (MGC)", tickSize: 0.10, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Vàng", defaultSlPts: 2.0, defaultTicks: 20 },
+            "MNQ":    { name: "Micro Nasdaq (MNQ)", tickSize: 0.25, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá NQ", defaultSlPts: 20.0, defaultTicks: 80 },
+            "MES":    { name: "Micro S&P 500 (MES)", tickSize: 0.25, microTickVal: 1.25, miniTickVal: 12.50, unitName: "giá ES", defaultSlPts: 5.0, defaultTicks: 20 },
+            "MCLZ26": { name: "Micro Crude Oil (MCLZ26)", tickSize: 0.01, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Dầu ($)", defaultSlPts: 0.30, defaultTicks: 30 },
+            "MCL":    { name: "Micro Crude Oil (MCL)", tickSize: 0.01, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Dầu ($)", defaultSlPts: 0.30, defaultTicks: 30 },
+
+            // Legacy symbols retained for backward compatibility with historical journal records
             "GC":  { name: "Gold Full (GC)", tickSize: 0.10, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Vàng", defaultSlPts: 2.0, defaultTicks: 20 },
-
-            "MNQ": { name: "Micro Nasdaq (MNQ)", tickSize: 0.25, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá NQ", defaultSlPts: 20.0, defaultTicks: 80 },
             "NQ":  { name: "E-mini Nasdaq (NQ)", tickSize: 0.25, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá NQ", defaultSlPts: 20.0, defaultTicks: 80 },
-
-            "MES": { name: "Micro S&P 500 (MES)", tickSize: 0.25, microTickVal: 1.25, miniTickVal: 12.50, unitName: "giá ES", defaultSlPts: 5.0, defaultTicks: 20 },
             "ES":  { name: "E-mini S&P 500 (ES)", tickSize: 0.25, microTickVal: 1.25, miniTickVal: 12.50, unitName: "giá ES", defaultSlPts: 5.0, defaultTicks: 20 },
-
-            "MCL": { name: "Micro Crude Oil (MCL)", tickSize: 0.01, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Dầu ($)", defaultSlPts: 0.30, defaultTicks: 30 },
             "CL":  { name: "Crude Oil (CL)", tickSize: 0.01, microTickVal: 1.00, miniTickVal: 10.00, unitName: "giá Dầu ($)", defaultSlPts: 0.30, defaultTicks: 30 },
-
             "MYM": { name: "Micro Dow Jones (MYM)", tickSize: 1.00, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá YM", defaultSlPts: 30.0, defaultTicks: 30 },
             "YM":  { name: "E-mini Dow Jones (YM)", tickSize: 1.00, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá YM", defaultSlPts: 30.0, defaultTicks: 30 },
-
             "M2K": { name: "Micro Russell (M2K)", tickSize: 0.10, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá RTY", defaultSlPts: 3.0, defaultTicks: 30 },
             "RTY": { name: "E-mini Russell (RTY)", tickSize: 0.10, microTickVal: 0.50, miniTickVal: 5.00, unitName: "giá RTY", defaultSlPts: 3.0, defaultTicks: 30 },
-
             "MBT": { name: "Micro Bitcoin (MBT)", tickSize: 5.00, microTickVal: 0.50, miniTickVal: 25.00, unitName: "giá BTC ($)", defaultSlPts: 200.0, defaultTicks: 40 },
             "BTC": { name: "Bitcoin Futures (BTC)", tickSize: 5.00, microTickVal: 0.50, miniTickVal: 25.00, unitName: "giá BTC ($)", defaultSlPts: 200.0, defaultTicks: 40 }
         };
