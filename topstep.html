@@ -1869,7 +1869,9 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                     </div>
                 </div>
 
-            </div>            </div>
+            </div>
+            </div>
+            </div>
         </div> <!-- END #view-checklist -->
 
         <!-- ── VIEW 3: ECONOMIC CALENDAR & NEWS RADAR ── -->
@@ -1906,7 +1908,7 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
             </div>
 
             <!-- 4-Asset Impact Matrix Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
                 <!-- MCL Card -->
                 <div class="b-card-inner" style="padding: 16px; border-left: 4px solid #F59E0B;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -1973,9 +1975,9 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
             </div>
 
             <!-- Two-Column Layout: Scheduled Events vs Live TradingView Economic Calendar -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                <!-- Column Left: High-Impact Events Schedule (5 cols) -->
-                <div class="lg:col-span-5 flex flex-col gap-4">
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch;">
+                <!-- Column Left: High-Impact Events Schedule -->
+                <div style="flex: 1 1 380px; min-width: 320px; display: flex; flex-direction: column; gap: 16px;">
                     <div class="b-card" style="padding: 18px 20px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
@@ -2005,9 +2007,9 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                     </div>
                 </div>
 
-                <!-- Column Right: Live TradingView Economic Calendar Widget (7 cols) -->
-                <div class="lg:col-span-7 flex flex-col gap-4">
-                    <div class="b-card" style="padding: 18px 20px;">
+                <!-- Column Right: Live TradingView Economic Calendar Widget -->
+                <div style="flex: 1.6 1 500px; min-width: 340px; display: flex; flex-direction: column; gap: 16px;">
+                    <div class="b-card" style="padding: 18px 20px; height: 100%; display: flex; flex-direction: column;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
                             <div>
                                 <span style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Lịch Kinh Tế Trực Tuyến Hoa Kỳ (USD)</span>
@@ -2017,7 +2019,7 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                         </div>
 
                         <!-- Embedded TradingView Economic Calendar Widget Container -->
-                        <div id="tvCalendarWidgetContainer" class="tradingview-widget-container" style="border-radius: 10px; overflow: hidden; border: 1px solid var(--border-card); min-height: 600px;">
+                        <div id="tvCalendarWidgetContainer" class="tradingview-widget-container" style="border-radius: 10px; overflow: hidden; border: 1px solid var(--border-card); flex: 1; min-height: 650px;">
                             <div class="tradingview-widget-container__widget"></div>
                         </div>
                     </div>
