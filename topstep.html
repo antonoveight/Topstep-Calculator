@@ -1875,116 +1875,93 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
         </div> <!-- END #view-checklist -->
 
         <!-- ── VIEW 3: ECONOMIC CALENDAR & NEWS RADAR ── -->
-        <div id="view-calendar" style="display: none; flex-direction: column; gap: 20px;">
-            <!-- Top Hero Banner -->
-            <div class="b-card" style="padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-inner) 100%);">
+        <div id="view-calendar" style="display: none; flex-direction: column; gap: 16px;">
+            <!-- Top Hero Banner (Compact & Clean) -->
+            <div class="b-card" style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-inner) 100%);">
                 <div>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                        <span class="b-badge b-badge-red" style="font-size: 10.5px; font-weight: 700;">CHỦ ĐỘNG NÉ TIN ĐỎ</span>
-                        <span style="font-size: 11.5px; color: var(--text-muted);">Topstep® Risk Policy · MGC · MNQ · MES · MCL</span>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+                        <span class="b-badge b-badge-red" style="font-size: 10px; font-weight: 700;">NÉ TIN ±15M</span>
+                        <span style="font-size: 11px; color: var(--text-muted);">MGC · MNQ · MES · MCL</span>
                     </div>
-                    <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em;">
-                        Lịch Kinh Tế &amp; Radar Cảnh Báo Tin Tức
+                    <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em;">
+                        Lịch Kinh Tế &amp; Radar Tin Tức
                     </h2>
-                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px; max-width: 650px; line-height: 1.5;">
-                        Hệ thống tự động phát hiện tin tức cấp độ Đỏ (High Impact), đếm ngược thời gian thực và đẩy thông báo Desktop trước 15 phút &amp; 5 phút để bạn kịp thời đóng lệnh hoặc siết SL về BE.
-                    </p>
                 </div>
 
-                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <button type="button" id="calCardBtnToggleNotif" onclick="togglePushNotifications(event)" class="b-btn-secondary" style="height: 36px; padding: 0 14px; font-size: 12px; gap: 6px;">
-                        🔔 Bật Thông Báo Đẩy Desktop
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" id="calCardBtnToggleNotif" onclick="togglePushNotifications(event)" class="b-btn-secondary" style="height: 34px; padding: 0 12px; font-size: 11.5px; gap: 5px;">
+                        🔔 Thông Báo Đẩy
                     </button>
-                    <button type="button" id="calCardBtnToggleSound" onclick="toggleSoundAlerts(event)" class="b-btn-secondary" style="height: 36px; padding: 0 14px; font-size: 12px; gap: 6px;">
-                        🔊 Chuông Báo: BẬT
+                    <button type="button" id="calCardBtnToggleSound" onclick="toggleSoundAlerts(event)" class="b-btn-secondary" style="height: 34px; padding: 0 12px; font-size: 11.5px; gap: 5px;">
+                        🔊 Chuông Báo
                     </button>
-                    <button type="button" onclick="testNewsNotification(event)" class="b-btn-secondary" style="height: 36px; padding: 0 12px; font-size: 12px;" title="Thử nghiệm thông báo đẩy trên góc màn hình">
+                    <button type="button" onclick="testNewsNotification(event)" class="b-btn-secondary" style="height: 34px; padding: 0 10px; font-size: 11.5px;" title="Thử nghiệm thông báo đẩy">
                         🧪 Thử Cảnh Báo
                     </button>
-                    <button type="button" onclick="openAddCustomNewsModal()" class="b-btn-primary" style="height: 36px; padding: 0 14px; font-size: 12px; gap: 5px;">
-                        + Thêm Tin Tùy Chỉnh
+                    <button type="button" onclick="openAddCustomNewsModal()" class="b-btn-primary" style="height: 34px; padding: 0 12px; font-size: 11.5px; gap: 4px;">
+                        + Thêm Tin
                     </button>
                 </div>
             </div>
 
-            <!-- 4-Asset Impact Matrix Cards -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+            <!-- 4-Asset Impact Matrix Cards (Concise Trader Summary) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
                 <!-- MCL Card -->
-                <div class="b-card-inner" style="padding: 16px; border-left: 4px solid #F59E0B;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-size: 14px; font-weight: 800; color: #F59E0B;">🛢️ MCL (Dầu Micro)</span>
-                        <span class="b-badge b-badge-red" style="font-size: 9.5px;">TỬ THẦN EIA</span>
+                <div class="b-card-inner" style="padding: 12px 14px; border-left: 3px solid #F59E0B;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 13px; font-weight: 800; color: #F59E0B;">🛢️ MCL (Dầu)</span>
+                        <span class="b-badge b-badge-red" style="font-size: 9px; padding: 1px 6px;">EIA (21:30 T4)</span>
                     </div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                        Tồn Kho Dầu Thô EIA (21:30 / 22:30 T4)
-                    </div>
-                    <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5;">
-                        • Nến dầu giật 1.00 – 2.00 pt trong 5 giây.<br>
-                        • Tuyệt đối cấm vào lệnh trước &amp; sau 15 phút.<br>
-                        • Chú ý thêm: API (T3) &amp; Giàn khoan (T6).
+                    <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+                        Tồn kho EIA · Né tin ±15m · Trượt giá lớn
                     </div>
                 </div>
 
                 <!-- MGC Card -->
-                <div class="b-card-inner" style="padding: 16px; border-left: 4px solid #EAB308;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-size: 14px; font-weight: 800; color: #EAB308;">🥇 MGC (Vàng Micro)</span>
-                        <span class="b-badge b-badge-red" style="font-size: 9.5px;">GIẬT HÀNG TRĂM TICKS</span>
+                <div class="b-card-inner" style="padding: 12px 14px; border-left: 3px solid #EAB308;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 13px; font-weight: 800; color: #EAB308;">🥇 MGC (Vàng)</span>
+                        <span class="b-badge b-badge-red" style="font-size: 9px; padding: 1px 6px;">CPI · NFP · FOMC</span>
                     </div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                        CPI, NFP, PPI &amp; Họp Lãi Suất FOMC
-                    </div>
-                    <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5;">
-                        • Biến động cực nhạy theo chỉ số USD &amp; Lãi suất.<br>
-                        • Nến quét râu 2 đầu (liquidity sweep).<br>
-                        • Cần dời SL về BE nếu có lệnh chạy trước tin.
+                    <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+                        Lãi suất &amp; DXY · Quét 2 đầu · Siết BE
                     </div>
                 </div>
 
                 <!-- MNQ Card -->
-                <div class="b-card-inner" style="padding: 16px; border-left: 4px solid var(--color-primary);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-size: 14px; font-weight: 800; color: var(--color-primary);">📊 MNQ (Nasdaq Micro)</span>
-                        <span class="b-badge b-badge-red" style="font-size: 9.5px;">BIẾN ĐỘNG CỰC NHANH</span>
+                <div class="b-card-inner" style="padding: 12px 14px; border-left: 3px solid var(--color-primary);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 13px; font-weight: 800; color: var(--color-primary);">📊 MNQ (Nasdaq)</span>
+                        <span class="b-badge b-badge-red" style="font-size: 9px; padding: 1px 6px;">CPI · NFP · PMI</span>
                     </div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                        CPI, NFP, ISM &amp; Doanh Số Bán Lẻ
-                    </div>
-                    <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5;">
-                        • Cổ phiếu công nghệ phản ứng trượt giá cao.<br>
-                        • Biên độ nến 50 – 100 pt trong vài phút.<br>
-                        • Không cố bắt dao rơi ngay lúc tin ra.
+                    <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+                        Biến động 50–100pt · Không bắt dao rơi
                     </div>
                 </div>
 
                 <!-- MES Card -->
-                <div class="b-card-inner" style="padding: 16px; border-left: 4px solid var(--color-green);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-size: 14px; font-weight: 800; color: var(--color-green);">📊 MES (S&amp;P 500 Micro)</span>
-                        <span class="b-badge b-badge-blue" style="font-size: 9.5px;">TƯƠNG QUAN MNQ</span>
+                <div class="b-card-inner" style="padding: 12px 14px; border-left: 3px solid var(--color-green);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 13px; font-weight: 800; color: var(--color-green);">📊 MES (S&amp;P 500)</span>
+                        <span class="b-badge b-badge-blue" style="font-size: 9px; padding: 1px 6px;">T5 Claims · GDP</span>
                     </div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                        Đơn Thất Nghiệp T5, GDP &amp; FOMC
-                    </div>
-                    <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5;">
-                        • Đi cùng pha 90% với MNQ.<br>
-                        • $1.25/tick nên rủi ro trượt giá đắt nhất.<br>
-                        • Tránh nhồi lệnh cả MNQ lẫn MES khi có tin.
+                    <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+                        Cùng pha MNQ · $1.25/tick · Tránh nhồi cả 2
                     </div>
                 </div>
             </div>
 
             <!-- Two-Column Layout: Scheduled Events vs Live TradingView Economic Calendar -->
-            <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch;">
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch;">
                 <!-- Column Left: High-Impact Events Schedule -->
-                <div style="flex: 1 1 380px; min-width: 320px; display: flex; flex-direction: column; gap: 16px;">
-                    <div class="b-card" style="padding: 18px 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
+                <div style="flex: 1 1 360px; min-width: 310px; display: flex; flex-direction: column; gap: 12px;">
+                    <div class="b-card" style="padding: 16px 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 8px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Lịch Tin Trọng Điểm Tuần Này</span>
-                                <span class="b-badge b-badge-dim" style="font-size: 10px;">MGC · MNQ · MES · MCL</span>
+                                <span style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Tin Trọng Điểm Tuần Này</span>
+                                <span class="b-badge b-badge-dim" style="font-size: 9.5px;">MGC · MNQ · MES · MCL</span>
                             </div>
-                            <button type="button" onclick="NewsRadar.refreshEvents(); NewsRadar.renderEventList();" class="b-btn-secondary" style="font-size: 11px; height: 28px; padding: 0 8px;" title="Cập nhật lại lịch">
+                            <button type="button" onclick="NewsRadar.refreshEvents(); NewsRadar.renderEventList();" class="b-btn-secondary" style="font-size: 11px; height: 26px; padding: 0 8px;" title="Cập nhật lại lịch">
                                 ↻ Làm mới
                             </button>
                         </div>
@@ -1993,33 +1970,25 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                         </div>
                     </div>
 
-                    <!-- Topstep News Policy Box -->
-                    <div class="b-card" style="padding: 18px 20px; background: rgba(37, 99, 235, 0.04); border: 1px solid rgba(37, 99, 235, 0.2);">
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                            <span style="font-size: 16px;">🛡️</span>
-                            <span style="font-size: 13.5px; font-weight: 800; color: var(--color-primary);">Kỷ Luật Né Tin Topstep®</span>
-                        </div>
-                        <ul style="font-size: 11.5px; color: var(--text-muted); line-height: 1.7; padding-left: 18px; margin: 0; list-style-type: disc;">
-                            <li><strong style="color: var(--text-primary);">Quy tắc ±15 phút:</strong> Dừng mở lệnh mới trước 15 phút. Nếu có lệnh đang lời, kéo SL về Break Even (BE) hoặc chốt lời chủ động.</li>
-                            <li><strong style="color: var(--text-primary);">Bảo toàn quỹ:</strong> Nến tin tức có spread dãn và trượt giá (slippage) rất lớn, lệnh Stop Loss của bạn có thể bị khớp tệ hơn dự kiến.</li>
-                            <li><strong style="color: var(--text-primary);">Sau giờ tin:</strong> Chờ tối thiểu 10 – 15 phút cho volume và cấu trúc cân bằng ổn định trở lại mới áp dụng Setup FRVP.</li>
-                        </ul>
+                    <!-- Single-line compact rule strip -->
+                    <div style="font-size: 11px; color: var(--text-muted); padding: 8px 12px; background: var(--bg-card-inner); border-radius: 8px; border: 1px solid var(--border-inner); display: flex; align-items: center; gap: 6px;">
+                        <span>🛡️</span>
+                        <span><strong>Kỷ luật né tin:</strong> Không mở lệnh trước &amp; sau tin 15 phút. Luôn kéo SL về BE khi có lãi.</span>
                     </div>
                 </div>
 
                 <!-- Column Right: Live TradingView Economic Calendar Widget -->
-                <div style="flex: 1.6 1 500px; min-width: 340px; display: flex; flex-direction: column; gap: 16px;">
-                    <div class="b-card" style="padding: 18px 20px; height: 100%; display: flex; flex-direction: column;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
-                            <div>
-                                <span style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Lịch Kinh Tế Trực Tuyến Hoa Kỳ (USD)</span>
-                                <span style="font-size: 11.5px; color: var(--text-muted); display: block;">Dữ liệu thời gian thực Real-time từ TradingView</span>
+                <div style="flex: 1.6 1 480px; min-width: 320px; display: flex; flex-direction: column; gap: 12px;">
+                    <div class="b-card" style="padding: 16px 18px; height: 100%; display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border-inner); padding-bottom: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 14px; font-weight: 800; color: var(--text-primary);">Lịch Kinh Tế Hoa Kỳ (USD)</span>
+                                <span class="b-badge b-badge-green" style="font-size: 9.5px;">● Real-time Live</span>
                             </div>
-                            <span class="b-badge b-badge-green" style="font-size: 10px;">● Live Feed</span>
                         </div>
 
                         <!-- Embedded TradingView Economic Calendar Widget Container -->
-                        <div id="tvCalendarWidgetContainer" class="tradingview-widget-container" style="border-radius: 10px; overflow: hidden; border: 1px solid var(--border-card); flex: 1; min-height: 650px;">
+                        <div id="tvCalendarWidgetContainer" class="tradingview-widget-container" style="border-radius: 8px; overflow: hidden; border: 1px solid var(--border-card); flex: 1; min-height: 620px;">
                             <div class="tradingview-widget-container__widget"></div>
                         </div>
                     </div>

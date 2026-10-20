@@ -632,7 +632,7 @@
                     const timeVN = ev.time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
                     const isHigh = ev.impactLevel === 'HIGH';
                     const badgeClass = isHigh ? 'b-badge b-badge-red' : 'b-badge b-badge-blue';
-                    const badgeLabel = isHigh ? 'ĐỎ · CAO' : 'CAM · VỪA';
+                    const badgeLabel = isHigh ? 'ĐỎ' : 'CAM';
 
                     // Badges for affected symbols
                     const symbolsBadges = ev.symbols.map(s => {
@@ -643,18 +643,18 @@
                     }).join(' ');
 
                     html += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; padding: 10px 14px; flex-wrap: wrap; gap: 8px;">
-                            <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 250px;">
-                                <div style="font-family: monospace; font-size: 13px; font-weight: 800; color: var(--text-primary); min-width: 55px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; padding: 8px 12px; flex-wrap: wrap; gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 220px;">
+                                <div style="font-family: monospace; font-size: 13px; font-weight: 800; color: var(--text-primary); min-width: 50px;">
                                     ${timeVN}
                                 </div>
-                                <span class="${badgeClass}" style="font-size: 10px; padding: 3px 8px;">${badgeLabel}</span>
+                                <span class="${badgeClass}" style="font-size: 9.5px; padding: 2px 6px;">${badgeLabel}</span>
                                 <div>
-                                    <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary);">
+                                    <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">
                                         ${ev.vietnameseName || ev.name}
                                     </div>
-                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 1px;">
-                                        ${ev.name} · Giờ Mỹ: ${ev.etTime}
+                                    <div style="font-size: 10.5px; color: var(--text-muted);">
+                                        ${ev.etTime} (US)
                                     </div>
                                 </div>
                             </div>
