@@ -1,203 +1,211 @@
-# SỔ TAY GIAO DỊCH THỰC CHIẾN (TRADING PLAYBOOK)
-### Phương Pháp: FRVP (Fixed Range Volume Profile) & SMC / CRT / AMD
-**Thị Trường (Danh Mục Chính):** Futures CME / NYMEX — Chỉ giao dịch 4 sản phẩm Micro:
-1. **MGC** (Micro Gold)
-2. **MNQ** (Micro E-mini Nasdaq-100)
-3. **MES** (Micro E-mini S&P 500)
-4. **MCLZ26** (Micro WTI Crude Oil - Dec 2026)  
-**Tài Khoản:** Topstep® 50K DLL Express (Quy tắc DLL: -$1,000 | Mục tiêu ngày thắng: ≥ +$150)  
+# SỔ TAY GIAO DỊCH THỰC CHIẾN (TRADING PLAYBOOK) — PHIÊN BẢN 3.0
+### Hệ Thống: Độc Chiêu CRT Fractal (C1 – C4) & FRVP Chuẩn Hóa
+**Thị Trường:** Futures CME / NYMEX (Tập trung tối đa **MGC** và **MNQ**, dự phòng **MES**, **MCLZ26**)  
+**Tài Khoản:** Topstep® 50K DLL Express (Daily Loss Limit: -$1,000)  
 **Tác Giả:** Trader Giản Hạ Thủy (Đinh Sửu 1997)  
-**Phiên Bản:** 2.0 (Chuẩn Hóa Danh Mục & Kỷ Luật Xác Suất)
+**Tôn Chỉ:** "Không sợ người luyện 10.000 cú đá, chỉ sợ người luyện 1 cú đá 10.000 lần." — Triệt tiêu 100% vùng xám cảm tính.
 
 ---
 
 ## MỤC LỤC
-1. [Triết Lý Cốt Lõi & Mô Hình Xác Suất](#1-triết-lý-cốt-lõi--mô-hình-xác-suất)
-2. [Cấu Hình Chỉ Báo FRVP Chuẩn Cho 4 Sản Phẩm](#2-cấu-hình-chỉ-báo-frvp-chuẩn-cho-4-sản-phẩm)
-3. [Phân Tích 3 Vị Trí Của POC Trong Range Anchor](#3-phân-tích-3-vị-trí-của-poc-trong-range-anchor)
-4. [Chi Tiết 4 Setup Thực Chiến](#4-chi-tiết-4-setup-thực-chiến)
-   - [Setup 1: CRT - FRVP (Candle Range Sweep & POC Break)](#setup-1-crt---frvp)
-   - [Setup 2: Trend (Pullback POC & Confirmation Đáy Mới)](#setup-2-trend)
-   - [Setup 3: AMD (Accumulation - Manipulation - Distribution)](#setup-3-amd)
-   - [Setup 4: Break (Phá Vỡ Range Sideway & Retest)](#setup-4-break)
-5. [Quy Tắc Quản Trị Lệnh Real-time (Execution Rules)](#5-quy-tắc-quản-trị-lệnh-real-time)
-6. [Quản Trị Vốn & Bảng Thông Số Hợp Đồng (MGC, MNQ, MES, MCLZ26)](#6-quản-trị-vốn--bảng-thông-số-hợp-đồng)
-7. [Bản Đồ Thanh Khoản & Khung Giờ Săn Mồi](#7-bản-đồ-thanh-khoản--khung-giờ-săn-mồi)
+1. [Triết Lý Cốt Lõi & Tâm Lý Học Quản Trị Vốn](#1-triết-lý-cốt-lõi--tâm-lý-học-quản-trị-vốn)
+2. [Khái Niệm "Thời Gian Làm Việc" & Chuỗi Khung Thời Gian H1 – M5/M3](#2-khái-niệm-thời-gian-làm-việc--chuỗi-khung-thời-gian-h1--m5m3)
+3. [Bản Đồ Thanh Khoản HTF Bất Khả Xâm Phạm](#3-bản-đồ-thanh-khoản-htf-bất-khả-xâm-phạm)
+4. [Cốt Lõi Phương Pháp: Chuỗi Nến Fractal C1 – C2 – C3 – C4](#4-cốt-lõi-phương-pháp-chuỗi-nến-fractal-c1--c2--c3--c4)
+5. [Chuẩn Hóa Kéo FRVP & Phân Tích 3 Vị Trí POC](#5-chuẩn-hóa-kéo-frvp--phân-tích-3-vị-trí-poc)
+6. [Chiêu Thức Chủ Lực (CRT Reversal) vs Tiếp Diễn (CRT Continuation) vs Sideway](#6-chiêu-thức-chủ-lực-crt-reversal-vs-tiếp-diễn-crt-continuation-vs-sideway)
+7. [Quản Trị Lệnh Thực Chiến (Xóa Bỏ Bẫy Dời SL Về BE)](#7-quản-trị-lệnh-thực-chiến-xóa-bỏ-bẫy-dời-sl-về-be)
+8. [Checklist Cơ Học 4 Bước Trước Khi Bấm Lệnh](#8-checklist-cơ-học-4-bước-trước-khi-bấm-lệnh)
+9. [Bảng Thông Số Hợp Đồng & Quy Mô Vị Thế (Position Sizer)](#9-bảng-thông-số-hợp-đồng--quy-mô-vị-thế-position-sizer)
 
 ---
 
-## 1. Triết Lý Cốt Lõi & Mô Hình Xác Suất
+## 1. Triết Lý Cốt Lõi & Tâm Lý Học Quản Trị Vốn
 
-### 1.1. Bản Chất Của Lợi Thế (Edge)
-- Thị trường là quá trình đấu giá (Auction Market Process). Giá di chuyển từ vùng cân bằng này sang vùng cân bằng khác nhằm tìm kiếm thanh khoản.
-- Không dự đoán hướng đi tương lai. Chỉ quan sát **phản ứng của dòng tiền lớn tại các vùng khối lượng trọng yếu (POC - Point of Control)** và đi theo dấu chân của họ.
+### 1.1. Giải Mã Sự Thật Về "Mất Kỷ Luật & Nhồi Vol"
+- **Sự thật khách quan:** Mất kỷ luật hay nhồi vol không phải là nguyên nhân gốc rễ, nó là **hệ quả của một hệ thống có lỗi cấu trúc ngầm**:
+  - Điểm neo FRVP cảm tính $\rightarrow$ do dự khi bấm lệnh.
+  - Quy tắc dời SL về Hòa Vốn (BE) máy móc $\rightarrow$ lệnh bị quét BE oan uổng rồi chạy tới TP $\rightarrow$ ức chế thần kinh (*tilt*) $\rightarrow$ nhồi vol trả thù.
+  - Rủi ro trên mỗi lệnh quá sát giới hạn Daily Loss Limit (DLL).
+- **Nguyên tắc vàng:** Khi hệ thống được **cơ học hóa 100% (Rule-Based)**, không còn vùng xám tự vấn, sự dao động sẽ biến mất.
 
-### 1.2. Triết Lý Chốt Lời Xác Suất (All-or-Nothing / Rule-Based)
-- **Tuyệt đối không chốt lời từng phần (No Partial TP):** Chốt non làm suy giảm kỳ vọng toán học (Mathematical Expectancy) dài hạn của hệ thống.
-- **4 Kịch bản kết quả cố định cho mọi lệnh:**
-  1. **Thắng đủ (Full TP):** $+2\text{R}$ hoặc $+3\text{R}$ (Target chạm trọn vẹn).
-  2. **Hòa vốn (BE):** $0\text{R}$ (Khi giá đã chạy được $+2\text{R}$ rồi quay đầu).
-  3. **Thua giảm thiểu:** $-0.5\text{R}$ (Khi giá đã chạy được $+1\text{R}$ rồi quay đầu cắn SL).
-  4. **Thua tối đa:** $-1\text{R}$ (Lệnh bị quét SL ban đầu ngay sau khi vào).
-- Với cơ chế này, hệ thống chỉ cần đạt **Winrate 35% – 40%** là tài khoản tăng trưởng bền vững.
-
----
-
-## 2. Cấu Hình Chỉ Báo FRVP Chuẩn Cho 4 Sản Phẩm
-
-Cài đặt trên nền tảng TradingView / TopstepX:
-
-| Thông Số Cài Đặt | Vàng (MGC) | Nasdaq (MNQ) | S&P 500 (MES) | Dầu Thô (MCLZ26) | Ghi Chú Kỹ Thuật |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Row Layout** | Number of Rows | Number of Rows | Number of Rows | Number of Rows | Chuẩn hóa theo chiều dọc |
-| **Row Size** | **70 – 100** | **120 – 150** | **80 – 100** | **60 – 80** | NQ biên độ rộng cần row dày; Dầu bước giá 0.01 cần row vừa phải để profile mịn. |
-| **Value Area Volume** | **70%** | **70%** | **70%** | **70%** | Chuẩn thống kê 1 độ lệch chuẩn Gaussian |
-| **POC Line** | Bật (Đỏ / Xanh, 2px) | Bật (Đỏ / Xanh, 2px) | Bật (Đỏ / Xanh, 2px) | Bật (Đỏ / Xanh, 2px) | Bật **Extend Right** để theo dõi điểm va đập giá. |
-| **VAH / VAL Line** | Tắt / Nét đứt mờ | Tắt / Nét đứt mờ | Tắt / Nét đứt mờ | Tắt / Nét đứt mờ | Giảm rác mắt, tập trung 100% vào đường POC. |
-| **Volume Bar Opacity** | **30% – 40%** | **30% – 40%** | **30% – 40%** | **30% – 40%** | Làm mờ volume để thấy rõ cấu trúc nến & râu sweep. |
+### 1.2. Phân Tầng Rủi Ro (Tiered Risk Model)
+- **Giai đoạn Vòng 1 (Combine / Step 1):**  
+  - $1\text{R} = \mathbf{\$200}$ (Chấp nhận rủi ro cao để tích lũy lợi nhuận nhanh, pass quỹ trong 3 – 5 ngày).  
+  - Giới hạn ngày: Thua 2 lệnh liên tiếp ($-400$) $\rightarrow$ **DỪNG TRADE NGAY LẬP TỨC**. Vẫn giữ khoảng cách an toàn rất xa ngưỡng -$1,000 DLL.
+- **Giai đoạn Tài Khoản Cấp Vốn (XFA - Funded Phase):**  
+  - Bắt buộc hạ rủi ro xuống: $1\text{R} = \mathbf{\$80 - \$100}$ (Tương đương 8% – 10% DLL).  
+  - Cho phép tài khoản chịu được chuỗi drawdown 4 – 5 lệnh mà tâm lý vẫn hoàn toàn vững vàng để bảo toàn quỹ và rút tiền.
 
 ---
 
-## 3. Phân Tích 3 Vị Trí Của POC Trong Range Anchor
+## 2. Khái Niệm "Thời Gian Làm Việc" & Chuỗi Khung Thời Gian H1 – M5/M3
 
-Khi kéo FRVP từ **Open Anchor** đến **cây nến trước nến Sweep (hoặc qua nến Sweep)**, vị trí POC quyết định chất lượng lệnh:
+### 2.1. Chuỗi Khung Thời Gian Chuẩn Hóa
+| Tầng Phân Tích | Khung Thời Gian | Nhiệm Vụ Duy Nhất |
+| :--- | :---: | :--- |
+| **HTF (Khung Lớn)** | **H1 (1 Giờ)** | **Bản Đồ Chiến Lược:** Xác định nến mốc C1, cản thanh khoản HTF, quan sát nến C2 thò râu quét bẫy. |
+| **LTF (Khung Thực Thi)** | **M5 / M3** | **Bắn Tỉa Chính Xác:** Kéo FRVP trong phạm vi nến H1, quan sát nến M5 đục qua POC, tối ưu điểm vào và Stop Loss. |
+
+> [!IMPORTANT]
+> Tuyệt đối không dùng khung M15/M1 để tránh nhiễu giật râu bão táp. Khung H1 mang lại độ uy tín cao nhất; khung M5 cho đủ 5 phút tĩnh tâm để hít thở, tính lot và kéo volume profile.
+
+### 2.2. Khái Niệm "Thời Gian Làm Việc" (Trading Office Hours)
+Mỗi ngày làm việc được phân bổ theo 3 ca khớp hoàn toàn với nhịp đóng/mở nến H1 của thế giới:
+1. **Ca Sáng (07:45 – 10:00 VN):** Quản lý đúng **2 cây nến H1** (08:00 và 09:00 — Tokyo & Shanghai mở cửa). Ưu tiên MGC, MNQ.
+2. **Ca Chiều (14:00 – 16:00 VN):** Quản lý đúng **2 cây nến H1** (14:00 và 15:00 — London mở cửa). Ưu tiên MGC.
+3. **Ca Tối (20:15 – 22:30 VN):** Quản lý đúng **2 cây nến H1** (20:00/20:30 và 21:00 — New York US Open). Ưu tiên MNQ, MGC, MCLZ26.
+
+### 2.3. Quy Tắc Ngồi Máy "Check-in Theo Chu Kỳ" (Anti-Screen Fatigue)
+- **Không dán mắt liên tục 6.5 tiếng:** Dán mắt liên tục làm cạn kiệt dopamine và gây say chart.
+- **Quy tắc 20 phút đầu giờ:** Chỉ tập trung cao độ vào **15 – 20 phút đầu của mỗi cây nến H1** (Thời điểm nến H1 thò râu quét bẫy C2).
+- Nếu sau phút thứ 25 nến H1 không có hành vi sweep cản $\rightarrow$ **Rời khỏi màn hình**, đi uống nước, giải lao đến đầu tiếng sau.
+- **"Cash is a position":** Ca làm việc không xuất hiện setup $\rightarrow$ Gấp máy tính, kết thúc ca với 0 lệnh. Bảo toàn 100% vốn là một chiến thắng vẻ vang!
+
+---
+
+## 3. Bản Đồ Thanh Khoản HTF Bất Khả Xâm Phạm
+
+Mô hình CRT Fractal **CHỈ CÓ HIỆU LỰC** khi nến H2 thò râu quét vào 1 trong các mốc thanh khoản định chế sau:
 
 ```
-[VỊ TRÍ 1: POC Ở CỰC TRỊ]        [VỊ TRÍ 2: POC Ở GIỮA (EQUILIBRIUM)]     [VỊ TRÍ 3: POC SÁT TARGET]
-       ─── Sweep High ───                 ─── Sweep High ───                 ─── Target High ───
-       ███ POC (Khối lượng lớn)                                              ███ POC (Cản dày)
-       ──────────────────                 ███ POC (Cân bằng)                 ──────────────────
-                                          ──────────────────                 
-       ─── Open Anchor ───                ─── Open Anchor ───                ─── Entry (Break) ──
+[VÙNG BÁN ĐẮT / PREMIUM]  ─── PDH (Đỉnh ngày hôm trước) / ONH (Đỉnh đêm)
+                          ─── HTF FVG / Bearish Order Block (1H / 4H)
+                                ▲ Râu nến C2 quét qua rồi rút chân đóng nến trong
+──────────────────────────┼───────────────────────────────────────────────
+                          ▼ Râu nến C2 quét qua rồi rút chân đóng nến trong
+[VÙNG MUA RẺ / DISCOUNT] ─── HTF FVG / Bullish Order Block (1H / 4H)
+                          ─── PDL (Đáy ngày hôm trước) / ONL (Đáy đêm)
 ```
 
-### 1. POC ở Cực Trị (Upper/Lower Extreme) – *Setup A+ (Xác Suất Cao Nhất)*
-- **Bản chất:** Khối lượng giao dịch lớn nhất tập trung ngay tại vùng đỉnh/đáy trước khi bị quét râu. Đây là hành vi hấp thụ thanh khoản hoặc phân phối đỉnh/đáy của Smart Money.
-- **Kịch bản:** Khi nến sweep xong và giá **đóng cửa thân nến đục thủng qua POC cực trị này** $\rightarrow$ Kích hoạt Entry ngay lập tức. Lực xả/đẩy sẽ rất mạnh do phe đối diện bị kẹp hàng.
+1. **PDH / PDL (Previous Day High / Low):** Mốc chứa cụm Stop Loss lớn nhất của thị trường.
+2. **ONH / ONL (Overnight High / Low) hoặc Asian High / Low:** Thanh khoản phiên Á/Đêm thường bị quét sạch vào đầu phiên Âu (14:00) hoặc đầu phiên Mỹ (20:30).
+3. **HTF FVG / Order Block (1H / 4H):** Vùng mất cân bằng giá khung lớn. Râu nến H1 thọc sâu vào chạm mốc 50% FVG (Consequent Encroachment) rồi bật ngược lại.
+4. **Daily Open (06:00 VN) & Session Open (08:00, 14:00, 20:30):** Ngưỡng phân chia xu hướng phiên.
 
-### 2. POC ở Giữa Range (Equilibrium - 50%) – *Setup Chuẩn*
-- **Bản chất:** Vùng giá trị tích lũy công bằng suốt phiên, sau đó một đầu bị quét râu (liquidity sweep).
-- **Kịch bản:** Giá sweep xong quay ngược lại và đục thủng POC ở giữa. POC lúc này đóng vai trò như chiếc **bàn đạp (Fulcrum)** đưa giá hướng thẳng về **Biên đối diện của Range (CRTH / CRTL)**.
-
-### 3. POC nằm ở Phía Đối Diện (Sát Target của bạn) – *Cảnh Báo / Bỏ Qua (Skip)*
-- **Bản chất:** Bức tường thanh khoản dày nằm ngay cản trước mặt điểm chốt lời.
-- **Kịch bản:** Giá sẽ bị khối volume này chặn lại, đi sideway hoặc đảo chiều trước khi tới full TP.
-- **Quy tắc:** Nếu khoảng cách từ Entry đến POC cản này không đủ tỷ lệ $1.5\text{R}$ hoặc $2\text{R}$ $\rightarrow$ **Bỏ qua (Skip trade)**.
+> [!CAUTION]
+> Bất kỳ cú sweep nào diễn ra lơ lửng ở giữa chart mà không chạm vào 4 mốc trên đều là **Nhiễu ngẫu nhiên $\rightarrow$ TUYỆT ĐỐI BỎ QUA**.
 
 ---
 
-## 4. Chi Tiết 4 Setup Thực Chiến
+## 4. Cốt Lõi Phương Pháp: Chuỗi Nến Fractal C1 – C2 – C3 – C4
 
----
+```text
+       [MÔ HÌNH BULLISH CRT REVERSAL (ĐẢO CHIỀU TĂNG)]
 
-### SETUP 1: CRT - FRVP (Candle Range Sweep & POC Break)
-- **Ý Tưởng:** Quét thanh khoản đỉnh/đáy của Range nến và xác nhận bằng việc giá phá vỡ vùng volume lớn nhất (POC).
-- **Quy Trình Từng Bước:**
-  1. Xác định Open Anchor và kéo FRVP đến cây nến trước nến Sweep (hoặc qua nến Sweep).
-  2. Xác định vị trí POC: Ưu tiên POC ở Cực Trị hoặc Giữa hộp; cảnh báo nếu POC nằm sát Target.
-  3. **Điểm Kích Hoạt (Trigger):** Thân nến **đóng cửa dứt khoát qua POC** (Candle Close, tuyệt đối không vào lệnh khi chỉ có râu nến thò qua).
-  4. **Stop Loss:** Đặt sau Range High/Low của FRVP (ngoài râu nến sweep).
-  5. **Take Profit:** Đặt theo tỷ lệ $1:2$ hoặc $1:3$, hoặc tại biên đối diện (CRTH / CRTL).
-
----
-
-### SETUP 2: TREND (Pullback POC & Confirmation Đáy Mới)
-- **Ý Tưởng:** Đánh thuận xu hướng khi giá hồi sâu về vùng giá trị, tối ưu R:R bằng cách chờ tạo cấu trúc xác nhận.
-- **Quy Trình Từng Bước:**
-  1. Xác định con sóng đẩy xu hướng rõ ràng: Đánh dấu High và Low của con sóng.
-  2. Kéo FRVP toàn bộ con sóng từ High đến Low (hoặc Low đến High) $\rightarrow$ Xác định đường POC con sóng.
-  3. Giá hồi sâu về chạm POC $\rightarrow$ **TUYỆT ĐỐI KHÔNG ĐẶT LIMIT ORDER MÙ.**
-  4. **Điểm Kích Hoạt (Trigger):** Quan sát hành động giá tại POC. Chờ giá từ chối và **tạo ra một Đáy Mới Cục Bộ (Local Low / Higher Low)** hoặc nến đảo chiều pinbar/engulfing.
-  5. **Vào Lệnh & Cắt Lỗ:** Vào lệnh ngay khi đáy mới hoàn thành. **SL đặt ngay dưới Đáy Mới Cục Bộ này** (khoảng cách SL rất ngắn).
-  6. **Take Profit:** Hướng lên Đỉnh Sóng Cũ (Range High). Do SL ngắn, tỷ lệ **R:R tự động đạt 1:2 đến 1:3 tuyệt đẹp**.
-
----
-
-### SETUP 3: AMD (Accumulation - Manipulation - Distribution)
-- **Ý Tưởng:** Đánh theo chu kỳ bẫy giá kinh điển của thị trường.
-- **Quy Trình Từng Bước:**
-  1. **Phase A (Tích lũy):** Kéo FRVP trên toàn bộ vùng tích lũy A $\rightarrow$ Xác định đường `POC-A`.
-  2. **Phase M (Thao túng/Bẫy giá):** Giá phá vỡ giả (Judas Swing) quét râu ra ngoài biên Range A để bẫy retail trader.
-  3. **Phase D (Phân phối thật):** Giá quay ngược trở lại vào trong Range A và xuyên qua `POC-A`.
-  4. **Điểm Kích Hoạt (Trigger):** Chờ giá hồi về retest lại đúng `POC-A`. **ĐỨNG NGOÀI CHỜ NẾN PHẢN ỨNG TỪ CHỐI (Rejection)** tại POC $\rightarrow$ Vào lệnh theo hướng Phase D.
-  5. **Stop Loss:** Đặt ngoài đỉnh/đáy của Phase M.
-  6. **Take Profit:** $1:2$ đến $1:3$ (hoặc biên thanh khoản đối diện).
-
----
-
-### SETUP 4: BREAK (Phá Vỡ Range Sideway & Retest)
-- **Ý Tưởng:** Đón sóng bùng nổ sau giai đoạn nén biên độ (Sideway).
-- **Quy Trình Từng Bước:**
-  1. Kéo FRVP trên toàn bộ vùng Range Sideway $\rightarrow$ Xác định POC và 2 biên VAH / VAL.
-  2. Giá có một cây nến phá vỡ (Breakout) dứt khoát ra khỏi hộp Sideway.
-  3. **Chờ Retest:** Chờ giá hồi về test lại POC (khi hồi sâu) hoặc test lại biên VAH/VAL (khi lực đẩy mạnh).
-  4. **Điểm Kích Hoạt (Trigger):** Chờ nến từ chối (Rejection) xác nhận vùng test giữ được giá $\rightarrow$ Vào lệnh thuận chiều Breakout.
-  5. **Stop Loss:** Đặt sau Local High/Low của nhịp retest.
-  6. **Take Profit:** $1:2$ đến $1:3$.
-
----
-
-## 5. Quy Tắc Quản Trị Lệnh Real-Time (Execution Rules)
-
-```
-[Entry] ───► [Giá chạy +1R] ───► [Dời SL về -0.5R] (Giảm 50% rủi ro)
-                  │
-                  ▼
-             [Giá chạy +2R] ───► [Dời SL về BE (0R)] (Loại bỏ rủi ro)
-                  │
-                  ▼
-             [Giá chạm +3R] ───► [FULL TAKE PROFIT] (+3R)
+          ─── CRH (Candle Range High) ───
+           ┌───┐                 ┌───┐     ▲ C4: Tiếp diễn về TP (CRH)
+           │   │  ┌───┐          │   │     │
+           │C1 │  │C2 │          │C3 │     │
+           │   │  │   │          │   │ ◄───┘
+           └───┘  └───┘          │   │ (C3 mở ra, nến M5 đục qua POC)
+                  ──┬──          └───┘
+          ──────────┼───────────────────── CRL (Candle Range Low)
+                    ▼ (Râu C2 quét thanh khoản nhưng ĐÓNG THÂN TRONG BIÊN)
 ```
 
-1. **Khi giá di chuyển được $+1\text{R}$:**
-   - Lập tức dời Stop Loss từ mốc ban đầu ($-1\text{R}$) lên mốc **$-0.5\text{R}$**.
-   - Mục đích: Cắt giảm ngay 50% mức lỗ nếu thị trường bất ngờ quay đầu quét ngược.
-2. **Khi giá di chuyển được $+2\text{R}$:**
-   - Lập tức dời Stop Loss về mốc **Hòa Vốn (Break-Even - BE / 0R)**.
-   - Mục đích: Đảm bảo đây là một lệnh "miễn phí rủi ro" (Risk-Free Trade).
-3. **Chốt lời:**
-   - Để lệnh tự động chạm **Full TP ($+2\text{R}$ hoặc $+3\text{R}$)** hoặc quay về cắn BE.
-   - Không chốt non, không dời TP ra xa hơn khi giá chưa tới, tôn trọng xác suất thống kê.
+1. **C1 (Benchmark Candle):** Cây nến H1 trước đó. Xác lập biên trên **CRH** và biên dưới **CRL**.
+2. **C2 (Manipulation / Sweep Candle):** Cây nến H1 hiện tại thò râu đâm thủng đỉnh/đáy C1 hoặc mốc HTF.  
+   - **ĐIỀU KIỆN TIÊN QUYẾT BẮT BUỘC:** Thân nến C2 **PHẢI ĐÓNG CỬA NGƯỢC VÀO TRONG BIÊN CỦA C1**.
+   - *Nếu thân C2 đóng ra ngoài:* Bị tính là Breakout thật $\rightarrow$ **HỦY BỎ SETUP ĐẢO CHIỀU**.
+3. **C3 (Expansion / Trigger Candle):** Cây nến H1 phát động con sóng đẩy ngược chiều (Change in State of Delivery - CISD).  
+   - Ngay khi C3 vừa mở ra $\rightarrow$ Switch xuống khung **M5/M3** tìm cò súng FRVP POC.
+4. **C4 (Continuation / Delivery):** Cây nến tiếp diễn quán tính phi thẳng về mục tiêu biên đối diện của C1.
 
 ---
 
-## 6. Quản Trị Vốn & Bảng Thông Số Hợp Đồng (MGC, MNQ, MES, MCLZ26)
+## 5. Chuẩn Hóa Kéo FRVP & Phân Tích 3 Vị Trí POC
 
-- **Tài khoản:** 50K DLL EXPRESS (Khóa ngày nếu lỗ $-1,000$).
-- **Quy mô 1R chuẩn:** **$150 – $200 USD / lệnh**.
-  - 1 lệnh thua tối đa: $-150$ đến $-200$.
-  - 1 lệnh thắng $2\text{R}$: $+300$ đến $+400$ $\rightarrow$ **Đạt chuẩn chỉ tiêu ngày thắng của Topstep (≥ +$150) ngay lập tức!**
-- **Quy tắc dừng phiên:**
-  - Nếu đạt $+2\text{R}$ hoặc $+3\text{R}$ (lãi $\ge +\$300$) $\rightarrow$ **DỪNG TRADE NGAY HÔM ĐÓ.** Bảo toàn 1 ngày thắng hợp lệ để tích lũy 5 ngày rút tiền.
-  - Nếu thua 2 lệnh liên tiếp ($-1\text{R}$ và $-1\text{R}$ = $-300$ to $-400$) $\rightarrow$ **DỪNG TRADE HÔM ĐÓ.** Giữ khoảng cách xa ngưỡng $-1,000$ DLL của Topstep.
+### 5.1. Quy Tắc Kéo FRVP Cố Định (Fixed Anchor Rule)
+Không kéo tù mù hay xê dịch tùy ý. Điểm neo cố định 100%:
+- **Điểm bắt đầu kéo (Anchor Start):** Đặt tại **Giá Mở Cửa của nến H1 (Open H1)**.
+- **Điểm kết thúc kéo (Anchor End):** Đặt tại **Đỉnh/Đáy râu quét cao nhất/thấp nhất của nến C2 trên chart M5/M3**.
 
-### Bảng Thông Số Hợp Đồng Chi Tiết (Position Sizer Reference)
+```
+[VỊ TRÍ A: POC CỰC TRỊ]          [VỊ TRÍ B: POC Ở GIỮA]           [VỊ TRÍ C: POC SÁT OPEN H1]
+   ─── Râu Sweep High ───           ─── Râu Sweep High ───           ─── Râu Sweep High ───
+   ███ POC (Kẹp volume đỉnh)                                         
+   ──────────────────────           ███ POC (Equilibrium 50%)        
+                                    ──────────────────────           
+                                                                     ███ POC (Cản dày xuất phát)
+   ─── Open H1 ──────────           ─── Open H1 ──────────           ─── Open H1 ──────────
+   ⭐ SETUP A+ (VÀO NGAY)            ⚡ SETUP CHUẨN (ĐO R:R)          🛑 HẠNG C (SKIP / BỎ KÈO)
+```
 
-| Sản Phẩm | Tên Đầy Đủ | Sàn | Bước Giá (Tick Size) | Giá Trị 1 Tick (Micro) | Giá Trị 1 Point | Stop Loss Chuẩn (Gợi ý) | Rủi Ro / 1 Hợp Đồng |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **MGC** | Micro Gold | COMEX | **0.10 pt** | **$1.00** | $10.00 | **2.0 pt** (20 ticks) | **$20.00** |
-| **MNQ** | Micro E-mini Nasdaq-100 | CME | **0.25 pt** | **$0.50** | $2.00 | **20.0 pt** (80 ticks) | **$40.00** |
-| **MES** | Micro E-mini S&P 500 | CME | **0.25 pt** | **$1.25** | $5.00 | **5.0 pt** (20 ticks) | **$25.00** |
-| **MCLZ26** | Micro WTI Crude Oil (Dec 26) | NYMEX | **0.01 pt** ($0.01) | **$1.00** | $100.00 | **0.30 pt** (30 ticks) | **$30.00** |
+### 5.2. Phân Tích 3 Kịch Bản Vị Trí POC
 
-*Ví dụ tính số lot cho rủi ro $150 (1R):*
-- **MGC** (SL 2.0 pt = 20 ticks = $20/lot) $\rightarrow$ Đi **7 lot** ($140 rủi ro).
-- **MNQ** (SL 20.0 pt = 80 ticks = $40/lot) $\rightarrow$ Đi **3 lot** ($120 rủi ro) hoặc **4 lot** ($160 rủi ro).
-- **MES** (SL 5.0 pt = 20 ticks = $25/lot) $\rightarrow$ Đi **6 lot** ($150 rủi ro).
-- **MCLZ26** (SL 0.30 pt = 30 ticks = $30/lot) $\rightarrow$ Đi **5 lot** ($150 rủi ro).
+#### Kịch Bản A: POC Nằm Ở Cực Trị (Top 25% Biên Độ Sweep) ➔ *Setup A+ (Kim Cương)*
+- **Ý nghĩa:** Khối lượng kẹp hàng (Trapped Volume) tập trung 100% tại chóp nến. Phe quét râu bị hấp thụ hoàn toàn.
+- **Trigger:** Nến M5 đóng cửa xuyên thủng qua POC cực trị này.
+- **Entry:** Bấm lệnh Market ngay khi nến M5 đóng, hoặc đặt Limit tại POC.
+- **Stop Loss:** Sau chóp râu C2 (SL siêu ngắn, chỉ 12 – 18 ticks MNQ).
+- **R:R:** Đạt cực cao, từ **1:3 đến 1:5**.
+
+#### Kịch Bản B: POC Nằm Ở Giữa Range (40% – 60% Biên Độ) ➔ *Setup Chuẩn*
+- **Ý nghĩa:** Vùng cân bằng khối lượng (Equilibrium) nằm ở giữa cây nến H1.
+- **Trigger:** Nến M5 đóng cửa thân nến xuyên thủng qua POC giữa.
+- **Entry:** Đặt **Limit Order tại POC** đón nhịp retest nhẹ.
+- **⚠️ ĐIỀU KIỆN SỐNG CÒN:** Đo khoảng cách từ POC đến Target (Biên đối diện C1).  
+  - Nếu **$\ge 1:2\text{R}$** $\rightarrow$ **VÀO LỆNH**.  
+  - Nếu **$< 1:2\text{R}$** $\rightarrow$ **HỦY BỎ (SKIP TRADE)**.
+
+#### Kịch Bản C: POC Nằm Sát Giá Open H1 (Bottom 25% Biên Độ) ➔ *Hạng C (CẢNH BÁO)*
+- **Ý nghĩa:** Bức tường volume cản nằm ngay vạch xuất phát. Giá rơi về rất dễ bị dội ngược lại (Rejection). Nếu đợi đục qua thì R:R bị bóp nghẹt.
+- **Quy tắc cứng:** **BỎ QUA, TUYỆT ĐỐI KHÔNG VÀO LỆNH**.
 
 ---
 
-## 7. Bản Đồ Thanh Khoản & Khung Giờ Săn Mồi (GMT+7)
+## 6. Chiêu Thức Chủ Lực (CRT Reversal) vs Tiếp Diễn (CRT Continuation) vs Sideway
 
-| Khung Giờ | Trạng Thái | Sản Phẩm Ưu Tiên | Trọng Tâm Giao Dịch & Setup |
-| :--- | :--- | :--- | :--- |
-| **07:45 – 10:00 (Sáng)** | 🟢 **SĂN LỆNH** | **MGC, MNQ** | **Dòng tiền Á (Tokyo & Shanghai SGE)**: MGC & MNQ chạy mượt, tôn trọng kỹ thuật.<br>• Canh **Setup 1 (CRT)** quét râu đêm (ONH/ONL) hoặc **Setup 2 (Trend)** hồi POC sóng sáng. |
-| **10:30 – 13:30 (Trưa)** | 🛑 **NGỒI YÊN** | — | **Vùng chết (Deadzone)**: Cạn volume, thị trường ngủ đông. Tắt màn hình, tuyệt đối không cố tìm lệnh. |
-| **14:00 – 16:00 (Chiều)** | 🟡 **ƯU TIÊN MGC** | **MGC** | **London mở cửa (Vàng vật chất)**: MGC bùng nổ nhịp quét râu phiên Á. Canh **Setup 1 (CRT)** hoặc **Setup 3 (AMD)**.<br>• *Lưu ý:* MNQ biên hẹp, dễ bẫy $\rightarrow$ Khuyên đứng ngoài với MNQ. |
-| **16:30 – 19:30 (Chiều)** | 🛑 **NGHỈ NGƠI** | — | **Giữa phiên Âu & Mỹ**: Volume chững lại chờ tin. Tắt chart, ăn tối, nghỉ ngơi tái tạo năng lượng. |
-| **20:15 – 22:30 (Tối)\*** | 🔥 **GIỜ VÀNG MỸ** | **MGC, MNQ, MES, MCLZ26** | **US Open (80% Volume ngày & Pit Dầu)**: Biến động cực mạnh cả 4 mã, sóng dứt khoát nhanh tới TP.<br>• Canh **Setup 4 (Break)**, **Setup 1 (CRT)** hoặc **Setup 2 (Trend)**. |
-| **Sau 22:30 (Đêm)** | 🛑 **ĐÓNG MÁY** | — | Hết sóng chính, tắt chart đi ngủ để bảo toàn vốn và kỷ luật. |
+### 6.1. Chiêu Thức Chủ Lực (80% Số Lệnh): CRT Reversal
+- Bản năng sát thủ: Chờ H1 quét cản HTF, C2 đóng thân trong C1, nến M5 đục qua POC $\rightarrow$ Bắn đảo chiều về biên đối diện.
 
-> [!NOTE]
-> **(\*) Lưu ý chu kỳ giờ Mùa Đông (từ tháng 11 đến tháng 3):** Khung Giờ Vàng Mỹ sẽ lùi lại 1 tiếng: **21:15 – 23:30** (NYSE mở cửa lúc 21:30 VN thay vì 20:30 VN).
+### 6.2. Chiêu Thức Phụ (20% Số Lệnh): CRT Continuation (Khi Thị Trường Xu Hướng Mạnh)
+- **Định nghĩa đúng:** Tuyệt đối không mua đuổi khi nến đang xanh dựng đứng. CRT Continuation **thực chất vẫn là một cú sweep nhịp hồi**:
+  1. Xu hướng H4/Daily tăng mạnh rõ ràng.
+  2. Nến H1 hiện tại không quét đỉnh, mà **thò râu xuống dưới quét thanh khoản đáy nhịp hồi (Retracement Sweep)** hoặc hồi về 50% Equilibrium của nến C1.
+  3. Kéo FRVP nến C1 tăng trước đó $\rightarrow$ Giá chạm **POC / VAH của C1** và nến M5 rút chân xác nhận.
+  4. Mở lệnh BUY thuận trend, SL dưới đáy nhịp hồi C2. Target lên đỉnh cao mới.
+
+### 6.3. Thị Trường Sideway (Inside Bar Trên H1)
+- Cây nến H1 nằm gọn gàng bên trong nến H1 trước, không chạm bất kỳ cản nào $\rightarrow$ **KHOANH TAY ĐỨNG NGOÀI, 0 LỆNH**.
+
+---
+
+## 7. Quản Trị Lệnh Thực Chiến (Xóa Bỏ Bẫy Dời SL Về BE)
+
+### 7.1. Bãi Bỏ Quy Tắc Dời SL Cơ Học Cũ
+> [!CAUTION]
+> **BÃI BỎ TRIỆT ĐỂ:** Quy tắc dời SL về -0.5R ở +1R và dời về BE ở +2R.  
+> *Lý do:* Futures (MNQ/MGC) luôn có nhịp retest cấu trúc tự nhiên trước khi bùng nổ đến +3R. Dời BE máy móc sẽ bị quét oan uổng, tạo cảm xúc tiếc nuối tột cùng $\rightarrow$ nguồn cơn trực tiếp dẫn đến hành vi nhồi vol.
+
+### 7.2. Quy Tắc Quản Trị Lệnh Thực Tế Mới
+1. **Cho lệnh không gian thở tự nhiên:** Sau khi vào lệnh, giữ nguyên Stop Loss ban đầu (sau chóp râu C2).
+2. **Chỉ dời Stop Loss theo Cấu Trúc Swing Mới (Structure-Based Trailing):**  
+   - Chỉ dời SL khi trên khung **M5 hình thành một Đáy Mới Cao Hơn (Higher Low)** hoặc **Đỉnh Mới Thấp Hơn (Lower High)** rõ ràng có nến xác nhận. Dời SL núp sau đáy/đỉnh cấu trúc mới này.
+3. **Triết lý All-or-Nothing:** Nếu không có cấu trúc mới bảo vệ, chấp nhận để lệnh tự động chạm **Full TP ($+2\text{R}$ hoặc $+3\text{R}$)** hoặc dính **$-1\text{R}$**. Không can thiệp tay, không chốt non, không dời BE sớm.
+
+---
+
+## 8. Checklist Cơ Học 4 Bước Trước Khi Bấm Lệnh
+
+| Bước | Hạng Mục Kiểm Tra | Điều Kiện Đạt | Nếu Không Đạt ➔ HÀNH ĐỘNG |
+| :---: | :--- | :---: | :---: |
+| **1** | **Bản Đồ HTF** | C2 quét vào **PDH/PDL, ONH/ONL hoặc FVG 1H**? | **BỎ QUA** (Quét linh tinh không đánh). |
+| **2** | **Thân Nến C2** | Thân nến C2 **đóng cửa rút ngược vào trong C1**? | **BỎ QUA** (Đóng ngoài là Breakout thật). |
+| **3** | **Vị Trí POC** | POC (Open H1 ➔ Râu C2) nằm ở **Cực trị** hoặc **Ở giữa**? | Nếu **Sát Open H1** ➔ **BỎ QUA**. |
+| **4** | **Trigger & R:R** | Nến M5 đã **đóng qua POC** và R:R đo được **$\ge 1:2$**? | **BỎ QUA** (Không đủ R:R tuyệt đối không vào). |
+
+---
+
+## 9. Bảng Thông Số Hợp Đồng & Quy Mô Vị Thế (Position Sizer)
+
+| Sản Phẩm | Bước Giá (Tick) | Giá Trị 1 Tick | Giá Trị 1 Point | Stop Loss Trung Bình (M5) | Số Lot Cho Risk $200 (Vòng 1) | Số Lot Cho Risk $100 (XFA) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **MGC** (Micro Gold) | **0.10 pt** | **$1.00** | $10.00 | **2.5 pt** (25 ticks = $25/lot) | **8 lot** ($200) | **4 lot** ($100) |
+| **MNQ** (Micro Nasdaq) | **0.25 pt** | **$0.50** | $2.00 | **25.0 pt** (100 ticks = $50/lot)| **4 lot** ($200) | **2 lot** ($100) |
+| **MES** (Micro S&P 500) | **0.25 pt** | **$1.25** | $5.00 | **6.0 pt** (24 ticks = $30/lot) | **6 lot** ($180) | **3 lot** ($90) |
+| **MCLZ26** (Micro Dầu Thô) | **0.01 pt** | **$1.00** | $100.00 | **0.35 pt** (35 ticks = $35/lot)| **5 lot** ($175) | **2 – 3 lot** ($70 – $105) |
+
+---
+*Tài liệu này là bộ quy tắc sống còn duy nhất. Mọi lệnh giao dịch vi phạm checklist đều bị coi là hành vi phá hoại tài khoản.*
