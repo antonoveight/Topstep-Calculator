@@ -1832,6 +1832,32 @@ const accountData = TradingRules.accounts;
             ['1r','2r','tp'].forEach((id,i)=>{document.getElementById('chk-risk-'+id).checked=saved[i]===true;});
         }
 
+        function setDailyBias(bias) {
+            try {
+                localStorage.setItem('topstep_daily_bias', bias);
+            } catch (e) {}
+            updateDailyBiasUI(bias);
+        }
+        window.setDailyBias = setDailyBias;
+
+        function updateDailyBiasUI(bias) {
+            ['bullish', 'bearish', 'neutral'].forEach(b => {
+                const btn = document.getElementById('bias-btn-' + b);
+                if (btn) {
+                    if (b === bias) {
+                        btn.style.boxShadow = '0 0 0 1.5px currentColor';
+                        btn.style.opacity = '1';
+                        btn.style.fontWeight = '700';
+                    } else {
+                        btn.style.boxShadow = 'none';
+                        btn.style.opacity = '0.55';
+                        btn.style.fontWeight = '500';
+                    }
+                }
+            });
+        }
+        window.updateDailyBiasUI = updateDailyBiasUI;
+
         function switchChecklistSetup(setupNum) {
             if (![1,2,3,4].includes(Number(setupNum))) return;
             if (checklistLoaded) rememberChecklistRisk();
@@ -1948,6 +1974,10 @@ const accountData = TradingRules.accounts;
             if (!saved.__riskBySetup) checklistRiskBySetup[setup]=['1r','2r','tp'].map(id=>saved['chk-risk-'+id]===true);
             document.querySelectorAll('#checklist-section input[type=checkbox]').forEach(cb=>{cb.checked=saved[cb.id]===true;});
             switchChecklistSetup(setup);
+            try {
+                const savedBias = localStorage.getItem('topstep_daily_bias') || 'neutral';
+                updateDailyBiasUI(savedBias);
+            } catch (e) {}
             checklistLoaded=true;
             if (typeof initRusticAngler==='function') setTimeout(initRusticAngler,60);
         }

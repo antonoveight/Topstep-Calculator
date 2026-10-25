@@ -1393,8 +1393,48 @@ input[type="number"] {
                         </div>
 
                         <!-- Progress Bar Indicator -->
-                        <div style="height: 4px; border-radius: 2px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); overflow: hidden; margin-bottom: 14px;">
+                        <div style="height: 4px; border-radius: 2px; background: var(--bg-card-inner); border: 1px solid var(--border-inner); overflow: hidden; margin-bottom: 12px;">
                             <div id="checklistProgressFill" style="height: 100%; width: 0%; background: var(--color-primary); transition: width 0.25s ease, background 0.25s ease;"></div>
+                        </div>
+
+                        <!-- 🧭 BỘ LỌC BIAS ĐẦU NGÀY (3 Phút Định Hướng) -->
+                        <div id="morningBiasCard" style="background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-left: 3px solid #6366F1; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; font-size: 11.5px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="font-weight: 700; color: #818CF8; display: flex; align-items: center; gap: 5px; font-size: 12px;">
+                                    <span>🧭</span> CHECK BIAS ĐẦU NGÀY (3 PHÚT)
+                                </span>
+                                <span class="b-badge b-badge-blue" style="font-size: 9.5px; padding: 1px 6px;">Morning Bias</span>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 6px; margin-bottom: 8px; color: var(--text-slate); font-size: 11px; line-height: 1.4;">
+                                <div style="background: var(--bg-card); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-inner);">
+                                    <strong style="color: var(--text-primary);">1. Cấu trúc D1 hôm qua:</strong><br>
+                                    • Thân dài &gt;70% ➔ <em>Tiếp diễn</em><br>
+                                    • Rút râu quét PDH/L ➔ <em>Đảo chiều</em><br>
+                                    • Inside bar ➔ <em>Cảnh giác sideway</em>
+                                </div>
+                                <div style="background: var(--bg-card); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-inner);">
+                                    <strong style="color: var(--text-primary);">2. Nam châm hút giá (DOL):</strong><br>
+                                    • Hướng về Đỉnh <strong>PDH / BSL</strong>?<br>
+                                    • Hướng về Đáy <strong>PDL / SSL</strong>?<br>
+                                    • FVG H4 chưa lấp?
+                                </div>
+                                <div style="background: var(--bg-card); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-inner);">
+                                    <strong style="color: var(--text-primary);">3. Daily Open (06:00 VN):</strong><br>
+                                    • 🟢 <strong>Canh Buy:</strong> Chỉ mua <em>Dưới Open</em> (Discount) khi quét Asian Low.<br>
+                                    • 🔴 <strong>Canh Sell:</strong> Chỉ bán <em>Trên Open</em> (Premium) khi quét Asian High.
+                                </div>
+                            </div>
+
+                            <!-- Interactive Bias Quick Selector -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; padding-top: 6px; border-top: 1px dashed var(--border-inner);">
+                                <span style="font-size: 10.5px; color: var(--text-muted); font-weight: 600;">Bias Hôm Nay:</span>
+                                <div style="display: flex; gap: 5px;">
+                                    <button type="button" id="bias-btn-bullish" onclick="setDailyBias('bullish')" style="padding: 3px 8px; font-size: 10px; font-weight: 600; border-radius: 5px; border: 1px solid transparent; cursor: pointer; background: rgba(34, 197, 94, 0.12); color: var(--color-green); transition: all 0.15s ease;">🟢 Canh BUY (Dưới Open)</button>
+                                    <button type="button" id="bias-btn-bearish" onclick="setDailyBias('bearish')" style="padding: 3px 8px; font-size: 10px; font-weight: 600; border-radius: 5px; border: 1px solid transparent; cursor: pointer; background: rgba(239, 68, 68, 0.12); color: var(--color-red); transition: all 0.15s ease;">🔴 Canh SELL (Trên Open)</button>
+                                    <button type="button" id="bias-btn-neutral" onclick="setDailyBias('neutral')" style="padding: 3px 8px; font-size: 10px; font-weight: 600; border-radius: 5px; border: 1px solid transparent; cursor: pointer; background: var(--bg-card); color: var(--text-muted); transition: all 0.15s ease;">⚪ NEUTRAL (Chờ cản)</button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- 4 Setup Tabs -->

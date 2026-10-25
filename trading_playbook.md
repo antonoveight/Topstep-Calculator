@@ -15,7 +15,7 @@
 5. [Chuẩn Hóa Kéo FRVP & Phân Tích 3 Vị Trí POC](#5-chuẩn-hóa-kéo-frvp--phân-tích-3-vị-trí-poc)
 6. [Chiêu Thức Chủ Lực (CRT Reversal) vs Tiếp Diễn (CRT Continuation) vs Sideway](#6-chiêu-thức-chủ-lực-crt-reversal-vs-tiếp-diễn-crt-continuation-vs-sideway)
 7. [Quản Trị Lệnh Thực Chiến (Xóa Bỏ Bẫy Dời SL Về BE)](#7-quản-trị-lệnh-thực-chiến-xóa-bỏ-bẫy-dời-sl-về-be)
-8. [Checklist Cơ Học 4 Bước Trước Khi Bấm Lệnh](#8-checklist-cơ-học-4-bước-trước-khi-bấm-lệnh)
+8. [Checklist Cơ Học & Định Hướng Bias Đầu Ngày](#8-checklist-cơ-học--định-hướng-bias-đầu-ngày)
 9. [Bảng Thông Số Hợp Đồng & Quy Mô Vị Thế (Position Sizer)](#9-bảng-thông-số-hợp-đồng--quy-mô-vị-thế-position-sizer)
 
 ---
@@ -187,7 +187,21 @@ Không kéo tù mù hay xê dịch tùy ý. Điểm neo cố định 100%:
 
 ---
 
-## 8. Checklist Cơ Học 4 Bước Trước Khi Bấm Lệnh
+## 8. Checklist Cơ Học & Định Hướng Bias Đầu Ngày
+
+### 8.1. Checklist Xác Định Bias Đầu Ngày (3 Phút Định Hướng - Morning Bias Protocol)
+Mỗi buổi sáng (07:30 VN), mở chart D1 / H4 và trả lời 3 câu hỏi cơ học trước khi vào phiên:
+1. **Cấu trúc nến D1 hôm qua:**
+   - *Nến Trend thân dài > 70%:* ➔ **Bias Tiếp Diễn** (Canh thuận sóng hôm qua).
+   - *Nến rút râu quét PDH/PDL:* ➔ **Bias Đảo Chiều** (Canh hồi về biên đối diện).
+   - *Inside bar nhỏ:* ➔ **Bias Trung Tính** (Cảnh giác sideway, ưu tiên đứng ngoài).
+2. **Nam châm hút giá (Draw on Liquidity - DOL):**
+   - Đích đến tiếp theo của dòng tiền là đâu? Đang hút về Đỉnh **PDH / BSL** hay Đáy **PDL / SSL**? Vùng FVG H4 nào chưa lấp?
+3. **Ngưỡng Daily Open (06:00 VN) — Nguyên tắc Rẻ / Đắt:**
+   - 🟢 **Canh BUY (Bullish Bias):** CHỈ mua ở vùng Discount (**DƯỚI Daily Open**) sau khi có nhịp thò chân quét đáy phiên Á (Asian Low). Cấm mua đuổi trên Daily Open.
+   - 🔴 **Canh SELL (Bearish Bias):** CHỈ bán ở vùng Premium (**TRÊN Daily Open**) sau khi có nhịp rướn lên quét đỉnh phiên Á (Asian High). Cấm bán đuổi dưới Daily Open.
+
+### 8.2. Checklist Cơ Học 4 Bước Trước Khi Bấm Lệnh (In-Session Trigger)
 
 | Bước | Hạng Mục Kiểm Tra | Điều Kiện Đạt | Nếu Không Đạt ➔ HÀNH ĐỘNG |
 | :---: | :--- | :---: | :---: |
