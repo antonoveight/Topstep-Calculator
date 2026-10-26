@@ -306,6 +306,29 @@ input[type="number"] {
     border-color: var(--color-primary);
 }
 
+.b-btn-action-col {
+    height: auto !important;
+    min-height: 52px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 4px !important;
+    line-height: 1.2 !important;
+    gap: 4px !important;
+    font-size: 11px !important;
+}
+.b-btn-action-col > span:first-child {
+    font-size: 14px;
+    line-height: 1;
+}
+.b-btn-action-col > span:last-child {
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+
 .b-btn-purple {
     background: var(--color-primary);
     color: #FFFFFF;
@@ -1056,17 +1079,17 @@ input[type="number"] {
 
                         <!-- 3 Quick Action Buttons -->
                         <div class="grid grid-cols-3 gap-2">
-                            <button id="finpointCardBtnAction1" type="button" onclick="switchAppView('checklist')" class="b-btn-secondary" style="flex-direction: column; padding: 10px 4px; justify-content: center; gap: 4px; font-size: 11px;" title="Checklist 4 setups trước khi vào lệnh">
-                                <span id="finpointCardBtnAction1Icon" style="font-size: 14px;">🎯</span>
-                                <span id="finpointCardBtnAction1Text">Checklist</span>
+                            <button id="finpointCardBtnAction1" type="button" onclick="switchAppView('checklist')" class="b-btn-secondary b-btn-action-col" style="height: auto; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; gap: 4px; font-size: 11px; line-height: 1.2;" title="Checklist 4 setups trước khi vào lệnh">
+                                <span id="finpointCardBtnAction1Icon" style="font-size: 14px; line-height: 1;">🎯</span>
+                                <span id="finpointCardBtnAction1Text" style="font-size: 11px; line-height: 1.2; font-weight: 600;">Checklist</span>
                             </button>
-                            <button type="button" onclick="document.getElementById('inputPnl').focus()" class="b-btn-primary" style="flex-direction: column; padding: 10px 4px; justify-content: center; gap: 4px; font-size: 11px;">
-                                <span style="font-size: 14px;">↗</span>
-                                <span>Ghi EOD</span>
+                            <button type="button" onclick="document.getElementById('inputPnl').focus()" class="b-btn-primary b-btn-action-col" style="height: auto; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; gap: 4px; font-size: 11px; line-height: 1.2;">
+                                <span style="font-size: 14px; line-height: 1;">↗</span>
+                                <span style="font-size: 11px; line-height: 1.2; font-weight: 600;">Ghi EOD</span>
                             </button>
-                            <button type="button" onclick="toggleAccountStage()" class="b-btn-secondary" style="flex-direction: column; padding: 10px 4px; justify-content: center; gap: 4px; font-size: 11px;">
-                                <span style="font-size: 14px;">+</span>
-                                <span>Đổi Vòng</span>
+                            <button type="button" onclick="toggleAccountStage()" class="b-btn-secondary b-btn-action-col" style="height: auto; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; gap: 4px; font-size: 11px; line-height: 1.2;">
+                                <span style="font-size: 14px; line-height: 1;">+</span>
+                                <span style="font-size: 11px; line-height: 1.2; font-weight: 600;">Đổi Vòng</span>
                             </button>
                         </div>
 
