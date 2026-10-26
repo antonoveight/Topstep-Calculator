@@ -81,7 +81,7 @@ Mô hình CRT Fractal **CHỈ CÓ HIỆU LỰC** khi nến H2 thò râu quét v�
 1. **PDH / PDL (Previous Day High / Low):** Mốc chứa cụm Stop Loss lớn nhất của thị trường.
 2. **ONH / ONL (Overnight High / Low) hoặc Asian High / Low:** Thanh khoản phiên Á/Đêm thường bị quét sạch vào đầu phiên Âu (14:00) hoặc đầu phiên Mỹ (20:30).
 3. **HTF FVG / Order Block (1H / 4H):** Vùng mất cân bằng giá khung lớn. Râu nến H1 thọc sâu vào chạm mốc 50% FVG (Consequent Encroachment) rồi bật ngược lại.
-4. **Daily Open (06:00 VN) & Session Open (08:00, 14:00, 20:30):** Ngưỡng phân chia xu hướng phiên.
+4. **Day Open & Session Open:** Ca Sáng dùng **Globex Open** (05:00 hè / 06:00 đông VN); Ca Chiều & Tối dùng **NY Midnight Open** (11:00 hè / 12:00 đông VN — True Day Open chuẩn xác định Discount/Premium). Session Open: 08:00 (Á), 14:00 (Âu), 20:30 (Mỹ).
 
 > [!CAUTION]
 > Bất kỳ cú sweep nào diễn ra lơ lửng ở giữa chart mà không chạm vào 4 mốc trên đều là **Nhiễu ngẫu nhiên $\rightarrow$ TUYỆT ĐỐI BỎ QUA**.
@@ -197,9 +197,13 @@ Mỗi buổi sáng (07:30 VN), mở chart D1 / H4 và trả lời 3 câu hỏi c
    - *Inside bar nhỏ:* ➔ **Bias Trung Tính** (Cảnh giác sideway, ưu tiên đứng ngoài).
 2. **Nam châm hút giá (Draw on Liquidity - DOL):**
    - Đích đến tiếp theo của dòng tiền là đâu? Đang hút về Đỉnh **PDH / BSL** hay Đáy **PDL / SSL**? Vùng FVG H4 nào chưa lấp?
-3. **Ngưỡng Daily Open (06:00 VN) — Nguyên tắc Rẻ / Đắt:**
-   - 🟢 **Canh BUY (Bullish Bias):** CHỈ mua ở vùng Discount (**DƯỚI Daily Open**) sau khi có nhịp thò chân quét đáy phiên Á (Asian Low). Cấm mua đuổi trên Daily Open.
-   - 🔴 **Canh SELL (Bearish Bias):** CHỈ bán ở vùng Premium (**TRÊN Daily Open**) sau khi có nhịp rướn lên quét đỉnh phiên Á (Asian High). Cấm bán đuổi dưới Daily Open.
+3. **Mốc Day Open — Vạch Phân Định Rẻ (Discount) / Đắt (Premium):**
+   - **Chọn mốc theo ca:**
+     - *Ca Sáng (07:45 – 10:00 VN):* Dùng **Globex Open** lúc **05:00** (mùa đông: **06:00**).
+     - *Ca Chiều (14:00 – 16:00) & Ca Tối (20:15 – 22:30):* Dùng **NY Midnight Open** lúc **11:00** (mùa đông: **12:00**) — mốc True Day Open chuẩn thuật toán IPDA.
+     *(Lưu ý: Nước Mỹ đổi giờ vào Chủ nhật đầu tháng 11; hiện tại 26/10 vẫn là mùa hè EDT).*
+   - 🟢 **Canh BUY (Bullish Bias):** CHỈ mua ở vùng Discount (**DƯỚI Day Open**) sau khi có nhịp thò chân quét đáy phiên Á (Asian Low). Cấm mua đuổi trên Day Open.
+   - 🔴 **Canh SELL (Bearish Bias):** CHỈ bán ở vùng Premium (**TRÊN Day Open**) sau khi có nhịp rướn lên quét đỉnh phiên Á (Asian High). Cấm bán đuổi dưới Day Open.
 
 ### 8.2. Checklist Cơ Học 4 Bước Trước Khi Bấm Lệnh (In-Session Trigger)
 
