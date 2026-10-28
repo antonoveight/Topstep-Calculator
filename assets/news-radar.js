@@ -84,9 +84,9 @@
         function makeEventDate(dayOffset, etHour, etMinute) {
             const target = new Date(monday);
             target.setDate(monday.getDate() + dayOffset);
-            // Convert ET hour/minute to VN local hour/minute
-            // VN = ET + dst.vnDiffHours
-            const vnTotalMinutes = (etHour * 60 + etMinute) + (dst.vnDiffHours * 60);
+            // Calculate exact US DST for this target date (EDT: +11h, EST: +12h)
+            const targetDst = getUsDstContext(target);
+            const vnTotalMinutes = (etHour * 60 + etMinute) + (targetDst.vnDiffHours * 60);
             const vnDayShift = Math.floor(vnTotalMinutes / 1440);
             const vnMinuteOfDay = vnTotalMinutes % 1440;
             const finalDate = new Date(target);
@@ -250,9 +250,10 @@
 
         for (const meeting of FOMC_MEETINGS) {
             // Meeting statement is released at 14:00 ET on meeting day (usually Wednesday)
-            // VN = ET + dst.vnDiffHours (11h in DST -> 01:00 AM VN; 12h in Standard -> 02:00 AM VN next day)
+            // VN = ET + meetingDst.vnDiffHours (11h in DST -> 01:00 AM VN; 12h in Standard -> 02:00 AM VN next day)
             const baseEtDate = new Date(meeting.y, meeting.m - 1, meeting.d, 14, 0, 0);
-            const vnTime = new Date(baseEtDate.getTime() + dst.vnDiffHours * 3600000);
+            const meetingDst = getUsDstContext(baseEtDate);
+            const vnTime = new Date(baseEtDate.getTime() + meetingDst.vnDiffHours * 3600000);
 
             if (vnTime >= monday && vnTime < weekEnd) {
                 events.push({
@@ -643,6 +644,21 @@
             if (soundBtn) {
                 soundBtn.className = this.soundEnabled ? 'b-btn-primary' : 'b-btn-secondary';
                 soundBtn.innerHTML = this.soundEnabled ? '🔊 Chuông Báo: BẬT' : '🔇 Chuông Báo: TẮT';
+            }
+
+            // Update live Timezone Status Badge
+            const tzBadge = document.getElementById('calendarTzBadge');
+            if (tzBadge) {
+                const nowDst = getUsDstContext(new Date());
+                if (nowDst.isDst) {
+                    tzBadge.className = 'b-badge b-badge-blue';
+                    tzBadge.innerText = '🕒 Giờ Mùa Hè: EDT (VN = ET + 11h)';
+                    tzBadge.title = 'Mỹ đang áp dụng Daylight Saving Time (EDT, GMT-4). Giờ VN đi trước New York 11 tiếng. Chủ Nhật 01/11/2026 sẽ đổi sang Giờ Mùa Đông (EST, chênh 12h).';
+                } else {
+                    tzBadge.className = 'b-badge b-badge-purple';
+                    tzBadge.innerText = '🕒 Giờ Mùa Đông: EST (VN = ET + 12h)';
+                    tzBadge.title = 'Mỹ đang áp dụng Standard Time (EST, GMT-5). Giờ VN đi trước New York 12 tiếng. Giờ mở phiên và ra tin lùi lại 1 tiếng so với mùa hè.';
+                }
             }
         },
 
