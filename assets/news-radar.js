@@ -229,6 +229,62 @@
             desc: 'Đo lường số lượng giàn khoan khai thác dầu đang hoạt động tại Mỹ.'
         });
 
+        // 9. FOMC Interest Rate Decision & Press Conference (8 meetings / year)
+        // Federal Reserve official scheduled release dates:
+        const FOMC_MEETINGS = [
+            // 2024
+            { y: 2024, m: 1, d: 31 }, { y: 2024, m: 3, d: 20 }, { y: 2024, m: 5, d: 1 }, { y: 2024, m: 6, d: 12 },
+            { y: 2024, m: 7, d: 31 }, { y: 2024, m: 9, d: 18 }, { y: 2024, m: 11, d: 7 }, { y: 2024, m: 12, d: 18 },
+            // 2025
+            { y: 2025, m: 1, d: 29 }, { y: 2025, m: 3, d: 19 }, { y: 2025, m: 5, d: 7 }, { y: 2025, m: 6, d: 18 },
+            { y: 2025, m: 7, d: 30 }, { y: 2025, m: 9, d: 17 }, { y: 2025, m: 10, d: 29 }, { y: 2025, m: 12, d: 10 },
+            // 2026
+            { y: 2026, m: 1, d: 28 }, { y: 2026, m: 3, d: 18 }, { y: 2026, m: 4, d: 29 }, { y: 2026, m: 6, d: 17 },
+            { y: 2026, m: 7, d: 29 }, { y: 2026, m: 9, d: 16 }, { y: 2026, m: 10, d: 28 }, { y: 2026, m: 12, d: 9 },
+            // 2027
+            { y: 2027, m: 1, d: 27 }, { y: 2027, m: 3, d: 17 }, { y: 2027, m: 4, d: 28 }, { y: 2027, m: 6, d: 16 },
+            { y: 2027, m: 7, d: 28 }, { y: 2027, m: 9, d: 15 }, { y: 2027, m: 10, d: 27 }, { y: 2027, m: 12, d: 8 }
+        ];
+
+        const weekEnd = new Date(monday.getTime() + 7 * 86400000);
+
+        for (const meeting of FOMC_MEETINGS) {
+            // Meeting statement is released at 14:00 ET on meeting day (usually Wednesday)
+            // VN = ET + dst.vnDiffHours (11h in DST -> 01:00 AM VN; 12h in Standard -> 02:00 AM VN next day)
+            const baseEtDate = new Date(meeting.y, meeting.m - 1, meeting.d, 14, 0, 0);
+            const vnTime = new Date(baseEtDate.getTime() + dst.vnDiffHours * 3600000);
+
+            if (vnTime >= monday && vnTime < weekEnd) {
+                events.push({
+                    id: `fomc_rate_${meeting.y}_${meeting.m}_${meeting.d}`,
+                    name: 'FOMC Interest Rate Decision & Statement',
+                    vietnameseName: 'Quyết Định Lãi Suất FOMC (Fed Rate Decision)',
+                    time: vnTime,
+                    etTime: '14:00 ET',
+                    impactLevel: 'HIGH',
+                    symbols: ['MGC', 'MNQ', 'MES', 'MCL'],
+                    category: 'macro',
+                    topstepWarning: 'SIÊU BÃO ĐỎ FOMC! Quyết định lãi suất của Fed. Thị trường giật 100-300 tick, spread giãn cực mạnh. BẮT BUỘC ĐỨNG NGOÀI ±15-30 phút.',
+                    desc: 'Sự kiện định hướng chính sách tiền tệ toàn cầu quan trọng nhất của Cục Dự trữ Liên bang Mỹ (Fed).'
+                });
+
+                const pressTime = new Date(vnTime.getTime() + 30 * 60000); // 14:30 ET
+                events.push({
+                    id: `fomc_press_${meeting.y}_${meeting.m}_${meeting.d}`,
+                    name: 'FOMC Press Conference (Jerome Powell)',
+                    vietnameseName: 'Họp Báo Chủ Tịch Fed (FOMC Press Conference)',
+                    time: pressTime,
+                    etTime: '14:30 ET',
+                    impactLevel: 'HIGH',
+                    symbols: ['MGC', 'MNQ', 'MES', 'MCL'],
+                    category: 'macro',
+                    topstepWarning: 'Họp báo Chủ tịch Jerome Powell! Biến động co giật 2 đầu cực lớn theo từng câu trả lời. Cấm giao dịch ±15 phút.',
+                    desc: 'Chủ tịch Fed trả lời phỏng vấn báo chí về triển vọng kinh tế, lạm phát và lộ trình lãi suất.'
+                });
+            }
+        }
+
+
         // Include any user-added custom news from localStorage
         try {
             if (typeof localStorage !== 'undefined') {
