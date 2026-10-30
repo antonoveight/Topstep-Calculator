@@ -2,7 +2,7 @@
  * Topstep Cockpit - Forex & Futures Market Hours Converter Widget
  * Visualizes 24-Hour Global Trading Sessions (Sydney, Tokyo, London, New York)
  * and 8 ICT Algorithmic Windows (Macros) with real-time needle, live clocks,
- * volume curve, session overlaps, and timezone conversion.
+ * volume curve, session overlaps, timezone conversion, and Desktop Push Notifications.
  * Inspired by BabyPips Forex Market Hours Converter & ICT Algorithmic Trading.
  */
 (function(root) {
@@ -222,6 +222,44 @@
         }
     }
 
+    // Sound alert generator using Web Audio API
+    function playAlertChime(type = 'caution') {
+        try {
+            if (typeof window === 'undefined') return;
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const now = ctx.currentTime;
+            
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            if (type === 'danger') {
+                // Urgent double ping
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.setValueAtTime(880, now + 0.15); // A5
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                osc.start(now);
+                osc.stop(now + 0.45);
+            } else {
+                // Gentle chime
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.12); // E5
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        } catch (err) {
+            console.warn('[MarketHours] Audio chime not allowed or supported', err);
+        }
+    }
+
     // Main MarketHours Controller
     const MarketHours = {
         selectedTimezone: 'Asia/Bangkok',
@@ -229,6 +267,9 @@
         isLive: true,
         showIctMacros: true,
         ictTableOpen: true,
+        pushEnabled: false,
+        soundEnabled: true,
+        notifiedKeys: new Set(),
         scrubMinuteOfDay: 0, // 0 - 1439
         timerId: null,
         isDragging: false,
@@ -243,6 +284,8 @@
                 if (savedIct !== null) this.showIctMacros = savedIct === 'true';
                 const savedTable = localStorage.getItem('topstep_market_hours_ict_tbl');
                 if (savedTable !== null) this.ictTableOpen = savedTable === 'true';
+                this.pushEnabled = localStorage.getItem('topstep_market_hours_push_enabled') === 'true';
+                this.soundEnabled = localStorage.getItem('topstep_market_hours_sound_enabled') !== 'false';
             }
 
             this.syncLiveTime();
@@ -253,10 +296,12 @@
                 if (this.isLive) {
                     this.syncLiveTime();
                     this.renderNeedleAndClocks();
+                    this.checkMacroNotifications();
                 }
             }, 1000);
 
             this.bindEvents();
+            this.renderNotificationToggle();
         },
 
         syncLiveTime() {
@@ -290,6 +335,142 @@
             } catch (e) {
                 return { hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds(), weekday: 'Fri', day: '30', month: 'Oct' };
             }
+        },
+
+        // Request Push Notification Permission
+        async requestPushPermission() {
+            if (typeof window === 'undefined' || !('Notification' in window)) {
+                alert('Trình duyệt của bạn không hỗ trợ Web Notification.');
+                return false;
+            }
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    this.pushEnabled = true;
+                    try { localStorage.setItem('topstep_market_hours_push_enabled', 'true'); } catch (err) {}
+                    this.renderNotificationToggle();
+                    
+                    new Notification('⚡ Cảnh Báo ICT Macros Đã Kích Hoạt!', {
+                        body: 'Bạn sẽ nhận thông báo đẩy trước 5 phút và khi mở cửa mỗi khung giờ ICT Macro (Silver Bullet AM/PM, London, New York).',
+                        icon: 'phamngocanhthong-topstep.png'
+                    });
+                    if (this.soundEnabled) playAlertChime('caution');
+                    return true;
+                } else if (permission === 'denied') {
+                    alert('Bạn đã chặn thông báo đẩy. Vui lòng bấm vào icon ổ khóa trên thanh địa chỉ URL để cho phép lại.');
+                    this.pushEnabled = false;
+                    try { localStorage.setItem('topstep_market_hours_push_enabled', 'false'); } catch (err) {}
+                    this.renderNotificationToggle();
+                    return false;
+                }
+            } catch (err) {
+                console.error('[MarketHours] Push permission request failed', err);
+            }
+            return false;
+        },
+
+        togglePushNotifications(event) {
+            if (event && event.stopPropagation) event.stopPropagation();
+            if (this.pushEnabled) {
+                this.pushEnabled = false;
+                try { localStorage.setItem('topstep_market_hours_push_enabled', 'false'); } catch (err) {}
+                this.renderNotificationToggle();
+            } else {
+                this.requestPushPermission();
+            }
+        },
+
+        toggleSoundAlerts(event) {
+            if (event && event.stopPropagation) event.stopPropagation();
+            this.soundEnabled = !this.soundEnabled;
+            try { localStorage.setItem('topstep_market_hours_sound_enabled', String(this.soundEnabled)); } catch (err) {}
+            this.renderNotificationToggle();
+            if (this.soundEnabled) playAlertChime('caution');
+        },
+
+        testNotification(event) {
+            if (event && event.stopPropagation) event.stopPropagation();
+            if (this.pushEnabled && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                new Notification('🧪 Kiểm Tra Cảnh Báo ICT Macro (Demo)', {
+                    body: '⚡ Cửa sổ thuật toán ICT Silver Bullet AM (09:50 - 10:10 NY / 20:50 - 21:10 VN) đang kích hoạt! Săn thanh khoản và vào lệnh chuẩn FVG.',
+                    icon: 'phamngocanhthong-topstep.png'
+                });
+            } else {
+                alert('Vui lòng cấp quyền thông báo trước để nhận thử nghiệm thông báo đẩy ICT Macros.');
+                this.requestPushPermission();
+            }
+            if (this.soundEnabled) playAlertChime('danger');
+        },
+
+        renderNotificationToggle() {
+            const notifBtn = document.getElementById('marketHoursBtnToggleNotif');
+            if (notifBtn) {
+                notifBtn.className = this.pushEnabled ? 'b-btn-primary' : 'b-btn-secondary';
+                notifBtn.innerHTML = this.pushEnabled ? '✅ Thông Báo ICT: BẬT' : '🔔 Bật Thông Báo ICT';
+            }
+            const soundBtn = document.getElementById('marketHoursBtnToggleSound');
+            if (soundBtn) {
+                soundBtn.className = this.soundEnabled ? 'b-btn-primary' : 'b-btn-secondary';
+                soundBtn.innerHTML = this.soundEnabled ? '🔊 Chuông: BẬT' : '🔇 Chuông: TẮT';
+            }
+        },
+
+        // Trigger Real Desktop Push Notification
+        firePushNotification(macro, minutesBefore) {
+            if (!this.pushEnabled || typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') return;
+
+            const icon = 'phamngocanhthong-topstep.png';
+            const now = new Date();
+            const { startMin, endMin } = this.calculateMacroIntervalsInTarget(macro, now);
+            const targetTimeStr = `${this.formatMinute(startMin)} – ${this.formatMinute(endMin)}`;
+
+            if (minutesBefore === 5) {
+                new Notification(`⏳ SẮP VÀO ICT MACRO (Sau 5 phút): ${macro.nameVn} [${macro.code}]`, {
+                    body: `Khung giờ: ${targetTimeStr} (${macro.nyStartStr} - ${macro.nyEndStr} NY). ${macro.tip}`,
+                    icon
+                });
+                if (this.soundEnabled) playAlertChime('caution');
+            } else if (minutesBefore === 0) {
+                new Notification(`🔥 ICT MACRO ĐANG MỞ CỬA: ${macro.nameVn} [${macro.code}]`, {
+                    body: `Cửa sổ thuật toán (${targetTimeStr}) đang kích hoạt! Săn quét thanh khoản & chuẩn bị setup FVG.`,
+                    icon
+                });
+                if (this.soundEnabled) playAlertChime('danger');
+            }
+        },
+
+        // Evaluate and trigger push notifications for macros every second
+        checkMacroNotifications(now = new Date()) {
+            if (!this.pushEnabled) return;
+
+            const nowParts = this.getTimeParts(now, this.selectedTimezone);
+            const currentMin = nowParts.hour * 60 + nowParts.minute + nowParts.second / 60;
+            const dateStr = now.toDateString();
+
+            ICT_MACROS.forEach(macro => {
+                const { startMin } = this.calculateMacroIntervalsInTarget(macro, now);
+                let diff = startMin - currentMin;
+                if (diff < -720) diff += 1440;
+                if (diff > 720) diff -= 1440;
+
+                // 5-Minute Warning: diff between 4 and 5 minutes
+                if (diff > 4.0 && diff <= 5.05) {
+                    const key = `notif_macro_5m_${macro.id}_${dateStr}`;
+                    if (!this.notifiedKeys.has(key)) {
+                        this.notifiedKeys.add(key);
+                        this.firePushNotification(macro, 5);
+                    }
+                }
+
+                // Open Warning (0 minute / Active now!)
+                if (currentMin >= startMin && currentMin < startMin + 1.0) {
+                    const key = `notif_macro_open_${macro.id}_${dateStr}`;
+                    if (!this.notifiedKeys.has(key)) {
+                        this.notifiedKeys.add(key);
+                        this.firePushNotification(macro, 0);
+                    }
+                }
+            });
         },
 
         // Convert a session's local start/end times into minutes (0 to 1439) in the selected target timezone
@@ -344,6 +525,7 @@
             if (startInTarget < endInTarget) {
                 intervals.push({ start: startInTarget, end: endInTarget });
             } else {
+                // Wraps across midnight
                 intervals.push({ start: startInTarget, end: 1440 });
                 intervals.push({ start: 0, end: endInTarget });
             }
@@ -564,6 +746,7 @@
             this.renderVolumeChart();
             this.renderIctDetailTable();
             this.renderNeedleAndClocks();
+            this.renderNotificationToggle();
         },
 
         renderHeader() {
@@ -1057,6 +1240,10 @@
 
     // Global Exposure
     root.MarketHours = MarketHours;
+    root.toggleIctPushNotifications = (e) => MarketHours.togglePushNotifications(e);
+    root.toggleIctSoundAlerts = (e) => MarketHours.toggleSoundAlerts(e);
+    root.testIctNotification = (e) => MarketHours.testNotification(e);
+
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = MarketHours;
     }

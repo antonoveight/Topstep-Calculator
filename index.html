@@ -2013,10 +2013,19 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                         </p>
                     </div>
 
-                    <!-- Right Controls: 24 Hour Toggle + ICT Macros Toggle + Reset Live Button -->
-                    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                    <!-- Right Controls: Push Notifications + ICT Macros Toggle + 24 Hour Toggle + Reset Live Button -->
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                         <button id="marketHoursResetLiveBtn" type="button" class="b-btn-secondary" style="display: none; height: 30px; padding: 0 10px; font-size: 11px; color: var(--color-primary); border-color: var(--color-primary); gap: 4px;">
                             ⏱️ Về Thời Gian Thực (Live)
+                        </button>
+                        <button type="button" id="marketHoursBtnToggleNotif" onclick="MarketHours.togglePushNotifications(event)" class="b-btn-secondary" style="height: 30px; padding: 0 10px; font-size: 11px; gap: 4px;" title="Bật/Tắt thông báo đẩy Desktop cho 8 khung giờ ICT Macros">
+                            🔔 Bật Thông Báo ICT
+                        </button>
+                        <button type="button" id="marketHoursBtnToggleSound" onclick="MarketHours.toggleSoundAlerts(event)" class="b-btn-secondary" style="height: 30px; padding: 0 10px; font-size: 11px; gap: 4px;" title="Bật/Tắt chuông âm thanh cảnh báo ICT">
+                            🔊 Chuông: BẬT
+                        </button>
+                        <button type="button" id="marketHoursBtnTestNotif" onclick="MarketHours.testNotification(event)" class="b-btn-secondary" style="height: 30px; padding: 0 8px; font-size: 11px;" title="Thử nghiệm thông báo đẩy ICT Macro">
+                            🧪 Thử Cảnh Báo
                         </button>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <span style="font-size: 12px; font-weight: 700; color: #F59E0B;">⚡ Hiện ICT Macros</span>
