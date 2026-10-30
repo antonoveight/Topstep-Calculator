@@ -1,8 +1,9 @@
 /**
  * Topstep Cockpit - Forex & Futures Market Hours Converter Widget
  * Visualizes 24-Hour Global Trading Sessions (Sydney, Tokyo, London, New York)
- * with real-time needle, live city clocks, volume curve, and session overlaps.
- * Inspired by BabyPips Forex Market Hours Converter & tailored for Topstep Desk.
+ * and 8 ICT Algorithmic Windows (Macros) with real-time needle, live clocks,
+ * volume curve, session overlaps, and timezone conversion.
+ * Inspired by BabyPips Forex Market Hours Converter & ICT Algorithmic Trading.
  */
 (function(root) {
     'use strict';
@@ -75,6 +76,114 @@
         }
     ];
 
+    // 8 ICT Algorithmic Windows (Macros) defined in New York local time (America/New_York)
+    const ICT_MACROS = [
+        {
+            id: 'london_1',
+            code: 'LM1',
+            name: 'London Macro 1',
+            nameVn: 'London Macro',
+            startHour: 2,
+            startMin: 33,
+            endHour: 3,
+            endMin: 0,
+            nyStartStr: '02:33 AM',
+            nyEndStr: '03:00 sáng',
+            tip: 'ICT London Open Macro (02:33 - 03:00 NY) - Săn thanh khoản đỉnh/đáy phiên Á, phát động sóng Judast Swing / C2 Manipulation.'
+        },
+        {
+            id: 'london_2',
+            code: 'LM2',
+            name: 'London Macro 2',
+            nameVn: 'London Macro 2',
+            startHour: 4,
+            startMin: 3,
+            endHour: 4,
+            endMin: 30,
+            nyStartStr: '04:03 sáng',
+            nyEndStr: '04:30 sáng',
+            tip: 'ICT London Continuation Macro (04:03 - 04:30 NY) - Xác nhận tiếp diễn xu hướng London hoặc thiết lập High/Low của ngày.'
+        },
+        {
+            id: 'ny_am_1',
+            code: 'AM1',
+            name: 'NY AM Macro 1',
+            nameVn: 'NY AM Macro',
+            startHour: 8,
+            startMin: 50,
+            endHour: 9,
+            endMin: 10,
+            nyStartStr: '08:50 sáng',
+            nyEndStr: '09:10 sáng',
+            tip: 'ICT Pre-Market Macro (08:50 - 09:10 NY) - Tái cân bằng trước giờ mở cửa chứng khoán Mỹ 09:30, hút về Fair Value Gap (FVG).'
+        },
+        {
+            id: 'ny_am_2',
+            code: 'AM2',
+            name: 'NY Macro AM 2 (Silver Bullet)',
+            nameVn: 'NY Macro AM 2',
+            startHour: 9,
+            startMin: 50,
+            endHour: 10,
+            endMin: 10,
+            nyStartStr: '09:50 sáng',
+            nyEndStr: '10:10 sáng',
+            tip: 'ICT AM Silver Bullet Window (09:50 - 10:10 NY) - Cửa sổ thuật toán vào lệnh chuẩn mực xác suất cao nhất phiên sáng New York.'
+        },
+        {
+            id: 'ny_am_3',
+            code: 'AM3',
+            name: 'NY AM Macro 3',
+            nameVn: 'NY AM Macro 3',
+            startHour: 10,
+            startMin: 50,
+            endHour: 11,
+            endMin: 10,
+            nyStartStr: '10:50 sáng',
+            nyEndStr: '11:10 sáng',
+            tip: 'ICT Morning Completion (10:50 - 11:10 NY) - Quét thanh khoản đỉnh/đáy buổi sáng trước thềm bữa trưa phố Wall.'
+        },
+        {
+            id: 'ny_lunch',
+            code: 'LNC',
+            name: 'NY Lunch Macro',
+            nameVn: 'Macro bữa trưa NY',
+            startHour: 11,
+            startMin: 50,
+            endHour: 12,
+            endMin: 10,
+            nyStartStr: '11:50 sáng',
+            nyEndStr: '12:10 trưa',
+            tip: 'ICT Lunch Hour Macro (11:50 - 12:10 NY) - Giai đoạn nghỉ trưa thanh khoản mỏng, hay tạo bẫy consolidation đi ngang.'
+        },
+        {
+            id: 'ny_pm',
+            code: 'PM',
+            name: 'NY PM Macro (Silver Bullet PM)',
+            nameVn: 'NY PM Macro',
+            startHour: 13,
+            startMin: 10,
+            endHour: 13,
+            endMin: 40,
+            nyStartStr: '13:10 chiều',
+            nyEndStr: '01:40 chiều',
+            tip: 'ICT PM Silver Bullet Window (13:10 - 13:40 NY) - Săn quét thanh khoản và tiếp diễn xu hướng buổi chiều New York.'
+        },
+        {
+            id: 'ny_close',
+            code: 'CLS',
+            name: 'NY Closing Macro',
+            nameVn: 'Macro giờ cuối NY',
+            startHour: 15,
+            startMin: 15,
+            endHour: 15,
+            endMin: 45,
+            nyStartStr: '03:15 chiều',
+            nyEndStr: '03:45 CH',
+            tip: 'ICT Cash Close Macro (15:15 - 15:45 NY) - Đóng vị thế cuối ngày của các quỹ và ngân hàng trước 16:00 Equities Close.'
+        }
+    ];
+
     // Helper: get accurate UTC offset in minutes for any timezone on any specific date
     function getTimezoneOffsetMinutes(timeZone, date = new Date()) {
         try {
@@ -118,6 +227,8 @@
         selectedTimezone: 'Asia/Bangkok',
         is24Hour: true,
         isLive: true,
+        showIctMacros: true,
+        ictTableOpen: true,
         scrubMinuteOfDay: 0, // 0 - 1439
         timerId: null,
         isDragging: false,
@@ -128,6 +239,10 @@
                 if (savedTz) this.selectedTimezone = savedTz;
                 const saved24 = localStorage.getItem('topstep_market_hours_24h');
                 if (saved24 !== null) this.is24Hour = saved24 === 'true';
+                const savedIct = localStorage.getItem('topstep_market_hours_ict');
+                if (savedIct !== null) this.showIctMacros = savedIct === 'true';
+                const savedTable = localStorage.getItem('topstep_market_hours_ict_tbl');
+                if (savedTable !== null) this.ictTableOpen = savedTable === 'true';
             }
 
             this.syncLiveTime();
@@ -195,7 +310,6 @@
 
             const intervals = [];
             if (startInTarget < endInTarget) {
-                // Continuous in single day
                 intervals.push({ start: startInTarget, end: endInTarget });
             } else {
                 // Wraps across midnight!
@@ -211,9 +325,47 @@
             };
         },
 
+        // Convert an ICT Macro's NY local times into target timezone minutes (0 to 1439)
+        calculateMacroIntervalsInTarget(macro, refDate = new Date()) {
+            const nyOffset = getTimezoneOffsetMinutes('America/New_York', refDate);
+            const targetOffset = getTimezoneOffsetMinutes(this.selectedTimezone, refDate);
+            const diffMinutes = targetOffset - nyOffset;
+
+            const startLocalMin = macro.startHour * 60 + macro.startMin;
+            const endLocalMin = macro.endHour * 60 + macro.endMin;
+
+            let startInTarget = (startLocalMin + diffMinutes) % 1440;
+            if (startInTarget < 0) startInTarget += 1440;
+
+            let endInTarget = (endLocalMin + diffMinutes) % 1440;
+            if (endInTarget < 0) endInTarget += 1440;
+
+            const intervals = [];
+            if (startInTarget < endInTarget) {
+                intervals.push({ start: startInTarget, end: endInTarget });
+            } else {
+                // Wraps across midnight
+                intervals.push({ start: startInTarget, end: 1440 });
+                intervals.push({ start: 0, end: endInTarget });
+            }
+
+            return {
+                startMin: startInTarget,
+                endMin: endInTarget,
+                durationMin: (endLocalMin - startLocalMin + 1440) % 1440,
+                intervals
+            };
+        },
+
         // Check if session is open at a given minute of the day
         isSessionOpenAt(session, minuteOfDay, refDate = new Date()) {
             const { intervals } = this.calculateSessionIntervalsInTarget(session, refDate);
+            return intervals.some(inv => minuteOfDay >= inv.start && minuteOfDay < inv.end);
+        },
+
+        // Check if ICT Macro is active at a given minute of the day
+        isMacroActiveAt(macro, minuteOfDay, refDate = new Date()) {
+            const { intervals } = this.calculateMacroIntervalsInTarget(macro, refDate);
             return intervals.some(inv => minuteOfDay >= inv.start && minuteOfDay < inv.end);
         },
 
@@ -325,6 +477,17 @@
                 };
             }
 
+            // ICT Macros Toggle switch
+            const toggleIct = document.getElementById('marketHoursIctToggle');
+            if (toggleIct) {
+                toggleIct.checked = this.showIctMacros;
+                toggleIct.onchange = (e) => {
+                    this.showIctMacros = e.target.checked;
+                    try { localStorage.setItem('topstep_market_hours_ict', String(this.showIctMacros)); } catch (err) {}
+                    this.render();
+                };
+            }
+
             // Timeline Scrubbing on the exact track area
             const trackArea = document.getElementById('marketHoursInteractiveTrack');
             if (trackArea) {
@@ -380,18 +543,35 @@
             }
         },
 
+        // Toggle ICT Detail Table Collapsible
+        toggleIctTable() {
+            this.ictTableOpen = !this.ictTableOpen;
+            try { localStorage.setItem('topstep_market_hours_ict_tbl', String(this.ictTableOpen)); } catch (err) {}
+            const tblContainer = document.getElementById('marketHoursIctTableContainer');
+            const toggleArrow = document.getElementById('ictTableToggleArrow');
+            if (tblContainer) {
+                tblContainer.style.display = this.ictTableOpen ? 'block' : 'none';
+            }
+            if (toggleArrow) {
+                toggleArrow.innerText = this.ictTableOpen ? '▲ Thu gọn' : '▼ Mở rộng chi tiết';
+            }
+        },
+
         // Main Render Function
         render() {
             this.renderHeader();
             this.renderTimelineHeader();
             this.renderSessionRows();
             this.renderVolumeChart();
+            this.renderIctDetailTable();
             this.renderNeedleAndClocks();
         },
 
         renderHeader() {
             const toggle = document.getElementById('marketHours24Toggle');
             if (toggle) toggle.checked = this.is24Hour;
+            const toggleIct = document.getElementById('marketHoursIctToggle');
+            if (toggleIct) toggleIct.checked = this.showIctMacros;
             const select = document.getElementById('marketHoursTzSelect');
             if (select) select.value = this.selectedTimezone;
         },
@@ -425,7 +605,7 @@
             container.innerHTML = html;
         },
 
-        // Render Session Rows (Sydney, Tokyo, London, New York)
+        // Render Session Rows (Sydney, Tokyo, London, New York) + ICT Macros Lane
         renderSessionRows() {
             const leftCol = document.getElementById('marketHoursSessionLeftCol');
             const rightLanes = document.getElementById('marketHoursSessionLanes');
@@ -435,8 +615,9 @@
             let leftHtml = '';
             let rightHtml = '';
 
+            // 1. Render 4 Core Sessions
             SESSIONS.forEach(session => {
-                const { intervals, startMin, endMin } = this.calculateSessionIntervalsInTarget(session, now);
+                const { intervals } = this.calculateSessionIntervalsInTarget(session, now);
                 const localDate = new Date();
                 const localParts = this.getTimeParts(localDate, session.timeZone);
                 const abbr = getTimezoneAbbr(session.timeZone, localDate);
@@ -445,10 +626,10 @@
 
                 // Left Info Column
                 leftHtml += `
-                    <div style="display: flex; align-items: center; gap: 10px; height: 64px; padding-right: 14px; border-bottom: 1px solid var(--border-inner);">
+                    <div style="display: flex; align-items: center; gap: 10px; height: 62px; padding-right: 14px; border-bottom: 1px solid var(--border-inner);">
                         ${flagSvg}
                         <div>
-                            <span style="font-size: 13.5px; font-weight: 800; color: var(--text-primary); display: block; line-height: 1.2;">${session.name}</span>
+                            <span style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: block; line-height: 1.2;">${session.name}</span>
                             <span class="session-local-time-${session.id} tabular-nums" style="font-size: 11px; font-weight: 700; color: var(--color-primary);">${localTimeStr}</span>
                             <span style="font-size: 9.5px; color: var(--text-muted); display: block;">${localParts.weekday} ${localParts.month}. ${localParts.day} · ${abbr}</span>
                         </div>
@@ -466,15 +647,70 @@
                 });
 
                 rightHtml += `
-                    <div style="position: relative; height: 64px; display: flex; align-items: center; background: rgba(0,0,0,0.03); border-radius: 6px; border: 1px dashed var(--border-inner); margin-bottom: 0; overflow: hidden;" data-session-id="${session.id}">
+                    <div style="position: relative; height: 62px; display: flex; align-items: center; background: rgba(0,0,0,0.03); border-radius: 6px; border: 1px dashed var(--border-inner); margin-bottom: 0; overflow: hidden;" data-session-id="${session.id}">
                         <!-- Session Status Floating Badge -->
-                        <div class="session-badge-${session.id}" style="position: absolute; left: 8px; top: 3px; z-index: 10; font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">
+                        <div class="session-badge-${session.id}" style="position: absolute; left: 8px; top: 3px; z-index: 10; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">
                             <!-- Updated dynamically -->
                         </div>
                         ${barsHtml}
                     </div>
                 `;
             });
+
+            // 2. Render 5th Lane: ICT Macros (if enabled)
+            if (this.showIctMacros) {
+                // Left Column ICT Summary Block
+                leftHtml += `
+                    <div id="marketHoursIctLeftCard" style="display: flex; align-items: center; gap: 9px; height: 56px; padding-right: 14px; border-bottom: 1px solid var(--border-inner); background: rgba(245, 158, 11, 0.06); border-left: 3px solid #F59E0B; padding-left: 6px; border-radius: 4px; margin-top: 2px;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; background: #F59E0B; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #1E293B; font-weight: 900; box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); flex-shrink: 0;">⚡</div>
+                        <div style="overflow: hidden; width: 100%;">
+                            <div style="display: flex; align-items: center; gap: 4px; justify-content: space-between;">
+                                <span style="font-size: 12px; font-weight: 800; color: #F59E0B; line-height: 1.1;">ICT Macros</span>
+                                <span class="b-badge" style="font-size: 8px; padding: 1px 4px; background: rgba(245,158,11,0.25); color: #F59E0B; border: 1px solid rgba(245,158,11,0.4);">8 Cửa Sổ</span>
+                            </div>
+                            <div id="marketHoursIctLeftSummary" class="tabular-nums" style="font-size: 9.5px; font-weight: 700; color: var(--text-muted); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top: 2px;">
+                                Đang quét thuật toán...
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Right Track Lane with 8 Macro Amber Neon Pills
+                // Anti-overlap design: Pills have compact badges (LM1, AM2, etc.) and tooltip with full info
+                let macroPillsHtml = '';
+                ICT_MACROS.forEach(macro => {
+                    const { intervals, startMin, endMin } = this.calculateMacroIntervalsInTarget(macro, now);
+                    const targetTimeRangeStr = `${this.formatMinute(startMin)} – ${this.formatMinute(endMin)}`;
+                    const nyTimeStr = `${macro.nyStartStr} – ${macro.nyEndStr} NY`;
+
+                    intervals.forEach(inv => {
+                        const leftPct = (inv.start / 1440) * 100;
+                        const widthPct = Math.max(1.1, ((inv.end - inv.start) / 1440) * 100);
+
+                        macroPillsHtml += `
+                            <div class="ict-macro-pill ict-macro-${macro.id}"
+                                 data-macro-id="${macro.id}"
+                                 data-macro-name="${macro.nameVn}"
+                                 data-target-time="${targetTimeRangeStr}"
+                                 data-ny-time="${nyTimeStr}"
+                                 style="position: absolute; left: ${leftPct.toFixed(3)}%; width: ${widthPct.toFixed(3)}%; top: 7px; bottom: 7px; background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%); border-radius: 4px; border: 1px solid #B45309; box-shadow: 0 1px 4px rgba(245, 158, 11, 0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; z-index: 15; min-width: 14px;"
+                                 title="⚡ ${macro.nameVn} (${macro.code})\n🕒 Giờ quy đổi: ${targetTimeRangeStr}\n🇺🇸 Giờ New York: ${nyTimeStr}\n💡 ${macro.tip}">
+                                <span style="font-size: 8px; font-weight: 900; color: #FFFFFF; text-shadow: 0 1px 2px rgba(0,0,0,0.7); pointer-events: none; line-height: 1; letter-spacing: -0.02em;">${macro.code}</span>
+                            </div>
+                        `;
+                    });
+                });
+
+                rightHtml += `
+                    <div id="marketHoursIctTrackLane" style="position: relative; height: 56px; display: flex; align-items: center; background: rgba(245, 158, 11, 0.04); border-radius: 6px; border: 1px dashed rgba(245, 158, 11, 0.35); margin-top: 2px; overflow: visible;">
+                        <!-- Floating Lane Title -->
+                        <div style="position: absolute; left: 8px; top: 2px; z-index: 10; font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">
+                            <span style="color: #F59E0B; background: rgba(245, 158, 11, 0.15); padding: 1px 6px; border-radius: 3px; border: 1px solid rgba(245, 158, 11, 0.35);">⚡ ICT Algorithmic Windows (Múi Giờ New York Gốc)</span>
+                        </div>
+                        ${macroPillsHtml}
+                    </div>
+                `;
+            }
 
             leftCol.innerHTML = leftHtml;
             rightLanes.innerHTML = rightHtml;
@@ -485,7 +721,6 @@
             const svgContainer = document.getElementById('marketHoursVolumeSvgContainer');
             if (!svgContainer) return;
 
-            // Generate 24 points for the spline
             const points = [];
             const w = 1000;
             const h = 70;
@@ -494,12 +729,10 @@
                 const minute = (i % 24) * 60;
                 const v = this.getVolumeContextAt(minute, new Date());
                 const x = (i / 24) * w;
-                // Higher score -> higher curve (lower Y in SVG)
                 const y = h - (v.score / 100) * (h - 14) - 6;
                 points.push({ x, y });
             }
 
-            // Create smooth SVG cubic path
             let pathD = `M 0,${points[0].y} `;
             for (let i = 0; i < points.length - 1; i++) {
                 const p0 = points[i];
@@ -537,7 +770,76 @@
             `;
         },
 
-        // Update Needle, Analog Clock Pin, Traffic Light & Live Clocks
+        // Render Detailed ICT Macros Table (Matches user's screenshot, prevents text overlap)
+        renderIctDetailTable() {
+            const tableCard = document.getElementById('marketHoursIctTableSection');
+            if (!tableCard) return;
+
+            if (!this.showIctMacros) {
+                tableCard.style.display = 'none';
+                return;
+            }
+            tableCard.style.display = 'block';
+
+            const container = document.getElementById('marketHoursIctTableContainer');
+            if (!container) return;
+
+            const now = new Date();
+            const tzName = this.selectedTimezone.replace('_', ' ');
+
+            let rowsHtml = '';
+            ICT_MACROS.forEach(macro => {
+                const { startMin, endMin } = this.calculateMacroIntervalsInTarget(macro, now);
+                const convertedRange = `${this.formatMinute(startMin)} – ${this.formatMinute(endMin)}`;
+
+                rowsHtml += `
+                    <tr id="ictTableRow-${macro.id}" style="border-bottom: 1px solid var(--border-inner); transition: background 0.15s;">
+                        <td style="padding: 10px 12px; vertical-align: middle;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="b-badge" style="background: rgba(245,158,11,0.18); color: #F59E0B; border: 1px solid rgba(245,158,11,0.4); font-size: 10px; font-weight: 800; padding: 2px 6px;">${macro.code}</span>
+                                <div>
+                                    <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); display: block;">${macro.nameVn}</span>
+                                    <div id="ictRowStatus-${macro.id}" style="font-size: 10.5px; margin-top: 2px;">
+                                        <span style="color: var(--text-muted); opacity: 0.8;">🔴 Đã đóng cửa</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 10px 12px; font-size: 12px; font-weight: 700; color: var(--text-primary); vertical-align: middle; white-space: nowrap;">
+                            ${macro.nyStartStr}
+                        </td>
+                        <td style="padding: 10px 12px; font-size: 12px; font-weight: 700; color: var(--text-primary); vertical-align: middle; white-space: nowrap;">
+                            ${macro.nyEndStr}
+                        </td>
+                        <td style="padding: 10px 12px; font-size: 12px; font-weight: 800; color: #F59E0B; vertical-align: middle; white-space: nowrap;">
+                            ${convertedRange}
+                        </td>
+                        <td style="padding: 10px 12px; font-size: 11px; color: var(--text-muted); line-height: 1.35; vertical-align: middle;">
+                            ${macro.tip}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
+                    <thead>
+                        <tr style="border-bottom: 1.5px solid var(--border-card); background: rgba(0,0,0,0.02); color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">
+                            <th style="padding: 8px 12px; font-weight: 800;">Phiên họp</th>
+                            <th style="padding: 8px 12px; font-weight: 800; white-space: nowrap;">Giờ mở cửa (NY)</th>
+                            <th style="padding: 8px 12px; font-weight: 800; white-space: nowrap;">Giờ đóng cửa (NY)</th>
+                            <th style="padding: 8px 12px; font-weight: 800; white-space: nowrap; color: #F59E0B;">Quy đổi (${tzName})</th>
+                            <th style="padding: 8px 12px; font-weight: 800;">Đặc tính thuật toán ICT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
+        },
+
+        // Update Needle, Analog Clock Pin, Traffic Light, Live Clocks & ICT Macro Status
         renderNeedleAndClocks() {
             const min = this.scrubMinuteOfDay;
             const pct = (min / 1440) * 100;
@@ -570,9 +872,7 @@
                 pinClock.innerHTML = `
                     <svg viewBox="0 0 24 24" width="22" height="22" style="display: block;">
                         <circle cx="12" cy="12" r="10" fill="#FFFFFF" stroke="#6B21A8" stroke-width="1.8" />
-                        <!-- Hour hand -->
                         <line x1="12" y1="12" x2="12" y2="7" stroke="#6B21A8" stroke-width="2" stroke-linecap="round" transform="rotate(${hourAngle} 12 12)" />
-                        <!-- Minute hand -->
                         <line x1="12" y1="12" x2="12" y2="4.5" stroke="#9333EA" stroke-width="1.4" stroke-linecap="round" transform="rotate(${minAngle} 12 12)" />
                         <circle cx="12" cy="12" r="1.5" fill="#6B21A8" />
                     </svg>
@@ -599,7 +899,74 @@
                 }
             });
 
-            // 4. Update Volume Level & Traffic Light
+            // 4. Update ICT Macros: Active status detection, pill glowing & countdown
+            if (this.showIctMacros) {
+                let activeMacro = null;
+                let nextUpcomingMacro = null;
+                let minUpcomingDiff = Infinity;
+
+                ICT_MACROS.forEach(macro => {
+                    const isActive = this.isMacroActiveAt(macro, min, now);
+                    const { startMin, endMin } = this.calculateMacroIntervalsInTarget(macro, now);
+
+                    if (isActive) {
+                        activeMacro = { macro, startMin, endMin };
+                    }
+
+                    let diffToStart = startMin - min;
+                    if (diffToStart < 0) diffToStart += 1440;
+                    if (diffToStart > 0 && diffToStart < minUpcomingDiff) {
+                        minUpcomingDiff = diffToStart;
+                        nextUpcomingMacro = { macro, startMin, endMin, diffMinutes: Math.round(diffToStart) };
+                    }
+
+                    // Update pill glow on timeline
+                    const pills = document.querySelectorAll(`.ict-macro-${macro.id}`);
+                    pills.forEach(p => {
+                        if (isActive) {
+                            p.style.boxShadow = '0 0 14px #F59E0B, 0 0 4px #FFFFFF';
+                            p.style.borderColor = '#FFFFFF';
+                            p.style.transform = 'scaleY(1.15)';
+                            p.style.zIndex = '25';
+                        } else {
+                            p.style.boxShadow = '0 1px 4px rgba(245, 158, 11, 0.4)';
+                            p.style.borderColor = '#B45309';
+                            p.style.transform = 'none';
+                            p.style.zIndex = '15';
+                        }
+                    });
+
+                    // Update detail table row
+                    const rowEl = document.getElementById(`ictTableRow-${macro.id}`);
+                    const rowStatus = document.getElementById(`ictRowStatus-${macro.id}`);
+                    if (rowStatus) {
+                        if (isActive) {
+                            rowStatus.innerHTML = '<span style="color: #22C55E; font-weight: 800;">● ĐANG MỞ CỬA</span>';
+                            if (rowEl) rowEl.style.background = 'rgba(245, 158, 11, 0.12)';
+                        } else if (diffToStart <= 60 && diffToStart > 0) {
+                            rowStatus.innerHTML = `<span style="color: #F59E0B; font-weight: 700;">⏳ Sắp mở (sau ${Math.round(diffToStart)}p)</span>`;
+                            if (rowEl) rowEl.style.background = 'rgba(245, 158, 11, 0.04)';
+                        } else {
+                            rowStatus.innerHTML = '<span style="color: var(--text-muted); opacity: 0.7;">🔴 ĐÃ ĐÓNG CỬA</span>';
+                            if (rowEl) rowEl.style.background = 'transparent';
+                        }
+                    }
+                });
+
+                // Update left column ICT summary
+                const leftSummary = document.getElementById('marketHoursIctLeftSummary');
+                if (leftSummary) {
+                    if (activeMacro) {
+                        leftSummary.innerHTML = `<span style="color: #F59E0B; font-weight: 800;">🔥 ${activeMacro.macro.code}: ${activeMacro.macro.nameVn}</span>`;
+                    } else if (nextUpcomingMacro) {
+                        leftSummary.innerHTML = `<span style="color: var(--text-muted);">⏳ Sắp tới: ${nextUpcomingMacro.macro.code} (${nextUpcomingMacro.diffMinutes}p)</span>`;
+                    } else {
+                        leftSummary.innerHTML = '<span>8 Khung giờ ICT</span>';
+                    }
+                }
+            }
+
+            // 5. Update Volume Level & Traffic Light
             const vol = this.getVolumeContextAt(min, now);
             const volStatusText = document.getElementById('marketHoursVolStatusText');
             const volBadge = document.getElementById('marketHoursVolBadge');
