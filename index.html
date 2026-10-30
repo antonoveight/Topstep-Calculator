@@ -329,6 +329,44 @@ input[type="number"] {
 }
 
 
+/* Toggle Switch & Market Hours Converter */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 22px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--border-card);
+    transition: .2s;
+    border-radius: 22px;
+    border: 1px solid var(--border-inner);
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .2s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: var(--color-primary);
+}
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
+#marketHoursInteractiveTrack:hover #marketHoursNeedle {
+    filter: drop-shadow(0 0 6px rgba(147, 51, 234, 0.6));
+}
+
 .b-btn-purple {
     background: var(--color-primary);
     color: #FFFFFF;
@@ -604,6 +642,10 @@ input[type="number"] {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
                 Checklist Thực Chiến
             </a>
+            <a onclick="switchAppView('market-hours')" id="nav-market-hours" class="sidebar-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Phiên Thị Trường
+            </a>
             <a onclick="switchAppView('calendar')" id="nav-calendar" class="sidebar-link">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 Lịch Kinh Tế
@@ -663,6 +705,7 @@ input[type="number"] {
             <div style="display: flex; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 8px; padding: 2px;">
                 <button type="button" onclick="switchAppView('dashboard')" id="topBtnDashboard" class="b-badge b-badge-blue" style="cursor: pointer; border: none; font-size: 11px; padding: 4px 10px; border-radius: 6px;">📊 Dashboard</button>
                 <button type="button" onclick="switchAppView('checklist')" id="topBtnChecklist" class="b-badge b-badge-dim" style="cursor: pointer; border: none; font-size: 11px; padding: 4px 10px; border-radius: 6px;">✔ Checklist</button>
+                <button type="button" onclick="switchAppView('market-hours')" id="topBtnMarketHours" class="b-badge b-badge-dim" style="cursor: pointer; border: none; font-size: 11px; padding: 4px 10px; border-radius: 6px;">🌐 Phiên Giờ</button>
                 <button type="button" onclick="switchAppView('calendar')" id="topBtnCalendar" class="b-badge b-badge-dim" style="cursor: pointer; border: none; font-size: 11px; padding: 4px 10px; border-radius: 6px;">📅 Lịch Tin</button>
             </div>
 
@@ -1940,6 +1983,138 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
 
         <!-- ── VIEW 3: ECONOMIC CALENDAR & NEWS RADAR ── -->
         <div id="view-calendar" style="display: none; flex-direction: column; gap: 16px;">
+            <!-- Sub-tab Navigation: Market Hours vs Economic Calendar vs All -->
+            <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px; margin-bottom: 4px; overflow-x: auto;">
+                <button type="button" id="tabBtnMarketHours" onclick="switchCalendarSubtab('hours')" class="b-btn-primary" style="font-size: 12px; height: 32px; padding: 0 14px; gap: 6px;">
+                    🌐 Phiên Thị Trường (Market Hours)
+                </button>
+                <button type="button" id="tabBtnEconCalendar" onclick="switchCalendarSubtab('calendar')" class="b-btn-secondary" style="font-size: 12px; height: 32px; padding: 0 14px; gap: 6px;">
+                    📅 Lịch Kinh Tế &amp; Radar Tin Tức
+                </button>
+                <button type="button" id="tabBtnAllCalendar" onclick="switchCalendarSubtab('all')" class="b-btn-secondary" style="font-size: 12px; height: 32px; padding: 0 14px; gap: 6px;">
+                    👁️ Toàn Cảnh (Cả Hai)
+                </button>
+            </div>
+
+            <!-- FOREX MARKET TIME ZONE CONVERTER (BABYPIPS STYLE) -->
+            <div id="marketHoursCard" class="b-card" style="padding: 20px 24px; position: relative; overflow: visible;">
+                <!-- Header -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+                            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.01em;">
+                                Forex Market Time Zone Converter
+                            </h3>
+                            <span class="b-badge b-badge-purple" style="font-size: 10px; font-weight: 700;">BabyPips Style · Real-time</span>
+                            <span class="b-badge b-badge-blue" style="font-size: 10px; font-weight: 600;">CME / Topstep Ready</span>
+                        </div>
+                        <p style="font-size: 11.5px; color: var(--text-muted); margin: 0;">
+                            Bộ chuyển đổi múi giờ &amp; theo dõi phiên giao dịch Forex / Futures trực quan theo thời gian thực (Sydney, Tokyo, London, New York).
+                        </p>
+                    </div>
+
+                    <!-- Right Controls: 24 Hour Toggle + Reset Live Button -->
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <button id="marketHoursResetLiveBtn" type="button" class="b-btn-secondary" style="display: none; height: 30px; padding: 0 10px; font-size: 11px; color: var(--color-primary); border-color: var(--color-primary); gap: 4px;">
+                            ⏱️ Về Thời Gian Thực (Live)
+                        </button>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">24 Hour Time</span>
+                            <label class="switch" style="position: relative; display: inline-block; width: 42px; height: 22px; margin: 0;">
+                                <input type="checkbox" id="marketHours24Toggle" checked style="opacity: 0; width: 0; height: 0;">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timezone Selector Row -->
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; background: var(--bg-card-inner); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-inner);">
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <span style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">TIMEZONE:</span>
+                        <select id="marketHoursTzSelect" style="background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-card); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; outline: none;">
+                            <option value="Asia/Bangkok">🇻🇳 Bangkok, Hanoi, Jakarta (GMT +7)</option>
+                            <option value="Asia/Tokyo">🇯🇵 Tokyo, Seoul (GMT +9)</option>
+                            <option value="Australia/Sydney">🇦🇺 Sydney (AEDT/AEST UTC +11 / +10)</option>
+                            <option value="Europe/London">🇬🇧 London (GMT/BST UTC +0 / +1)</option>
+                            <option value="America/New_York">🇺🇸 New York (EDT/EST UTC -4 / -5)</option>
+                            <option value="America/Chicago">🇺🇸 Chicago / CME Topstep (CDT/CST UTC -5 / -6)</option>
+                            <option value="UTC">🌐 UTC / GMT (+0)</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted);">
+                        <span>🖱️ <em>Rê chuột hoặc bấm kéo trên trục 24h để xem trạng thái phiên tại mọi thời điểm</em></span>
+                    </div>
+                </div>
+
+                <!-- Workspace Two Columns: Left Info vs Right 24h Interactive Track -->
+                <div style="display: flex; align-items: stretch; position: relative;">
+                    <!-- Left Info Column -->
+                    <div style="width: 200px; flex-shrink: 0; padding-right: 14px; display: flex; flex-direction: column;">
+                        <!-- Spacer matching the top timeline header -->
+                        <div style="height: 78px;"></div>
+                        <!-- 4 Sessions Left Info -->
+                        <div id="marketHoursSessionLeftCol" style="display: flex; flex-direction: column;"></div>
+                        <!-- Spacer matching volume chart -->
+                        <div style="margin-top: 14px; padding-top: 10px; min-height: 70px; display: flex; flex-direction: column; justify-content: center;">
+                            <div id="marketHoursVolStatusText" style="font-size: 11.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; line-height: 1.3;">
+                                Trading Volume is usually high at this time of day.
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span id="marketHoursVolBadge" class="b-badge b-badge-green" style="font-size: 10.5px; font-weight: 700;">● High</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right 24-Hour Interactive Track Area -->
+                    <div id="marketHoursInteractiveTrack" style="flex: 1; position: relative; cursor: ew-resize; user-select: none; padding-top: 40px; overflow: visible;">
+                        <!-- 24-Hour Timeline Scale Header (1 to 24 with Sun/Moon) -->
+                        <div id="marketHoursTimelineScale" style="width: 100%; margin-bottom: 0;"></div>
+
+                        <!-- 4 Session Horizontal Lanes -->
+                        <div id="marketHoursSessionLanes" style="display: flex; flex-direction: column; gap: 0;"></div>
+
+                        <!-- Volume Area Spline Wave (SVG) -->
+                        <div style="position: relative; height: 70px; margin-top: 14px; background: rgba(0,0,0,0.03); border-radius: 8px; border: 1px dashed var(--border-inner); overflow: hidden;">
+                            <div id="marketHoursVolumeSvgContainer" style="width: 100%; height: 100%;"></div>
+                        </div>
+
+                        <!-- THE VERTICAL NEEDLE (Overlays timeline, lanes, and volume) -->
+                        <div id="marketHoursNeedle" style="position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #9333EA; pointer-events: none; z-index: 30; transition: left 0.1s linear;">
+                            <!-- Top Pin: Inverted teardrop / clock pin -->
+                            <div style="position: absolute; top: -38px; left: 50%; transform: translateX(-50%); background: #7C3AED; color: #FFFFFF; border-radius: 20px 20px 4px 20px; padding: 4px 10px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.45); border: 1.5px solid #FFFFFF; white-space: nowrap;">
+                                <div id="marketHoursPinClockSvg" style="width: 22px; height: 22px; margin-bottom: 2px;"></div>
+                                <span id="marketHoursPinTime" class="tabular-nums" style="font-size: 11px; font-weight: 800; line-height: 1.1;">14:58</span>
+                                <span id="marketHoursPinDay" style="font-size: 8.5px; opacity: 0.9; text-transform: uppercase;">Friday</span>
+                            </div>
+
+                            <!-- Bottom: Traffic Light Capsule on the Volume Wave -->
+                            <div style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); width: 15px; background: #1E293B; border-radius: 10px; padding: 4px 2px; display: flex; flex-direction: column; align-items: center; gap: 3px; box-shadow: 0 2px 8px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.25);">
+                                <div id="trafficLightLampGreen" style="width: 8px; height: 8px; border-radius: 50%; background: #22C55E; opacity: 1;"></div>
+                                <div id="trafficLightLampYellow" style="width: 8px; height: 8px; border-radius: 50%; background: #EAB308; opacity: 0.2;"></div>
+                                <div id="trafficLightLampRed" style="width: 8px; height: 8px; border-radius: 50%; background: #EF4444; opacity: 0.2;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Volume & Session Overlap Description footer -->
+                <div style="margin-top: 14px; padding: 10px 14px; background: var(--bg-card-inner); border-radius: 8px; border: 1px solid var(--border-inner); font-size: 11.5px; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                    <div id="marketHoursVolDesc">
+                        🔥 Giai đoạn TRÙNG PHIÊN LONDON &amp; NEW YORK! Khối lượng lớn nhất trong ngày.
+                    </div>
+                    <div style="display: flex; gap: 12px; font-size: 11px; font-weight: 600;">
+                        <span style="color: #2563EB;">● Sydney (07:00–16:00)</span>
+                        <span style="color: #9333EA;">● Tokyo (09:00–18:00)</span>
+                        <span style="color: #0284C7;">● London (08:00–17:00)</span>
+                        <span style="color: #16A34A;">● New York (08:00–17:00)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: ECONOMIC CALENDAR & TRADINGVIEW -->
+            <div id="calendarEconSection" style="display: flex; flex-direction: column; gap: 16px;">
             <!-- Top Hero Banner (Compact & Clean) -->
             <div class="b-card" style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-inner) 100%);">
                 <div>
@@ -2059,6 +2234,7 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                     </div>
                 </div>
             </div>
+                    </div> <!-- END #calendarEconSection -->
         </div> <!-- END #view-calendar -->
 <!-- Footer -->
         <footer style="text-align: center; font-size: 11.5px; color: var(--text-muted); padding: 12px 0; border-top: 1px solid var(--border-card);">
@@ -2414,6 +2590,7 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
 <script src="assets/account-store.js"></script>
 <script src="assets/cockpit.js?v=20261015-layers2"></script>
 <script src="assets/news-radar.js?v=20261020-calendar"></script>
+<script src="assets/market-hours.js?v=20261030"></script>
 <script src="assets/workspace.js"></script>
 
     <script src="assets/pond-model.js"></script>

@@ -1596,7 +1596,7 @@ const accountData = TradingRules.accounts;
 
         // Hook into window.onload
         const prevOnload = window.onload;
-        /* ── VIEW SWITCHING (DASHBOARD vs DEDICATED CHECKLIST MENU) ── */
+        /* ── VIEW SWITCHING (DASHBOARD vs CHECKLIST vs MARKET HOURS vs CALENDAR) ── */
         function switchAppView(viewName) {
             document.querySelector('.finpoint-workspace').dataset.view=viewName;
             const viewDash = document.getElementById('view-dashboard');
@@ -1604,22 +1604,46 @@ const accountData = TradingRules.accounts;
             const viewCal = document.getElementById('view-calendar');
             const navDash = document.getElementById('nav-dashboard');
             const navCheck = document.getElementById('nav-checklist');
+            const navHours = document.getElementById('nav-market-hours');
             const navCal = document.getElementById('nav-calendar');
             const topDash = document.getElementById('topBtnDashboard');
             const topCheck = document.getElementById('topBtnChecklist');
+            const topHours = document.getElementById('topBtnMarketHours');
             const topCal = document.getElementById('topBtnCalendar');
             const breadcrumbEl = document.getElementById('headerBreadcrumbCurrent');
             const headerTitleEl = document.getElementById('headerMainTitle');
 
-            if (viewName === 'checklist') {
+            if (viewName === 'market-hours') {
+                if (viewDash) viewDash.style.display = 'none';
+                if (viewCheck) viewCheck.style.display = 'none';
+                if (viewCal) viewCal.style.display = 'flex';
+                if (navDash) navDash.classList.remove('active');
+                if (navCheck) navCheck.classList.remove('active');
+                if (navHours) navHours.classList.add('active');
+                if (navCal) navCal.classList.remove('active');
+                if (topDash) { topDash.className = 'b-badge b-badge-dim'; }
+                if (topCheck) { topCheck.className = 'b-badge b-badge-dim'; }
+                if (topHours) { topHours.className = 'b-badge b-badge-blue'; }
+                if (topCal) { topCal.className = 'b-badge b-badge-dim'; }
+                if (breadcrumbEl) breadcrumbEl.innerText = 'Phiên Thị Trường';
+                if (headerTitleEl) headerTitleEl.innerText = 'Bộ Chuyển Đổi Múi Giờ & Phiên Giao Dịch Toàn Cầu';
+                if (typeof window.switchCalendarSubtab === 'function') {
+                    window.switchCalendarSubtab('hours');
+                }
+                if (window.MarketHours && typeof window.MarketHours.render === 'function') {
+                    window.MarketHours.render();
+                }
+            } else if (viewName === 'checklist') {
                 if (viewDash) viewDash.style.display = 'none';
                 if (viewCheck) viewCheck.style.display = 'flex';
                 if (viewCal) viewCal.style.display = 'none';
                 if (navDash) navDash.classList.remove('active');
-                if (navCheck) navCheck.classList.add('active');
+                if (navCheck) navCheck.classList.remove('active');
+                if (navHours) navHours.classList.remove('active');
                 if (navCal) navCal.classList.remove('active');
                 if (topDash) { topDash.className = 'b-badge b-badge-dim'; }
                 if (topCheck) { topCheck.className = 'b-badge b-badge-blue'; }
+                if (topHours) { topHours.className = 'b-badge b-badge-dim'; }
                 if (topCal) { topCal.className = 'b-badge b-badge-dim'; }
                 if (breadcrumbEl) breadcrumbEl.innerText = 'Checklist Thực Chiến';
                 if (headerTitleEl) headerTitleEl.innerText = 'Checklist Vào Lệnh Thực Chiến';
@@ -1629,12 +1653,17 @@ const accountData = TradingRules.accounts;
                 if (viewCal) viewCal.style.display = 'flex';
                 if (navDash) navDash.classList.remove('active');
                 if (navCheck) navCheck.classList.remove('active');
+                if (navHours) navHours.classList.remove('active');
                 if (navCal) navCal.classList.add('active');
                 if (topDash) { topDash.className = 'b-badge b-badge-dim'; }
                 if (topCheck) { topCheck.className = 'b-badge b-badge-dim'; }
+                if (topHours) { topHours.className = 'b-badge b-badge-dim'; }
                 if (topCal) { topCal.className = 'b-badge b-badge-blue'; }
                 if (breadcrumbEl) breadcrumbEl.innerText = 'Lịch Kinh Tế';
                 if (headerTitleEl) headerTitleEl.innerText = 'Lịch Kinh Tế & Radar Cảnh Báo Tin Tức';
+                if (typeof window.switchCalendarSubtab === 'function') {
+                    window.switchCalendarSubtab('calendar');
+                }
                 if (window.NewsRadar && typeof window.NewsRadar.onCalendarViewOpen === 'function') {
                     window.NewsRadar.onCalendarViewOpen();
                 }
@@ -1644,9 +1673,11 @@ const accountData = TradingRules.accounts;
                 if (viewCal) viewCal.style.display = 'none';
                 if (navDash) navDash.classList.add('active');
                 if (navCheck) navCheck.classList.remove('active');
+                if (navHours) navHours.classList.remove('active');
                 if (navCal) navCal.classList.remove('active');
                 if (topDash) { topDash.className = 'b-badge b-badge-blue'; }
                 if (topCheck) { topCheck.className = 'b-badge b-badge-dim'; }
+                if (topHours) { topHours.className = 'b-badge b-badge-dim'; }
                 if (topCal) { topCal.className = 'b-badge b-badge-dim'; }
                 if (breadcrumbEl) breadcrumbEl.innerText = 'Dashboard';
                 if (headerTitleEl) headerTitleEl.innerText = 'Welcome back, Trader!';
@@ -1656,6 +1687,38 @@ const accountData = TradingRules.accounts;
             } catch (e) {}
             if (typeof syncAnglerMotion === 'function') syncAnglerMotion();
         }
+
+        function switchCalendarSubtab(tab) {
+            const hoursCard = document.getElementById('marketHoursCard');
+            const econSection = document.getElementById('calendarEconSection');
+            const tabHours = document.getElementById('tabBtnMarketHours');
+            const tabEcon = document.getElementById('tabBtnEconCalendar');
+            const tabAll = document.getElementById('tabBtnAllCalendar');
+
+            if (tab === 'hours') {
+                if (hoursCard) hoursCard.style.display = 'block';
+                if (econSection) econSection.style.display = 'none';
+                if (tabHours) tabHours.className = 'b-btn-primary';
+                if (tabEcon) tabEcon.className = 'b-btn-secondary';
+                if (tabAll) tabAll.className = 'b-btn-secondary';
+            } else if (tab === 'calendar') {
+                if (hoursCard) hoursCard.style.display = 'none';
+                if (econSection) econSection.style.display = 'flex';
+                if (tabHours) tabHours.className = 'b-btn-secondary';
+                if (tabEcon) tabEcon.className = 'b-btn-primary';
+                if (tabAll) tabAll.className = 'b-btn-secondary';
+            } else { // 'all'
+                if (hoursCard) hoursCard.style.display = 'block';
+                if (econSection) econSection.style.display = 'flex';
+                if (tabHours) tabHours.className = 'b-btn-secondary';
+                if (tabEcon) tabEcon.className = 'b-btn-secondary';
+                if (tabAll) tabAll.className = 'b-btn-primary';
+            }
+            if (window.MarketHours && typeof window.MarketHours.render === 'function') {
+                window.MarketHours.render();
+            }
+        }
+        window.switchCalendarSubtab = switchCalendarSubtab;
 
         function togglePushNotifications(event) {
             if (event && event.stopPropagation) event.stopPropagation();
