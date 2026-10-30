@@ -102,7 +102,7 @@
             endMin: 30,
             nyStartStr: '04:03 sáng',
             nyEndStr: '04:30 sáng',
-            tip: 'ICT London Continuation Macro (04:03 - 04:30 NY) - Xác nhận tiếp diễn xu hướng London hoặc thiết lập High/Low của ngày.'
+            tip: 'ICT London Continuation Macro (04:03 - 04:30 NY) - Xác nhận tiếp diễn xu hướng London hoặc thiết lập High/Low of the Day.'
         },
         {
             id: 'ny_am_1',
@@ -312,7 +312,7 @@
             if (startInTarget < endInTarget) {
                 intervals.push({ start: startInTarget, end: endInTarget });
             } else {
-                // Wraps across midnight!
+                // Wraps across midnight
                 intervals.push({ start: startInTarget, end: 1440 });
                 intervals.push({ start: 0, end: endInTarget });
             }
@@ -344,7 +344,6 @@
             if (startInTarget < endInTarget) {
                 intervals.push({ start: startInTarget, end: endInTarget });
             } else {
-                // Wraps across midnight
                 intervals.push({ start: startInTarget, end: 1440 });
                 intervals.push({ start: 0, end: endInTarget });
             }
@@ -606,6 +605,9 @@
         },
 
         // Render Session Rows (Sydney, Tokyo, London, New York) + ICT Macros Lane
+        // ZERO TEXT OVERLAP ARCHITECTURE:
+        // - All status badges live in the left column next to city names.
+        // - Timeline tracks contain ONLY pure, uncluttered colored bars and pills.
         renderSessionRows() {
             const leftCol = document.getElementById('marketHoursSessionLeftCol');
             const rightLanes = document.getElementById('marketHoursSessionLanes');
@@ -615,7 +617,7 @@
             let leftHtml = '';
             let rightHtml = '';
 
-            // 1. Render 4 Core Sessions with Strict Vertical Separation (Badge top: 3px, Bar top: 24px)
+            // 1. Render 4 Core Sessions
             SESSIONS.forEach(session => {
                 const { intervals } = this.calculateSessionIntervalsInTarget(session, now);
                 const localDate = new Date();
@@ -624,63 +626,60 @@
                 const localTimeStr = this.formatMinute(localParts.hour * 60 + localParts.minute);
                 const flagSvg = SVG_FLAGS[session.id] || '🌐';
 
-                // Left Info Column
+                // Left Info Column: Name, Live Clock, Timezone & Dedicated Theme-Adaptive Status Badge
                 leftHtml += `
-                    <div style="display: flex; align-items: center; gap: 10px; height: 64px; padding-right: 14px; border-bottom: 1px solid var(--border-inner);">
+                    <div style="display: flex; align-items: center; gap: 10px; height: 50px; padding-right: 14px; border-bottom: 1px solid var(--border-inner);">
                         ${flagSvg}
-                        <div>
-                            <span style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: block; line-height: 1.2;">${session.name}</span>
-                            <span class="session-local-time-${session.id} tabular-nums" style="font-size: 11px; font-weight: 700; color: var(--color-primary);">${localTimeStr}</span>
-                            <span style="font-size: 9.5px; color: var(--text-muted); display: block;">${localParts.weekday} ${localParts.month}. ${localParts.day} · ${abbr}</span>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                                <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); line-height: 1.2;">${session.name}</span>
+                                <span id="sessionStatusBadgeLeft-${session.id}" class="b-badge b-badge-dim" style="font-size: 8.5px; padding: 1px 5px;">○ CLOSED</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                                <span class="session-local-time-${session.id} tabular-nums" style="font-size: 11px; font-weight: 700; color: var(--color-primary);">${localTimeStr}</span>
+                                <span style="font-size: 9px; color: var(--text-muted);">${abbr}</span>
+                            </div>
                         </div>
                     </div>
                 `;
 
-                // Right Track Lane with bars in bottom band (top: 24px, height: 32px)
-                // and status badge in top band (top: 3px, height: 17px) -> ZERO VERTICAL OVERLAP!
+                // Right Track Lane: Pure unobstructed session bars (Zero text badges inside track!)
                 let barsHtml = '';
                 intervals.forEach((inv) => {
                     const leftPct = (inv.start / 1440) * 100;
                     const widthPct = ((inv.end - inv.start) / 1440) * 100;
                     barsHtml += `
-                        <div class="session-bar-${session.id}" style="position: absolute; left: ${leftPct.toFixed(3)}%; width: ${widthPct.toFixed(3)}%; top: 24px; height: 32px; background: ${session.color}; border-radius: 6px; box-shadow: 0 2px 8px ${session.bgLight}; transition: transform 0.15s ease;" title="${session.name} Session (${this.formatMinute(inv.start)} - ${this.formatMinute(inv.end)})"></div>
+                        <div class="session-bar-${session.id}" style="position: absolute; left: ${leftPct.toFixed(3)}%; width: ${widthPct.toFixed(3)}%; top: 9px; height: 32px; background: ${session.color}; border-radius: 6px; box-shadow: 0 2px 8px ${session.bgLight}; transition: transform 0.15s ease;" title="${session.name} Session (${this.formatMinute(inv.start)} - ${this.formatMinute(inv.end)})"></div>
                     `;
                 });
 
                 rightHtml += `
-                    <div style="position: relative; height: 64px; background: rgba(0,0,0,0.03); border-radius: 6px; border: 1px dashed var(--border-inner); margin-bottom: 0; overflow: hidden;" data-session-id="${session.id}">
-                        <!-- Session Status Floating Badge in dedicated top band -->
-                        <div class="session-badge-${session.id}" style="position: absolute; left: 8px; top: 3px; z-index: 10; font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">
-                            <!-- Updated dynamically with dark capsule backdrop -->
-                        </div>
+                    <div style="position: relative; height: 50px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px dashed var(--border-inner); margin-bottom: 0; overflow: hidden;" data-session-id="${session.id}">
                         ${barsHtml}
                     </div>
                 `;
             });
 
-            // 2. Render 5th Lane: ICT Macros with Text Placed Strictly BELOW Macros Time (Figure 1 & 2 Fix)
+            // 2. Render 5th Lane: ICT Macros (Pure Pills, Zero Overlapping Text)
             if (this.showIctMacros) {
                 // Left Column ICT Summary Block
                 leftHtml += `
-                    <div id="marketHoursIctLeftCard" style="display: flex; align-items: center; gap: 9px; height: 68px; padding-right: 14px; border-bottom: 1px solid var(--border-inner); background: rgba(245, 158, 11, 0.06); border-left: 3px solid #F59E0B; padding-left: 6px; border-radius: 4px; margin-top: 2px;">
-                        <div style="width: 24px; height: 24px; border-radius: 50%; background: #F59E0B; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #1E293B; font-weight: 900; box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); flex-shrink: 0;">⚡</div>
-                        <div style="overflow: hidden; width: 100%;">
-                            <div style="display: flex; align-items: center; gap: 4px; justify-content: space-between;">
-                                <span style="font-size: 12px; font-weight: 800; color: #F59E0B; line-height: 1.1;">ICT Macros</span>
-                                <span class="b-badge" style="font-size: 8px; padding: 1px 4px; background: rgba(245,158,11,0.25); color: #F59E0B; border: 1px solid rgba(245,158,11,0.4);">8 Cửa Sổ</span>
+                    <div id="marketHoursIctLeftCard" style="display: flex; align-items: center; gap: 9px; height: 50px; padding-right: 14px; border-bottom: 1px solid var(--border-inner); background: rgba(245, 158, 11, 0.06); border-left: 3px solid #D97706; padding-left: 6px; border-radius: 4px; margin-top: 2px;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; background: #D97706; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #FFFFFF; font-weight: 900; box-shadow: 0 0 6px rgba(217, 119, 6, 0.4); flex-shrink: 0;">⚡</div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #D97706; line-height: 1.1;">ICT Macros</span>
+                                <span id="marketHoursIctLeftBadge" class="b-badge b-badge-dim" style="font-size: 8.5px; padding: 1px 5px;">8 Cửa Sổ</span>
                             </div>
                             <div id="marketHoursIctLeftSummary" class="tabular-nums" style="font-size: 9.5px; font-weight: 700; color: var(--text-muted); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top: 2px;">
-                                Đang quét thuật toán...
+                                8 Khung Thuật Toán
                             </div>
                         </div>
                     </div>
                 `;
 
-                // Right Track Lane:
-                // Upper band (top: 6px, height: 28px): 100% UNINTERRUPTED track for the 8 Macro Pills
-                // Lower band (top: 38px, height: 24px): Sub-text and time tags placed strictly BELOW the pills!
+                // Right Track Lane: Pure Macro Pills ONLY (Immune to timezone shifts!)
                 let macroPillsHtml = '';
-                let macroTimesHtml = '';
 
                 ICT_MACROS.forEach(macro => {
                     const { intervals, startMin, endMin } = this.calculateMacroIntervalsInTarget(macro, now);
@@ -691,38 +690,23 @@
                         const leftPct = (inv.start / 1440) * 100;
                         const widthPct = Math.max(1.2, ((inv.end - inv.start) / 1440) * 100);
 
-                        // Pill in upper band
                         macroPillsHtml += `
                             <div class="ict-macro-pill ict-macro-${macro.id}"
                                  data-macro-id="${macro.id}"
                                  data-macro-name="${macro.nameVn}"
                                  data-target-time="${targetTimeRangeStr}"
                                  data-ny-time="${nyTimeStr}"
-                                 style="position: absolute; left: ${leftPct.toFixed(3)}%; width: ${widthPct.toFixed(3)}%; top: 6px; height: 28px; background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%); border-radius: 4px; border: 1px solid #B45309; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.45); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; z-index: 15; min-width: 15px;"
+                                 style="position: absolute; left: ${leftPct.toFixed(3)}%; width: ${widthPct.toFixed(3)}%; top: 10px; height: 30px; background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%); border-radius: 4px; border: 1px solid #B45309; box-shadow: 0 1px 4px rgba(217, 119, 6, 0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; z-index: 15; min-width: 14px;"
                                  title="⚡ ${macro.nameVn} (${macro.code})\n🕒 Giờ quy đổi: ${targetTimeRangeStr}\n🇺🇸 Giờ New York: ${nyTimeStr}\n💡 ${macro.tip}">
-                                <span style="font-size: 8.5px; font-weight: 900; color: #FFFFFF; text-shadow: 0 1px 2px rgba(0,0,0,0.8); pointer-events: none; line-height: 1; letter-spacing: -0.02em;">${macro.code}</span>
+                                <span style="font-size: 8.5px; font-weight: 900; color: #FFFFFF; text-shadow: 0 1px 2px rgba(0,0,0,0.8); pointer-events: none; line-height: 1;">${macro.code}</span>
                             </div>
-                        `;
-
-                        // Micro time label in lower band (bên dưới macros time)
-                        macroTimesHtml += `
-                            <span style="position: absolute; left: ${leftPct.toFixed(3)}%; top: 38px; transform: translateX(-15%); font-size: 8px; font-weight: 800; color: #D97706; white-space: nowrap; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">${this.formatMinute(inv.start)}</span>
                         `;
                     });
                 });
 
                 rightHtml += `
-                    <div id="marketHoursIctTrackLane" style="position: relative; height: 68px; background: rgba(245, 158, 11, 0.04); border-radius: 6px; border: 1px dashed rgba(245, 158, 11, 0.35); margin-top: 2px; overflow: hidden;">
-                        <!-- Upper band: The 8 Macro Pills (00:00 to 24:00) -->
+                    <div id="marketHoursIctTrackLane" style="position: relative; height: 50px; background: rgba(245, 158, 11, 0.04); border-radius: 6px; border: 1px dashed rgba(245, 158, 11, 0.35); margin-top: 2px; overflow: hidden;">
                         ${macroPillsHtml}
-
-                        <!-- Lower band: Start Times & Explanatory text strictly placed BELOW the pills -->
-                        ${macroTimesHtml}
-
-                        <!-- Middle gap title badge (placed at 14% to 54% where no macros exist) -->
-                        <div style="position: absolute; left: 14%; top: 40px; display: inline-flex; align-items: center; gap: 4px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 4px; padding: 1px 8px; font-size: 8px; font-weight: 800; color: #F59E0B; text-transform: uppercase; letter-spacing: 0.04em; pointer-events: none;">
-                            <span>⚡ 8 CỬA SỔ ICT MACROS (MÚI GIỜ NEW YORK GỐC)</span>
-                        </div>
                     </div>
                 `;
             }
@@ -731,13 +715,13 @@
             rightLanes.innerHTML = rightHtml;
         },
 
-        // Render Trading Volume Wave Chart (SVG Area Spline)
+        // Render Trading Volume Wave Chart (Simplified, high-contrast, theme-adaptive)
         renderVolumeChart() {
             const svgContainer = document.getElementById('marketHoursVolumeSvgContainer');
             if (!svgContainer) return;
 
             const w = 1000;
-            const h = 86; // Increased height for dramatic curve
+            const h = 76;
             const points = [];
             const colorStops = [];
             const areaStops = [];
@@ -749,31 +733,31 @@
                 const x = (i / 24) * w;
                 const pct = ((i / 24) * 100).toFixed(1);
 
-                // Dramatic height & color mapping:
-                // LOW (Red): y = 74 (deep valley, height 12px)
-                // MEDIUM (Yellow): y = 48 (mid plateau, height 38px)
-                // HIGH (Green): y = 22 (high peak, height 64px)
-                // PEAK OVERLAP (Green): y = 8 (towering summit, height 78px)
-                let y = 74;
+                // Clean height mapping:
+                // LOW (Red): y = 62 (height 14px)
+                // MEDIUM (Yellow/Amber): y = 40 (height 36px)
+                // HIGH (Green): y = 18 (height 58px)
+                // PEAK OVERLAP (Green): y = 8 (height 68px)
+                let y = 62;
                 let color = '#EF4444'; // Red
-                let areaColor = 'rgba(239, 68, 68, 0.35)';
+                let areaColor = 'rgba(239, 68, 68, 0.20)';
 
                 if (v.level === 'HIGH') {
-                    color = '#10B981'; // Vibrant Emerald Green
-                    areaColor = 'rgba(16, 185, 129, 0.45)';
+                    color = '#10B981'; // Green
+                    areaColor = 'rgba(16, 185, 129, 0.25)';
                     if (v.score >= 90) {
-                        y = 8; // Peak overlap summit!
+                        y = 8;
                     } else {
-                        y = 22; // High session
+                        y = 18;
                     }
                 } else if (v.level === 'MEDIUM') {
-                    color = '#F59E0B'; // Bright Amber Yellow
-                    areaColor = 'rgba(245, 158, 11, 0.38)';
-                    y = 48; // Mid-level
-                } else { // LOW
-                    color = '#EF4444'; // Bright Red
-                    areaColor = 'rgba(239, 68, 68, 0.35)';
-                    y = 74; // Deep trough
+                    color = '#F59E0B'; // Amber
+                    areaColor = 'rgba(245, 158, 11, 0.20)';
+                    y = 40;
+                } else {
+                    color = '#EF4444'; // Red
+                    areaColor = 'rgba(239, 68, 68, 0.20)';
+                    y = 62;
                 }
 
                 points.push({ x, y });
@@ -804,34 +788,23 @@
                         <linearGradient id="volAreaGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                             ${areaStops.join('\n                            ')}
                         </linearGradient>
-                        <filter id="volNeonGlow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.45" />
-                        </filter>
                     </defs>
 
-                    <!-- Background Tiered Reference Guidelines (Green / Yellow / Red) -->
-                    <!-- High Volume Reference Line -->
-                    <line x1="0" y1="20" x2="${w}" y2="20" stroke="rgba(16, 185, 129, 0.25)" stroke-dasharray="6 4" stroke-width="1.2" />
-                    <text x="8" y="15" fill="#10B981" font-size="8.5" font-weight="800" opacity="0.8">▲ CAO / HIGH (London &amp; NY Overlap - Đỉnh Thanh Khoản)</text>
+                    <!-- Subtle Horizontal Reference Guidelines (Theme Adaptive) -->
+                    <line x1="0" y1="18" x2="${w}" y2="18" stroke="var(--border-inner)" stroke-dasharray="4 4" stroke-width="1" opacity="0.6" />
+                    <line x1="0" y1="40" x2="${w}" y2="40" stroke="var(--border-inner)" stroke-dasharray="4 4" stroke-width="1" opacity="0.6" />
+                    <line x1="0" y1="62" x2="${w}" y2="62" stroke="var(--border-inner)" stroke-dasharray="4 4" stroke-width="1" opacity="0.6" />
 
-                    <!-- Medium Volume Reference Line -->
-                    <line x1="0" y1="48" x2="${w}" y2="48" stroke="rgba(245, 158, 11, 0.25)" stroke-dasharray="6 4" stroke-width="1.2" />
-                    <text x="8" y="43" fill="#F59E0B" font-size="8.5" font-weight="800" opacity="0.8">■ VỪA / MEDIUM (Phiên Á - Tokyo Session)</text>
-
-                    <!-- Low Volume Reference Line -->
-                    <line x1="0" y1="74" x2="${w}" y2="74" stroke="rgba(239, 68, 68, 0.25)" stroke-dasharray="6 4" stroke-width="1.2" />
-                    <text x="8" y="69" fill="#EF4444" font-size="8.5" font-weight="800" opacity="0.8">▼ THẤP / LOW (Đóng Phiên &amp; Khuya - Spread Giãn)</text>
-
-                    <!-- Filled Area with Dynamic Red - Yellow - Green Multi-stop Gradient -->
+                    <!-- Filled Area with subtle opacity -->
                     <path d="${areaD}" fill="url(#volAreaGrad)" />
 
-                    <!-- Bold Neon Curve with Dynamic Stroke -->
-                    <path d="${pathD}" fill="none" stroke="url(#volLineGrad)" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" filter="url(#volNeonGlow)" />
+                    <!-- Clean Bold Wave Curve -->
+                    <path d="${pathD}" fill="none" stroke="url(#volLineGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             `;
         },
 
-        // Render Detailed ICT Macros Table (Matches user's screenshot, prevents text overlap)
+        // Render Detailed ICT Macros Table (Clean, theme-adaptive, 100% overlap-free)
         renderIctDetailTable() {
             const tableCard = document.getElementById('marketHoursIctTableSection');
             if (!tableCard) return;
@@ -857,11 +830,11 @@
                     <tr id="ictTableRow-${macro.id}" style="border-bottom: 1px solid var(--border-inner); transition: background 0.15s;">
                         <td style="padding: 10px 12px; vertical-align: middle;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span class="b-badge" style="background: rgba(245,158,11,0.18); color: #F59E0B; border: 1px solid rgba(245,158,11,0.4); font-size: 10px; font-weight: 800; padding: 2px 6px;">${macro.code}</span>
+                                <span class="b-badge" style="background: rgba(245,158,11,0.18); color: #D97706; border: 1px solid rgba(245,158,11,0.4); font-size: 10px; font-weight: 800; padding: 2px 6px;">${macro.code}</span>
                                 <div>
                                     <span style="font-size: 12.5px; font-weight: 800; color: var(--text-primary); display: block;">${macro.nameVn}</span>
                                     <div id="ictRowStatus-${macro.id}" style="font-size: 10.5px; margin-top: 2px;">
-                                        <span style="color: var(--text-muted); opacity: 0.8;">🔴 Đã đóng cửa</span>
+                                        <span class="b-badge b-badge-dim" style="font-size: 9px; padding: 1px 6px;">🔴 Đã đóng cửa</span>
                                     </div>
                                 </div>
                             </div>
@@ -872,7 +845,7 @@
                         <td style="padding: 10px 12px; font-size: 12px; font-weight: 700; color: var(--text-primary); vertical-align: middle; white-space: nowrap;">
                             ${macro.nyEndStr}
                         </td>
-                        <td style="padding: 10px 12px; font-size: 12px; font-weight: 800; color: #F59E0B; vertical-align: middle; white-space: nowrap;">
+                        <td style="padding: 10px 12px; font-size: 12.5px; font-weight: 800; color: #D97706; vertical-align: middle; white-space: nowrap;">
                             ${convertedRange}
                         </td>
                         <td style="padding: 10px 12px; font-size: 11px; color: var(--text-muted); line-height: 1.35; vertical-align: middle;">
@@ -885,11 +858,11 @@
             container.innerHTML = `
                 <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
                     <thead>
-                        <tr style="border-bottom: 1.5px solid var(--border-card); background: rgba(0,0,0,0.02); color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">
+                        <tr style="border-bottom: 1.5px solid var(--border-inner); background: var(--bg-card-inner); color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">
                             <th style="padding: 8px 12px; font-weight: 800;">Phiên họp</th>
                             <th style="padding: 8px 12px; font-weight: 800; white-space: nowrap;">Giờ mở cửa (NY)</th>
                             <th style="padding: 8px 12px; font-weight: 800; white-space: nowrap;">Giờ đóng cửa (NY)</th>
-                            <th style="padding: 8px 12px; font-weight: 800; white-space: nowrap; color: #F59E0B;">Quy đổi (${tzName})</th>
+                            <th style="padding: 8px 12px; font-weight: 800; white-space: nowrap; color: #D97706;">Quy đổi (${tzName})</th>
                             <th style="padding: 8px 12px; font-weight: 800;">Đặc tính thuật toán ICT</th>
                         </tr>
                     </thead>
@@ -940,15 +913,17 @@
                 `;
             }
 
-            // 3. Update Each Session's OPEN/CLOSED Status Badge & Local Clocks
+            // 3. Update Each Session's Status Badge in Left Info Column & Local Clocks
             SESSIONS.forEach(session => {
                 const isOpen = this.isSessionOpenAt(session, min, now);
-                const badgeEl = document.querySelector(`.session-badge-${session.id}`);
+                const badgeEl = document.getElementById(`sessionStatusBadgeLeft-${session.id}`);
                 if (badgeEl) {
                     if (isOpen) {
-                        badgeEl.innerHTML = `<span style="color: ${session.color}; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); padding: 2px 8px; border-radius: 4px; border: 1px solid ${session.borderActive}; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">● ${session.name} SESSION OPEN</span>`;
+                        badgeEl.className = 'b-badge b-badge-green';
+                        badgeEl.innerHTML = '● OPEN';
                     } else {
-                        badgeEl.innerHTML = `<span style="color: var(--text-muted); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 2px 6px rgba(0,0,0,0.5);">○ ${session.name} SESSION CLOSED</span>`;
+                        badgeEl.className = 'b-badge b-badge-dim';
+                        badgeEl.innerHTML = '○ CLOSED';
                     }
                 }
 
@@ -985,12 +960,12 @@
                     const pills = document.querySelectorAll(`.ict-macro-${macro.id}`);
                     pills.forEach(p => {
                         if (isActive) {
-                            p.style.boxShadow = '0 0 14px #F59E0B, 0 0 4px #FFFFFF';
+                            p.style.boxShadow = '0 0 14px #D97706, 0 0 4px #FFFFFF';
                             p.style.borderColor = '#FFFFFF';
                             p.style.transform = 'scaleY(1.15)';
                             p.style.zIndex = '25';
                         } else {
-                            p.style.boxShadow = '0 1px 4px rgba(245, 158, 11, 0.4)';
+                            p.style.boxShadow = '0 1px 4px rgba(217, 119, 6, 0.4)';
                             p.style.borderColor = '#B45309';
                             p.style.transform = 'none';
                             p.style.zIndex = '15';
@@ -1002,13 +977,13 @@
                     const rowStatus = document.getElementById(`ictRowStatus-${macro.id}`);
                     if (rowStatus) {
                         if (isActive) {
-                            rowStatus.innerHTML = '<span style="color: #22C55E; font-weight: 800;">● ĐANG MỞ CỬA</span>';
+                            rowStatus.innerHTML = '<span class="b-badge b-badge-green" style="font-size: 9px; padding: 1px 6px;">● ĐANG MỞ CỬA</span>';
                             if (rowEl) rowEl.style.background = 'rgba(245, 158, 11, 0.12)';
                         } else if (diffToStart <= 60 && diffToStart > 0) {
-                            rowStatus.innerHTML = `<span style="color: #F59E0B; font-weight: 700;">⏳ Sắp mở (sau ${Math.round(diffToStart)}p)</span>`;
+                            rowStatus.innerHTML = `<span class="b-badge" style="background: rgba(245,158,11,0.15); color: #D97706; border: 1px solid rgba(245,158,11,0.3); font-size: 9px; padding: 1px 6px;">⏳ Sắp mở (${Math.round(diffToStart)}p)</span>`;
                             if (rowEl) rowEl.style.background = 'rgba(245, 158, 11, 0.04)';
                         } else {
-                            rowStatus.innerHTML = '<span style="color: var(--text-muted); opacity: 0.7;">🔴 ĐÃ ĐÓNG CỬA</span>';
+                            rowStatus.innerHTML = '<span class="b-badge b-badge-dim" style="font-size: 9px; padding: 1px 6px;">🔴 Đã đóng cửa</span>';
                             if (rowEl) rowEl.style.background = 'transparent';
                         }
                     }
@@ -1016,13 +991,21 @@
 
                 // Update left column ICT summary
                 const leftSummary = document.getElementById('marketHoursIctLeftSummary');
-                if (leftSummary) {
+                const leftBadge = document.getElementById('marketHoursIctLeftBadge');
+
+                if (leftSummary && leftBadge) {
                     if (activeMacro) {
-                        leftSummary.innerHTML = `<span style="color: #F59E0B; font-weight: 800;">🔥 ${activeMacro.macro.code}: ${activeMacro.macro.nameVn}</span>`;
+                        leftBadge.className = 'b-badge b-badge-green';
+                        leftBadge.innerText = `● ACTIVE: ${activeMacro.macro.code}`;
+                        leftSummary.innerHTML = `<span style="color: #D97706; font-weight: 800;">🔥 ${activeMacro.macro.nameVn}</span>`;
                     } else if (nextUpcomingMacro) {
-                        leftSummary.innerHTML = `<span style="color: var(--text-muted);">⏳ Sắp tới: ${nextUpcomingMacro.macro.code} (${nextUpcomingMacro.diffMinutes}p)</span>`;
+                        leftBadge.className = 'b-badge b-badge-dim';
+                        leftBadge.innerText = `⏳ Tiếp: ${nextUpcomingMacro.macro.code}`;
+                        leftSummary.innerHTML = `<span>sau ${nextUpcomingMacro.diffMinutes} phút</span>`;
                     } else {
-                        leftSummary.innerHTML = '<span>8 Khung giờ ICT</span>';
+                        leftBadge.className = 'b-badge b-badge-dim';
+                        leftBadge.innerText = '8 Cửa Sổ';
+                        leftSummary.innerHTML = '<span>8 Khung Thuật Toán</span>';
                     }
                 }
             }
@@ -1034,7 +1017,7 @@
             const volDesc = document.getElementById('marketHoursVolDesc');
 
             if (volStatusText) {
-                volStatusText.innerText = `Trading Volume is usually ${vol.level.toLowerCase()} at this time of day.`;
+                volStatusText.innerText = `Khối lượng giao dịch dự kiến: ${vol.label.toLowerCase()}`;
             }
             if (volBadge) {
                 volBadge.className = vol.badgeClass;
@@ -1051,10 +1034,10 @@
 
             if (lampGreen && lampYellow && lampRed) {
                 lampGreen.style.opacity = vol.level === 'HIGH' ? '1' : '0.2';
-                lampGreen.style.boxShadow = vol.level === 'HIGH' ? '0 0 10px #22C55E' : 'none';
+                lampGreen.style.boxShadow = vol.level === 'HIGH' ? '0 0 10px #10B981' : 'none';
 
                 lampYellow.style.opacity = vol.level === 'MEDIUM' ? '1' : '0.2';
-                lampYellow.style.boxShadow = vol.level === 'MEDIUM' ? '0 0 10px #EAB308' : 'none';
+                lampYellow.style.boxShadow = vol.level === 'MEDIUM' ? '0 0 10px #F59E0B' : 'none';
 
                 lampRed.style.opacity = vol.level === 'LOW' ? '1' : '0.2';
                 lampRed.style.boxShadow = vol.level === 'LOW' ? '0 0 10px #EF4444' : 'none';
