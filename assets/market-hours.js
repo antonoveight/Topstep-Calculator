@@ -615,7 +615,7 @@
             let leftHtml = '';
             let rightHtml = '';
 
-            // 1. Render 4 Core Sessions
+            // 1. Render 4 Core Sessions with Strict Vertical Separation (Badge top: 3px, Bar top: 24px)
             SESSIONS.forEach(session => {
                 const { intervals } = this.calculateSessionIntervalsInTarget(session, now);
                 const localDate = new Date();
@@ -626,7 +626,7 @@
 
                 // Left Info Column
                 leftHtml += `
-                    <div style="display: flex; align-items: center; gap: 10px; height: 62px; padding-right: 14px; border-bottom: 1px solid var(--border-inner);">
+                    <div style="display: flex; align-items: center; gap: 10px; height: 64px; padding-right: 14px; border-bottom: 1px solid var(--border-inner);">
                         ${flagSvg}
                         <div>
                             <span style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: block; line-height: 1.2;">${session.name}</span>
@@ -636,32 +636,33 @@
                     </div>
                 `;
 
-                // Right Track Lane with bars
+                // Right Track Lane with bars in bottom band (top: 24px, height: 32px)
+                // and status badge in top band (top: 3px, height: 17px) -> ZERO VERTICAL OVERLAP!
                 let barsHtml = '';
                 intervals.forEach((inv) => {
                     const leftPct = (inv.start / 1440) * 100;
                     const widthPct = ((inv.end - inv.start) / 1440) * 100;
                     barsHtml += `
-                        <div class="session-bar-${session.id}" style="position: absolute; left: ${leftPct.toFixed(3)}%; width: ${widthPct.toFixed(3)}%; top: 7px; bottom: 7px; background: ${session.color}; border-radius: 6px; box-shadow: 0 2px 8px ${session.bgLight}; transition: transform 0.15s ease;" title="${session.name} Session (${this.formatMinute(inv.start)} - ${this.formatMinute(inv.end)})"></div>
+                        <div class="session-bar-${session.id}" style="position: absolute; left: ${leftPct.toFixed(3)}%; width: ${widthPct.toFixed(3)}%; top: 24px; height: 32px; background: ${session.color}; border-radius: 6px; box-shadow: 0 2px 8px ${session.bgLight}; transition: transform 0.15s ease;" title="${session.name} Session (${this.formatMinute(inv.start)} - ${this.formatMinute(inv.end)})"></div>
                     `;
                 });
 
                 rightHtml += `
-                    <div style="position: relative; height: 62px; display: flex; align-items: center; background: rgba(0,0,0,0.03); border-radius: 6px; border: 1px dashed var(--border-inner); margin-bottom: 0; overflow: hidden;" data-session-id="${session.id}">
-                        <!-- Session Status Floating Badge -->
-                        <div class="session-badge-${session.id}" style="position: absolute; left: 8px; top: 3px; z-index: 10; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">
-                            <!-- Updated dynamically -->
+                    <div style="position: relative; height: 64px; background: rgba(0,0,0,0.03); border-radius: 6px; border: 1px dashed var(--border-inner); margin-bottom: 0; overflow: hidden;" data-session-id="${session.id}">
+                        <!-- Session Status Floating Badge in dedicated top band -->
+                        <div class="session-badge-${session.id}" style="position: absolute; left: 8px; top: 3px; z-index: 10; font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">
+                            <!-- Updated dynamically with dark capsule backdrop -->
                         </div>
                         ${barsHtml}
                     </div>
                 `;
             });
 
-            // 2. Render 5th Lane: ICT Macros (if enabled)
+            // 2. Render 5th Lane: ICT Macros with Text Placed Strictly BELOW Macros Time (Figure 1 & 2 Fix)
             if (this.showIctMacros) {
                 // Left Column ICT Summary Block
                 leftHtml += `
-                    <div id="marketHoursIctLeftCard" style="display: flex; align-items: center; gap: 9px; height: 56px; padding-right: 14px; border-bottom: 1px solid var(--border-inner); background: rgba(245, 158, 11, 0.06); border-left: 3px solid #F59E0B; padding-left: 6px; border-radius: 4px; margin-top: 2px;">
+                    <div id="marketHoursIctLeftCard" style="display: flex; align-items: center; gap: 9px; height: 68px; padding-right: 14px; border-bottom: 1px solid var(--border-inner); background: rgba(245, 158, 11, 0.06); border-left: 3px solid #F59E0B; padding-left: 6px; border-radius: 4px; margin-top: 2px;">
                         <div style="width: 24px; height: 24px; border-radius: 50%; background: #F59E0B; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #1E293B; font-weight: 900; box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); flex-shrink: 0;">⚡</div>
                         <div style="overflow: hidden; width: 100%;">
                             <div style="display: flex; align-items: center; gap: 4px; justify-content: space-between;">
@@ -675,9 +676,12 @@
                     </div>
                 `;
 
-                // Right Track Lane with 8 Macro Amber Neon Pills
-                // Anti-overlap design: Pills have compact badges (LM1, AM2, etc.) and tooltip with full info
+                // Right Track Lane:
+                // Upper band (top: 6px, height: 28px): 100% UNINTERRUPTED track for the 8 Macro Pills
+                // Lower band (top: 38px, height: 24px): Sub-text and time tags placed strictly BELOW the pills!
                 let macroPillsHtml = '';
+                let macroTimesHtml = '';
+
                 ICT_MACROS.forEach(macro => {
                     const { intervals, startMin, endMin } = this.calculateMacroIntervalsInTarget(macro, now);
                     const targetTimeRangeStr = `${this.formatMinute(startMin)} – ${this.formatMinute(endMin)}`;
@@ -685,29 +689,40 @@
 
                     intervals.forEach(inv => {
                         const leftPct = (inv.start / 1440) * 100;
-                        const widthPct = Math.max(1.1, ((inv.end - inv.start) / 1440) * 100);
+                        const widthPct = Math.max(1.2, ((inv.end - inv.start) / 1440) * 100);
 
+                        // Pill in upper band
                         macroPillsHtml += `
                             <div class="ict-macro-pill ict-macro-${macro.id}"
                                  data-macro-id="${macro.id}"
                                  data-macro-name="${macro.nameVn}"
                                  data-target-time="${targetTimeRangeStr}"
                                  data-ny-time="${nyTimeStr}"
-                                 style="position: absolute; left: ${leftPct.toFixed(3)}%; width: ${widthPct.toFixed(3)}%; top: 7px; bottom: 7px; background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%); border-radius: 4px; border: 1px solid #B45309; box-shadow: 0 1px 4px rgba(245, 158, 11, 0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; z-index: 15; min-width: 14px;"
+                                 style="position: absolute; left: ${leftPct.toFixed(3)}%; width: ${widthPct.toFixed(3)}%; top: 6px; height: 28px; background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%); border-radius: 4px; border: 1px solid #B45309; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.45); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; z-index: 15; min-width: 15px;"
                                  title="⚡ ${macro.nameVn} (${macro.code})\n🕒 Giờ quy đổi: ${targetTimeRangeStr}\n🇺🇸 Giờ New York: ${nyTimeStr}\n💡 ${macro.tip}">
-                                <span style="font-size: 8px; font-weight: 900; color: #FFFFFF; text-shadow: 0 1px 2px rgba(0,0,0,0.7); pointer-events: none; line-height: 1; letter-spacing: -0.02em;">${macro.code}</span>
+                                <span style="font-size: 8.5px; font-weight: 900; color: #FFFFFF; text-shadow: 0 1px 2px rgba(0,0,0,0.8); pointer-events: none; line-height: 1; letter-spacing: -0.02em;">${macro.code}</span>
                             </div>
+                        `;
+
+                        // Micro time label in lower band (bên dưới macros time)
+                        macroTimesHtml += `
+                            <span style="position: absolute; left: ${leftPct.toFixed(3)}%; top: 38px; transform: translateX(-15%); font-size: 8px; font-weight: 800; color: #D97706; white-space: nowrap; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">${this.formatMinute(inv.start)}</span>
                         `;
                     });
                 });
 
                 rightHtml += `
-                    <div id="marketHoursIctTrackLane" style="position: relative; height: 56px; display: flex; align-items: center; background: rgba(245, 158, 11, 0.04); border-radius: 6px; border: 1px dashed rgba(245, 158, 11, 0.35); margin-top: 2px; overflow: visible;">
-                        <!-- Floating Lane Title -->
-                        <div style="position: absolute; left: 8px; top: 2px; z-index: 10; font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">
-                            <span style="color: #F59E0B; background: rgba(245, 158, 11, 0.15); padding: 1px 6px; border-radius: 3px; border: 1px solid rgba(245, 158, 11, 0.35);">⚡ ICT Algorithmic Windows (Múi Giờ New York Gốc)</span>
-                        </div>
+                    <div id="marketHoursIctTrackLane" style="position: relative; height: 68px; background: rgba(245, 158, 11, 0.04); border-radius: 6px; border: 1px dashed rgba(245, 158, 11, 0.35); margin-top: 2px; overflow: hidden;">
+                        <!-- Upper band: The 8 Macro Pills (00:00 to 24:00) -->
                         ${macroPillsHtml}
+
+                        <!-- Lower band: Start Times & Explanatory text strictly placed BELOW the pills -->
+                        ${macroTimesHtml}
+
+                        <!-- Middle gap title badge (placed at 14% to 54% where no macros exist) -->
+                        <div style="position: absolute; left: 14%; top: 40px; display: inline-flex; align-items: center; gap: 4px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 4px; padding: 1px 8px; font-size: 8px; font-weight: 800; color: #F59E0B; text-transform: uppercase; letter-spacing: 0.04em; pointer-events: none;">
+                            <span>⚡ 8 CỬA SỔ ICT MACROS (MÚI GIỜ NEW YORK GỐC)</span>
+                        </div>
                     </div>
                 `;
             }
@@ -721,18 +736,52 @@
             const svgContainer = document.getElementById('marketHoursVolumeSvgContainer');
             if (!svgContainer) return;
 
-            const points = [];
             const w = 1000;
-            const h = 70;
+            const h = 86; // Increased height for dramatic curve
+            const points = [];
+            const colorStops = [];
+            const areaStops = [];
 
+            // 25 sample points (0 to 24 hours)
             for (let i = 0; i <= 24; i++) {
                 const minute = (i % 24) * 60;
                 const v = this.getVolumeContextAt(minute, new Date());
                 const x = (i / 24) * w;
-                const y = h - (v.score / 100) * (h - 14) - 6;
+                const pct = ((i / 24) * 100).toFixed(1);
+
+                // Dramatic height & color mapping:
+                // LOW (Red): y = 74 (deep valley, height 12px)
+                // MEDIUM (Yellow): y = 48 (mid plateau, height 38px)
+                // HIGH (Green): y = 22 (high peak, height 64px)
+                // PEAK OVERLAP (Green): y = 8 (towering summit, height 78px)
+                let y = 74;
+                let color = '#EF4444'; // Red
+                let areaColor = 'rgba(239, 68, 68, 0.35)';
+
+                if (v.level === 'HIGH') {
+                    color = '#10B981'; // Vibrant Emerald Green
+                    areaColor = 'rgba(16, 185, 129, 0.45)';
+                    if (v.score >= 90) {
+                        y = 8; // Peak overlap summit!
+                    } else {
+                        y = 22; // High session
+                    }
+                } else if (v.level === 'MEDIUM') {
+                    color = '#F59E0B'; // Bright Amber Yellow
+                    areaColor = 'rgba(245, 158, 11, 0.38)';
+                    y = 48; // Mid-level
+                } else { // LOW
+                    color = '#EF4444'; // Bright Red
+                    areaColor = 'rgba(239, 68, 68, 0.35)';
+                    y = 74; // Deep trough
+                }
+
                 points.push({ x, y });
+                colorStops.push(`<stop offset="${pct}%" stop-color="${color}" />`);
+                areaStops.push(`<stop offset="${pct}%" stop-color="${areaColor}" />`);
             }
 
+            // Create smooth cubic Bezier spline
             let pathD = `M 0,${points[0].y} `;
             for (let i = 0; i < points.length - 1; i++) {
                 const p0 = points[i];
@@ -749,23 +798,35 @@
             svgContainer.innerHTML = `
                 <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width: 100%; height: 100%; display: block;">
                     <defs>
-                        <linearGradient id="volGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.25" />
-                            <stop offset="35%" stop-color="#9333EA" stop-opacity="0.35" />
-                            <stop offset="65%" stop-color="#0284C7" stop-opacity="0.45" />
-                            <stop offset="85%" stop-color="#22C55E" stop-opacity="0.55" />
-                            <stop offset="100%" stop-color="#3B82F6" stop-opacity="0.25" />
+                        <linearGradient id="volLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            ${colorStops.join('\n                            ')}
                         </linearGradient>
-                        <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#3B82F6" />
-                            <stop offset="35%" stop-color="#A855F7" />
-                            <stop offset="65%" stop-color="#38BDF8" />
-                            <stop offset="85%" stop-color="#22C55E" />
-                            <stop offset="100%" stop-color="#3B82F6" />
+                        <linearGradient id="volAreaGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            ${areaStops.join('\n                            ')}
                         </linearGradient>
+                        <filter id="volNeonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.45" />
+                        </filter>
                     </defs>
-                    <path d="${areaD}" fill="url(#volGrad)" />
-                    <path d="${pathD}" fill="none" stroke="url(#lineGrad)" stroke-width="2.5" />
+
+                    <!-- Background Tiered Reference Guidelines (Green / Yellow / Red) -->
+                    <!-- High Volume Reference Line -->
+                    <line x1="0" y1="20" x2="${w}" y2="20" stroke="rgba(16, 185, 129, 0.25)" stroke-dasharray="6 4" stroke-width="1.2" />
+                    <text x="8" y="15" fill="#10B981" font-size="8.5" font-weight="800" opacity="0.8">▲ CAO / HIGH (London &amp; NY Overlap - Đỉnh Thanh Khoản)</text>
+
+                    <!-- Medium Volume Reference Line -->
+                    <line x1="0" y1="48" x2="${w}" y2="48" stroke="rgba(245, 158, 11, 0.25)" stroke-dasharray="6 4" stroke-width="1.2" />
+                    <text x="8" y="43" fill="#F59E0B" font-size="8.5" font-weight="800" opacity="0.8">■ VỪA / MEDIUM (Phiên Á - Tokyo Session)</text>
+
+                    <!-- Low Volume Reference Line -->
+                    <line x1="0" y1="74" x2="${w}" y2="74" stroke="rgba(239, 68, 68, 0.25)" stroke-dasharray="6 4" stroke-width="1.2" />
+                    <text x="8" y="69" fill="#EF4444" font-size="8.5" font-weight="800" opacity="0.8">▼ THẤP / LOW (Đóng Phiên &amp; Khuya - Spread Giãn)</text>
+
+                    <!-- Filled Area with Dynamic Red - Yellow - Green Multi-stop Gradient -->
+                    <path d="${areaD}" fill="url(#volAreaGrad)" />
+
+                    <!-- Bold Neon Curve with Dynamic Stroke -->
+                    <path d="${pathD}" fill="none" stroke="url(#volLineGrad)" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" filter="url(#volNeonGlow)" />
                 </svg>
             `;
         },
@@ -885,9 +946,9 @@
                 const badgeEl = document.querySelector(`.session-badge-${session.id}`);
                 if (badgeEl) {
                     if (isOpen) {
-                        badgeEl.innerHTML = `<span style="color: ${session.color}; background: ${session.bgLight}; padding: 2px 8px; border-radius: 4px; border: 1px solid ${session.borderActive};">● ${session.name} SESSION OPEN</span>`;
+                        badgeEl.innerHTML = `<span style="color: ${session.color}; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); padding: 2px 8px; border-radius: 4px; border: 1px solid ${session.borderActive}; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">● ${session.name} SESSION OPEN</span>`;
                     } else {
-                        badgeEl.innerHTML = `<span style="color: var(--text-muted); background: var(--bg-card); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-inner);">○ ${session.name} SESSION CLOSED</span>`;
+                        badgeEl.innerHTML = `<span style="color: var(--text-muted); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 2px 6px rgba(0,0,0,0.5);">○ ${session.name} SESSION CLOSED</span>`;
                     }
                 }
 
