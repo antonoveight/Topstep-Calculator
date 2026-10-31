@@ -1,6 +1,13 @@
-# Finpoint Cockpit · Topstep
+# The Funded Angler · Trading Desk
 
 Ứng dụng web tĩnh quản lý nhật ký giao dịch, rủi ro và lịch sử payout cá nhân cho tài khoản Combine/XFA. HTML nằm trong `index.html`; quy tắc, lưu trữ và giao diện nâng cao được tách trong `assets/`. `topstep.html` là bản sao tương thích.
+
+Giao diện Trading Desk dùng nền graphite, điểm nhấn teal và hai chế độ sáng/tối.
+Dashboard ưu tiên số dư, PnL, đệm MLL và mục tiêu/payout; thẻ ngân hàng trang trí
+được thay bằng bảng trạng thái tài khoản. Menu có Tổng quan, Thực chiến, Nhật ký,
+Quản trị rủi ro, Phiên & tin tức và Cài đặt. Nhật ký và calculator vẫn sử dụng
+các phần nhập liệu hiện có; quản lý tài khoản, giao diện, thông báo và sao lưu
+được gom vào Cài đặt. Chi tiết tại [UI redesign](docs/UI-REDESIGN.md).
 
 ## Chạy ứng dụng
 

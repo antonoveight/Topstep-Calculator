@@ -43,7 +43,7 @@ for(let t=0;t<600;t+=.2){const p=ambient.pose(t);assert.ok(Math.abs(p.breath)<=.
   assert.equal(await page.locator('#pondStudio').evaluate(e=>e.open),true);
   const geometry=await page.evaluate(()=>{const f=document.getElementById('pondBroadcastFrame').getBoundingClientRect(),s=document.getElementById('pondLiveScene').getBoundingClientRect(),c=document.querySelector('.pond-chart-pane').getBoundingClientRect();return {ratio:f.width/f.height,halves:Math.abs(s.height-c.height)<1};});
   assert.ok(Math.abs(geometry.ratio-9/16)<.01);assert.equal(geometry.halves,true);
-  assert.equal(await page.locator('#pondBroadcastFrame button:visible').count(),2);
+  assert.equal(await page.locator('#pondBroadcastFrame button:visible').count(),4);
   await page.locator('#studioSymbol').selectOption('MGC');await page.locator('#studioSetup').selectOption('3');await page.locator('#studioWindow').selectOption('afternoon');
   await page.locator('#studioCommit').check();await page.locator('#pondStudioStart [type=submit]').click();
   assert.equal(await page.evaluate(()=>PondLive.active().setup),3);

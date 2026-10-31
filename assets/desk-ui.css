@@ -1,0 +1,241 @@
+/* The Funded Angler: shared presentation for the existing trading cockpit. */
+:root,[data-theme="dark"]{
+ --bg-app:#101419;--bg-sidebar:#13191f;--bg-header:#101419;--bg-card:#181e25;--bg-card-inner:#1d252e;--bg-input:#141a21;--bg-modal:#181e25;
+ --border-card:#2a333e;--border-inner:#28313b;--border-active:#455362;--color-primary:#58c8b3;--color-primary-hover:#7cdbc8;--color-primary-light:#58c8b313;
+ --color-green:#57c79a;--color-green-light:#57c79a12;--color-red:#f18389;--color-red-light:#f1838912;--color-gold:#dfb975;--color-purple:#a7b6ca;
+ --text-primary:#e8edf3;--text-muted:#99a6b6;--text-slate:#99a6b6;--table-header:#1b232c;--table-hover:#ffffff03;--shadow-card:none;
+}
+[data-theme="light"]{
+ --bg-app:#f2f5f7;--bg-sidebar:#fff;--bg-header:#f2f5f7;--bg-card:#fff;--bg-card-inner:#f4f7f8;--bg-input:#fff;--bg-modal:#fff;
+ --border-card:#dce3e8;--border-inner:#e4e9ee;--border-active:#a1afb9;--color-primary:#127564;--color-primary-hover:#0b5f51;--color-primary-light:#1275640c;
+ --color-green:#16734e;--color-green-light:#16734e0c;--color-red:#ba3948;--color-red-light:#ba39480c;--color-gold:#926819;--color-purple:#586c82;
+ --text-primary:#202d38;--text-muted:#5e6d7b;--text-slate:#5e6d7b;--table-header:#f5f7f9;--table-hover:#f7f9fa;--shadow-card:none;
+}
+body{font-family:'Inter','Segoe UI',Arial,sans-serif;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:13px}
+button,a,input,select,summary{touch-action:manipulation}
+:is(button,a,input,select,textarea,summary):focus-visible{outline:2px solid var(--color-primary);outline-offset:3px}
+button{font-weight:600}
+input,select,textarea{border-radius:7px!important;background:var(--bg-input);min-height:38px}
+input[type="checkbox"],input[type="radio"]{min-height:0;accent-color:var(--color-primary)}
+.tabular-nums,[id*="Balance"],[id*="Pnl"],[id*="Mll"],#calcMicroLots,#calcMiniLots{font-variant-numeric:tabular-nums;letter-spacing:-.025em}
+.b-card,.b-stat-card,.ws-card{border-radius:10px;box-shadow:none;border-color:var(--border-card)}
+.b-card{padding:22px}.b-card-inner{border-radius:7px}
+.b-btn-primary{background:var(--color-primary)!important;color:var(--bg-app)!important;border:1px solid transparent!important;box-shadow:none!important;border-radius:7px;min-height:36px;font-weight:650}
+[data-theme="light"] .b-btn-primary{color:white!important}
+.b-btn-primary:hover{background:var(--color-primary-hover)!important}
+.b-btn-secondary,.b-btn-danger,.b-btn-purple{border-radius:7px;box-shadow:none!important;min-height:34px}
+.b-btn-secondary{background:var(--bg-card-inner)!important;color:var(--text-primary)!important;border:1px solid var(--border-card)!important}
+.b-btn-danger{color:var(--color-red)!important;border-color:var(--border-card)!important}
+.b-badge{border-radius:4px;font-weight:550;font-size:10px;letter-spacing:0;box-shadow:none}
+.b-badge-blue{color:var(--color-primary);background:var(--color-primary-light)}
+.text-emerald-400{color:var(--color-green)}.text-rose-400{color:var(--color-red)}
+.finpoint-sidebar{width:224px;min-width:224px;padding:28px 16px 18px;background:var(--bg-sidebar);border-right:1px solid var(--border-card)}
+.finpoint-sidebar.collapsed{width:76px;min-width:76px}
+.sidebar-brand-container{margin-bottom:30px!important;gap:4px}
+.desk-brand-name{font-size:19px;line-height:1.1;font-weight:650;letter-spacing:-.7px;display:block}
+.desk-brand-dot{color:var(--color-primary)}
+.desk-brand-caption{display:block;font-size:8px;letter-spacing:1.3px;color:var(--text-muted);margin-top:9px;white-space:nowrap}
+.desk-brand-mark{width:31px!important;height:36px!important;border-radius:7px!important;color:var(--color-primary)!important;background:var(--color-primary-light)!important;flex-shrink:0}
+.desk-brand-mark svg{width:25px;height:25px}
+.sidebar-section-title{font-size:9px!important;letter-spacing:1.3px!important;font-weight:550!important;margin-bottom:12px!important}
+.sidebar-link{width:100%;font-size:12px;min-height:42px;gap:12px;border:1px solid transparent;border-radius:7px;padding:10px 12px;cursor:pointer;text-align:left;background:transparent;color:var(--text-muted)}
+.sidebar-link.active{background:var(--color-primary-light);border-color:color-mix(in srgb,var(--color-primary) 20%,transparent);color:var(--color-primary);box-shadow:none}
+.desk-nav-item.active{color:var(--color-primary)!important}
+.desk-mobile-nav button.active{background:var(--color-primary-light)!important;color:var(--color-primary)!important}
+.desk-mobile-nav button:not(.active){background:var(--bg-card-inner)!important;color:var(--text-muted)!important}
+.sidebar-link svg{width:17px;height:17px;flex-shrink:0}
+.sidebar-search-pill{border-radius:7px!important;margin-bottom:28px!important}
+.sidebar-promo-card{background:transparent!important;border:0!important;border-top:1px solid var(--border-card)!important;border-radius:0!important;padding:20px 4px 0!important;text-align:left!important}
+.desk-sidebar-note p{font-size:16px;color:var(--text-primary);line-height:1.6;margin:12px 0 16px;letter-spacing:-.3px}
+.desk-sidebar-note a{font-size:11px;color:var(--text-muted);text-decoration:none}
+.desk-eyebrow{display:block;font-size:9px;font-weight:600;letter-spacing:1.5px;color:var(--text-muted)}
+.finpoint-sidebar.collapsed .desk-sidebar-note{display:none}
+.workspace-header{padding:20px 28px!important;gap:14px!important;align-items:center!important;flex-wrap:nowrap!important;background:var(--bg-header)!important}
+.desk-header-title{min-width:180px;flex:1}
+.desk-header-title>div{gap:12px!important}
+.desk-header-title #headerSidebarToggleBtn{height:32px;min-height:32px;background:transparent!important;border-color:transparent!important}
+.desk-header-title #headerMainTitle{font-size:19px!important;font-weight:600!important;line-height:1.35;white-space:nowrap}
+.desk-header-title #headerBreadcrumbCurrent{color:var(--text-muted)!important;font-size:9px!important;letter-spacing:1.2px}
+.desk-header-title #headerBreadcrumbCurrent:before{content:''}
+.desk-header-title #activeStageBadge,.desk-header-title #trackerAccountIdTag{display:none}
+.desk-header-title #headerBreadcrumbCurrent{display:none}
+.desk-header-title>div>div>div:first-child{font-size:9px!important;letter-spacing:1.4px;margin-bottom:4px!important}
+.desk-header-title>div>div>div:first-child>span:nth-child(2){display:none}
+.desk-header-tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.desk-header-tools #accountDropdown{font-size:11px;max-width:245px!important;min-width:160px!important;height:36px;color:var(--text-primary)!important;border-color:var(--border-card)}
+.desk-header-tools>div{background:var(--bg-card)!important;min-height:36px;border-color:var(--border-card)!important}
+#headerNewsRadar{padding-inline:10px!important}#newsRadarDot{box-shadow:none!important}
+#newsRadarStatus{font-size:10px!important}#newsRadarCountdown{font-size:10px!important}
+.desk-mobile-nav{display:none!important}
+.workspace-main{padding:26px 28px 50px!important;gap:24px!important;max-width:1680px;width:100%;margin-inline:auto}
+#view-dashboard{gap:22px!important}
+.desk-overview-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:3px 0 4px}
+.desk-overview-heading h2{font-size:25px;font-weight:550;letter-spacing:-.8px;margin:5px 0 6px}
+.desk-overview-heading p{font-size:12px;color:var(--text-muted)}
+.desk-overview-heading .b-btn-primary{padding:9px 16px;font-size:12px;white-space:nowrap}
+.desk-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.desk-kpis .b-stat-card{padding:19px 20px 17px;min-width:0;border-top:2px solid var(--border-card)}
+.desk-kpis .b-stat-card:first-child{border-top-color:var(--color-primary)}
+.desk-kpis .b-stat-card>div:first-child>span:last-child{display:none}
+.desk-kpis .b-stat-card>div:first-child{margin-bottom:9px!important}
+.desk-kpis .b-stat-card>div:first-child>span,.desk-metric-label{font-size:11px!important;color:var(--text-muted)!important;font-weight:500!important}
+.desk-kpis :is(#finpointCardBalance,#trackerTotalPnl,#trackerAdjustedTarget,#deskBufferValue){display:block;font-size:28px!important;font-weight:550!important;line-height:1.25;letter-spacing:-1px;margin:9px 0!important}
+#finpointCardBalance,#trackerAdjustedTarget{color:var(--text-primary)!important}
+#deskBufferValue{color:var(--color-primary)}
+.desk-metric-sub,.desk-kpis .b-stat-card>div:last-child{font-size:10px!important;color:var(--text-muted);line-height:1.5}
+.desk-kpis .b-badge{display:none}
+.desk-dashboard-grid{grid-template-columns:minmax(0,1fr) 300px!important;gap:20px!important;align-items:start}
+.desk-main-column,.desk-side-column{grid-column:auto!important;min-width:0;gap:20px!important}
+#chart-section{padding:22px 22px 0;overflow:hidden}
+.desk-chart-eyebrow{margin-bottom:9px}
+#chart-section>div:first-of-type{gap:9px!important;margin-bottom:16px!important}
+#chart-section>div:first-of-type>div:first-child>span:first-child{font-size:15px!important;font-weight:600!important}
+#moneyFlowStatsPill{font-size:9px!important;white-space:normal;background:transparent;border:0;color:var(--text-muted)}
+#finpointChartBars{height:225px!important;margin-bottom:0!important;border-bottom:0!important;padding:12px 0 18px!important}
+.finpoint-bar-col>div:nth-child(2){box-shadow:none!important;border-radius:3px 3px 0 0!important;max-width:30px}
+.desk-risk-strip{border:0!important;border-top:1px solid var(--border-card)!important;background:transparent!important;border-radius:0!important;margin:0 -22px!important;padding:18px 22px!important}
+#smartBannerTitle{font-size:10px!important;letter-spacing:.3px;color:var(--text-muted)!important}
+#targetDynamicDesc{font-size:11px!important;line-height:1.6!important}
+.desk-risk-strip .grid>div{padding:10px 12px!important;border-radius:6px!important;background:var(--bg-card-inner)!important;border:0!important}
+.desk-risk-strip .grid span:first-child{font-size:9px!important;line-height:1.5}
+.desk-risk-strip .grid .tabular-nums{font-size:17px!important;font-weight:550!important}
+.desk-risk-strip .grid span:last-child{font-size:9px!important}
+.desk-panel-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+.desk-panel-head h2{font-size:15px;font-weight:600;letter-spacing:-.2px;margin-top:6px}
+.desk-account-platform{font-size:8px;letter-spacing:1px;color:var(--text-muted);border:1px solid var(--border-card);padding:3px 5px;border-radius:4px}
+.desk-account-panel{padding:20px!important}
+.desk-account-name{font-size:13px;color:var(--text-primary);line-height:1.6;border-top:1px solid var(--border-card);padding-top:14px}
+#displayAccountTitle{font-size:12px!important;font-weight:500!important}
+.desk-account-target{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:16px 0;font-size:11px}
+#finpointCardTargetLabel{font-size:10px!important;max-width:170px;line-height:1.5}#finpointNextPayAmount{font-size:16px!important;font-weight:600!important}
+.desk-account-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.desk-account-meta{display:flex;flex-wrap:wrap;gap:6px;padding-top:14px;border-top:1px solid var(--border-card);margin-top:14px}
+.desk-account-meta .b-badge{font-size:9px!important;font-weight:400!important;color:var(--text-muted)!important;background:transparent!important;border:0!important;padding:0!important}
+.desk-account-buttons .b-btn-action-col{min-width:0;min-height:38px!important;padding:8px 4px!important;font-size:10px!important}
+.desk-account-buttons .b-btn-action-col>span:first-child{display:none}
+.desk-account-buttons .b-btn-action-col>span:last-child{font-size:10px!important;line-height:1.4!important}
+.desk-mll-detail{background:transparent;border:0!important;border-top:1px solid var(--border-card)!important;border-radius:0!important;padding:16px 0 0!important;margin-top:18px}
+.desk-mll-detail>div:first-child{margin-bottom:6px!important}.desk-mll-detail>div:first-child>span:last-child{display:none}
+.desk-mll-detail #trackerCurrentMll{font-size:18px!important;font-weight:550!important;color:var(--text-primary)!important}
+.desk-mll-detail #trackerKpi3Label{font-size:10px!important;font-weight:500!important}
+.desk-mll-detail #trackerKpi3SubText{font-size:10px!important}
+.desk-goals{padding:20px!important}.desk-goals>div:first-child>span:first-child{font-size:14px!important;font-weight:600!important}
+.desk-goals>div:first-child>span:last-child{display:none}
+.desk-goals .finpoint-progress-bg{height:4px;border-radius:3px}
+.desk-old-jump{display:none!important}
+.desk-journal{scroll-margin-top:110px}
+.desk-journal #tradeForm{background:var(--bg-card-inner)!important;border:0!important;border-radius:8px!important;padding:16px!important}
+.desk-journal table{font-variant-numeric:tabular-nums}
+.desk-journal :is(th,td){font-size:11px!important;padding:13px 10px!important}
+.desk-journal th{text-transform:none!important;font-weight:500!important;color:var(--text-muted)!important;letter-spacing:0!important;white-space:nowrap}
+.desk-journal td{border-color:var(--border-inner)!important}
+.desk-calculator{scroll-margin-top:110px}
+.desk-calculator-fields{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px!important;align-items:end}
+.desk-calculator-fields>div:first-child{grid-column:1}
+.desk-calculator-fields>div:nth-child(2){grid-column:1}
+.desk-size-results{grid-column:2;grid-row:1/3;align-self:stretch;align-items:stretch;gap:10px!important}
+.desk-size-results>.b-card-inner{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:15px 10px!important;border:1px solid var(--border-card);background:var(--bg-card-inner)}
+.desk-size-results #calcMicroLots,.desk-size-results #calcMiniLots,.desk-size-results #calcActualRisk{font-size:28px!important;font-weight:550!important;line-height:1.5}
+.desk-size-results #calcMicroLots{color:var(--color-primary)!important}.desk-size-results #riskConstraint{font-size:10px;line-height:1.5}
+#view-checklist>div:first-child{border-radius:9px!important;background:transparent!important;border:0!important;padding:0 0 18px!important;border-bottom:1px solid var(--border-card)!important}
+#view-checklist>div:first-child>div:first-child>div:nth-child(2){font-size:20px!important;font-weight:600!important}
+#view-checklist>div:first-child .b-badge{font-size:9px}
+#view-checklist{gap:20px!important}
+#rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]){border-radius:10px;box-shadow:none}
+#rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-header{padding:16px 18px}
+.pond-title{font-size:14px;font-weight:600;letter-spacing:0}
+.pond-timebar{background:var(--bg-card-inner);border-color:var(--border-card)}
+#preTradeChecklistCard{border-radius:10px;padding:19px;box-shadow:none}
+#preTradeChecklistCard .chk-step-card{border-radius:7px;padding:13px 12px;font-size:12px;box-shadow:none}
+#preTradeChecklistCard .chk-step-card :is(div,span)[style*="font-weight: 700"]{font-weight:600!important}
+#morningBiasCard{border-left:0!important;background:transparent!important;border:1px solid var(--border-card)!important;padding:12px!important}
+.desk-bias-guide{margin:10px 0;color:var(--text-muted);font-size:11px}.desk-bias-guide summary{cursor:pointer}.desk-bias-guide[open]>div{margin-top:10px}
+#morningBiasCard>div:first-child{font-size:10px!important;font-weight:600!important;letter-spacing:.3px}
+#pondRiskManagement{border-radius:10px;border-left:1px solid var(--border-card)!important}
+.desk-knowledge-card{border-radius:10px}
+#marketHoursCard{border-radius:10px;padding:22px!important}
+#marketHoursCard h3{font-size:18px!important;font-weight:600!important}
+#marketHoursCard>div:first-child>div:first-child .b-badge{display:none}
+#marketHoursCard>div:first-child p{max-width:660px;font-size:12px!important;line-height:1.6}
+#marketHoursCard .b-btn-secondary{font-size:10px!important}
+#marketHoursCard [data-session-id]{border-style:solid!important;border-radius:4px!important}
+#marketHoursIctTrackLane{border-color:var(--border-card)!important;border-style:solid!important;background:var(--bg-card-inner)!important}
+#marketHoursIctLeftCard{background:transparent!important;border-left:0!important}
+.desk-timeline-scroll{max-width:100%;overflow-x:auto;padding-top:40px;margin-top:-40px;scrollbar-width:thin;scrollbar-color:var(--border-active) transparent}
+#marketHoursTzSelect{max-width:100%;min-width:0}
+#marketHoursCard div:has(> #marketHoursTzSelect){max-width:100%;min-width:0}
+@media(max-width:760px){.desk-timeline{min-width:660px}#view-calendar>div:first-child{max-width:100%;min-width:0}#view-calendar>div:first-child button{flex-shrink:0;padding-inline:10px!important;font-size:11px!important}}
+#marketHoursCard table{font-size:12px}#marketHoursCard th{font-weight:550!important;font-size:10px!important}
+.desk-settings{width:min(580px,calc(100vw - 32px));max-height:85dvh;overflow:auto;margin:auto;padding:26px;border:1px solid var(--border-card);border-radius:12px;background:var(--bg-modal);color:var(--text-primary);box-shadow:0 24px 90px #0005}
+.desk-settings::backdrop{background:#080d13b3;backdrop-filter:blur(4px)}
+.desk-settings section{border-top:1px solid var(--border-card);padding:20px 0 2px;margin-top:18px}
+.desk-settings h3{font-size:13px;font-weight:600;margin-bottom:8px}.desk-settings p{font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:12px}
+.desk-settings-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.desk-settings-actions button,.desk-settings-actions a{font-size:11px!important;padding:8px 12px!important;width:auto!important;height:auto!important;min-height:36px}
+.desk-settings-actions #btnToggleStage{background:var(--bg-card-inner)!important;color:var(--text-primary)!important}
+.desk-settings-actions .theme-switch-container{height:36px}.desk-settings-actions .theme-switch-btn{box-shadow:none!important;font-size:10px}
+.ws-dialog,.modal-box{border-radius:12px!important}
+@media(min-width:1180px){#checklist-section{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px}}
+@media(max-width:1279px){.desk-header-tools #headerNewsRadar{display:none!important}.desk-header-title{min-width:150px}.desk-header-tools #accountDropdown{max-width:215px!important}.desk-dashboard-grid{grid-template-columns:minmax(0,1fr) 270px!important}}
+@media(max-width:1023px){
+ .finpoint-sidebar{display:none}.workspace-header{padding:16px 18px 12px!important;flex-wrap:wrap!important;gap:12px!important}
+ .desk-header-title{flex:1 0 40%}.desk-header-title #headerMainTitle{font-size:17px!important}.desk-header-tools{flex:1 0 45%}
+ .desk-header-tools #accountDropdown{max-width:240px!important}.desk-header-tools>div:has(#headerTradeDatePill){display:none!important}
+ .desk-mobile-nav{display:flex!important;gap:4px;overflow-x:auto;width:100%;background:transparent!important;border:0!important;padding:0!important;scrollbar-width:none}
+ .desk-mobile-nav button{flex-shrink:0;min-height:36px;padding:7px 11px!important;font-size:11px!important;font-weight:500!important;border:0!important}
+ .desk-header-title #headerSidebarToggleBtn{display:none!important}.workspace-main{padding:20px 18px 40px!important}
+ .desk-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.desk-kpis :is(#finpointCardBalance,#trackerTotalPnl,#trackerAdjustedTarget,#deskBufferValue){font-size:26px!important}
+ .desk-dashboard-grid{grid-template-columns:minmax(0,1fr) 260px!important}
+}
+@media(max-width:760px){
+ .desk-dashboard-grid{display:flex!important;flex-direction:column}.desk-main-column,.desk-side-column{width:100%}
+ .desk-side-column{display:grid!important;grid-template-columns:1fr 1fr;align-items:start}
+ .desk-risk-strip .grid{grid-template-columns:1fr!important}.desk-risk-strip .grid>div{padding:10px!important}
+ .desk-risk-strip .grid span:last-child{display:block}
+ .desk-calculator-fields{grid-template-columns:1fr!important}.desk-size-results{grid-column:1;grid-row:auto;min-height:120px}
+ .desk-overview-heading h2{font-size:22px}.desk-overview-heading p{max-width:220px;font-size:11px}
+ .desk-header-tools .desk-manage{display:none}.desk-header-tools #accountDropdown{min-width:130px!important;max-width:200px!important;width:100%}
+}
+@media(max-width:480px){
+ .workspace-header{padding:13px 14px 10px!important}.workspace-main{padding:18px 12px 36px!important}
+ .desk-header-title #headerMainTitle{font-size:15px!important}.desk-header-title>div>div>div:first-child{font-size:8px!important;letter-spacing:1px}
+ .desk-header-tools{flex:1 0 40%;max-width:47%}.desk-header-tools #accountDropdown{font-size:10px;max-width:100%!important;min-width:0!important}
+ .desk-overview-heading{align-items:flex-start}.desk-overview-heading h2{font-size:19px;max-width:200px;line-height:1.4}.desk-overview-heading .b-btn-primary{padding:8px 10px;font-size:10px;margin-top:20px}
+ .desk-kpis{gap:9px}.desk-kpis .b-stat-card{padding:14px 12px;min-height:114px}.desk-kpis :is(#finpointCardBalance,#trackerTotalPnl,#trackerAdjustedTarget,#deskBufferValue){font-size:23px!important;letter-spacing:-.8px}
+ .desk-kpis .b-stat-card>div:first-child>span,.desk-metric-label{font-size:10px!important}
+ .desk-side-column{display:flex!important}.b-card{padding:16px}.desk-goals,.desk-account-panel{padding:16px!important}
+ #chart-section{padding:17px 16px 0}.desk-risk-strip{margin-inline:-16px!important;padding:16px!important}
+ #finpointChartBars{height:180px!important}.desk-size-results{gap:6px!important}.desk-size-results #calcActualRisk{font-size:22px!important}
+ .desk-journal #tradeForm{padding:12px!important}.desk-journal table{min-width:440px}.desk-journal{overflow:hidden}
+ #marketHoursCard{padding:14px!important}.desk-settings{padding:20px}
+}
+@media(prefers-reduced-motion:reduce){.desk-ui *{scroll-behavior:auto!important}}
+#checklist-section input[type="checkbox"]{scroll-margin-block:24px}
+#rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-controls{display:grid;grid-template-columns:1.2fr 1.4fr .8fr .7fr;gap:8px;padding:12px 16px}
+#rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-status{grid-column:1/-1}
+#rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-loss-controls{display:contents}
+#rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-manual-close button{width:100%;white-space:normal;font-size:10px;line-height:1.4;min-height:38px;padding:7px 9px}
+#rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-controls .pond-action{min-width:0;min-height:38px;padding:8px;font-size:11px}
+#rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-loss-controls button{min-width:0;padding:6px;font-size:10px;line-height:1.4}
+.session-bar-sydney{background:#6e91b2!important}.session-bar-tokyo{background:#8d8bab!important}.session-bar-london{background:#438e9c!important}.session-bar-newyork{background:#439c81!important}
+#marketHoursSessionLanes [class*="session-bar-"]{box-shadow:none!important;border-radius:3px!important}
+@media(min-width:1180px) and (max-height:850px){
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-header{padding:10px 16px}
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-subtitle{display:none}
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-reflection{display:none}
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) #rusticCanvasContainer{max-width:min(100%,calc((100dvh - 320px)*4/3))}
+}
+@media(max-width:1179px){
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-header{padding:10px 14px}
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-controls{padding:10px 14px}
+}
+@media(max-width:600px){
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-controls{grid-template-columns:1fr 1fr;gap:6px}
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-title{font-size:11px;white-space:nowrap}
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-header{gap:6px}
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-mark{display:none}
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-tools{gap:0}
+ #rusticAnglerCard:not([data-fullscreen="true"]):not([data-studio="true"]) .pond-icon-button{width:26px}
+ #rusticAnglerCard:not([data-expanded="true"]):not([data-fullscreen="true"]):not([data-studio="true"]) #rusticCanvasContainer{max-width:min(100%,calc(22dvh*4/3))}
+}

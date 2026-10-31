@@ -28,7 +28,7 @@ const vm = require('node:vm');
     try {
         await load();
         await check('startup and inline event handlers', async()=>{
-            assert.equal(await page.title(),'Finpoint Cockpit · Topstep® Finance Management');
+            assert.equal(await page.title(),'The Funded Angler | Trading Desk');
             assert.equal(await page.evaluate(()=>getComputedStyle(document.getElementById('payoutModal')).display),'none');
             assert.equal(await page.evaluate(()=>getComputedStyle(document.getElementById('checklist-section')).display),'grid');
             const unknown = await page.evaluate(()=>{
