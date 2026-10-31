@@ -9,6 +9,13 @@ Quản trị rủi ro, Phiên & tin tức và Cài đặt. Nhật ký và calcul
 các phần nhập liệu hiện có; quản lý tài khoản, giao diện, thông báo và sao lưu
 được gom vào Cài đặt. Chi tiết tại [UI redesign](docs/UI-REDESIGN.md).
 
+Timeline phiên thị trường có thêm **AS1 (18:50–19:10 NY)** và **AS2
+(19:50–20:10 NY)**, tự quy đổi giờ mùa hè/mùa đông. Bật **Quarterly Theory**
+cạnh công tắc ICT Macros để xem Q1–Q4 của ngày, các đoạn 90 phút, micro 22,5
+phút và mốc thời gian True Open. Có thể kéo timeline để xem thử. Đây là lớp
+ngữ cảnh thời gian; các điều kiện bias/CRT/FRVP vẫn do bạn xác nhận trên chart.
+Nguồn và phạm vi triển khai: [Market cycles research](docs/MARKET-CYCLES-RESEARCH.md).
+
 ## Chạy ứng dụng
 
 Mở `index.html` bằng Chrome hoặc Edge. Không cần Node.js hay backend để sử dụng. Tailwind CSS có sẵn trong `assets/tailwind.css`; Google Fonts là tùy chọn qua mạng; phân tích ảnh cần kết nối Gemini và API key của bạn.

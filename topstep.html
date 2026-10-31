@@ -627,6 +627,7 @@ input:checked + .slider:before {
 <link rel="stylesheet" href="assets/pond-live.css?v=20261015-layers2">
 <link rel="stylesheet" href="assets/pond-public.css?v=20261015-public">
 <link rel="stylesheet" href="assets/desk-ui.css?v=20261031-desk">
+<link rel="stylesheet" href="assets/market-quarterly.css?v=20261031-cycles">
 </head>
 <body style="display: flex; min-height: 100vh;">
 
@@ -2052,7 +2053,7 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                         <button id="marketHoursResetLiveBtn" type="button" class="b-btn-secondary" style="display: none; height: 30px; padding: 0 10px; font-size: 11px; color: var(--color-primary); border-color: var(--color-primary); gap: 4px;">
                             ⏱️ Về Thời Gian Thực (Live)
                         </button>
-                        <button type="button" id="marketHoursBtnToggleNotif" onclick="MarketHours.togglePushNotifications(event)" class="b-btn-secondary" style="height: 30px; padding: 0 10px; font-size: 11px; gap: 4px;" title="Bật/Tắt thông báo đẩy Desktop cho 8 khung giờ ICT Macros">
+                        <button type="button" id="marketHoursBtnToggleNotif" onclick="MarketHours.togglePushNotifications(event)" class="b-btn-secondary" style="height: 30px; padding: 0 10px; font-size: 11px; gap: 4px;" title="Bật/Tắt thông báo đẩy Desktop cho 10 khung giờ ICT Macros">
                             🔔 Bật Thông Báo ICT
                         </button>
                         <button type="button" id="marketHoursBtnToggleSound" onclick="MarketHours.toggleSoundAlerts(event)" class="b-btn-secondary" style="height: 30px; padding: 0 10px; font-size: 11px; gap: 4px;" title="Bật/Tắt chuông âm thanh cảnh báo ICT">
@@ -2182,11 +2183,11 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                     </div>
                 </div>
 
-                <!-- Detailed 8 ICT Macros Table Collapsible Section (Matches user's screenshot, prevents text overlap) -->
+                <!-- Detailed ICT Macros Table Collapsible Section (Matches user's screenshot, prevents text overlap) -->
                 <div id="marketHoursIctTableSection" style="margin-top: 14px; background: var(--bg-card-inner); border-radius: 8px; border: 1px solid var(--border-inner); padding: 14px 16px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; user-select: none;" onclick="MarketHours.toggleIctTable()">
                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            <span style="font-size: 13.5px; font-weight: 800; color: #F59E0B;">⚡ Bảng Chi Tiết 8 ICT Macros (Thuật Toán New York)</span>
+                            <span style="font-size: 13.5px; font-weight: 800; color: #F59E0B;">⚡ Bảng Chi Tiết 10 ICT Macros (Thuật Toán New York)</span>
                             <span class="b-badge" style="font-size: 9.5px; background: rgba(245, 158, 11, 0.18); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.4);">Múi Giờ Gốc: New York</span>
                             <span class="b-badge b-badge-dim" style="font-size: 9.5px;">Tự Động Quy Đổi Múi Giờ</span>
                         </div>
@@ -2663,9 +2664,11 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
 <!-- JavaScript Engine -->
 <script src="assets/trading-rules.js"></script>
 <script src="assets/account-store.js"></script>
-<script src="assets/cockpit.js?v=20261015-layers2"></script>
+<script src="assets/cockpit.js?v=20261031-cycles"></script>
 <script src="assets/news-radar.js?v=20261020-calendar"></script>
-<script src="assets/market-hours.js?v=20261030"></script>
+<script src="assets/market-time.js?v=20261031-cycles"></script>
+<script src="assets/market-quarterly.js?v=20261031-cycles"></script>
+<script src="assets/market-hours.js?v=20261031-cycles"></script>
 <script src="assets/workspace.js"></script>
 
     <script src="assets/pond-model.js"></script>

@@ -1820,7 +1820,7 @@ const accountData = TradingRules.accounts;
             // Views
             { id: 'view_dashboard', title: 'Dashboard Tổng Quan', desc: 'Xem PnL, tiến độ tài khoản, target & Trailing Drawdown', category: 'Điều Hướng', icon: '📊', action: () => switchAppView('dashboard') },
             { id: 'view_checklist', title: 'Checklist 4 Setup Vào Lệnh', desc: 'Kiểm tra kỷ luật, setup C1 Reversal, C2 Trend, quét đỉnh/đáy', category: 'Điều Hướng', icon: '✔', action: () => switchAppView('checklist') },
-            { id: 'view_market_hours', title: 'Phiên Thị Trường & Giờ Giao Dịch', desc: 'Xem 24h Sydney, Tokyo, London, New York và 8 ICT Macros', category: 'Điều Hướng', icon: '🌐', action: () => switchAppView('market-hours') },
+            { id: 'view_market_hours', title: 'Phiên Thị Trường & Giờ Giao Dịch', desc: 'Xem 24h Sydney, Tokyo, London, New York và 10 ICT Macros', category: 'Điều Hướng', icon: '🌐', action: () => switchAppView('market-hours') },
             { id: 'view_calendar', title: 'Lịch Kinh Tế Hoa Kỳ & Radar Tin', desc: 'Theo dõi tin đỏ EIA, CPI, FOMC, Jobless Claims', category: 'Điều Hướng', icon: '📅', action: () => switchAppView('calendar') },
             { id: 'sec_moneyflow', title: 'Money Flow Chart', desc: 'Biểu đồ dòng tiền và tăng trưởng tài khoản', category: 'Công Cụ', icon: '📈', action: () => navigateToDashboardSection('chart-section') },
             { id: 'sec_journal', title: 'Nhật Ký Giao Dịch EOD', desc: 'Ghi chép lịch sử vào lệnh, đánh giá cuối ngày', category: 'Công Cụ', icon: '📝', action: () => navigateToDashboardSection('journal-section') },
@@ -1830,6 +1830,9 @@ const accountData = TradingRules.accounts;
             // ICT Macros
             { id: 'macro_lm1', title: 'ICT Macro: London Open (02:33 - 03:00 NY)', desc: 'Săn thanh khoản đỉnh/đáy phiên Á, phát động sóng Judast Swing', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('LM1'); } },
             { id: 'macro_lm2', title: 'ICT Macro: London Continuation (04:03 - 04:30 NY)', desc: 'Xác nhận tiếp diễn xu hướng London hoặc thiết lập High/Low of the Day', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('LM2'); } },
+            { id: 'macro_as1', title: 'ICT Macro: Asia AS1 (18:50 - 19:10 NY)', desc: 'Asia macro 1 / New York local time', category: 'ICT Macro', icon: '', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('AS1'); } },
+            { id: 'macro_as2', title: 'ICT Macro: Asia AS2 (19:50 - 20:10 NY)', desc: 'Asia macro 2 / New York local time', category: 'ICT Macro', icon: '', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('AS2'); } },
+            { id: 'tool_quarterly', title: 'Quarterly Theory · Daye', desc: 'Q1–Q4 · chu kỳ 6 giờ / 90 phút / micro 22,5 phút · mốc True Open', category: 'Công Cụ', icon: '◷', action: () => { switchAppView('market-hours'); const toggle=document.getElementById('marketHoursQuarterlyToggle'); if(toggle&&!toggle.checked)toggle.click(); document.getElementById('quarterlyContext')?.scrollIntoView({behavior:'smooth',block:'start'}); } },
             { id: 'macro_am1', title: 'ICT Macro: NY Pre-Market (08:50 - 09:10 NY)', desc: 'Tái cân bằng trước giờ mở cửa chứng khoán Mỹ 09:30, hút về Fair Value Gap', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('AM1'); } },
             { id: 'macro_am2', title: 'ICT Macro: AM Silver Bullet (09:50 - 10:10 NY)', desc: 'Cửa sổ thuật toán vào lệnh chuẩn mực xác suất cao nhất phiên sáng New York', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('AM2'); } },
             { id: 'macro_am3', title: 'ICT Macro: Morning Completion (10:50 - 11:10 NY)', desc: 'Quét thanh khoản đỉnh/đáy buổi sáng trước thềm bữa trưa phố Wall', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('AM3'); } },
@@ -1845,7 +1848,7 @@ const accountData = TradingRules.accounts;
             // Settings / Actions
             { id: 'act_theme', title: 'Đổi Giao Diện Sáng / Tối (Dark / Light)', desc: 'Chuyển đổi tông màu giao diện Fintech phù hợp điều kiện ánh sáng', category: 'Giao Diện', icon: '🌓', action: () => toggleTheme() },
             { id: 'act_notif_news', title: 'Bật / Tắt Cảnh Báo Đẩy Tin Tức', desc: 'Nhận thông báo đẩy trước 15p & 5p khi có tin đỏ MGC, MNQ, MES, MCL', category: 'Cài Đặt', icon: '🔔', action: () => togglePushNotifications() },
-            { id: 'act_notif_ict', title: 'Bật / Tắt Cảnh Báo Đẩy ICT Macros', desc: 'Nhận thông báo đẩy trước 5p và khi mở cửa 8 cửa sổ thuật toán ICT', category: 'Cài Đặt', icon: '⚡', action: () => { if (window.MarketHours) MarketHours.togglePushNotifications(); } }
+            { id: 'act_notif_ict', title: 'Bật / Tắt Cảnh Báo Đẩy ICT Macros', desc: 'Nhận thông báo đẩy trước 5p và khi mở cửa 10 cửa sổ thuật toán ICT', category: 'Cài Đặt', icon: '⚡', action: () => { if (window.MarketHours) MarketHours.togglePushNotifications(); } }
         ];
 
         let quickSearchQuery = '';

@@ -1,12 +1,13 @@
 /**
  * Topstep Cockpit - Forex & Futures Market Hours Converter Widget
  * Visualizes 24-Hour Global Trading Sessions (Sydney, Tokyo, London, New York)
- * and 8 ICT Algorithmic Windows (Macros) with real-time needle, live clocks,
+ * and ICT macro windows with real-time needle, live clocks,
  * volume curve, session overlaps, timezone conversion, and Desktop Push Notifications.
  * Inspired by BabyPips Forex Market Hours Converter & ICT Algorithmic Trading.
  */
 (function(root) {
     'use strict';
+    const MarketTime=root.MarketTime||(typeof module!=='undefined'?require('./market-time.js'):null);
 
     // High quality vector SVG circular flags (works 100% on all OS without emoji font bugs)
     const SVG_FLAGS = {
@@ -76,8 +77,22 @@
         }
     ];
 
-    // 8 ICT Algorithmic Windows (Macros) defined in New York local time (America/New_York)
+    // New York civil-time windows. AS1/AS2: ICT lecture 2024-10-04, 01:18–01:25.
     const ICT_MACROS = [
+        {
+            id:'asia_1',code:'AS1',name:'Asia Macro 1',nameVn:'Asia Macro 1',
+            startHour:18,startMin:50,endHour:19,endMin:10,
+            nyStartStr:'18:50',nyEndStr:'19:10',
+            tip:'Phiên Á · 18:50–19:10 New York. Cửa sổ quan sát theo ICT Mentorship 04/10/2024, đoạn 1:18–1:25; cần xác nhận giá theo setup của bạn.',
+            source:'https://www.youtube.com/watch?v=qcYYm1iNCIM&t=4680s'
+        },
+        {
+            id:'asia_2',code:'AS2',name:'Asia Macro 2',nameVn:'Asia Macro 2',
+            startHour:19,startMin:50,endHour:20,endMin:10,
+            nyStartStr:'19:50',nyEndStr:'20:10',
+            tip:'Phiên Á · 19:50–20:10 New York. ICT ưu tiên cửa sổ này trong bài giảng 04/10/2024, đoạn 1:23–1:25. AS2 là mã hiển thị của ứng dụng.',
+            source:'https://www.youtube.com/watch?v=qcYYm1iNCIM&t=5020s'
+        },
         {
             id: 'london_1',
             code: 'LM1',
@@ -273,11 +288,14 @@
         scrubMinuteOfDay: 0, // 0 - 1439
         timerId: null,
         isDragging: false,
+        macros: ICT_MACROS,
+        timelineDayKey: '',
+        macroProjectionCache: new Map(),
 
         init() {
             if (typeof localStorage !== 'undefined') {
                 const savedTz = localStorage.getItem('topstep_market_hours_tz');
-                if (savedTz) this.selectedTimezone = savedTz;
+                if (savedTz) {try{new Intl.DateTimeFormat('en-US',{timeZone:savedTz}).format();this.selectedTimezone=savedTz;}catch{}}
                 const saved24 = localStorage.getItem('topstep_market_hours_24h');
                 if (saved24 !== null) this.is24Hour = saved24 === 'true';
                 const savedIct = localStorage.getItem('topstep_market_hours_ict');
@@ -288,6 +306,7 @@
                 this.soundEnabled = localStorage.getItem('topstep_market_hours_sound_enabled') !== 'false';
             }
 
+            if(root.MarketQuarterly)root.MarketQuarterly.mount(this);
             this.syncLiveTime();
             this.render();
 
@@ -295,7 +314,8 @@
             this.timerId = setInterval(() => {
                 if (this.isLive) {
                     this.syncLiveTime();
-                    this.renderNeedleAndClocks();
+                    const dayKey=MarketTime.key(new Date(),this.selectedTimezone);
+                    if(dayKey!==this.timelineDayKey)this.render();else this.renderNeedleAndClocks();
                     this.checkMacroNotifications();
                 }
             }, 1000);
@@ -445,10 +465,11 @@
 
             const nowParts = this.getTimeParts(now, this.selectedTimezone);
             const currentMin = nowParts.hour * 60 + nowParts.minute + nowParts.second / 60;
-            const dateStr = now.toDateString();
+            const dateStr = MarketTime.key(now,this.selectedTimezone);
 
             ICT_MACROS.forEach(macro => {
                 const { startMin } = this.calculateMacroIntervalsInTarget(macro, now);
+                if(startMin===null)return;
                 let diff = startMin - currentMin;
                 if (diff < -720) diff += 1440;
                 if (diff > 720) diff -= 1440;
@@ -508,34 +529,13 @@
 
         // Convert an ICT Macro's NY local times into target timezone minutes (0 to 1439)
         calculateMacroIntervalsInTarget(macro, refDate = new Date()) {
-            const nyOffset = getTimezoneOffsetMinutes('America/New_York', refDate);
-            const targetOffset = getTimezoneOffsetMinutes(this.selectedTimezone, refDate);
-            const diffMinutes = targetOffset - nyOffset;
-
-            const startLocalMin = macro.startHour * 60 + macro.startMin;
-            const endLocalMin = macro.endHour * 60 + macro.endMin;
-
-            let startInTarget = (startLocalMin + diffMinutes) % 1440;
-            if (startInTarget < 0) startInTarget += 1440;
-
-            let endInTarget = (endLocalMin + diffMinutes) % 1440;
-            if (endInTarget < 0) endInTarget += 1440;
-
-            const intervals = [];
-            if (startInTarget < endInTarget) {
-                intervals.push({ start: startInTarget, end: endInTarget });
-            } else {
-                // Wraps across midnight
-                intervals.push({ start: startInTarget, end: 1440 });
-                intervals.push({ start: 0, end: endInTarget });
+            const start=macro.startHour*60+macro.startMin,end=macro.endHour*60+macro.endMin;
+            const key=MarketTime.key(refDate,this.selectedTimezone)+'|'+this.selectedTimezone+'|'+start+'|'+end;
+            if(!this.macroProjectionCache.has(key)){
+                if(this.macroProjectionCache.size>80)this.macroProjectionCache.clear();
+                this.macroProjectionCache.set(key,MarketTime.projectNY(start,end,this.selectedTimezone,refDate));
             }
-
-            return {
-                startMin: startInTarget,
-                endMin: endInTarget,
-                durationMin: (endLocalMin - startLocalMin + 1440) % 1440,
-                intervals
-            };
+            return this.macroProjectionCache.get(key);
         },
 
         // Check if session is open at a given minute of the day
@@ -740,6 +740,7 @@
 
         // Main Render Function
         render() {
+            this.timelineDayKey=MarketTime.key(new Date(),this.selectedTimezone);
             this.renderHeader();
             this.renderNewsAlertStrip();
             this.renderTimelineHeader();
@@ -1036,10 +1037,10 @@
                         <div style="flex: 1; min-width: 0;">
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
                                 <span style="font-size: 12px; font-weight: 800; color: #D97706; line-height: 1.1;">ICT Macros</span>
-                                <span id="marketHoursIctLeftBadge" class="b-badge b-badge-dim" style="font-size: 8.5px; padding: 1px 5px;">8 Cửa Sổ</span>
+                                <span id="marketHoursIctLeftBadge" class="b-badge b-badge-dim" style="font-size: 8.5px; padding: 1px 5px;">${ICT_MACROS.length} Cửa Sổ</span>
                             </div>
                             <div id="marketHoursIctLeftSummary" class="tabular-nums" style="font-size: 9.5px; font-weight: 700; color: var(--text-muted); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top: 2px;">
-                                8 Khung Thuật Toán
+                                ${ICT_MACROS.length} cửa sổ thời gian
                             </div>
                         </div>
                     </div>
@@ -1078,6 +1079,7 @@
                 `;
             }
 
+            if(root.MarketQuarterly){const qt=root.MarketQuarterly.rows(this,now);leftHtml+=qt.left;rightHtml+=qt.right;}
             leftCol.innerHTML = leftHtml;
             rightLanes.innerHTML = rightHtml;
         },
@@ -1191,7 +1193,7 @@
             let rowsHtml = '';
             ICT_MACROS.forEach(macro => {
                 const { startMin, endMin } = this.calculateMacroIntervalsInTarget(macro, now);
-                const convertedRange = `${this.formatMinute(startMin)} – ${this.formatMinute(endMin)}`;
+                const convertedRange = startMin===null?'—':`${this.formatMinute(startMin)} – ${this.formatMinute(endMin)}`;
 
                 rowsHtml += `
                     <tr id="ictTableRow-${macro.id}" style="border-bottom: 1px solid var(--border-inner); transition: background 0.15s;">
@@ -1245,6 +1247,7 @@
             const min = this.scrubMinuteOfDay;
             const pct = (min / 1440) * 100;
             const now = new Date();
+            if(root.MarketQuarterly)root.MarketQuarterly.update(this,now);
 
             // 1. Move Vertical Needle Line & Danger State
             const needle = document.getElementById('marketHoursNeedle');
@@ -1339,6 +1342,7 @@
                 ICT_MACROS.forEach(macro => {
                     const isActive = this.isMacroActiveAt(macro, min, now);
                     const { startMin, endMin } = this.calculateMacroIntervalsInTarget(macro, now);
+                    if(startMin===null)return;
 
                     if (isActive) {
                         activeMacro = { macro, startMin, endMin };
@@ -1399,8 +1403,8 @@
                         leftSummary.innerHTML = `<span>sau ${nextUpcomingMacro.diffMinutes} phút</span>`;
                     } else {
                         leftBadge.className = 'b-badge b-badge-dim';
-                        leftBadge.innerText = '8 Cửa Sổ';
-                        leftSummary.innerHTML = '<span>8 Khung Thuật Toán</span>';
+                        leftBadge.innerText = ICT_MACROS.length+' cửa sổ';
+                        leftSummary.textContent = ICT_MACROS.length+' cửa sổ thời gian';
                     }
                 }
             }
