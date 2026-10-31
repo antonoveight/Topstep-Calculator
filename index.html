@@ -111,6 +111,34 @@ body {
     flex-shrink: 0;
     transition: all 0.2s ease;
 }
+/* Sidebar Collapsed State */
+.finpoint-sidebar.collapsed {
+    width: 68px !important;
+    padding: 22px 10px !important;
+}
+.finpoint-sidebar.collapsed .sidebar-brand-text,
+.finpoint-sidebar.collapsed .sidebar-section-title,
+.finpoint-sidebar.collapsed .sidebar-search-placeholder,
+.finpoint-sidebar.collapsed .sidebar-search-shortcut,
+.finpoint-sidebar.collapsed .sidebar-link-text,
+.finpoint-sidebar.collapsed .sidebar-promo-content {
+    display: none !important;
+}
+.finpoint-sidebar.collapsed .sidebar-brand-container {
+    justify-content: center !important;
+    padding: 0 !important;
+}
+.finpoint-sidebar.collapsed .sidebar-search-pill {
+    padding: 8px !important;
+    justify-content: center !important;
+}
+.finpoint-sidebar.collapsed .sidebar-link {
+    justify-content: center !important;
+    padding: 10px 0 !important;
+}
+.finpoint-sidebar.collapsed .sidebar-promo-card {
+    padding: 10px 6px !important;
+}
 .sidebar-link {
     display: flex;
     align-items: center;
@@ -602,83 +630,82 @@ input:checked + .slider:before {
 <body style="display: flex; min-height: 100vh;">
 
 <!-- ── FINPOINT LEFT SIDEBAR ── -->
+<!-- ── FINPOINT LEFT SIDEBAR ── -->
 <aside class="finpoint-sidebar hidden lg:flex">
     <div>
         <!-- Finpoint Brand Logo -->
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 0 4px;">
+        <div class="sidebar-brand-container" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 0 4px;">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 32px; height: 32px; background: var(--color-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #FFFFFF;">
+                <div style="width: 32px; height: 32px; background: var(--color-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; flex-shrink: 0;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
                 </div>
-                <div>
+                <div class="sidebar-brand-text">
                     <span style="font-size: 16px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em;">Topstep</span>
                     <span style="font-size: 10px; color: var(--text-muted); display: block; margin-top: -3px; font-weight: 500;">Desk Management</span>
                 </div>
             </div>
-            <button style="background: none; border: none; color: var(--text-muted); cursor: pointer;" title="Thu gọn menu">
+            <button id="sidebarToggleBtn" onclick="toggleSidebar()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 6px; display: flex; align-items: center; justify-content: center;" title="Thu gọn / Mở rộng menu">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
             </button>
         </div>
 
         <!-- Search Bar Pill with Cmd+K -->
-        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 10px; padding: 8px 12px; margin-bottom: 22px;">
+        <div id="sidebarSearchBar" class="sidebar-search-pill" onclick="openQuickSearchModal()" style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 10px; padding: 8px 12px; margin-bottom: 22px; cursor: pointer; transition: all 0.2s;" title="Tìm kiếm nhanh tính năng, phiên giờ, setup, luật Topstep... (⌘K)">
             <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted);">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <span style="font-size: 12px;">Tìm kiếm...</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span class="sidebar-search-placeholder" style="font-size: 12px;">Tìm kiếm...</span>
             </div>
-            <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 4px; padding: 2px 6px;">⌘ K</span>
+            <span class="sidebar-search-shortcut" style="font-size: 10px; font-weight: 700; color: var(--text-muted); background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 4px; padding: 2px 6px;">⌘ K</span>
         </div>
 
         <!-- Main Menu -->
-        <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; padding-left: 8px;">
+        <div class="sidebar-section-title" style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; padding-left: 8px;">
             MENU CHÍNH
         </div>
         <nav style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 24px;">
-            <a onclick="switchAppView('dashboard')" id="nav-dashboard" class="sidebar-link active">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                Dashboard
+            <a onclick="switchAppView('dashboard')" id="nav-dashboard" class="sidebar-link active" title="Dashboard">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span class="sidebar-link-text">Dashboard</span>
             </a>
-            <a onclick="switchAppView('checklist')" id="nav-checklist" class="sidebar-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                Checklist Thực Chiến
+            <a onclick="switchAppView('checklist')" id="nav-checklist" class="sidebar-link" title="Checklist Thực Chiến">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                <span class="sidebar-link-text">Checklist Thực Chiến</span>
             </a>
-            <a onclick="switchAppView('market-hours')" id="nav-market-hours" class="sidebar-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                Phiên Thị Trường
+            <a onclick="switchAppView('market-hours')" id="nav-market-hours" class="sidebar-link" title="Phiên Thị Trường &amp; Lịch Tin">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span class="sidebar-link-text">Phiên Thị Trường</span>
             </a>
-            <a onclick="switchAppView('calendar')" id="nav-calendar" class="sidebar-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                Lịch Kinh Tế
+            <a onclick="navigateToDashboardSection('chart-section')" class="sidebar-link" title="Money Flow">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                <span class="sidebar-link-text">Money Flow</span>
             </a>
-            <a onclick="navigateToDashboardSection('chart-section')" class="sidebar-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                Money Flow
+            <a onclick="navigateToDashboardSection('journal-section')" class="sidebar-link" title="Nhật Ký EOD">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span class="sidebar-link-text">Nhật Ký EOD</span>
             </a>
-            <a onclick="navigateToDashboardSection('journal-section')" class="sidebar-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                Nhật Ký EOD
+            <a onclick="navigateToDashboardSection('calculator-section')" class="sidebar-link" title="Tính Size Lệnh">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M8 18h.01M12 18h.01"></path></svg>
+                <span class="sidebar-link-text">Tính Size Lệnh</span>
             </a>
-            <a onclick="navigateToDashboardSection('calculator-section')" class="sidebar-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M8 18h.01M12 18h.01"></path></svg>
-                Tính Size Lệnh
-            </a>
-            <a onclick="openPricingModal()" class="sidebar-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-                Bảng Gói Topstep®
+            <a onclick="openPricingModal()" class="sidebar-link" title="Bảng Gói Topstep®">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                <span class="sidebar-link-text">Bảng Gói Topstep®</span>
             </a>
         </nav>
     </div>
 
     <!-- Finpoint Bottom Promo Card -->
-    <div style="background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 14px; padding: 16px; text-align: center;">
-        <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+    <div class="sidebar-promo-card" style="background: var(--bg-card-inner); border: 1px solid var(--border-inner); border-radius: 14px; padding: 16px; text-align: center;">
+        <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; flex-shrink: 0;" title="Topstep® Portal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
         </div>
-        <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">Giản Hạ Thủy</div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Đinh Sửu 1997 · Mệnh Thủy</div>
-        <a href="https://www.topstep.com" target="_blank" rel="noopener noreferrer" class="b-btn-primary" style="width: 100%; justify-content: center; text-decoration: none; font-size: 11.5px; padding: 7px 10px;">
-            Topstep® Portal ↗
-        </a>
+        <div class="sidebar-promo-content">
+            <div style="font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">Topstep® Trader</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">CME Futures · Quản Trị Quỹ</div>
+            <a href="https://www.topstep.com" target="_blank" rel="noopener noreferrer" class="b-btn-primary" style="width: 100%; justify-content: center; text-decoration: none; font-size: 11.5px; padding: 7px 10px;">
+                Topstep® Portal ↗
+            </a>
+        </div>
     </div>
 </aside>
 
@@ -688,8 +715,13 @@ input:checked + .slider:before {
     <!-- Top Header Bar with Breadcrumbs & Theme Switcher -->
     <header class="workspace-header" style="padding: 16px 28px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); flex-wrap: wrap; gap: 14px; background: var(--bg-header); position: sticky; top: 0; z-index: 40;">
         <div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-muted); margin-bottom: 2px;">
-                <span>Topstep</span>
+            <div style="display: flex; align-items: center; gap: 12px;">
+            <button id="headerSidebarToggleBtn" onclick="toggleSidebar()" class="b-btn-secondary" style="height: 32px; padding: 0 8px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center;" title="Bật / Tắt Menu Trái">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+            </button>
+            <div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-muted); margin-bottom: 2px;">
+                    <span>Topstep</span>
                 <span>/</span>
                 <span id="headerBreadcrumbCurrent" style="color: var(--color-primary); font-weight: 600;">Dashboard</span>
             </div>
@@ -697,6 +729,7 @@ input:checked + .slider:before {
                 <h1 id="headerMainTitle" style="font-size: 22px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">Welcome back, Trader!</h1>
                 <span class="b-badge b-badge-blue" id="activeStageBadge">Vòng Combine</span>
                 <span id="trackerAccountIdTag" class="b-badge b-badge-dim">TS-50K-001</span>
+            </div>
             </div>
         </div>
 
@@ -2064,6 +2097,9 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                     </div>
                 </div>
 
+                <!-- Live News Warning Strip directly inside Market Hours Card -->
+                <div id="marketHoursNewsAlertStrip" style="margin-bottom: 14px; display: none;"></div>
+
                 <!-- Workspace Two Columns: Left Info vs Right 24h Interactive Track -->
                 <div style="display: flex; align-items: stretch; position: relative;">
                     <!-- Left Info Column -->
@@ -2089,6 +2125,12 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                         <div id="marketHoursTimelineScale" style="width: 100%; margin-bottom: 0;"></div>
 
                         <!-- 4 Session Horizontal Lanes -->
+                        <!-- News Pins Markers above timeline -->
+                        <div id="marketHoursNewsPinsContainer" style="position: absolute; top: 12px; left: 0; right: 0; height: 26px; pointer-events: none; z-index: 22;"></div>
+
+                        <!-- Shaded News Danger Zone Overlay across tracks -->
+                        <div id="marketHoursNewsOverlay" style="position: absolute; top: 78px; bottom: 85px; left: 0; right: 0; pointer-events: none; z-index: 18;"></div>
+
                         <div id="marketHoursSessionLanes" style="display: flex; flex-direction: column; gap: 0;"></div>
 
                         <!-- Volume Header & Legend Strip (Theme-Adaptive & Clean) -->
@@ -2261,7 +2303,7 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
         </div> <!-- END #view-calendar -->
 <!-- Footer -->
         <footer style="text-align: center; font-size: 11.5px; color: var(--text-muted); padding: 12px 0; border-top: 1px solid var(--border-card);">
-            Topstep® Multi-Account Trading Desk · Finpoint Fintech Style · Giản Hạ Thủy (Mệnh Thủy 1997)
+            Topstep® Multi-Account Trading Desk · Finpoint Fintech Style · Quản Trị Quỹ & Kỷ Luật Thực Chiến
         </footer>
     </main>
 </div>
@@ -2633,5 +2675,39 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
     <script src="assets/pond-execution.js?v=20261016-close-controls"></script>
     <script src="assets/pond-live.js?v=20261015-public"></script>
     <script src="assets/pond-public.js?v=20261016-close-controls"></script>
+
+<!-- ── QUICK SEARCH & COMMAND PALETTE MODAL (CMD+K) ── -->
+<div id="quickSearchModal" class="modal hidden" onclick="if (event.target === this) closeQuickSearchModal();">
+    <div class="modal-box wide" style="max-width: 640px; padding: 0; overflow: hidden; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-card); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+        <!-- Search Input Bar -->
+        <div style="display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border-inner); background: var(--bg-card-inner);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-primary); flex-shrink: 0;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input id="quickSearchInput" type="text" placeholder="Tìm kiếm nhanh tính năng, phiên giờ, setup, luật Topstep..." oninput="handleQuickSearchInput(this.value)" onkeydown="handleQuickSearchKeydown(event)" style="flex: 1; background: transparent; border: none; outline: none; font-size: 14px; font-weight: 600; color: var(--text-primary);" autofocus>
+            <button type="button" onclick="closeQuickSearchModal()" style="background: none; border: none; font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; padding: 3px 8px; border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-card);">ESC</button>
+        </div>
+
+        <!-- Quick Filter Category Pills -->
+        <div id="quickSearchPills" style="display: flex; gap: 6px; padding: 10px 18px; border-bottom: 1px solid var(--border-inner); overflow-x: auto; font-size: 11px;">
+            <button type="button" onclick="filterQuickSearchCategory('ALL')" class="b-badge b-badge-blue quick-cat-pill" style="cursor: pointer; border: none;">Tất cả</button>
+            <button type="button" onclick="filterQuickSearchCategory('Điều Hướng')" class="b-badge b-badge-dim quick-cat-pill" style="cursor: pointer; border: none;">Điều Hướng</button>
+            <button type="button" onclick="filterQuickSearchCategory('ICT Macro')" class="b-badge b-badge-dim quick-cat-pill" style="cursor: pointer; border: none;">ICT Macros</button>
+            <button type="button" onclick="filterQuickSearchCategory('Công Cụ')" class="b-badge b-badge-dim quick-cat-pill" style="cursor: pointer; border: none;">Công Cụ</button>
+            <button type="button" onclick="filterQuickSearchCategory('Luật Topstep')" class="b-badge b-badge-dim quick-cat-pill" style="cursor: pointer; border: none;">Luật Topstep</button>
+        </div>
+
+        <!-- Search Results List -->
+        <div id="quickSearchResults" style="max-height: 380px; overflow-y: auto; padding: 8px 10px;"></div>
+
+        <!-- Footer Shortcuts Info -->
+        <div style="padding: 10px 18px; background: var(--bg-card-inner); border-top: 1px solid var(--border-inner); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted);">
+            <div style="display: flex; gap: 12px;">
+                <span><kbd style="padding: 1px 5px; border-radius: 3px; background: var(--bg-card); border: 1px solid var(--border-card); font-family: monospace;">↑</kbd> <kbd style="padding: 1px 5px; border-radius: 3px; background: var(--bg-card); border: 1px solid var(--border-card); font-family: monospace;">↓</kbd> Di chuyển</span>
+                <span><kbd style="padding: 1px 5px; border-radius: 3px; background: var(--bg-card); border: 1px solid var(--border-card); font-family: monospace;">↵</kbd> Chọn</span>
+                <span><kbd style="padding: 1px 5px; border-radius: 3px; background: var(--bg-card); border: 1px solid var(--border-card); font-family: monospace;">Esc</kbd> Đóng</span>
+            </div>
+            <span>Topstep Cockpit 2026</span>
+        </div>
+    </div>
+</div>
 </body>
 </html>

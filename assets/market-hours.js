@@ -741,12 +741,196 @@
         // Main Render Function
         render() {
             this.renderHeader();
+            this.renderNewsAlertStrip();
             this.renderTimelineHeader();
             this.renderSessionRows();
+            this.renderNewsOverlay();
             this.renderVolumeChart();
             this.renderIctDetailTable();
             this.renderNeedleAndClocks();
             this.renderNotificationToggle();
+        },
+
+        // Context helper for upcoming and today's news events
+        getNewsEventsContext() {
+            if (typeof window === 'undefined' || !window.NewsRadar) return { active: null, upcoming: null, todayEvents: [] };
+            
+            const weeklyEvents = window.NewsRadar.weeklyEvents || [];
+            const now = new Date();
+            const nowMs = now.getTime();
+            const nowParts = this.getTimeParts(now, this.selectedTimezone);
+
+            const todayEvents = [];
+            let activeEvent = null;
+            let nearestUpcoming = null;
+            let minDiff = Infinity;
+
+            weeklyEvents.forEach(ev => {
+                if (!ev.time) return;
+                const evParts = this.getTimeParts(ev.time, this.selectedTimezone);
+                const isSameDay = evParts.year === nowParts.year &&
+                                  evParts.month === nowParts.month &&
+                                  evParts.day === nowParts.day;
+                
+                const evMinute = evParts.hour * 60 + evParts.minute;
+                const diffMs = ev.time.getTime() - nowMs;
+                const enriched = {
+                    ...ev,
+                    minute: evMinute,
+                    localTimeStr: this.formatMinute(evMinute),
+                    diffMinutes: Math.round(diffMs / 60000)
+                };
+
+                if (isSameDay) {
+                    todayEvents.push(enriched);
+                }
+
+                // Danger window: 15m before to 10m after event
+                if (diffMs <= 15 * 60 * 1000 && diffMs >= -10 * 60 * 1000) {
+                    if (!activeEvent || ev.impactLevel === 'HIGH') {
+                        activeEvent = enriched;
+                    }
+                }
+
+                if (diffMs > 0 && diffMs < minDiff) {
+                    minDiff = diffMs;
+                    nearestUpcoming = enriched;
+                }
+            });
+
+            todayEvents.sort((a, b) => a.minute - b.minute);
+            return { active: activeEvent, upcoming: nearestUpcoming, todayEvents };
+        },
+
+        // Render News Alert Strip directly in Market Hours
+        renderNewsAlertStrip() {
+            const strip = document.getElementById('marketHoursNewsAlertStrip');
+            if (!strip) return;
+
+            const { active, upcoming } = this.getNewsEventsContext();
+
+            if (active) {
+                strip.style.display = 'block';
+                const symbolsStr = active.symbols ? active.symbols.join(', ') : 'MGC, MNQ, MES, MCL';
+                const timeStr = `${active.localTimeStr} (${active.etTime})`;
+                const diffText = active.diffMinutes >= 0 
+                    ? `Ra tin sau ${active.diffMinutes} phút` 
+                    : `Vừa ra tin ${Math.abs(active.diffMinutes)} phút trước`;
+
+                strip.innerHTML = `
+                    <div style="background: rgba(239, 68, 68, 0.15); border: 1.5px solid #EF4444; color: #EF4444; width: 100%; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);">
+                        <div style="display: flex; align-items: center; gap: 9px; flex-wrap: wrap;">
+                            <span style="font-size: 16px;">⛔</span>
+                            <div>
+                                <span style="font-weight: 800; font-size: 12.5px;">VÙNG NÉ TIN ĐỎ ĐANG DIỄN RA: ${active.vietnameseName || active.name}</span>
+                                <span style="font-size: 11px; opacity: 0.9; margin-left: 6px;">(${timeStr})</span>
+                                <span class="b-badge" style="background: #EF4444; color: #FFFFFF; font-size: 9px; margin-left: 6px;">${symbolsStr}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-weight: 800; font-size: 12px; color: #EF4444;">${diffText} · KHÔNG MỞ LỆNH</span>
+                        </div>
+                    </div>
+                `;
+            } else if (upcoming && upcoming.diffMinutes <= 30) {
+                strip.style.display = 'block';
+                const symbolsStr = upcoming.symbols ? upcoming.symbols.join(', ') : 'MGC, MNQ, MES, MCL';
+                strip.innerHTML = `
+                    <div style="background: rgba(245, 158, 11, 0.15); border: 1.5px solid #F59E0B; color: #F59E0B; width: 100%; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 9px; flex-wrap: wrap;">
+                            <span style="font-size: 16px;">⚠️</span>
+                            <div>
+                                <span style="font-weight: 800; font-size: 12.5px;">CẢNH BÁO: Sắp có tin quan trọng: ${upcoming.vietnameseName || upcoming.name}</span>
+                                <span style="font-size: 11px; opacity: 0.9; margin-left: 6px;">(lúc ${upcoming.localTimeStr} / ${upcoming.etTime})</span>
+                                <span class="b-badge" style="background: #F59E0B; color: #FFFFFF; font-size: 9px; margin-left: 6px;">${symbolsStr}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-weight: 800; font-size: 12px; color: #F59E0B;">Còn ${upcoming.diffMinutes} phút · Chuẩn bị dời SL/BE</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                strip.style.display = 'block';
+                const upcomingText = upcoming 
+                    ? `· Tin tiếp theo: <strong>${upcoming.vietnameseName || upcoming.name}</strong> (${upcoming.localTimeStr} / ${upcoming.etTime})` 
+                    : '· Không có tin đỏ trong 24h tới';
+
+                strip.innerHTML = `
+                    <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--text-primary); width: 100%; border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; display: inline-block; box-shadow: 0 0 6px rgba(16,185,129,0.8);"></span>
+                            <span style="font-weight: 800; color: #10B981; font-size: 11.5px;">TÌNH TRẠNG TIN TỨC: AN TOÀN</span>
+                            <span style="font-size: 11px; color: var(--text-muted);">${upcomingText}</span>
+                        </div>
+                        <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Giao dịch bình thường theo setup</span>
+                    </div>
+                `;
+            }
+        },
+
+        // Render News Overlay (Danger bands and red flags directly on the 24h timeline)
+        renderNewsOverlay() {
+            const overlay = document.getElementById('marketHoursNewsOverlay');
+            const pinsContainer = document.getElementById('marketHoursNewsPinsContainer');
+            if (!overlay) return;
+
+            const { todayEvents } = this.getNewsEventsContext();
+            let overlayHtml = '';
+            let pinsHtml = '';
+
+            const eventsToPlot = todayEvents;
+
+            eventsToPlot.forEach(ev => {
+                const leftPct = (ev.minute / 1440) * 100;
+                const startMin = Math.max(0, ev.minute - 15);
+                const endMin = Math.min(1440, ev.minute + 10);
+                const bandLeftPct = (startMin / 1440) * 100;
+                const bandWidthPct = ((endMin - startMin) / 1440) * 100;
+
+                // Red Shaded Danger Band through lanes
+                overlayHtml += `
+                    <div class="market-hours-danger-band" style="position: absolute; left: ${bandLeftPct.toFixed(3)}%; width: ${bandWidthPct.toFixed(3)}%; top: 0; bottom: 0; background: rgba(239, 68, 68, 0.16); border-left: 1.5px dashed rgba(239, 68, 68, 0.7); border-right: 1.5px dashed rgba(239, 68, 68, 0.7); pointer-events: none;" title="⛔ VÙNG CẤM NÉ TIN (15p trước - 10p sau): ${ev.vietnameseName || ev.name}"></div>
+                    <div style="position: absolute; left: ${leftPct.toFixed(3)}%; top: 0; bottom: 0; border-left: 2px solid #EF4444; opacity: 0.85; pointer-events: none;"></div>
+                `;
+
+                // News Pin Marker on track
+                if (pinsContainer) {
+                    const shortName = ev.symbols ? ev.symbols[0] : 'TIN';
+                    const clampedLeftPct = Math.max(3.5, Math.min(96.5, leftPct));
+                    pinsHtml += `
+                        <div class="market-hours-news-pin" style="position: absolute; left: ${clampedLeftPct.toFixed(3)}%; top: 0; transform: translateX(-50%); pointer-events: auto; cursor: pointer; background: #DC2626; color: #FFFFFF; font-size: 8.5px; font-weight: 800; padding: 2px 6px; border-radius: 4px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.5); display: flex; align-items: center; gap: 3px; z-index: 25; white-space: nowrap;" title="⚠️ TIN ĐỎ: ${ev.vietnameseName || ev.name}\n🕒 Giờ ra tin: ${ev.localTimeStr} (${ev.etTime})\n🎯 Tác động: ${ev.symbols ? ev.symbols.join(', ') : 'Futures'}\n🛡️ Khuyến nghị: Né tin hoặc siết BE">
+                            <span style="font-size: 10px;">🚩</span>
+                            <span>${ev.localTimeStr} ${shortName}</span>
+                        </div>
+                    `;
+                }
+            });
+
+            overlay.innerHTML = overlayHtml;
+            if (pinsContainer) pinsContainer.innerHTML = pinsHtml;
+        },
+
+        // Highlight a specific ICT Macro (used by Quick Search)
+        highlightMacro(code) {
+            this.showIctMacros = true;
+            const toggle = document.getElementById('marketHoursIctToggle');
+            if (toggle) toggle.checked = true;
+            this.render();
+
+            setTimeout(() => {
+                const pills = document.querySelectorAll(`.ict-macro-${code.toLowerCase()}`);
+                pills.forEach(p => {
+                    p.style.boxShadow = '0 0 20px #EF4444, 0 0 8px #FFFFFF';
+                    p.style.transform = 'scale(1.25)';
+                    setTimeout(() => {
+                        p.style.boxShadow = '';
+                        p.style.transform = '';
+                    }, 2500);
+                });
+                const card = document.getElementById('marketHoursCard');
+                if (card) card.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
         },
 
         renderHeader() {
@@ -1062,10 +1246,38 @@
             const pct = (min / 1440) * 100;
             const now = new Date();
 
-            // 1. Move Vertical Needle Line
+            // 1. Move Vertical Needle Line & Danger State
             const needle = document.getElementById('marketHoursNeedle');
             if (needle) {
                 needle.style.left = `${pct.toFixed(3)}%`;
+            }
+
+            // Check news danger zone at current scrub minute
+            const { todayEvents } = this.getNewsEventsContext();
+            const inNewsDanger = todayEvents.some(ev => min >= (ev.minute - 15) && min <= (ev.minute + 10));
+
+            if (inNewsDanger) {
+                if (needle) {
+                    needle.style.background = '#EF4444';
+                    needle.style.boxShadow = '0 0 12px rgba(239, 68, 68, 0.8)';
+                }
+                const pinBox = document.querySelector('#marketHoursNeedle > div:first-child');
+                if (pinBox) {
+                    pinBox.style.background = '#DC2626';
+                    pinBox.style.borderColor = '#EF4444';
+                    pinBox.style.boxShadow = '0 4px 14px rgba(220, 38, 38, 0.6)';
+                }
+            } else {
+                if (needle) {
+                    needle.style.background = '#9333EA';
+                    needle.style.boxShadow = 'none';
+                }
+                const pinBox = document.querySelector('#marketHoursNeedle > div:first-child');
+                if (pinBox) {
+                    pinBox.style.background = '#7C3AED';
+                    pinBox.style.borderColor = '#FFFFFF';
+                    pinBox.style.boxShadow = '0 4px 12px rgba(124, 58, 237, 0.45)';
+                }
             }
 
             // 2. Update Top Needle Pin (Clock hands & digital time)

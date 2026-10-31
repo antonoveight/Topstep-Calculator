@@ -1778,6 +1778,233 @@ const accountData = TradingRules.accounts;
             nameEl.value = '';
         }
 
+
+        /* ── FINPOINT SIDEBAR TOGGLE & COLLAPSED CONTROLLER ── */
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.finpoint-sidebar');
+            if (!sidebar) return;
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            try {
+                localStorage.setItem('topstep_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+            } catch (e) {}
+
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            if (toggleBtn) {
+                toggleBtn.title = isCollapsed ? 'Mở rộng menu' : 'Thu gọn menu';
+            }
+            const headerBtn = document.getElementById('headerSidebarToggleBtn');
+            if (headerBtn) {
+                headerBtn.title = isCollapsed ? 'Mở rộng menu' : 'Thu gọn menu';
+            }
+        }
+
+        function initSidebarState() {
+            try {
+                if (localStorage.getItem('topstep_sidebar_collapsed') === 'true') {
+                    const sidebar = document.querySelector('.finpoint-sidebar');
+                    if (sidebar) sidebar.classList.add('collapsed');
+                }
+            } catch (e) {}
+        }
+
+        /* ── QUICK SEARCH & COMMAND PALETTE (CMD+K) ── */
+        const QUICK_SEARCH_ITEMS = [
+            // Views
+            { id: 'view_dashboard', title: 'Dashboard Tổng Quan', desc: 'Xem PnL, tiến độ tài khoản, target & Trailing Drawdown', category: 'Điều Hướng', icon: '📊', action: () => switchAppView('dashboard') },
+            { id: 'view_checklist', title: 'Checklist 4 Setup Vào Lệnh', desc: 'Kiểm tra kỷ luật, setup C1 Reversal, C2 Trend, quét đỉnh/đáy', category: 'Điều Hướng', icon: '✔', action: () => switchAppView('checklist') },
+            { id: 'view_market_hours', title: 'Phiên Thị Trường & Giờ Giao Dịch', desc: 'Xem 24h Sydney, Tokyo, London, New York và 8 ICT Macros', category: 'Điều Hướng', icon: '🌐', action: () => switchAppView('market-hours') },
+            { id: 'view_calendar', title: 'Lịch Kinh Tế Hoa Kỳ & Radar Tin', desc: 'Theo dõi tin đỏ EIA, CPI, FOMC, Jobless Claims', category: 'Điều Hướng', icon: '📅', action: () => switchAppView('calendar') },
+            { id: 'sec_moneyflow', title: 'Money Flow Chart', desc: 'Biểu đồ dòng tiền và tăng trưởng tài khoản', category: 'Công Cụ', icon: '📈', action: () => navigateToDashboardSection('chart-section') },
+            { id: 'sec_journal', title: 'Nhật Ký Giao Dịch EOD', desc: 'Ghi chép lịch sử vào lệnh, đánh giá cuối ngày', category: 'Công Cụ', icon: '📝', action: () => navigateToDashboardSection('journal-section') },
+            { id: 'sec_calculator', title: 'Tính Size Hợp Đồng & R:R', desc: 'Máy tính lot size MNQ, MES, MGC, MCL theo rủi ro Topstep', category: 'Công Cụ', icon: '🧮', action: () => navigateToDashboardSection('calculator-section') },
+            { id: 'modal_pricing', title: 'Bảng Gói Topstep® (50K, 100K, 150K)', desc: 'So sánh chỉ tiêu Target, Max Loss, Daily Loss và quy mô', category: 'Công Cụ', icon: '🏷️', action: () => openPricingModal() },
+            
+            // ICT Macros
+            { id: 'macro_lm1', title: 'ICT Macro: London Open (02:33 - 03:00 NY)', desc: 'Săn thanh khoản đỉnh/đáy phiên Á, phát động sóng Judast Swing', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('LM1'); } },
+            { id: 'macro_lm2', title: 'ICT Macro: London Continuation (04:03 - 04:30 NY)', desc: 'Xác nhận tiếp diễn xu hướng London hoặc thiết lập High/Low of the Day', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('LM2'); } },
+            { id: 'macro_am1', title: 'ICT Macro: NY Pre-Market (08:50 - 09:10 NY)', desc: 'Tái cân bằng trước giờ mở cửa chứng khoán Mỹ 09:30, hút về Fair Value Gap', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('AM1'); } },
+            { id: 'macro_am2', title: 'ICT Macro: AM Silver Bullet (09:50 - 10:10 NY)', desc: 'Cửa sổ thuật toán vào lệnh chuẩn mực xác suất cao nhất phiên sáng New York', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('AM2'); } },
+            { id: 'macro_am3', title: 'ICT Macro: Morning Completion (10:50 - 11:10 NY)', desc: 'Quét thanh khoản đỉnh/đáy buổi sáng trước thềm bữa trưa phố Wall', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('AM3'); } },
+            { id: 'macro_lnc', title: 'ICT Macro: Lunch Hour (11:50 - 12:10 NY)', desc: 'Giai đoạn nghỉ trưa thanh khoản mỏng, hay tạo bẫy consolidation đi ngang', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('LNC'); } },
+            { id: 'macro_pm', title: 'ICT Macro: PM Silver Bullet (13:10 - 13:40 NY)', desc: 'Săn quét thanh khoản và tiếp diễn xu hướng buổi chiều New York', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('PM'); } },
+            { id: 'macro_cls', title: 'ICT Macro: Cash Close (15:15 - 15:45 NY)', desc: 'Đóng vị thế cuối ngày của các quỹ và ngân hàng trước 16:00 Equities Close', category: 'ICT Macro', icon: '⚡', action: () => { switchAppView('market-hours'); if (window.MarketHours) MarketHours.highlightMacro('CLS'); } },
+            
+            // Rules
+            { id: 'rule_mll', title: 'Luật Topstep: Max Loss Limit (MLL)', desc: 'Giới hạn lỗ tối đa bám theo đỉnh vốn cao nhất (Trailing Drawdown)', category: 'Luật Topstep', icon: '🛡️', action: () => { switchAppView('dashboard'); navigateToDashboardSection('account-matrix-section'); } },
+            { id: 'rule_dll', title: 'Luật Topstep: Daily Loss Limit (DLL)', desc: 'Giới hạn lỗ trong 1 ngày giao dịch - chạm DLL bị khóa tài khoản trong ngày', category: 'Luật Topstep', icon: '🛡️', action: () => { switchAppView('dashboard'); navigateToDashboardSection('account-matrix-section'); } },
+            { id: 'rule_flatten', title: 'Luật Topstep: Đóng Lệnh Trước 15:10 CT', desc: 'Tuyệt đối không giữ lệnh qua đêm trên thị trường Futures CME', category: 'Luật Topstep', icon: '🛡️', action: () => switchAppView('checklist') },
+            
+            // Settings / Actions
+            { id: 'act_theme', title: 'Đổi Giao Diện Sáng / Tối (Dark / Light)', desc: 'Chuyển đổi tông màu giao diện Fintech phù hợp điều kiện ánh sáng', category: 'Giao Diện', icon: '🌓', action: () => toggleTheme() },
+            { id: 'act_notif_news', title: 'Bật / Tắt Cảnh Báo Đẩy Tin Tức', desc: 'Nhận thông báo đẩy trước 15p & 5p khi có tin đỏ MGC, MNQ, MES, MCL', category: 'Cài Đặt', icon: '🔔', action: () => togglePushNotifications() },
+            { id: 'act_notif_ict', title: 'Bật / Tắt Cảnh Báo Đẩy ICT Macros', desc: 'Nhận thông báo đẩy trước 5p và khi mở cửa 8 cửa sổ thuật toán ICT', category: 'Cài Đặt', icon: '⚡', action: () => { if (window.MarketHours) MarketHours.togglePushNotifications(); } }
+        ];
+
+        let quickSearchQuery = '';
+        let quickSearchSelectedIdx = 0;
+        let quickSearchCategory = 'ALL';
+        let filteredQuickSearchResults = [];
+
+        function openQuickSearchModal() {
+            const modal = document.getElementById('quickSearchModal');
+            const input = document.getElementById('quickSearchInput');
+            if (modal) modal.classList.remove('hidden');
+            if (input) {
+                input.value = '';
+                quickSearchQuery = '';
+                quickSearchSelectedIdx = 0;
+                renderQuickSearchResults();
+                setTimeout(() => input.focus(), 50);
+            }
+        }
+
+        function closeQuickSearchModal() {
+            const modal = document.getElementById('quickSearchModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function filterQuickSearchCategory(cat) {
+            quickSearchCategory = cat;
+            quickSearchSelectedIdx = 0;
+            const pills = document.querySelectorAll('.quick-cat-pill');
+            pills.forEach(p => {
+                const text = p.innerText.trim();
+                const matches = (cat === 'ALL' && text === 'Tất cả') || (text.includes(cat) || (cat === 'ICT Macro' && text.includes('ICT')));
+                p.className = matches ? 'b-badge b-badge-blue quick-cat-pill' : 'b-badge b-badge-dim quick-cat-pill';
+            });
+            renderQuickSearchResults();
+        }
+
+        function removeDiacritics(str) {
+            return (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        }
+
+        function handleQuickSearchInput(val) {
+            quickSearchQuery = val || '';
+            quickSearchSelectedIdx = 0;
+            renderQuickSearchResults();
+        }
+
+        function handleQuickSearchKeydown(e) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (filteredQuickSearchResults.length > 0) {
+                    quickSearchSelectedIdx = (quickSearchSelectedIdx + 1) % filteredQuickSearchResults.length;
+                    renderQuickSearchResults(false);
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (filteredQuickSearchResults.length > 0) {
+                    quickSearchSelectedIdx = (quickSearchSelectedIdx - 1 + filteredQuickSearchResults.length) % filteredQuickSearchResults.length;
+                    renderQuickSearchResults(false);
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (filteredQuickSearchResults.length > 0 && filteredQuickSearchResults[quickSearchSelectedIdx]) {
+                    executeQuickSearchItem(filteredQuickSearchResults[quickSearchSelectedIdx]);
+                }
+            } else if (e.key === 'Escape') {
+                closeQuickSearchModal();
+            }
+        }
+
+        function renderQuickSearchResults(resetScroll = true) {
+            const container = document.getElementById('quickSearchResults');
+            if (!container) return;
+
+            const q = removeDiacritics(quickSearchQuery.trim());
+
+            filteredQuickSearchResults = QUICK_SEARCH_ITEMS.filter(item => {
+                if (quickSearchCategory !== 'ALL' && item.category !== quickSearchCategory) return false;
+                if (!q) return true;
+                const matchTitle = removeDiacritics(item.title).includes(q);
+                const matchDesc = removeDiacritics(item.desc).includes(q);
+                const matchCat = removeDiacritics(item.category).includes(q);
+                return matchTitle || matchDesc || matchCat;
+            });
+
+            if (filteredQuickSearchResults.length === 0) {
+                container.innerHTML = `
+                    <div style="padding: 28px 16px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                        🔍 Không tìm thấy kết quả phù hợp với "<strong>${quickSearchQuery}</strong>"
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filteredQuickSearchResults.forEach((item, idx) => {
+                const isSelected = idx === quickSearchSelectedIdx;
+                const activeStyle = isSelected 
+                    ? 'background: var(--color-primary-light); border-color: var(--color-primary);' 
+                    : 'background: transparent; border-color: transparent;';
+                const titleColor = isSelected ? 'var(--color-primary)' : 'var(--text-primary)';
+
+                html += `
+                    <div onclick="executeQuickSearchItem(filteredQuickSearchResults[${idx}])" 
+                         id="searchResultItem-${idx}"
+                         style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-radius: 10px; cursor: pointer; transition: all 0.15s ease; border: 1px solid transparent; ${activeStyle}">
+                        <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; border: 1px solid var(--border-inner);">
+                                ${item.icon}
+                            </div>
+                            <div style="min-width: 0;">
+                                <div style="font-size: 13px; font-weight: 700; color: ${titleColor}; line-height: 1.3;">
+                                    ${item.title}
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    ${item.desc}
+                                </div>
+                            </div>
+                        </div>
+                        <span class="b-badge ${item.category === 'ICT Macro' ? 'b-badge-purple' : (item.category === 'Luật Topstep' ? 'b-badge-red' : 'b-badge-dim')}" style="font-size: 9.5px; flex-shrink: 0;">
+                            ${item.category}
+                        </span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            if (resetScroll) {
+                container.scrollTop = 0;
+            } else {
+                const activeEl = document.getElementById(`searchResultItem-${quickSearchSelectedIdx}`);
+                if (activeEl) {
+                    activeEl.scrollIntoView({ block: 'nearest' });
+                }
+            }
+        }
+
+        function executeQuickSearchItem(item) {
+            closeQuickSearchModal();
+            if (item && typeof item.action === 'function') {
+                setTimeout(() => item.action(), 50);
+            }
+        }
+
+        // Global Keyboard Shortcut: Cmd+K / Ctrl+K / '/'
+        if (typeof window !== 'undefined') {
+            window.addEventListener('keydown', function(e) {
+                if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+                    e.preventDefault();
+                    openQuickSearchModal();
+                } else if (e.key === '/' && document.activeElement && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                    e.preventDefault();
+                    openQuickSearchModal();
+                } else if (e.key === 'Escape') {
+                    closeQuickSearchModal();
+                }
+            });
+        }
+
+        window.toggleSidebar = toggleSidebar;
+        window.openQuickSearchModal = openQuickSearchModal;
+        window.closeQuickSearchModal = closeQuickSearchModal;
+        window.filterQuickSearchCategory = filterQuickSearchCategory;
+        window.handleQuickSearchInput = handleQuickSearchInput;
+        window.handleQuickSearchKeydown = handleQuickSearchKeydown;
+        window.executeQuickSearchItem = executeQuickSearchItem;
         window.switchAppView = switchAppView;
         window.togglePushNotifications = togglePushNotifications;
         window.toggleSoundAlerts = toggleSoundAlerts;
