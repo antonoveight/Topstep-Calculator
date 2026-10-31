@@ -1717,6 +1717,11 @@ const accountData = TradingRules.accounts;
             if (window.MarketHours && typeof window.MarketHours.render === 'function') {
                 window.MarketHours.render();
             }
+            if (tab === 'calendar' || tab === 'all') {
+                if (window.NewsRadar && typeof window.NewsRadar.onCalendarViewOpen === 'function') {
+                    window.NewsRadar.onCalendarViewOpen();
+                }
+            }
         }
         window.switchCalendarSubtab = switchCalendarSubtab;
 

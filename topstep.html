@@ -671,9 +671,13 @@ input:checked + .slider:before {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
                 <span class="sidebar-link-text">Checklist Thực Chiến</span>
             </a>
-            <a onclick="switchAppView('market-hours')" id="nav-market-hours" class="sidebar-link" title="Phiên Thị Trường &amp; Lịch Tin">
+            <a onclick="switchAppView('market-hours')" id="nav-market-hours" class="sidebar-link" title="Phiên Thị Trường (Market Hours)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                 <span class="sidebar-link-text">Phiên Thị Trường</span>
+            </a>
+            <a onclick="switchAppView('calendar')" id="nav-calendar" class="sidebar-link" title="Lịch Kinh Tế &amp; Radar Tin Tức">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span class="sidebar-link-text">Lịch Kinh Tế</span>
             </a>
             <a onclick="navigateToDashboardSection('chart-section')" class="sidebar-link" title="Money Flow">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
@@ -2291,13 +2295,22 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                     </div>
                 </div>
 
-                <!-- Embedded TradingView Economic Calendar Widget Container (Full-Width) -->
-                <div id="tvCalendarWidgetContainer" class="tradingview-widget-container" style="border-radius: 8px; overflow: hidden; border: 1px solid var(--border-card); width: 100%; min-height: 640px;">
-                    <div class="tradingview-widget-container__widget"></div>
+                <!-- Topstep Core Commodities Events List (MCL, MGC, MNQ, MES) -->
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                        <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">🎯 Lịch Tin Trọng Điểm Tuần Này (MCL · MGC · MNQ · MES)</span>
+                        <span class="b-badge b-badge-dim" style="font-size: 9.5px;">Tự động phân loại Đỏ / Cam</span>
+                    </div>
+                    <div id="calendarEventsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
                 </div>
 
-                <!-- Hidden fallback container for calendarEventsList to satisfy background radar listeners -->
-                <div id="calendarEventsList" style="display: none;"></div>
+                <!-- Embedded TradingView Economic Calendar Widget Container (Full-Width) -->
+                <div style="margin-top: 14px;">
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">🌐 Lịch Kinh Tế Hoa Kỳ Chi Tiết (TradingView USD Live)</div>
+                    <div id="tvCalendarWidgetContainer" class="tradingview-widget-container" style="border-radius: 8px; overflow: hidden; border: 1px solid var(--border-card); width: 100%; min-height: 600px;">
+                        <div class="tradingview-widget-container__widget"></div>
+                    </div>
+                </div>
             </div>
                     </div> <!-- END #calendarEconSection -->
         </div> <!-- END #view-calendar -->
