@@ -1653,8 +1653,8 @@ const accountData = TradingRules.accounts;
                 if (viewCal) viewCal.style.display = 'flex';
                 if (navDash) navDash.classList.remove('active');
                 if (navCheck) navCheck.classList.remove('active');
-                if (navHours) navHours.classList.remove('active');
-                if (navCal) navCal.classList.add('active');
+                if (navHours) navHours.classList.add('active');
+                if (navCal) navCal.classList.remove('active');
                 if (topDash) { topDash.className = 'b-badge b-badge-dim'; }
                 if (topCheck) { topCheck.className = 'b-badge b-badge-dim'; }
                 if (topHours) { topHours.className = 'b-badge b-badge-dim'; }
@@ -1722,6 +1722,9 @@ const accountData = TradingRules.accounts;
                     window.NewsRadar.onCalendarViewOpen();
                 }
             }
+            try {
+                localStorage.setItem('topstep_calendar_subtab', tab);
+            } catch (e) {}
         }
         window.switchCalendarSubtab = switchCalendarSubtab;
 
@@ -2032,6 +2035,8 @@ const accountData = TradingRules.accounts;
                 const saved = localStorage.getItem('topstep_active_app_view');
                 if (hash === '#checklist' || saved === 'checklist') {
                     switchAppView('checklist');
+                } else if (hash === '#market-hours' || saved === 'market-hours') {
+                    switchAppView('market-hours');
                 } else if (hash === '#calendar' || saved === 'calendar') {
                     switchAppView('calendar');
                 } else {
