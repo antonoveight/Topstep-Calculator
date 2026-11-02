@@ -716,10 +716,18 @@
 
             const resetBtn = document.getElementById('marketHoursResetLiveBtn');
             if (resetBtn) {
-                resetBtn.onclick = () => {
+                const handleReset = (e) => {
+                    if (e && e.stopPropagation) e.stopPropagation();
                     this.isLive = true;
                     this.syncLiveTime();
                     this.renderNeedleAndClocks();
+                };
+                resetBtn.onclick = handleReset;
+                resetBtn.onmousedown = (e) => {
+                    if (e && e.stopPropagation) e.stopPropagation();
+                };
+                resetBtn.ontouchstart = (e) => {
+                    if (e && e.stopPropagation) e.stopPropagation();
                 };
             }
         },
@@ -1442,13 +1450,20 @@
                 lampRed.style.boxShadow = vol.level === 'LOW' ? '0 0 10px #EF4444' : 'none';
             }
 
-            // Live / Scrub indicator button
+            // Live / Scrub indicator button next to the time pin badge
             const liveIndicator = document.getElementById('marketHoursResetLiveBtn');
             if (liveIndicator) {
                 if (this.isLive) {
                     liveIndicator.style.display = 'none';
                 } else {
                     liveIndicator.style.display = 'inline-flex';
+                    if (pct > 80) {
+                        liveIndicator.style.left = 'auto';
+                        liveIndicator.style.right = 'calc(100% + 6px)';
+                    } else {
+                        liveIndicator.style.left = 'calc(100% + 6px)';
+                        liveIndicator.style.right = 'auto';
+                    }
                 }
             }
         }
