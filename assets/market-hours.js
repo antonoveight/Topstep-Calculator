@@ -334,12 +334,13 @@
             try {
                 const fmt = new Intl.DateTimeFormat('en-US', {
                     timeZone,
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    weekday: 'short',
                     hour: 'numeric',
                     minute: 'numeric',
                     second: 'numeric',
-                    weekday: 'short',
-                    day: 'numeric',
-                    month: 'short',
                     hourCycle: 'h23'
                 });
                 const parts = {};
@@ -350,10 +351,11 @@
                     second: parseInt(parts.second, 10),
                     weekday: parts.weekday,
                     day: parts.day,
-                    month: parts.month
+                    month: parts.month,
+                    year: parts.year
                 };
             } catch (e) {
-                return { hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds(), weekday: 'Fri', day: '30', month: 'Oct' };
+                return { hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds(), weekday: 'Fri', day: '30', month: 'Oct', year: String(date.getFullYear()) };
             }
         },
 
@@ -816,22 +818,36 @@
             const strip = document.getElementById('marketHoursNewsAlertStrip');
             if (!strip) return;
 
-            const { active, upcoming } = this.getNewsEventsContext();
+            const { active, upcoming, todayEvents } = this.getNewsEventsContext();
 
-            if (active) {
+            // When user is scrubbing the timeline, check if the scrubbed minute hits a danger window
+            let scrubDangerEvent = null;
+            if (!this.isLive && todayEvents && todayEvents.length > 0) {
+                const min = this.scrubMinuteOfDay;
+                scrubDangerEvent = todayEvents.find(ev => min >= (ev.minute - 15) && min <= (ev.minute + 10));
+            }
+
+            const currentActive = scrubDangerEvent || active;
+
+            if (currentActive) {
                 strip.style.display = 'block';
-                const symbolsStr = active.symbols ? active.symbols.join(', ') : 'MGC, MNQ, MES, MCL';
-                const timeStr = `${active.localTimeStr} (${active.etTime})`;
-                const diffText = active.diffMinutes >= 0 
-                    ? `Ra tin sau ${active.diffMinutes} phút` 
-                    : `Vừa ra tin ${Math.abs(active.diffMinutes)} phút trước`;
+                const symbolsStr = currentActive.symbols ? currentActive.symbols.join(', ') : 'MGC, MNQ, MES, MCL';
+                const timeStr = `${currentActive.localTimeStr} (${currentActive.etTime})`;
+                const diffText = scrubDangerEvent
+                    ? `Thời điểm xem: ${this.formatMinute(this.scrubMinuteOfDay)}`
+                    : (currentActive.diffMinutes >= 0 
+                        ? `Ra tin sau ${currentActive.diffMinutes} phút` 
+                        : `Vừa ra tin ${Math.abs(currentActive.diffMinutes)} phút trước`);
+                const bannerTitle = scrubDangerEvent
+                    ? `VÙNG NÉ TIN ĐỎ (TẠI ĐIỂM DUYỆT ${this.formatMinute(this.scrubMinuteOfDay)}): ${currentActive.vietnameseName || currentActive.name}`
+                    : `VÙNG NÉ TIN ĐỎ ĐANG DIỄN RA: ${currentActive.vietnameseName || currentActive.name}`;
 
                 strip.innerHTML = `
                     <div style="background: rgba(239, 68, 68, 0.15); border: 1.5px solid #EF4444; color: #EF4444; width: 100%; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);">
                         <div style="display: flex; align-items: center; gap: 9px; flex-wrap: wrap;">
                             <span style="font-size: 16px;">⛔</span>
                             <div>
-                                <span style="font-weight: 800; font-size: 12.5px;">VÙNG NÉ TIN ĐỎ ĐANG DIỄN RA: ${active.vietnameseName || active.name}</span>
+                                <span style="font-weight: 800; font-size: 12.5px;">${bannerTitle}</span>
                                 <span style="font-size: 11px; opacity: 0.9; margin-left: 6px;">(${timeStr})</span>
                                 <span class="b-badge" style="background: #EF4444; color: #FFFFFF; font-size: 9px; margin-left: 6px;">${symbolsStr}</span>
                             </div>
@@ -1256,6 +1272,9 @@
             const pct = (min / 1440) * 100;
             const now = new Date();
             if(root.MarketQuarterly)root.MarketQuarterly.update(this,now);
+
+            // Keep news alert strip in sync with live / scrub time
+            this.renderNewsAlertStrip();
 
             // 1. Move Vertical Needle Line & Danger State
             const needle = document.getElementById('marketHoursNeedle');

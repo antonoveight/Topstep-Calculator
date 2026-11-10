@@ -80,23 +80,66 @@
         monday.setDate(d.getDate() + mondayOffset);
         monday.setHours(0, 0, 0, 0);
 
-        // Helper to construct Date given day offset from Monday (0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri) and ET time
+        // Helper to construct exact UTC Date given day offset from Monday (0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri) and ET time
         function makeEventDate(dayOffset, etHour, etMinute) {
-            const target = new Date(monday);
-            target.setDate(monday.getDate() + dayOffset);
-            // Calculate exact US DST for this target date (EDT: +11h, EST: +12h)
+            const target = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + dayOffset);
+            // Calculate exact US DST for this target date (EDT: UTC-4, EST: UTC-5)
             const targetDst = getUsDstContext(target);
-            const vnTotalMinutes = (etHour * 60 + etMinute) + (targetDst.vnDiffHours * 60);
-            const vnDayShift = Math.floor(vnTotalMinutes / 1440);
-            const vnMinuteOfDay = vnTotalMinutes % 1440;
-            const finalDate = new Date(target);
-            finalDate.setDate(target.getDate() + vnDayShift);
-            finalDate.setHours(Math.floor(vnMinuteOfDay / 60), vnMinuteOfDay % 60, 0, 0);
-            return finalDate;
+            const utcHour = etHour + (targetDst.isDst ? 4 : 5);
+            return new Date(Date.UTC(target.getFullYear(), target.getMonth(), target.getDate(), utcHour, etMinute, 0));
         }
 
+        const targetTue = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 1);
+        const tueDayOfMonth = targetTue.getDate();
+        const targetFri = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 4);
+        const friDayOfMonth = targetFri.getDate();
+
         // 1. Tuesday (dayOffset 1)
-        // 16:30 ET: API Weekly Crude Oil Stock
+        // 08:30 ET: Major US Macro Release (CPI in week 2, Retail Sales in other weeks)
+        // Note: 08:30 ET = 20:30 VN (EST Standard Time) / 19:30 VN (EDT Daylight Saving Time)
+        if (tueDayOfMonth >= 8 && tueDayOfMonth <= 15) {
+            events.push({
+                id: 'us_cpi_monthly',
+                name: 'US Consumer Price Index (CPI) & Core Inflation',
+                vietnameseName: 'Chỉ Số Giá Tiêu Dùng Lạm Phát (CPI Hoa Kỳ)',
+                time: makeEventDate(1, 8, 30),
+                etTime: '08:30 ET',
+                impactLevel: 'HIGH',
+                symbols: ['MGC', 'MNQ', 'MES', 'MCL', 'MCLZ26'],
+                category: 'inflation',
+                topstepWarning: 'Tin tức lạm phát quan trọng nhất. Vàng (MGC) và Chỉ số (MNQ, MES) biến động hàng trăm tick ngay lập tức. Bắt buộc né trước & sau 15 phút.',
+                desc: 'Đo lường mức độ lạm phát cốt lõi của nền kinh tế Mỹ, tác động quyết định đến chính sách lãi suất Fed.'
+            });
+        } else {
+            events.push({
+                id: 'us_retail_sales_monthly',
+                name: 'US Retail Sales & Core Retail Sales',
+                vietnameseName: 'Doanh Số Bán Lẻ Hoa Kỳ (Retail Sales)',
+                time: makeEventDate(1, 8, 30),
+                etTime: '08:30 ET',
+                impactLevel: 'HIGH',
+                symbols: ['MNQ', 'MES', 'MGC', 'MCL', 'MCLZ26'],
+                category: 'macro',
+                topstepWarning: 'Động lực tiêu dùng chiếm 70% GDP Mỹ. Vàng và Chỉ số biến động mạnh, khuyến nghị né tin ±15 phút.',
+                desc: 'Thước đo chi tiêu tiêu dùng của các hộ gia đình Mỹ, phản ánh sức khỏe nền kinh tế.'
+            });
+        }
+
+        // 10:00 ET Tuesday: US JOLTS Job Openings & Labor Turnover
+        events.push({
+            id: 'us_jolts_job_openings',
+            name: 'US JOLTS Job Openings & Labor Turnover',
+            vietnameseName: 'Cơ Hội Việc Làm JOLTS Hoa Kỳ',
+            time: makeEventDate(1, 10, 0),
+            etTime: '10:00 ET',
+            impactLevel: 'HIGH',
+            symbols: ['MNQ', 'MES', 'MGC'],
+            category: 'labor',
+            topstepWarning: 'Dữ liệu tuyển dụng trọng yếu của thị trường lao động Mỹ. Chỉ số MNQ, MES và Vàng MGC giật mạnh.',
+            desc: 'Thước đo nhu cầu tuyển dụng lao động được Fed và phố Wall đặc biệt theo dõi.'
+        });
+
+        // 16:30 ET Tuesday: API Weekly Crude Oil Stock
         events.push({
             id: 'api_crude_weekly',
             name: 'API Weekly Crude Oil Stock Report',
@@ -110,7 +153,21 @@
         });
 
         // 2. Wednesday (dayOffset 2)
-        // 10:30 ET: EIA Crude Oil Inventories - TOP IMPACT FOR MCL!
+        // 08:30 ET: US PPI (Producer Price Index)
+        events.push({
+            id: 'us_ppi_monthly',
+            name: 'US Producer Price Index (PPI)',
+            vietnameseName: 'Chỉ Số Giá Sản Xuất (PPI Hoa Kỳ)',
+            time: makeEventDate(2, 8, 30),
+            etTime: '08:30 ET',
+            impactLevel: 'HIGH',
+            symbols: ['MGC', 'MNQ', 'MES'],
+            category: 'inflation',
+            topstepWarning: 'Áp lực lạm phát bán buôn. Vàng MGC và Chỉ số MNQ/MES biến động mạnh ±15 phút.',
+            desc: 'Đo lường biến động giá bán buôn của các nhà sản xuất Mỹ.'
+        });
+
+        // 10:30 ET Wednesday: EIA Crude Oil Inventories - TOP IMPACT FOR MCL!
         events.push({
             id: 'eia_crude_weekly',
             name: 'EIA Crude Oil Inventories',
@@ -135,11 +192,11 @@
             impactLevel: 'HIGH',
             symbols: ['MGC', 'MNQ', 'MES'],
             category: 'labor',
+            topstepWarning: 'Thước đo thị trường việc làm định kỳ thứ 5. Vàng và Chỉ số biến động mạnh.',
             desc: 'Thước đo sức khỏe thị trường lao động Mỹ công bố định kỳ thứ 5 hàng tuần.'
         });
 
-        // 4. Thursday (dayOffset 3)
-        // 10:30 ET: EIA Natural Gas Storage
+        // 10:30 ET Thursday: EIA Natural Gas Storage
         events.push({
             id: 'eia_natgas_weekly',
             name: 'EIA Natural Gas Storage',
@@ -152,17 +209,15 @@
             desc: 'Tác động gián tiếp đến nhóm năng lượng và dầu thô.'
         });
 
-        // 5. Friday (dayOffset 4)
+        // 4. Friday (dayOffset 4)
         // 08:30 ET: Check if this Friday is the first Friday of the month (NFP)
-        const fridayDate = makeEventDate(4, 8, 30);
-        const dayOfMonth = fridayDate.getDate();
-        if (dayOfMonth <= 7) {
+        if (friDayOfMonth <= 7) {
             // First Friday of Month = Non-Farm Payrolls (NFP)
             events.push({
                 id: 'us_nfp_monthly',
                 name: 'US Non-Farm Payrolls & Unemployment Rate (NFP)',
                 vietnameseName: 'Bảng Lương Phi Nông Nghiệp & Tỷ Lệ Thất Nghiệp (NFP)',
-                time: fridayDate,
+                time: makeEventDate(4, 8, 30),
                 etTime: '08:30 ET',
                 impactLevel: 'HIGH',
                 symbols: ['MGC', 'MNQ', 'MES', 'MCL', 'MCLZ26'],
@@ -170,40 +225,23 @@
                 topstepWarning: 'Siêu tin bão đỏ! Biến động cực mạnh trên cả 4 mã MGC, MNQ, MES, MCL. Cấm giao dịch ±15 phút.',
                 desc: 'Báo cáo việc làm quan trọng nhất tháng, quyết định xu hướng lãi suất của Fed.'
             });
-        }
-
-        // 6. Check for Middle of Month CPI / PPI (usually week 2)
-        // If current week contains 10th to 16th
-        if (dayOfMonth >= 8 && dayOfMonth <= 15 && dayOfWeek <= 5) {
-            // Tuesday or Wednesday CPI
+        } else {
+            // Other Fridays: US Core PCE Price Index
             events.push({
-                id: 'us_cpi_monthly',
-                name: 'US Consumer Price Index (CPI)',
-                vietnameseName: 'Chỉ Số Giá Tiêu Dùng Lạm Phát (CPI Hoa Kỳ)',
-                time: makeEventDate(2, 8, 30), // Wednesday 08:30 ET
-                etTime: '08:30 ET',
-                impactLevel: 'HIGH',
-                symbols: ['MGC', 'MNQ', 'MES', 'MCL', 'MCLZ26'],
-                category: 'inflation',
-                topstepWarning: 'Tin tức lạm phát quan trọng nhất. Vàng (MGC) và Chỉ số (MNQ, MES) biến động hàng trăm tick ngay lập tức.',
-                desc: 'Đo lường mức độ lạm phát cốt lõi của nền kinh tế Mỹ.'
-            });
-
-            // Thursday PPI
-            events.push({
-                id: 'us_ppi_monthly',
-                name: 'US Producer Price Index (PPI)',
-                vietnameseName: 'Chỉ Số Giá Sản Xuất (PPI Hoa Kỳ)',
-                time: makeEventDate(3, 8, 30), // Thursday 08:30 ET
+                id: 'us_core_pce_monthly',
+                name: 'US Core PCE Price Index',
+                vietnameseName: 'Chỉ Số Giá Chi Tiêu Tiêu Dùng Cá Nhân Cốt Lõi (Core PCE)',
+                time: makeEventDate(4, 8, 30),
                 etTime: '08:30 ET',
                 impactLevel: 'HIGH',
                 symbols: ['MGC', 'MNQ', 'MES'],
                 category: 'inflation',
-                desc: 'Đo lường biến động giá bán buôn của các nhà sản xuất Mỹ.'
+                topstepWarning: 'Thước đo lạm phát ưa thích nhất của Fed. Biến động mạnh trên MNQ, MES, MGC.',
+                desc: 'Thước đo lạm phát ưa thích của Fed dùng làm căn cứ định hướng lãi suất quỹ liên bang.'
             });
         }
 
-        // 7. Friday 10:00 ET: Michigan Consumer Sentiment / Retail
+        // Friday 10:00 ET: Michigan Consumer Sentiment / Retail
         events.push({
             id: 'us_sentiment_monthly',
             name: 'UoM Consumer Sentiment & Inflation Expectations',
@@ -216,7 +254,7 @@
             desc: 'Khảo sát kỳ vọng lạm phát và niềm tin tiêu dùng của hộ gia đình Mỹ.'
         });
 
-        // 8. 13:00 ET Friday: Baker Hughes US Oil Rig Count
+        // 13:00 ET Friday: Baker Hughes US Oil Rig Count
         events.push({
             id: 'baker_hughes_rigs',
             name: 'Baker Hughes US Oil Rig Count',
@@ -229,7 +267,7 @@
             desc: 'Đo lường số lượng giàn khoan khai thác dầu đang hoạt động tại Mỹ.'
         });
 
-        // 9. FOMC Interest Rate Decision & Press Conference (8 meetings / year)
+        // 5. FOMC Interest Rate Decision & Press Conference (8 meetings / year)
         // Federal Reserve official scheduled release dates:
         const FOMC_MEETINGS = [
             // 2024
@@ -246,21 +284,23 @@
             { y: 2027, m: 7, d: 28 }, { y: 2027, m: 9, d: 15 }, { y: 2027, m: 10, d: 27 }, { y: 2027, m: 12, d: 8 }
         ];
 
-        const weekEnd = new Date(monday.getTime() + 7 * 86400000);
+        const weekStartUtc = Date.UTC(monday.getFullYear(), monday.getMonth(), monday.getDate(), 0, 0, 0);
+        const weekEndUtc = weekStartUtc + 7 * 86400000;
 
         for (const meeting of FOMC_MEETINGS) {
             // Meeting statement is released at 14:00 ET on meeting day (usually Wednesday)
-            // VN = ET + meetingDst.vnDiffHours (11h in DST -> 01:00 AM VN; 12h in Standard -> 02:00 AM VN next day)
-            const baseEtDate = new Date(meeting.y, meeting.m - 1, meeting.d, 14, 0, 0);
-            const meetingDst = getUsDstContext(baseEtDate);
-            const vnTime = new Date(baseEtDate.getTime() + meetingDst.vnDiffHours * 3600000);
+            const meetingTarget = new Date(meeting.y, meeting.m - 1, meeting.d);
+            const meetingDst = getUsDstContext(meetingTarget);
+            const utcHour = 14 + (meetingDst.isDst ? 4 : 5);
+            const meetingUtcTime = Date.UTC(meeting.y, meeting.m - 1, meeting.d, utcHour, 0, 0);
 
-            if (vnTime >= monday && vnTime < weekEnd) {
+            if (meetingUtcTime >= weekStartUtc && meetingUtcTime < weekEndUtc) {
+                const meetingDate = new Date(meetingUtcTime);
                 events.push({
                     id: `fomc_rate_${meeting.y}_${meeting.m}_${meeting.d}`,
                     name: 'FOMC Interest Rate Decision & Statement',
                     vietnameseName: 'Quyết Định Lãi Suất FOMC (Fed Rate Decision)',
-                    time: vnTime,
+                    time: meetingDate,
                     etTime: '14:00 ET',
                     impactLevel: 'HIGH',
                     symbols: ['MGC', 'MNQ', 'MES', 'MCL'],
@@ -269,7 +309,7 @@
                     desc: 'Sự kiện định hướng chính sách tiền tệ toàn cầu quan trọng nhất của Cục Dự trữ Liên bang Mỹ (Fed).'
                 });
 
-                const pressTime = new Date(vnTime.getTime() + 30 * 60000); // 14:30 ET
+                const pressTime = new Date(meetingUtcTime + 30 * 60000); // 14:30 ET
                 events.push({
                     id: `fomc_press_${meeting.y}_${meeting.m}_${meeting.d}`,
                     name: 'FOMC Press Conference (Jerome Powell)',
