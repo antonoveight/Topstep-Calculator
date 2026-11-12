@@ -72,11 +72,11 @@ Tên dưới đây khớp tên trong Inputs; di chuột vào biểu tượng tr�
 | Model HTF candle cluster | C1/C2/C3 của model ưu tiên, không nhất thiết là ba nến mới nhất. |
 | Additional live HTF candle | N* live bổ sung khi C3 đã cố định; preview thiếu đầu bucket không hiển thị. |
 | Cluster offset / body width | Offset yêu cầu 15 bar / thân 6 bar mặc định. Khi có line, cụm tự lùi tối thiểu để dành khoảng cho chú thích bên phải line theo cỡ chữ. Nếu zoom ngang quá nhỏ, tăng offset hoặc giãn chart để đủ chỗ chữ theo pixel. Râu nến solid mảnh 1 px, đồng màu; độ rộng thân lẻ làm tròn xuống số chẵn để râu đúng tâm. Không đổi OHLC. |
-| Model range / ERL / CP | Các mức cấu trúc; trên LTF bắt đầu từ nến xác nhận điều kiện. Nhãn bên phải line; các mức trùng giá gộp nhãn thay vì viết chồng. |
+| Model range / ERL / CP | Bật để thấy RH/RL/EQ/INV/CP/ERL của model HTF đã xác nhận. Trên LTF, khi chưa có C/M/E thì bắt đầu từ nến nhận model; có tín hiệu gần nhất thì dùng nến tín hiệu đó. Không cần bật C/M để thấy tổng quan. Nhãn bên phải line; mức trùng giá/cùng neo gộp nhãn. ERL chưa có swing hợp lệ vẫn để trống. |
 | Two newer active ranges | Hai model phụ trên HTF, mặc định tắt; không đổi thứ tự registry. |
 | Compact panel | Dashboard góc trên phải; kích thước tự theo chữ/nội dung. |
 | Signal history: latest marks | 1 dấu mặc định; 0 không vẽ dấu; tối đa 100. Không thay alert. |
-| Hide drawings without a recent signal | Ẩn hình quá tuổi; cụm HTF có thể hiện trước entry nếu model HTF mới. |
+| Hide drawings without a recent signal | Ẩn hình quá tuổi; model HTF gần đây được tính là tín hiệu cấu trúc nên cả mức giá lẫn cụm HTF có thể hiện trước C/M/entry trên LTF. Model quá tuổi vẫn có thể còn trong registry; tắt setting này để xem lại mức của model đó. |
 | Drawing horizon / recency | 3 nến HTF mặc định; vừa hạn chiều dài vừa hạn tuổi hình khi bật recent. Đường còn được cắt trước cụm HTF. |
 | Buy / Sell triangles | B xanh lên dưới low/S đỏ xuống trên high nến LTF xác nhận đủ gate, có khoảng hở và chữ rời ghi loại xác nhận; không phải lệnh tự động. |
 | Chart text size | Small/Normal/Large/Huge; Normal mặc định. Áp dụng nhãn, vùng IRL, caption và đồng hồ. |
@@ -109,7 +109,7 @@ Chữ dùng các mức kích thước Pine, không phải số pixel cố địn
 
 - Hai plot bối cảnh chạy từ giá mở: **TDO actual open** màu xanh aqua là giá mở ngày; **Session TO actual open** màu vàng/cam là giá mở phiên theo mốc thời gian của hệ thống. Chúng thuộc `Actual TDO / session TO prices`, không thuộc C/M. Tắt setting này nếu không dùng các mốc đó. Các đường có nhãn CP/ERL/RH/RL là nhóm reference cấu trúc khác, không phân biệt chỉ bằng màu.
 - CISD line dùng delivery level đã bị close vượt qua lúc C được xác nhận. MSS line dùng pivot đã biết khi kích hoạt model. Giá được chụp tại bar xác nhận, không chạy theo delivery/pivot thay đổi sau đó. Mỗi line khởi đầu từ bar xác nhận của chính nó, không kéo ngược về bar nguồn đối nghịch/pivot và không kéo vô hạn.
-- Khi tắt C/M, các mức HTF trên LTF mặc định chờ entry E. Khi bật, chúng có thể xuất hiện từ xác nhận C/M trước khi đủ R:R/bias/time/IRL của entry. Đây là thay đổi phần quan sát, không thay thuật toán phát E hoặc alert.
+- Mức HTF trên LTF không còn phải chờ C/M hoặc entry E: model HTF mới xác nhận/resolve trong cửa sổ gần nhất có thể hiện tổng quan ngay tại nến LTF nhận model. Khi có C/M hoặc E, dùng nến tín hiệu gần nhất làm neo thay thế. Bật/tắt C/M chỉ thêm/bớt dấu sơ bộ và line CISD/MSS; không tắt nhóm RH/RL/EQ/INV/CP/ERL. Không thay thuật toán phát E hoặc alert.
 - Nhãn line nằm bên phải; mức trùng giá và cùng neo gộp nhãn. Các nhãn gần nhau được xếp cách nhau theo dải giá đang nhìn và cỡ chữ; đường dẫn chấm chỉ lại mức thật nếu chữ bị dịch. **Đường giá không bị dịch để né chữ.** IRL không viết chữ trong box nữa, dùng nhãn bên ngoài cùng hệ thống sắp xếp.
 - Nền nhãn cùng nền chart che nét phía sau; captions HTF được đặt dưới đáy cụm, tính cả live khi bật. Các biện pháp này giảm đè chữ/line trong bố cục thông thường. Pine không cung cấp bounding box chữ hay thang giá pixel của chart, nên chưa thể bảo đảm tuyệt đối ở mọi mức zoom, cỡ cửa sổ, log scale hoặc khi kéo scale bằng tay. Hình thực tế của bản này vẫn cần đối chiếu trên TradingView.
 

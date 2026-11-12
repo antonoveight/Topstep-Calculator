@@ -1,6 +1,6 @@
 // Mozilla Public License 2.0: https://mozilla.org/MPL/2.0/
 // The Funded Angler - automatic, confirmed HTF model registry.
-// Editor syntax diagnostics passed; authenticated chart execution / Replay still required.
+// Prior version passed editor diagnostics; latest reference-visibility fix needs editor/chart validation.
 // See docs/INDICATOR-AUTO-MODELS.md for exact lifecycle, priority and validation limits.
 //@version=6
 indicator("The Funded Angler v6 - Auto HTF", shorttitle="TFA v6", overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=120, max_boxes_count=30, max_labels_count=300)
@@ -44,7 +44,7 @@ showCluster = input.bool(true, "Model HTF candle cluster", group=G_VIEW, tooltip
 clusterLive = input.bool(true, "Additional live HTF candle", group=G_VIEW, tooltip="Thêm N* khi C3 của model đã cố định. Live cần dữ liệu từ đầu bucket HTF để không vẽ nến thiếu đầu.")
 clusterOffset = input.int(15, "Cluster offset (bars)", minval=3, maxval=80, group=G_VIEW, tooltip="Khoảng cách từ bar chart cuối đến cụm HTF, theo số bar chart. Mặc định 15; chữ lớn có thể tăng 20-25 để thoáng hơn.")
 clusterWidth = input.int(6, "Cluster body width (bars)", minval=2, maxval=16, group=G_VIEW, tooltip="Độ rộng thân nến HTF, mặc định 6 bar. Số lẻ được làm tròn xuống số chẵn để râu luôn đúng tâm thân. Không ảnh hưởng OHLC; râu đồng bộ line mảnh 1 px.")
-showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW, tooltip="Hiện range, EQ, INV, CP và ERL của model. Trên LTF chỉ xuất hiện từ nến xác nhận điều kiện của model đang xét.")
+showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW, tooltip="Hiện RH/RL/EQ/INV/CP/ERL của model HTF đã xác nhận, kể cả chưa có C/M hoặc entry. Trên LTF bắt đầu từ nến nhận model; nếu có tín hiệu gần nhất thì dùng nến tín hiệu. Không phụ thuộc checkbox C/M. ERL thiếu swing hợp lệ vẫn để trống.")
 showSecondary = input.bool(false, "Two newer active ranges (faint)", group=G_VIEW, tooltip="Thêm range hai model mới hơn trên chart HTF. Mặc định tắt; model cũ còn hiệu lực vẫn được ưu tiên trong registry.")
 showPanel = input.bool(true, "Compact panel", group=G_VIEW, tooltip="Bảng tổng quan cố định góc trên phải. TF=khung, #1=model ưu tiên, B=bias, IRL=vùng, T=thời gian, S=trạng thái.")
 historyMarks = input.int(1, "Signal history: latest marks (0 = hide)", minval=0, maxval=100, group=G_VIEW, tooltip="Mặc định giữ 1 dấu gần nhất. 0 ẩn dấu, tối đa 100; dấu cũ xóa trước. C/M nếu bật cũng tính vào giới hạn này. Không đổi nhận diện hoặc alert.")
@@ -571,6 +571,7 @@ var int lastVisualTime = na
 var int lastVisualIndex = na
 var int lastVisualBucket = na
 var string lastVisualKey = ""
+var int modelObservedIndex = na
 var float confirmedC = na
 var float confirmedM = na
 var int confirmedCIndex = na
@@ -578,6 +579,7 @@ var int confirmedMIndex = na
 var int confirmedCBucket = na
 var int confirmedMBucket = na
 if changedModel
+    modelObservedIndex := not na(sId) ? bar_index : na
     lastVisualTime := na
     lastVisualIndex := na
     lastVisualBucket := na
@@ -611,7 +613,7 @@ f_sourceIndex(int sourceTime) =>
     found
 int modelAnchorTime = not na(sResolved) and sResolved > sConfirmed and not na(sCT) ? sCT : sBT
 int modelAnchorIndex = onHtf and barstate.islast and not na(sId) and (not recentOnly or sModelAge <= drawHtfBars) ? f_sourceIndex(modelAnchorTime) : na
-int drawAnchorIndex = onHtf ? modelAnchorIndex : lastVisualKey == modelKey ? lastVisualIndex : na
+int drawAnchorIndex = onHtf ? modelAnchorIndex : lastVisualKey == modelKey and not na(lastVisualIndex) ? lastVisualIndex : modelObservedIndex
 int drawSpan = int(math.ceil(drawHtfBars * htfSeconds / chartSeconds))
 int labelLaneBars = chartTextSize == "Huge" ? 24 : chartTextSize == "Large" ? 18 : chartTextSize == "Small" ? 10 : 14
 int clusterStartIndex = bar_index + (showLevels or showConfirm ? math.max(clusterOffset, labelLaneBars + 5) : clusterOffset)
@@ -619,7 +621,7 @@ int drawingClipIndex = showCluster ? clusterStartIndex - labelLaneBars - 2 : bar
 int drawEndIndex = not na(drawAnchorIndex) ? math.min(drawAnchorIndex + drawSpan, drawingClipIndex) : na
 bool recentModel = not na(sId) and not na(sModelAge) and sModelAge <= drawHtfBars
 bool recentLtfSignal = lastVisualKey == modelKey and not na(lastVisualBucket) and bucketCounter - lastVisualBucket <= drawHtfBars
-bool drawActive = not na(sId) and not na(drawAnchorIndex) and drawAnchorIndex >= bar_index - 9999 and drawEndIndex >= drawAnchorIndex and (not recentOnly or (onHtf ? recentModel : recentLtfSignal))
+bool drawActive = not na(sId) and not na(drawAnchorIndex) and drawAnchorIndex >= bar_index - 9999 and drawEndIndex >= drawAnchorIndex and (not recentOnly or (onHtf ? recentModel : recentModel or recentLtfSignal))
 bool clusterActive = not na(sId) and (not recentOnly or recentModel or drawActive)
 
 // Finite drawings use real chart bar indices and real prices, on the main price pane.

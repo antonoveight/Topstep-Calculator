@@ -177,6 +177,14 @@ assert.doesNotMatch(source,/extend=extend.right/,'No unbounded level projection'
 assert.match(source,/label.style_triangleup : label.style_triangledown/);
 assert.match(source,/if entryEvent and showEntryTriangles/);
 assert.match(source,/lastVisualIndex := bar_index/,'LTF anchors start at actual condition bar');
+const anchorBase={onHtf:false,modelAnchorIndex:50,lastVisualKey:'',modelKey:'model-1',lastVisualIndex:null,modelObservedIndex:100,na:x=>x==null};
+assert.equal(evaluate('drawAnchorIndex',anchorBase),100,'HTF references have a valid LTF anchor before C/M or E');
+assert.equal(evaluate('drawAnchorIndex',{...anchorBase,lastVisualKey:'model-1',lastVisualIndex:107}),107,'Latest signal anchor is retained when it exists');
+assert.equal(evaluate('drawAnchorIndex',{...anchorBase,modelObservedIndex:null}),null,'No phantom anchor without a model');
+const drawingBase={sId:1,drawAnchorIndex:100,bar_index:110,drawEndIndex:130,recentOnly:true,onHtf:false,recentModel:true,recentLtfSignal:false,na:x=>x==null};
+assert.equal(evaluate('drawActive',drawingBase),true,'Recent HTF reference levels stay visible with C/M off and no entry');
+assert.equal(evaluate('drawActive',{...drawingBase,recentModel:false}),false,'No stale model drawing when neither model nor signal is recent');
+assert.equal(evaluate('drawActive',{...drawingBase,sId:null}),false,'No fabricated levels without a model');
 assert.match(source,/line.set_xy1\(ln, anchor, price\)/);
 assert.match(source,/box.set_lefttop\(irlBox, drawAnchorIndex, sIrlH\)/);
 assert.match(source,/liveComplete := time == bucketTime/,'Never invent first incomplete bucket open');
