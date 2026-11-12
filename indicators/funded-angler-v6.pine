@@ -725,13 +725,10 @@ f_layoutLabels() =>
 f_note(string noteText, bool up, bool qualified = false) =>
     string markerLocation = up ? yloc.belowbar : yloc.abovebar
     color markerColor = up ? color.lime : color.red
-    string captionText = up ? "\n\n" + noteText : noteText + "\n\n"
+    string captionText = qualified ? (up ? "\n\n" + noteText : noteText + "\n\n") : ""
     string hint = (qualified ? (up ? "Buy entry / " : "Sell entry / ") + signalTag : (up ? "Bullish confirmation / " : "Bearish confirmation / ") + noteText + " (not entry)")
     if historyMarks > 0
-        label caption = na
-        if qualified
-            caption := label.new(bar_index, na, captionText, xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_label_up : label.style_label_down, color=chart.bg_color, textalign=text.align_center, textcolor=chart.fg_color, size=chartFont, force_overlay=true, tooltip=hint)
-        array.push(eventTexts, caption)
+        array.push(eventTexts, label.new(bar_index, na, captionText, xloc=xloc.bar_index, yloc=markerLocation, style=qualified ? (up ? label.style_label_up : label.style_label_down) : label.style_none, color=qualified ? chart.bg_color : color.new(chart.bg_color, 100), textalign=text.align_center, textcolor=chart.fg_color, size=chartFont, force_overlay=true, tooltip=hint))
         array.push(eventLabels, label.new(bar_index, na, "", xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_triangleup : label.style_triangledown, color=markerColor, size=size.tiny, force_overlay=true, tooltip=hint))
         array.push(eventBuckets, bucketCounter)
     while array.size(eventLabels) > historyMarks
