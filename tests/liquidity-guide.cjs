@@ -34,7 +34,7 @@ const { chromium } = require('../.review-tools/node_modules/playwright');
         }
         await page.locator('#liquidityGuide summary').click();
         assert.equal(await page.locator('#liquidityGuide a').first().getAttribute('href'), 'docs/CRT-LIQUIDITY-GUIDE.md');
-        assert.equal(await page.locator('#liquidityGuide a[download]').getAttribute('href'), 'indicators/funded-angler-v5.pine');
+        assert.equal(await page.locator('#liquidityGuide a[download]').getAttribute('href'), 'indicators/funded-angler-v6.pine');
         for (const width of [1440, 390, 320]) {
             await page.setViewportSize({ width, height: 1000 });
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'No page overflow');

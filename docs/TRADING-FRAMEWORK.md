@@ -28,7 +28,7 @@ Các lựa chọn timeframe trên web là khung làm việc thủ công, không 
 
 **TS và CISD/MSS khác vai trò:** TS xác nhận sự kiện quét/lấy lại mức trong kịch bản CRT HTF; CISD hoặc MSS là những cách xác nhận entry trên LTF. Không có TS đúng vị trí thì không gọi một tín hiệu CISD/MSS riêng lẻ là CRT đã hợp lệ. Không bắt buộc dùng đồng thời CISD và MSS; nếu chọn entry khác như POC/FVG/OB/line thì phải có điều kiện được định nghĩa trước. Việc thêm TS chưa chứng minh tỷ lệ thắng cao hơn; cần kiểm chứng trên sản phẩm, timeframe và mẫu giao dịch cụ thể.
 
-Xem [bản rà soát chỉ báo và đặc tả thực thi](INDICATOR-REVIEW.md) cùng mã Pine ứng viên tại `indicators/funded-angler-v5.pine`.
+Xem [chỉ báo Auto HTF và đặc tả hiệu lực/bias/entry](INDICATOR-AUTO-MODELS.md), nguồn `indicators/funded-angler-v6.pine`. Chỉ báo tự nhận diện từ giá; checklist web vẫn là ghi nhận thủ công, không tự nhận feed hoặc tín hiệu từ TradingView.
 
 Đây là ghi nhận của người dùng. Web không có feed OHLC/volume để tự kiểm chứng; tick sai thứ tự không tự hoàn thành bước còn thiếu. “Đã ghi nhận vào lệnh” không có nghĩa web gửi lệnh.
 

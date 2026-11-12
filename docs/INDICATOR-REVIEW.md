@@ -1,5 +1,7 @@
 # Rà soát CRT Pro v4 và bản chuẩn hóa TFA v5
 
+> **Bản hiện hành là [TFA v6 — Auto HTF](INDICATOR-AUTO-MODELS.md).** Tài liệu dưới đây giữ làm lịch sử bản v5; các giới hạn chọn method/bias bằng tay và không chạy chart bằng HTF đã được thay thế trong v6. Nguồn mới: `indicators/funded-angler-v6.pine`, đồng bộ sang `chibao.txt`.
+
 ## Kết quả kiểm tra TS trên web
 
 Trước đợt này, web đã mô tả sweep và đóng trở lại range nhưng chưa gọi rõ **TS (Turtle Soup)** hoặc tách vai trò của TS với CISD/MSS. Đã bổ sung TS vào hướng dẫn CRT, bước xác nhận HTF, trạng thái hồ câu và prompt AI.
