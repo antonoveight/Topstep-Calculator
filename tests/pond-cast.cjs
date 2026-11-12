@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),path=require('node:path');
 const Cast=require('../assets/pond-cast.js'),Behavior=require('../assets/pond-behavior.js');
 const hand={x:303,y:439},tip={x:477,y:296},signatures=[];
-for(let setup=1;setup<=4;setup++){
+for(const setup of [5,6,7]){
  const anchor=Behavior.anchor(setup),end=Cast.sample(1,hand,tip,anchor,setup);
  assert.deepEqual(end.tip,tip);assert.deepEqual(end.bobber,anchor);assert.equal(end.landed,true);
  const back=Cast.sample(.28,hand,tip,anchor,setup),release=Cast.sample(.6,hand,tip,anchor,setup);
@@ -18,7 +18,7 @@ for(let setup=1;setup<=4;setup++){
  }
  signatures.push([anchor,back.tip,[.7,1,2,5].map(t=>Behavior.motion({setup,stage:2},t,2))]);
 }
-assert.equal(new Set(signatures.map(JSON.stringify)).size,4,'Methods have separate cast and bait interactions');
+assert.equal(new Set(signatures.map(JSON.stringify)).size,3,'Methods have separate cast and bait interactions');
 (async()=>{
  const {chromium}=require('../.review-tools/node_modules/playwright');
  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
@@ -58,6 +58,6 @@ assert.equal(new Set(signatures.map(JSON.stringify)).size,4,'Methods have separa
   });
   assert.deepEqual(interrupted,{x:650,y:436},'TP during an unfinished cast must lift from water, not from the flying float');
   assert.deepEqual(errors,[]);
-  console.log('PASS backswing/release/line continuity, four method interactions, grip during cast/TP/rest and no replay on reload');
+  console.log('PASS backswing/release/line continuity, three HTF visual interactions, grip during cast/TP/rest and no replay on reload');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

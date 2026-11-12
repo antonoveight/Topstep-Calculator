@@ -70,9 +70,9 @@ const vm = require('node:vm');
             assert.equal(result.bitcoinMini,'0 Mini');
         });
         await check('checklist restore, setup switch and single pond animation',async()=>{
-            await page.evaluate(()=>{switchAppView('checklist');switchChecklistSetup(2);document.getElementById('chk-s2-1').checked=true;document.getElementById('chk-s2-2').checked=true;onChecklistChange();});
+            await page.evaluate(()=>{switchAppView('checklist');switchChecklistSetup(6);document.getElementById('chk-s6-1').checked=true;document.getElementById('chk-s6-2').checked=true;onChecklistChange();});
             await page.reload();await page.waitForTimeout(150);
-            assert.deepEqual(await page.evaluate(()=>({setup:activeChecklistSetup,a:document.getElementById('chk-s2-1').checked,b:document.getElementById('chk-s2-2').checked,steps:anglerState.stepCount})),{setup:2,a:true,b:true,steps:2});
+            assert.deepEqual(await page.evaluate(()=>({setup:activeChecklistSetup,a:document.getElementById('chk-s6-1').checked,b:document.getElementById('chk-s6-2').checked,steps:anglerState.stepCount})),{setup:6,a:true,b:true,steps:2});
             await page.evaluate(()=>{resetChecklist();handleCastReelButtonClick();toggleAnglerCardCollapse();toggleAnglerCardCollapse();});
             assert.equal(await page.evaluate(()=>anglerState.stepCount),1);
         });

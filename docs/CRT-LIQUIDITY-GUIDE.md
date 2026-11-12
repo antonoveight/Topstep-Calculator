@@ -2,6 +2,8 @@
 
 Tài liệu này chọn lọc từ cẩm nang CRT / Inside Bar / Engulfing / IRL–ERL do người dùng cung cấp. Đây là hướng dẫn đọc chart và ghi nhận thủ công, không phải bộ phát tín hiệu hoặc kết quả kiểm định chiến lược.
 
+**Cấu trúc hệ thống hiện hành:** [HTF → kịch bản → entry LTF](TRADING-FRAMEWORK.md). Chỉ giữ CRT, Engulfing/Outside Bar và Inside Bar là nhóm cấu trúc HTF. Trend, AMD và Break trong các ghi chú cũ chỉ mô tả bối cảnh/hành vi; không còn là phương pháp độc lập.
+
 ## 1. Quy ước chung
 
 Luôn xác định **range tham chiếu và khung thời gian** trước khi gọi một mức là nội bộ hoặc bên ngoài. Một mức nội bộ của H1 có thể nằm ngoài range M5.
@@ -31,16 +33,15 @@ Chu kỳ IRL ↔ ERL là cách tổ chức kịch bản. FVG, OB, Inside Bar ho�
 
 Phân biệt **đang vượt biên** với **đã đóng vượt biên**. Một nến đóng ngoài range làm mất điều kiện sweep đóng trở lại của setup đảo chiều đang xét; nó chưa tự chứng minh breakout sẽ thành công. Retest thất bại hoặc quay lại range cần đánh giá lại theo kế hoạch vô hiệu.
 
-## 3. Bốn setup, cùng một khung đọc
+## 3. Ba cấu trúc HTF, cùng một luồng entry LTF
 
-| Setup | Bối cảnh bổ sung | Xác nhận cần giữ | Bỏ qua / đánh giá lại |
+| Cấu trúc HTF | Bối cảnh | Xác nhận cần giữ | Bỏ qua / đánh giá lại |
 | --- | --- | --- | --- |
-| CRT · FRVP | Quét biên range tại mức HTF đã chọn; có thể theo dõi Mother/Inside Bar nếu xuất hiện đúng vị trí. | C2 H1 đóng trở lại trong C1; FRVP từ lúc mở H1 quét đến cực trị râu C2; M5/M3 đóng qua POC theo hướng dự kiến. | C2 đóng ngoài C1, chưa rõ POC/anchor, hoặc mục tiêu không đủ R:R theo kế hoạch. |
-| Trend | Nhịp hồi về POC/vùng HTF đã đánh dấu; Inside Bar có thể là trạng thái chờ trong nhịp hồi. | Cấu trúc LTF thuận hướng: HL cho Long, LH cho Short; giữ điều kiện POC của setup hiện hành. | Chỉ có hình dạng nến, chưa có xác nhận hoặc phải mua/bán đuổi. |
-| AMD | Range tích lũy được xác định trước; quan sát quét biên và trở lại vùng. | Quay lại range, phản ứng POC-A và xác nhận hướng phân phối; không suy ra AMD chỉ từ giờ Q1/Q2/Q3. | Giá còn ở ngoài range hoặc chỉ có râu quét, chưa xác nhận trở lại. |
-| Break | Nén trong range/Mother Bar; với nhiều Inside Bar, giữ biên mẹ ban đầu khi còn nén. | Nến xác nhận đóng ngoài biên; retest POC/VAH/VAL hoặc vùng đã chọn và giữ cấu trúc. | Chỉ chạm/vượt biên trong nến đang chạy, retest thất bại hoặc R:R không đạt. |
+| CRT | C1/range và mức thanh khoản trên HTF đã chọn. | C2 quét rồi đóng trở lại theo quy tắc CRT; sau đó tìm điều kiện entry LTF đã chọn. | C2 đóng ngoài range hoặc điều kiện entry/vô hiệu chưa rõ. |
+| Engulfing / Outside Bar | Nến bao trùm thân hoặc High–Low tại vị trí HTF được đánh dấu. | Phân biệt mẫu, nến đã đóng và kịch bản hướng tới mục tiêu; LTF xác nhận entry. | Chỉ dựa màu nến, mặc định đảo chiều hoặc giả định có FVG. |
+| Inside Bar | Mother/Inside trên HTF; giữ biên mẹ ban đầu khi còn nén lồng nhau. | Kịch bản sweep trở lại hoặc đóng phá biên đã chọn; sau đó entry LTF phù hợp. | Còn nén, chưa có sự kiện/xác nhận hoặc retest thất bại. |
 
-Inside Bar ở giữa vùng nhiễu vẫn là điều kiện chờ. Không mặc định mở thêm setup thứ năm. Sau khi range mẹ bị vô hiệu, cần xác lập lại range rõ ràng trước khi đọc chu kỳ mới.
+Inside Bar ở giữa vùng nhiễu vẫn là điều kiện chờ. Ba cấu trúc có thể chồng lấp; ghi cấu trúc chính và chú thích mẫu đi kèm, không mặc định ba tín hiệu độc lập. Sau khi range mẹ bị vô hiệu, xác lập lại range rõ ràng trước khi đọc chu kỳ mới.
 
 ## 4. Quản trị thống nhất với người dùng
 

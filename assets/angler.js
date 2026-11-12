@@ -521,7 +521,7 @@ function updatePondClock(now=new Date(),instant=false) {
     activity.textContent='Lịch dự án · '+clock.activity.label;
     activity.dataset.active=String(clock.activity.active);
     activity.title='Theo giờ thực ở Việt Nam; chọn ánh sáng xem thử không đổi lịch hoạt động.';
-    for(let setup=1;setup<=4;setup++) {
+    for(const setup of [5,6,7]) {
         const label=document.querySelector('#checklist-setup-'+setup+' > div:first-child > span:first-child');
         if(label)label.textContent='Theo playbook: '+PondSchedule.describeSetup(setup,now)+' (GMT+7)';
     }

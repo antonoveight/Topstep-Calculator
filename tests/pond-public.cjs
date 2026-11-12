@@ -38,7 +38,7 @@ assert.equal(Public.copy(7,{outcome:'tp'},true,true).status,'Reeling in');
   await page.locator('#studioSourceType').selectOption('xfa');
   await page.locator('#stopPondCapture').click();assert.equal(await page.locator('#pondPublicSource').textContent(),'SOURCE NOT CONFIRMED');
   await page.locator('#studioSourceType').selectOption('combine');
-  for(let setup=1;setup<=4;setup++){
+  for(const setup of [5,6,7]){
    await page.evaluate(setup=>{resetChecklist();switchChecklistSetup(setup);},setup);
    for(let step=1;step<=4;step++){
     await page.evaluate(step=>triggerCastStep(step),step);
@@ -70,6 +70,6 @@ assert.equal(Public.copy(7,{outcome:'tp'},true,true).status,'Reeling in');
   await page.reload();await page.waitForFunction(()=>anglerState.isLoopRunning);
   assert.equal(await page.evaluate(()=>PondPublic.source()),'');
   assert.deepEqual(errors,[]);
-  console.log('PASS compact copy, four methods, two simulated types, source reset, private controls, geometry at four sizes, fullscreen and unchanged finance data');
+  console.log('PASS compact copy, three HTF structures, two simulated types, source reset, private controls, geometry at four sizes, fullscreen and unchanged finance data');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

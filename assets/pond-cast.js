@@ -4,6 +4,7 @@ const PondCast=(()=>{
     const smooth=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);};
     const mix=(a,b,t)=>a+(b-a)*t;
     function sample(progress,hand,restTip,anchor={x:650,y:412},setup=1,gain=1){
+        setup=({5:1,6:2,7:4}[setup]||setup);
         const p=Math.max(0,Math.min(1,progress));
         const width=[0,1,.88,1.12,1.05][setup]||1;
         const swing=.65+.35*gain;

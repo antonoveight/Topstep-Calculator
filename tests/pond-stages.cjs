@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const Behavior=require('../assets/pond-behavior.js'),Scene=require('../assets/pond-scene.js');
 const range=values=>Math.max(...values)-Math.min(...values);
-for(let setup=1;setup<=4;setup++){
+for(const setup of [5,6,7]){
  const samples={3:[],4:[],5:[]};
  for(const stage of [3,4,5])for(let t=0;t<30;t+=.04){
   const m=Behavior.motion({setup,stage},t,20);
@@ -24,4 +24,4 @@ for(let setup=1;setup<=4;setup++){
  const from=Behavior.motion({setup,stage:4},2,20);
  assert.deepEqual(Behavior.motion({setup,stage:5},2,0,1,from),from,'Changing stage begins from the displayed pose');
 }
-console.log('PASS distinct nibble/fight/pump motions across four setups, sustained effects, gentle bounds, shared rod hand, smooth transitions and no restored hook-set');
+console.log('PASS distinct nibble/fight/pump motions across three HTF structures, sustained effects, gentle bounds, shared rod hand, smooth transitions and no restored hook-set');

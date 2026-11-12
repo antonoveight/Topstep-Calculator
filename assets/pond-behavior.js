@@ -1,10 +1,11 @@
 /* Four visual narratives follow confirmed checklist steps, never market guesses. */
 const PondBehavior=(()=>{
     const smooth=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);};
-    function anchor(setup=1){return {...({1:{x:650,y:412},2:{x:675,y:402},3:{x:625,y:426},4:{x:680,y:410}}[setup]||{x:650,y:412})};}
+    const visual=setup=>({5:1,6:2,7:4}[setup]||setup);
+    function anchor(setup=5){return {...({1:{x:650,y:412},2:{x:675,y:402},3:{x:625,y:426},4:{x:680,y:410}}[visual(setup)]||{x:650,y:412})};}
     function motion(snapshot,t,age,gain=1,from=null){
         const stage=snapshot?.stage||0;
-        const setup=snapshot?.setup||1;
+        const setup=visual(snapshot?.setup||5);
         const m={tipX:0,tipY:0,bobberX:0,bobberY:0,dip:0,floatAngle:0,lean:0,bodyY:0,curve:0,lineSag:26,wake:0,nibble:0,pump:0};
         if(stage===2){
             if(setup===1){m.tipX=Math.sin(t*.45)*4;m.bobberX=Math.sin(t*.45)*7;}
@@ -50,7 +51,7 @@ const PondBehavior=(()=>{
     }
     function target(snapshot,bobber,t,age){
         if(!snapshot||snapshot.stage<2||snapshot.stage>=7)return null;
-        const stage=snapshot.stage,setup=snapshot.setup,approach=Math.exp(-age*.65);
+        const stage=snapshot.stage,setup=visual(snapshot.setup),approach=Math.exp(-age*.65);
         let x=bobber.x+12,y=bobber.y+19,tail=Math.sin(t*4),behavior='waiting';
         if(stage===2){
             if(setup===1){x+=70+Math.sin(t*.45)*24;y+=Math.cos(t*.6)*12-20;behavior='sweep-watch';}

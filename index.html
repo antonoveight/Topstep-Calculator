@@ -1164,7 +1164,7 @@ input:checked + .slider:before {
 
                         <!-- 3 Quick Action Buttons -->
                         <div class="grid grid-cols-3 gap-2">
-                            <button id="finpointCardBtnAction1" type="button" onclick="switchAppView('checklist')" class="b-btn-secondary b-btn-action-col" style="height: auto; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; gap: 4px; font-size: 11px; line-height: 1.2;" title="Checklist 4 setups trước khi vào lệnh">
+                            <button id="finpointCardBtnAction1" type="button" onclick="switchAppView('checklist')" class="b-btn-secondary b-btn-action-col" style="height: auto; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; gap: 4px; font-size: 11px; line-height: 1.2;" title="Checklist HTF → LTF trước khi vào lệnh">
                                 <span id="finpointCardBtnAction1Icon" style="font-size: 14px; line-height: 1;">🎯</span>
                                 <span id="finpointCardBtnAction1Text" style="font-size: 11px; line-height: 1.2; font-weight: 600;">Checklist</span>
                             </button>
@@ -1245,7 +1245,7 @@ input:checked + .slider:before {
                     <div>
                         <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
                             <span>Checklist Thực Chiến</span>
-                            <span class="b-badge b-badge-blue" style="font-size: 9.5px;">4 Setups</span>
+                            <span class="b-badge b-badge-blue" style="font-size: 9.5px;">3 cấu trúc HTF</span>
                         </div>
                         <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
                             Kiểm tra 4 bước FRVP &amp; Trailing SL trước khi vào lệnh
@@ -1396,13 +1396,13 @@ input:checked + .slider:before {
                 <div>
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
                         <span class="b-badge b-badge-blue" style="font-size: 10px; font-weight: 700; letter-spacing: 0.04em;">HỆ THỐNG KỶ LUẬT THỰC CHIẾN</span>
-                        <span style="font-size: 11.5px; color: var(--text-muted);">FRVP + Topstep® Rules</span>
+                        <span style="font-size: 11.5px; color: var(--text-muted);">HTF / LTF + Topstep® Rules</span>
                     </div>
                     <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em;">
                         Checklist Vào Lệnh Thực Chiến
                     </h2>
                     <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
-                        Bộ lọc 4 bước FRVP &amp; Quản trị dời SL trước khi vào lệnh trên TopstepX.
+                        Cấu trúc HTF xác lập kịch bản; LTF tìm điểm vào và SL thực thi.
                     </p>
                 </div>
 
@@ -1484,14 +1484,14 @@ input:checked + .slider:before {
                 <div class="checklist-column">
 <div class="checklist-stack">
 
-                    <!-- Card 1: Pre-Trade Checklist (4 Setups) -->
+                    <!-- Card 1: Pre-Trade Checklist (3 cấu trúc HTF) -->
                     <div class="b-card" id="preTradeChecklistCard">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
                             <div>
                                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-                                    <span class="checklist-panel-title">CHECKLIST VÀO LỆNH</span>
+                                    <span class="checklist-panel-title">HTF → KỊCH BẢN → ENTRY LTF</span>
                                 </span>
-                                <span style="font-size: 11px; color: var(--text-muted); display: block;">Chọn setup đang xuất hiện trên chart</span>
+                                <span style="font-size: 11px; color: var(--text-muted); display: block;">Chọn cấu trúc chính trên HTF</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 6px;">
                                 <span id="checklistProgressText" style="font-size: 10.5px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 8px; border-radius: 5px;">
@@ -1528,10 +1528,10 @@ input:checked + .slider:before {
                                     • FVG H4 chưa lấp?
                                 </div>
                                 <div style="background: var(--bg-card); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-inner);">
-                                    <strong style="color: var(--text-primary);">3. Day Open (Vạch Rẻ/Đắt):</strong><br>
+                                    <strong style="color: var(--text-primary);">3. Day Open (Mốc tham chiếu):</strong><br>
                                     • <strong>Sáng (Á):</strong> Globex Open 05:00 (đông 06:00).<br>
                                     • <strong>Chiều/Tối (Âu/Mỹ):</strong> NY Midnight 11:00 (đông 12:00).<br>
-                                    • 🟢 <em>Canh Buy:</em> Dưới Open (Discount) | 🔴 <em>Canh Sell:</em> Trên Open (Premium).
+                                    • Vị trí trên/dưới Open chỉ là tham chiếu; hướng lệnh cần kịch bản HTF.
                                 </div>
                             </div>
 
@@ -1539,232 +1539,155 @@ input:checked + .slider:before {
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; padding-top: 6px; border-top: 1px dashed var(--border-inner);">
                                 <span style="font-size: 10.5px; color: var(--text-muted); font-weight: 600;">Bias Hôm Nay:</span>
                                 <div style="display: flex; gap: 5px;">
-                                    <button type="button" id="bias-btn-bullish" onclick="setDailyBias('bullish')" style="padding: 3px 8px; font-size: 10px; font-weight: 600; border-radius: 5px; border: 1px solid transparent; cursor: pointer; background: rgba(34, 197, 94, 0.12); color: var(--color-green); transition: all 0.15s ease;">🟢 Canh BUY (Dưới Open)</button>
-                                    <button type="button" id="bias-btn-bearish" onclick="setDailyBias('bearish')" style="padding: 3px 8px; font-size: 10px; font-weight: 600; border-radius: 5px; border: 1px solid transparent; cursor: pointer; background: rgba(239, 68, 68, 0.12); color: var(--color-red); transition: all 0.15s ease;">🔴 Canh SELL (Trên Open)</button>
+                                    <button type="button" id="bias-btn-bullish" onclick="setDailyBias('bullish')" style="padding: 3px 8px; font-size: 10px; font-weight: 600; border-radius: 5px; border: 1px solid transparent; cursor: pointer; background: rgba(34, 197, 94, 0.12); color: var(--color-green); transition: all 0.15s ease;">🟢 Canh BUY theo HTF</button>
+                                    <button type="button" id="bias-btn-bearish" onclick="setDailyBias('bearish')" style="padding: 3px 8px; font-size: 10px; font-weight: 600; border-radius: 5px; border: 1px solid transparent; cursor: pointer; background: rgba(239, 68, 68, 0.12); color: var(--color-red); transition: all 0.15s ease;">🔴 Canh SELL theo HTF</button>
                                     <button type="button" id="bias-btn-neutral" onclick="setDailyBias('neutral')" style="padding: 3px 8px; font-size: 10px; font-weight: 600; border-radius: 5px; border: 1px solid transparent; cursor: pointer; background: var(--bg-card); color: var(--text-muted); transition: all 0.15s ease;">⚪ NEUTRAL (Chờ cản)</button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 4 Setup Tabs -->
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px; background: var(--bg-card-inner); padding: 4px; border-radius: 8px; border: 1px solid var(--border-inner);">
-                            <button type="button" id="tab-setup-1" onclick="switchChecklistSetup(1)" style="padding: 8px 4px; font-size: 11.5px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: var(--color-primary); color: #FFFFFF; transition: all 0.15s ease;" title="Setup 1: Quét râu đêm, kéo FRVP xác định POC">1. CRT - FRVP</button>
-                            <button type="button" id="tab-setup-2" onclick="switchChecklistSetup(2)" style="padding: 8px 4px; font-size: 11.5px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: transparent; color: var(--text-muted); transition: all 0.15s ease;" title="Setup 2: Sóng đẩy mạnh, hồi POC tạo đáy mới">2. Trend</button>
-                            <button type="button" id="tab-setup-3" onclick="switchChecklistSetup(3)" style="padding: 8px 4px; font-size: 11.5px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: transparent; color: var(--text-muted); transition: all 0.15s ease;" title="Setup 3: Tích lũy Phase A, bẫy Phase M, test lại POC-A">3. AMD</button>
-                            <button type="button" id="tab-setup-4" onclick="switchChecklistSetup(4)" style="padding: 8px 4px; font-size: 11.5px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; text-align: center; background: transparent; color: var(--text-muted); transition: all 0.15s ease;" title="Setup 4: Sideway nén chặt, bứt phá thoát hộp retest">4. Break</button>
-                        </div>
-
-                        <!-- Setup 1 Checklist: CRT - FRVP -->
-                        <div id="checklist-setup-1" class="checklist-step-group" style="display: flex; flex-direction: column; gap: 8px;">
-                            <details class="setup-liquidity-guide b-card-inner" style="padding: 8px 10px; font-size: 11.5px; line-height: 1.5;"><summary style="cursor: pointer;">Bối cảnh CRT · Quét biên và trở lại</summary><p>Chọn range H1 và mức HTF trước. C2 phải đóng trở lại trong C1; sau đó tìm xác nhận M5/M3 qua POC. Inside Bar chỉ bổ sung vùng chờ, không thay điều kiện C2. C2 đóng ngoài C1: hủy kịch bản sweep này, chưa tự xác nhận breakout.</p></details>
-                            <div style="font-size: 11px; color: var(--color-primary); background: var(--color-primary-light); padding: 6px 12px; border-radius: 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--color-primary);">
-                                <span>⏰ Cặp H1 ➔ M5 · 20p đầu nến H1</span>
-                                <span style="font-size: 10.5px; color: var(--text-muted); font-weight: 500;">Quét cản HTF (PDH/L, ONH/L)</span>
-                            </div>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s1-1" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 1</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Kéo FRVP Fixed Anchor</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Open nến H1 → Đỉnh/Đáy râu C2 trên M5 (Cố định 100%)</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s1-2" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 2</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Kiểm Tra 3 Vị Trí POC</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Cực trị (A+ vào ngay) · Giữa 50% (Đo R:R ≥ 1:2) · Sát Open H1 (Bỏ kèo)</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s1-3" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 3</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Trigger Cò Súng M5 (CISD)</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">C3 mở ra → M5 đóng thân qua POC (hoặc Limit đón retest POC)</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s1-4" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 4</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Vào Lệnh &amp; Quản Trị</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">SL sau râu C2, TP biên đối diện C1 (Tối thiểu 1:2R – 1:3R)</div>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-
-                        <!-- Setup 2 Checklist: Trend -->
-                        <div id="checklist-setup-2" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
-                            <details class="setup-liquidity-guide b-card-inner" style="padding: 8px 10px; font-size: 11.5px; line-height: 1.5;"><summary style="cursor: pointer;">Bối cảnh Trend · Hồi về vùng chờ</summary><p>Đánh dấu sóng đẩy, POC/vùng phản ứng và mục tiêu cấu trúc. Inside Bar trong nhịp hồi là trạng thái chờ; cần HL cho Long hoặc LH cho Short được xác nhận theo setup. Không đuổi giá hoặc coi một cú quét nhỏ là lý do chắc chắn giữ hay đổi bias.</p></details>
-                            <div style="font-size: 11px; color: var(--color-primary); background: var(--color-primary-light); padding: 6px 12px; border-radius: 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--color-primary);">
-                                <span>⏰ Giờ vàng: 08:30 – 09:45 (Sáng) &amp; 21:30 – 22:30 (Mỹ)</span>
-                                <span style="font-size: 10.5px; color: var(--text-muted); font-weight: 500;">Hồi POC sóng chủ</span>
-                            </div>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s2-1" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 1</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Sóng Đẩy Chủ</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Đánh dấu High &amp; Low → Kéo FRVP cả sóng lấy POC</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s2-2" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 2</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Phản Ứng Tại POC</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Quan sát phản ứng nến (Tuyệt đối không limit mù)</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s2-3" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 3</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Đáy Mới Tại POC</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Chờ giá tạo Đáy mới (Local Higher Low) giữ vững trên POC</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s2-4" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 4</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Vào Lệnh &amp; Quản Trị</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">SL sau Đáy mới, TP lên Đỉnh sóng (R:R 1:2 / 1:3)</div>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-
-                        <!-- Setup 3 Checklist: AMD -->
-                        <div id="checklist-setup-3" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
-                            <details class="setup-liquidity-guide b-card-inner" style="padding: 8px 10px; font-size: 11.5px; line-height: 1.5;"><summary style="cursor: pointer;">Bối cảnh AMD · Nén, quét, xác nhận</summary><p>Giữ range tích lũy đã chọn; theo dõi quét biên rồi trở lại range và phản ứng POC-A. Cần xác nhận hướng phân phối trước khi thực thi. Quý thời gian Q1/Q2/Q3 hoặc râu nến riêng lẻ chưa chứng minh mô hình AMD.</p></details>
-                            <div style="font-size: 11px; color: var(--color-primary); background: var(--color-primary-light); padding: 6px 12px; border-radius: 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--color-primary);">
-                                <span>⏰ Giờ vàng: 14:00 – 15:30 (Âu - MGC) &amp; 20:30 – 22:00 (Mỹ)</span>
-                                <span style="font-size: 10.5px; color: var(--text-muted); font-weight: 500;">Quét bẫy Judas Swing</span>
-                            </div>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s3-1" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 1</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Phase A (Tích Lũy)</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Kéo FRVP vùng tích lũy → Xác định POC-A</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s3-2" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 2</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Phase M (Bẫy Giá)</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Chờ quét râu bẫy giá (Judas Swing) thoát biên Range A</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s3-3" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 3</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Phase D (Phân Phối)</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Chờ giá chui ngược lại Range A &amp; test lại POC-A</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s3-4" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 4</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Kích Hoạt Lệnh</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Chờ nến từ chối tại POC-A → Vào lệnh, SL ngoài râu M, TP 1:2 / 1:3</div>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-
-                        <!-- Setup 4 Checklist: Break -->
-                        <div id="checklist-setup-4" class="checklist-step-group" style="display: none; flex-direction: column; gap: 8px;">
-                            <details class="setup-liquidity-guide b-card-inner" style="padding: 8px 10px; font-size: 11.5px; line-height: 1.5;"><summary style="cursor: pointer;">Bối cảnh Break · Biên mẹ và retest</summary><p>Nhiều Inside Bar còn nén: giữ High/Low nến mẹ ban đầu. Chờ nến xác nhận đóng ngoài biên rồi retest POC/VAH/VAL hoặc vùng đã chọn. Chạm biên trong nến đang chạy chưa đủ; nếu retest thất bại, đánh giá lại điểm vô hiệu và R:R.</p></details>
-                            <div style="font-size: 11px; color: var(--color-primary); background: var(--color-primary-light); padding: 6px 12px; border-radius: 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--color-primary);">
-                                <span>⏰ Giờ vàng: 08:00 – 08:30 (Sáng) &amp; 20:25 – 21:00 (Mỹ)</span>
-                                <span style="font-size: 10.5px; color: var(--text-muted); font-weight: 500;">Bứt phá nén Sideway</span>
-                            </div>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s4-1" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 1</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Kéo FRVP Hộp Nén</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Range Sideway → Xác định POC &amp; 2 biên VAH/VAL</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s4-2" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 2</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Nến Break Thoát Hộp</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Nến thân lớn đóng cửa dứt khoát thoát khỏi hộp</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s4-3" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 3</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Nhịp Retest Giữ Giá</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Chờ test lại POC (hồi sâu) hoặc VAH/VAL (hồi nông) giữ giá</div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label class="chk-step-card">
-                                <input type="checkbox" id="chk-s4-4" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                                    <span style="font-size: 10px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;">BƯỚC 4</span>
-                                    <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Vào Lệnh &amp; Quản Trị</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">SL sau Local High/Low nhịp retest, TP 1:2 / 1:3</div>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
+<div id="htfExecutionContext" class="b-card-inner" style="padding:10px;margin-bottom:12px;font-size:11.5px;">
+<strong>HTF xác lập kịch bản · LTF chỉ tìm entry</strong>
+<p style="color:var(--text-muted);margin:5px 0 9px;">Các mẫu có thể chồng lên nhau; chọn cấu trúc chính để ghi nhận. Trend/AMD/Break là bối cảnh hoặc hành vi, không còn là phương pháp riêng. Chọn khung và điều kiện trước khi tick xác nhận.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px;">
+<label style="display:flex;flex-direction:column;gap:4px;min-width:0;">Khung HTF<select id="executionHtf" onchange="onExecutionContextChange(this.id)" style="width:100%;min-width:0;background:var(--bg-card);color:var(--text-primary);padding:7px;border:1px solid var(--border-inner);border-radius:6px;">
+<option value="">Chọn HTF</option>
+<option value="H1">H1</option>
+<option value="H2">H2</option>
+<option value="H4">H4</option>
+<option value="D1">D1</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:4px;min-width:0;">Khung entry LTF<select id="executionLtf" onchange="onExecutionContextChange(this.id)" style="width:100%;min-width:0;background:var(--bg-card);color:var(--text-primary);padding:7px;border:1px solid var(--border-inner);border-radius:6px;">
+<option value="">Chọn LTF</option>
+<option value="M5">M5</option>
+<option value="M3">M3</option>
+<option value="M1">M1</option>
+</select>
+</label>
+<label style="display:flex;flex-direction:column;gap:4px;min-width:0;">Điều kiện entry<select id="executionEntry" onchange="onExecutionContextChange(this.id)" style="width:100%;min-width:0;background:var(--bg-card);color:var(--text-primary);padding:7px;border:1px solid var(--border-inner);border-radius:6px;">
+<option value="">Chọn điều kiện</option>
+<option value="POC">POC</option>
+<option value="CISD">CISD / MSS</option>
+<option value="FVG">FVG</option>
+<option value="OB">OB</option>
+<option value="RETEST">Break & retest</option>
+<option value="LINE">Line: touch / break</option>
+</select>
+</label>
+</div>
+<label style="display:block;margin-top:8px;">Ghi chú điều kiện chờ<textarea id="executionNote" maxlength="600" rows="2" onchange="saveChecklistState()" placeholder="Range, mức chờ, touch/break/close/retest, mục tiêu và vô hiệu…" style="display:block;box-sizing:border-box;width:100%;margin-top:4px;background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-inner);border-radius:6px;padding:7px;">
+</textarea>
+</label>
+<small id="frameworkMigrationNotice" style="display:none;color:var(--text-muted);">Checklist cũ được giữ trong bản sao lưu; các cấu trúc HTF mới bắt đầu chưa xác nhận.</small>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:12px;">
+<button type="button" id="tab-setup-5" onclick="switchChecklistSetup(5)" class="b-btn-secondary" style="height:auto;min-height:38px;padding:7px 4px;font-size:11px;white-space:normal;" title="Cấu trúc HTF: CRT">CRT</button>
+<button type="button" id="tab-setup-6" onclick="switchChecklistSetup(6)" class="b-btn-secondary" style="height:auto;min-height:38px;padding:7px 4px;font-size:11px;white-space:normal;" title="Cấu trúc HTF: Engulfing / Outside">Engulfing / Outside</button>
+<button type="button" id="tab-setup-7" onclick="switchChecklistSetup(7)" class="b-btn-secondary" style="height:auto;min-height:38px;padding:7px 4px;font-size:11px;white-space:normal;" title="Cấu trúc HTF: Inside Bar">Inside Bar</button>
+</div>
+<div id="checklist-setup-5" class="checklist-step-group" style="display:flex;flex-direction:column;gap:8px;">
+<details class="setup-liquidity-guide b-card-inner" style="padding:8px 10px;font-size:11.5px;line-height:1.5;">
+<summary style="cursor:pointer;">Cấu trúc CRT trên HTF</summary>
+<p>C1 xác lập range. C2 quét biên hoặc mức HTF đã chọn rồi đóng trở lại C1. Nến chưa đóng chỉ là mô hình đang hình thành; đóng ngoài C1 làm mất điều kiện sweep này.</p>
+</details>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s5-1" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">1. Cấu trúc HTF đã xác nhận</div>
+<div style="font-size:11px;color:var(--text-muted);">Đánh dấu C1, C2 và biên HTF; kiểm tra C2 đã đóng trở lại range.</div>
+</div>
+</label>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s5-2" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">2. Kịch bản HTF đã rõ</div>
+<div style="font-size:11px;color:var(--text-muted);">Chọn mức bị quét, hướng kỳ vọng, một mục tiêu và điểm vô hiệu HTF.</div>
+</div>
+</label>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s5-3" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">3. Điều kiện entry LTF đã xác nhận</div>
+<div style="font-size:11px;color:var(--text-muted);">Chỉ xét điều kiện đã chọn: POC, CISD/MSS, FVG/OB hoặc retest; cùng hướng kịch bản HTF. Không bắt buộc ghép tất cả điều kiện.</div>
+</div>
+</label>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s5-4" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">4. Đã vào lệnh theo kế hoạch</div>
+<div style="font-size:11px;color:var(--text-muted);">Entry thực tế, SL theo điểm vô hiệu và một Full TP; kiểm tra R:R và khối lượng trước lệnh.</div>
+</div>
+</label>
+</div>
+<div id="checklist-setup-6" class="checklist-step-group" style="display:none;flex-direction:column;gap:8px;">
+<details class="setup-liquidity-guide b-card-inner" style="padding:8px 10px;font-size:11.5px;line-height:1.5;">
+<summary style="cursor:pointer;">Cấu trúc Engulfing / Outside trên HTF</summary>
+<p>Phân biệt Engulfing bao trùm thân với Outside Bar bao trùm High–Low. Ghi rõ mẫu nào xuất hiện trên HTF. Không mặc định mẫu nến là đảo chiều, tạo FVG hoặc có cùng hướng với bias.</p>
+</details>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s6-1" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">1. Cấu trúc HTF đã xác nhận</div>
+<div style="font-size:11px;color:var(--text-muted);">Phân loại Engulfing thân hoặc Outside High–Low trên nến HTF đã đóng.</div>
+</div>
+</label>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s6-2" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">2. Kịch bản HTF đã rõ</div>
+<div style="font-size:11px;color:var(--text-muted);">Xét vị trí trong range, vùng phản ứng và thanh khoản; chọn hướng, mục tiêu, vô hiệu.</div>
+</div>
+</label>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s6-3" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">3. Điều kiện entry LTF đã xác nhận</div>
+<div style="font-size:11px;color:var(--text-muted);">Chỉ xét điều kiện đã chọn: POC, CISD/MSS, FVG/OB hoặc retest; cùng hướng kịch bản HTF. Không bắt buộc ghép tất cả điều kiện.</div>
+</div>
+</label>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s6-4" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">4. Đã vào lệnh theo kế hoạch</div>
+<div style="font-size:11px;color:var(--text-muted);">Entry thực tế, SL theo điểm vô hiệu và một Full TP; kiểm tra R:R và khối lượng trước lệnh.</div>
+</div>
+</label>
+</div>
+<div id="checklist-setup-7" class="checklist-step-group" style="display:none;flex-direction:column;gap:8px;">
+<details class="setup-liquidity-guide b-card-inner" style="padding:8px 10px;font-size:11.5px;line-height:1.5;">
+<summary style="cursor:pointer;">Cấu trúc Inside Bar trên HTF</summary>
+<p>Đánh dấu Mother High/Low và Inside High/Low trên HTF. Khi còn nén lồng nhau, giữ biên mẹ ban đầu. Chọn kịch bản sweep trở lại hoặc đóng phá biên; chưa có sự kiện thì tiếp tục chờ.</p>
+</details>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s7-1" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">1. Cấu trúc HTF đã xác nhận</div>
+<div style="font-size:11px;color:var(--text-muted);">Xác định cặp Mother/Inside trên HTF đã đóng và giữ biên mẹ khi còn nén.</div>
+</div>
+</label>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s7-2" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">2. Kịch bản HTF đã rõ</div>
+<div style="font-size:11px;color:var(--text-muted);">Chọn biên được theo dõi, điều kiện sweep/break, mục tiêu và điểm vô hiệu.</div>
+</div>
+</label>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s7-3" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">3. Điều kiện entry LTF đã xác nhận</div>
+<div style="font-size:11px;color:var(--text-muted);">Chỉ xét điều kiện đã chọn: POC, CISD/MSS, FVG/OB hoặc retest; cùng hướng kịch bản HTF. Không bắt buộc ghép tất cả điều kiện.</div>
+</div>
+</label>
+<label class="chk-step-card">
+<input type="checkbox" id="chk-s7-4" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
+<div style="min-width:0;">
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">4. Đã vào lệnh theo kế hoạch</div>
+<div style="font-size:11px;color:var(--text-muted);">Entry thực tế, SL theo điểm vô hiệu và một Full TP; kiểm tra R:R và khối lượng trước lệnh.</div>
+</div>
+</label>
+</div>
                     </div>
 
                     <div id="pondRiskManagement" class="b-card" style="border-left: 4px solid var(--color-primary);">
@@ -1821,7 +1744,7 @@ input:checked + .slider:before {
                     <details id="liquidityGuide" class="b-card" style="font-size: 12px; line-height: 1.6; overflow-wrap: anywhere;">
                         <summary style="cursor: pointer; font-weight: 700; color: var(--text-primary);">Bản đồ thanh khoản · IRL / ERL</summary>
                         <div style="margin-top: 10px; color: var(--text-slate);">
-                            <p><strong>Range → Vùng chờ → Sweep / Break → Xác nhận → Mục tiêu &amp; vô hiệu.</strong> Luôn ghi khung thời gian và hai biên tham chiếu trước khi đọc thanh khoản.</p>
+                            <p><strong>Cấu trúc HTF → Kịch bản HTF → Entry LTF.</strong> Giữ mục tiêu và vô hiệu của kịch bản HTF; LTF giúp chọn điểm vào và SL thực thi.</p>
                             <p>ERL nằm ngoài range; đỉnh/đáy nội bộ nằm trong range. FVG/OB là vùng phản ứng riêng. <strong>POC ≠ EQ ≠ CE:</strong> khối lượng, trung điểm range và trung điểm vùng mất cân bằng.</p>
                             <p>Inside Bar biểu thị nén; Outside Bar bao trùm High–Low, Engulfing bao trùm thân. Hình dạng nến chưa tự xác nhận hướng đi hoặc tạo FVG.</p>
                             <p><strong>Sweep:</strong> vượt mức rồi đóng trở lại theo khung xác nhận. <strong>Break:</strong> đóng ngoài biên rồi chờ retest theo setup; vẫn có thể thất bại. Macro/QT giúp tập trung quan sát, không thay xác nhận giá.</p>
@@ -1890,7 +1813,7 @@ input:checked + .slider:before {
                         <div id="aiScanningIndicator" style="display: none; padding: 14px; text-align: center; margin-top: 10px; background: var(--bg-card-inner); border-radius: 8px; border: 1px solid var(--border-inner);">
                             <div style="display: inline-block; width: 22px; height: 22px; border: 2.5px solid var(--color-primary); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
                             <div id="aiScanningTitle" style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-top: 6px;">AI đang đọc chart &amp; phân tích cấu trúc...</div>
-                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Đối chiếu 4 Setup, vị trí POC và cấu trúc nến</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Đọc cấu trúc HTF → kịch bản → điều kiện entry LTF</div>
                         </div>
 
                         <!-- Analysis Output Box -->
@@ -1921,8 +1844,8 @@ input:checked + .slider:before {
                                     <span class="b-badge b-badge-green" style="font-size: 9.5px; padding: 1px 6px;">SĂN LỆNH</span>
                                 </div>
                                 <div style="color: var(--text-slate); line-height: 1.4; font-size: 11px;">
-                                    • <strong>MGC &amp; MNQ:</strong> Dòng tiền SGE (08:00–09:30). Sóng mượt.<br>
-                                    • Canh <strong>Setup 1 (CRT)</strong> quét râu hoặc <strong>Setup 2 (Trend)</strong>.
+                                    • <strong>MGC &amp; MNQ:</strong> Quan sát vùng chờ HTF trong khung sáng.<br>
+                                    • Xét <strong>CRT / Engulfing / Inside Bar trên HTF</strong>; LTF chỉ tìm entry.
                                 </div>
                             </div>
 
@@ -1944,7 +1867,7 @@ input:checked + .slider:before {
                                     <span class="b-badge b-badge-blue" style="font-size: 9.5px; padding: 1px 6px;">ƯU TIÊN MGC</span>
                                 </div>
                                 <div style="color: var(--text-slate); line-height: 1.4; font-size: 11px;">
-                                    • <strong>MGC:</strong> London mở quét râu Á. Canh <strong>Setup 1 / 3 (AMD)</strong>.<br>
+                                    • <strong>MGC:</strong> Quan sát phản ứng tại vùng chờ HTF. Xét cấu trúc HTF tại vùng chờ.<br>
                                     • <strong>MNQ:</strong> Biên hẹp, bẫy giá $
 ightarrow$ <em>Khuyên đứng ngoài.</em>
                                 </div>
@@ -1968,8 +1891,8 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                                     <span class="b-badge b-badge-gold" style="font-size: 9.5px; padding: 1px 6px; font-weight: 700;">GIỜ VÀNG MỸ</span>
                                 </div>
                                 <div style="color: var(--text-slate); line-height: 1.4; font-size: 11px;">
-                                    • <strong>MGC, MNQ, MES &amp; MCLZ26:</strong> 80% Volume ngày (US Open &amp; Pit Dầu). Biến động mạnh.<br>
-                                    • Canh <strong>Setup 4 (Break)</strong>, <strong>Setup 1 (CRT)</strong> hoặc <strong>Setup 2</strong>.
+                                    • <strong>MGC, MNQ, MES &amp; MCLZ26:</strong> Kiểm tra lịch tin và kịch bản HTF.<br>
+                                    • Theo kịch bản <strong>HTF</strong>, chờ điều kiện entry <strong>LTF</strong>.
                                 </div>
                             </div>
 
@@ -1996,7 +1919,7 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                     <div class="b-card">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
                             <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-                                <span>📊</span> Bí Quyết Vị Trí POC &amp; CRT 3.0
+                                <span>📊</span> POC · Điều kiện entry LTF
                             </span>
                             <span class="b-badge b-badge-blue" style="font-size: 10px;">Playbook 3.0</span>
                         </div>
@@ -2005,8 +1928,8 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                             <div class="b-card-inner" style="padding: 9px 11px;">
                                 <div style="font-weight: 700; color: var(--color-primary); margin-bottom: 3px;">🎯 3 Vị Trí POC (H1 Open ➔ Râu C2)</div>
                                 <div style="color: var(--text-slate); line-height: 1.4;">
-                                    • <strong>Cực Trị (A+):</strong> Kẹp volume đỉnh/đáy. M5 đục qua vào ngay, SL ngắn, R:R 1:3–1:5.<br>
-                                    • <strong>Giữa 50%:</strong> Vùng cân bằng. Limit POC, bắt buộc đo R:R ≥ 1:2 mới vào.<br>
+                                    • <strong>Cực Trị:</strong> Chờ nến entry đóng qua POC theo kế hoạch; không tự suy ra tỷ lệ thắng.<br>
+                                    • <strong>Giữa range:</strong> POC không đồng nghĩa EQ 50%. Chỉ dùng khi đã chọn điều kiện entry, đo R:R trước lệnh.<br>
                                     • <strong>Sát Open H1 (C):</strong> Bỏ kèo (cản dày xuất phát dễ dội ngược).
                                 </div>
                             </div>
@@ -2020,10 +1943,10 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                             </div>
 
                             <div class="b-card-inner" style="padding: 9px 11px;">
-                                <div style="font-weight: 700; color: var(--color-primary); margin-bottom: 3px;">⏱️ Cặp Khung H1 – M5 &amp; Thời Gian Làm Việc</div>
+                                <div style="font-weight: 700; color: var(--color-primary); margin-bottom: 3px;">⏱️ HTF xác lập · LTF thực thi</div>
                                 <div style="color: var(--text-slate); line-height: 1.4;">
                                     • <strong>3 Ca chuẩn:</strong> Sáng (07:45–10:00) · Chiều (14:00–16:00) · Tối (20:15–22:30).<br>
-                                    • <strong>Quy tắc 20p:</strong> Chỉ tập trung 20 phút đầu nến H1. Không dán mắt liên tục.
+                                    • <strong>Điều kiện:</strong> Chờ nến xác nhận đúng khung đã chọn. Macro/QT chỉ hỗ trợ quan sát.
                                 </div>
                             </div>
 
@@ -2688,30 +2611,30 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
 <!-- JavaScript Engine -->
 <script src="assets/trading-rules.js"></script>
 <script src="assets/account-store.js"></script>
-<script src="assets/cockpit.js?v=20261112-liquidity"></script>
+<script src="assets/cockpit.js?v=20261112-htf"></script>
 <script src="assets/news-radar.js?v=20261020-calendar"></script>
 <script src="assets/market-time.js?v=20261031-cycles"></script>
 <script src="assets/market-quarterly.js?v=20261031-cycles"></script>
 <script src="assets/market-hours.js?v=20261031-cycles"></script>
-<script src="assets/workspace.js"></script>
+<script src="assets/workspace.js?v=20261112-htf"></script>
 
-    <script src="assets/pond-model.js"></script>
+    <script src="assets/pond-model.js?v=20261112-htf"></script>
     <script src="assets/pond-life.js"></script>
     <script src="assets/pond-clock.js"></script>
-    <script src="assets/pond-schedule.js?v=20261015-layers2"></script>
+    <script src="assets/pond-schedule.js?v=20261112-htf"></script>
     <script src="assets/pond-loss.js?v=20261015-outcomes"></script>
     <script src="assets/pond-fish.js?v=20261015-outcomes"></script>
-    <script src="assets/pond-cast.js?v=20261015-casting"></script>
+    <script src="assets/pond-cast.js?v=20261112-htf"></script>
     <script src="assets/pond-catch.js?v=20261015-creel"></script>
-    <script src="assets/pond-behavior.js?v=20261015-casting"></script>
+    <script src="assets/pond-behavior.js?v=20261112-htf"></script>
     <script src="assets/pond-scene.js?v=20261015-motion"></script>
     <script src="assets/pond-water.js?v=20261015-layers2"></script>
     <script src="assets/pond-ambient.js?v=20261015-layers2"></script>
-    <script src="assets/angler.js?v=20261015-outcomes"></script>
+    <script src="assets/angler.js?v=20261112-htf"></script>
     <script src="assets/pond-fullscreen.js?v=20261015-wide-controls"></script>
-    <script src="assets/pond-execution.js?v=20261016-close-controls"></script>
-    <script src="assets/pond-live.js?v=20261015-public"></script>
-    <script src="assets/pond-public.js?v=20261016-close-controls"></script>
+    <script src="assets/pond-execution.js?v=20261112-htf"></script>
+    <script src="assets/pond-live.js?v=20261112-htf"></script>
+    <script src="assets/pond-public.js?v=20261112-htf"></script>
 
 <!-- ── QUICK SEARCH & COMMAND PALETTE MODAL (CMD+K) ── -->
 <div id="quickSearchModal" class="modal hidden" onclick="if (event.target === this) closeQuickSearchModal();">

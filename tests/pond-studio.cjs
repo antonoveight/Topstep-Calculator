@@ -30,8 +30,8 @@ for(let t=0;t<600;t+=.2){const p=ambient.pose(t);assert.ok(Math.abs(p.breath)<=.
    assert.equal(await page.evaluate(()=>PondExecution.current().outcome),outcome);
   }
   assert.equal(await page.evaluate(()=>localStorage.getItem('topstep_multi_accounts_v3')),before);
-  const schedule=await page.evaluate(()=>[PondSchedule.describeSetup(4,new Date('2026-10-14T12:00:00Z')),PondSchedule.describeSetup(4,new Date('2026-12-14T12:00:00Z'))]);
-  assert.deepEqual(schedule,['20:15–22:30','21:15–23:30']);
+  const schedule=await page.evaluate(()=>[PondSchedule.describeSetup(7,new Date('2026-10-14T12:00:00Z')),PondSchedule.describeSetup(7,new Date('2026-12-14T12:00:00Z'))]);
+  assert.deepEqual(schedule,['07:45–10:00 · 14:00–16:00 · 20:15–22:30','07:45–10:00 · 14:00–16:00 · 21:15–23:30']);
   await page.evaluate(()=>{resetChecklist();PondExecution.choose('tp');onChecklistChange();});
   assert.equal(await page.evaluate(()=>PondExecution.current().outcome),'tp');
   assert.equal(await page.evaluate(()=>PondExecution.history().filter(r=>r.id===PondExecution.current().id).length),1);
@@ -44,14 +44,14 @@ for(let t=0;t<600;t+=.2){const p=ambient.pose(t);assert.ok(Math.abs(p.breath)<=.
   const geometry=await page.evaluate(()=>{const f=document.getElementById('pondBroadcastFrame').getBoundingClientRect(),s=document.getElementById('pondLiveScene').getBoundingClientRect(),c=document.querySelector('.pond-chart-pane').getBoundingClientRect();return {ratio:f.width/f.height,halves:Math.abs(s.height-c.height)<1};});
   assert.ok(Math.abs(geometry.ratio-9/16)<.01);assert.equal(geometry.halves,true);
   assert.equal(await page.locator('#pondBroadcastFrame button:visible').count(),4);
-  await page.locator('#studioSymbol').selectOption('MGC');await page.locator('#studioSetup').selectOption('3');await page.locator('#studioWindow').selectOption('afternoon');
+  await page.locator('#studioSymbol').selectOption('MGC');await page.locator('#studioSetup').selectOption('7');await page.locator('#studioWindow').selectOption('afternoon');
   await page.locator('#studioCommit').check();await page.locator('#pondStudioStart [type=submit]').click();
-  assert.equal(await page.evaluate(()=>PondLive.active().setup),3);
-  await page.locator('#studioChangeSetup').selectOption('2');
+  assert.equal(await page.evaluate(()=>PondLive.active().setup),7);
+  await page.locator('#studioChangeSetup').selectOption('6');
   assert.equal(await page.locator('#pondChangeDialog').evaluate(e=>e.open),true);
   await page.locator('#pondChangeReason').fill('Có cấu trúc mới; ghi nhận điều kiện thay đổi <img src=x>');
   await page.locator('#pondChangeForm [type=submit]').click();
-  assert.equal(await page.evaluate(()=>activeChecklistSetup),2);
+  assert.equal(await page.evaluate(()=>activeChecklistSetup),6);
   assert.equal(await page.evaluate(()=>PondLive.active().changes.length),1);
   assert.equal(await page.locator('#pondStudio img[src=x]').count(),0);
   await page.locator('[data-studio-outcome="sl"]').click();await page.locator('#studioRoundRating').selectOption('yes');

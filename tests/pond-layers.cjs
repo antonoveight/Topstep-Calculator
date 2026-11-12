@@ -14,15 +14,15 @@ for(let t=0;t<180;t+=.2){
  for(let y=195;y<650;y+=30){const w=Water.wave(y,t);assert.ok(Math.abs(w.x)<2.36&&Math.abs(w.y)<.86);}
 }
 const names=[];
-for(let setup=1;setup<=4;setup++){
+for(const setup of [5,6,7]){
  const fish=Behavior.target({setup,stage:2},{x:650,y:412},4,2);names.push(fish.behavior);
  for(const stage of [2,3,4,5,6])for(let age=0;age<40;age+=.5){const p=Behavior.target({setup,stage},{x:650,y:412},age,age);assert.ok(Number.isFinite(p.x+p.y+p.angle+p.tail));}
 }
-assert.equal(new Set(names).size,4);
+assert.equal(new Set(names).size,3);
 for(const [width,height] of [[720,640],[400,355.55],[1920,1080]]){
  const v=Scene.viewport(width,height,true);
  assert.ok(v.x<=0&&v.y<=0&&v.x+1000*v.scale>=width-.01&&v.y+750*v.scale>=height-.01,'Camera stays inside artwork');
  assert.ok(53*v.scale+v.x>=0&&215*v.scale+v.x<width&&650*v.scale+v.x<width,'Entire large basket and float remain visible together');
 }
 assert.equal(Behavior.target({setup:1,stage:7},{x:650,y:412},1,1),null);
-console.log('PASS layered actor/hand transform, gentle intensity bounds, two-scale wave bounds and four setup narratives.');
+console.log('PASS layered actor/hand transform, gentle intensity bounds, two-scale wave bounds and three HTF visual narratives.');

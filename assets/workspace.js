@@ -3,7 +3,7 @@ function validateJournalMetadata(e) {
     if(e.kind!==undefined&&!['trade','eod'].includes(e.kind)) throw new Error('Loại bản ghi không hợp lệ.');
     if(e.closed!==undefined&&typeof e.closed!=='boolean') throw new Error('Trạng thái EOD không hợp lệ.');
     if(e.riskUsd!==undefined&&(!Number.isFinite(e.riskUsd)||e.riskUsd<0)) throw new Error('Risk của lệnh không hợp lệ.');
-    if(e.setup!==undefined&&!['','1','2','3','4'].includes(String(e.setup))) throw new Error('Setup không hợp lệ.');
+    if(e.setup!==undefined&&!['','1','2','3','4','5','6','7'].includes(String(e.setup))) throw new Error('Setup không hợp lệ.');
     if(e.compliant!==undefined&&![true,false,null].includes(e.compliant)) throw new Error('Trạng thái tuân thủ không hợp lệ.');
     if(e.note!==undefined&&(typeof e.note!=='string'||e.note.length>4000)) throw new Error('Ghi chú quá dài hoặc sai định dạng.');
     if(e.chartUrl && !safeChartUrl(e.chartUrl)) throw new Error('Liên kết chart phải dùng http hoặc https.');
@@ -22,7 +22,7 @@ function validateAccountMetadata(acc) {
             if(!['combine','xfa'].includes(stage)||!plans||typeof plans!=='object'||Array.isArray(plans))throw new Error('Vòng kế hoạch không hợp lệ.');
             for(const [date,p] of Object.entries(plans)) {
                 if(!isValidTradeDate(date)||!p||!Number.isFinite(p.risk)||p.risk<0||!Number.isFinite(p.daily)||p.daily<0||
-                    (p.daily>0&&p.risk>p.daily)||!['','1','2','3','4'].includes(p.setup)||typeof p.note!=='string'||p.note.length>2000)
+                    (p.daily>0&&p.risk>p.daily)||!['','1','2','3','4','5','6','7'].includes(p.setup)||typeof p.note!=='string'||p.note.length>2000)
                     throw new Error('Kế hoạch phiên chứa dữ liệu không hợp lệ.');
             }
         }
@@ -32,7 +32,7 @@ function validateAccountMetadata(acc) {
     const $=id=>document.getElementById(id), esc=escapeHtml, money=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     let editing=null;
     const coreRender=renderTrackerTable, coreLoad=loadActiveAccountState, coreRisk=calculateTradeRisk, coreDelete=deleteEntry;
-    const setupOptions='<option value="">Chưa phân loại</option><option value="1">CRT · FRVP</option><option value="2">Trend</option><option value="3">AMD</option><option value="4">Break</option>';
+    const setupOptions='<option value="">Chưa phân loại</option><optgroup label="Cấu trúc HTF"><option value="5">CRT · HTF</option><option value="6">Engulfing / Outside · HTF</option><option value="7">Inside Bar · HTF</option></optgroup><optgroup label="Lịch sử trước chuẩn hóa"><option value="1" disabled>CRT · FRVP (cũ)</option><option value="2" disabled>Trend (cũ)</option><option value="3" disabled>AMD (cũ)</option><option value="4" disabled>Break (cũ)</option></optgroup>';
     function context() {const a=getActiveAccount();return a.id+'|'+a.stage;}
     function field(id,label,type='text',extra='') {return `<label>${label}<input id="${id}" type="${type}" ${extra}></label>`;}
     function dialog(title,content) {
@@ -126,7 +126,7 @@ function validateAccountMetadata(acc) {
             const e=entries[i],cell=row.cells[8];
             cell.querySelector('.b-btn-danger')?.remove();
             cell.insertAdjacentHTML('afterbegin',`<button type="button" class="b-btn-secondary" onclick="editJournalEntry(${i})">Sửa</button> <button type="button" class="b-btn-secondary" title="Chi tiết nhật ký" aria-label="Chi tiết nhật ký" onclick="showJournalDetails(${i})">⋯</button> `);
-            if(e.kind==='trade'||e.closed===false||e.setup) row.cells[0].insertAdjacentHTML('beforeend',`<div class="ws-muted">${e.kind==='trade'?'Lệnh':'Tổng kết EOD'} · ${e.closed===false?'Tạm tính':'Đã chốt'}${e.setup?' · Setup '+esc(e.setup):''}</div>`);
+            if(e.kind==='trade'||e.closed===false||e.setup) row.cells[0].insertAdjacentHTML('beforeend',`<div class="ws-muted">${e.kind==='trade'?'Lệnh':'Tổng kết EOD'} · ${e.closed===false?'Tạm tính':'Đã chốt'}${e.setup?' · '+esc(PondLogic.name(e.setup)):''}</div>`);
         });
     }
     function loadLimits() {
@@ -174,7 +174,7 @@ function validateAccountMetadata(acc) {
         if(from&&to&&from>to){$('statsResults').textContent='Ngày bắt đầu phải trước ngày kết thúc.';return;}
         const all=getActiveJournal(getActiveAccount()).filter(e=>(!from||e.date>=from)&&(!to||e.date<=to));
         const trades=all.filter(e=>e.kind==='trade'),groups=new Map();
-        trades.forEach(e=>{const key=e.setup?(PondLogic.setups[e.setup]?.name||'Setup '+e.setup):'Chưa phân loại';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(e);});
+        trades.forEach(e=>{const key=e.setup?PondLogic.name(e.setup):'Chưa phân loại';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(e);});
         if(!trades.length){$('statsResults').innerHTML='<p class="ws-muted">Chưa có bản ghi từng lệnh trong khoảng ngày này.</p>';return;}
         const rows=[...groups].map(([setup,list])=>{
             const withRisk=list.filter(e=>Number.isFinite(e.riskUsd)&&e.riskUsd>0),rated=list.filter(e=>typeof e.compliant==='boolean');
