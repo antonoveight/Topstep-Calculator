@@ -1588,14 +1588,14 @@ input:checked + .slider:before {
 </div>
 <div id="checklist-setup-5" class="checklist-step-group" style="display:flex;flex-direction:column;gap:8px;">
 <details class="setup-liquidity-guide b-card-inner" style="padding:8px 10px;font-size:11.5px;line-height:1.5;">
-<summary style="cursor:pointer;">Cấu trúc CRT trên HTF</summary>
-<p>C1 xác lập range. C2 quét biên hoặc mức HTF đã chọn rồi đóng trở lại C1. Nến chưa đóng chỉ là mô hình đang hình thành; đóng ngoài C1 làm mất điều kiện sweep này.</p>
+<summary style="cursor:pointer;">CRT / TS trên HTF</summary>
+<p>CRT cần TS (Turtle Soup): C2 quét mức thanh khoản đã chọn rồi lấy lại mức, đóng trở lại trong range C1. Nến chưa đóng chỉ là ứng viên; đóng ngoài hoặc quét cả hai biên chưa cho TS một hướng rõ. Sau TS HTF mới tìm điều kiện entry LTF như CISD, MSS, POC hoặc FVG/OB.</p>
 </details>
 <label class="chk-step-card">
 <input type="checkbox" id="chk-s5-1" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
 <div style="min-width:0;">
 <div style="font-size:12px;font-weight:700;color:var(--text-primary);">1. Cấu trúc HTF đã xác nhận</div>
-<div style="font-size:11px;color:var(--text-muted);">Đánh dấu C1, C2 và biên HTF; kiểm tra C2 đã đóng trở lại range.</div>
+<div style="font-size:11px;color:var(--text-muted);">Xác nhận TS tại mức HTF: C2 quét rồi reclaim, đóng trở lại C1; ghi mức bị quét và nến xác nhận.</div>
 </div>
 </label>
 <label class="chk-step-card">
@@ -1749,7 +1749,7 @@ input:checked + .slider:before {
                             <p>Inside Bar biểu thị nén; Outside Bar bao trùm High–Low, Engulfing bao trùm thân. Hình dạng nến chưa tự xác nhận hướng đi hoặc tạo FVG.</p>
                             <p><strong>Sweep:</strong> vượt mức rồi đóng trở lại theo khung xác nhận. <strong>Break:</strong> đóng ngoài biên rồi chờ retest theo setup; vẫn có thể thất bại. Macro/QT giúp tập trung quan sát, không thay xác nhận giá.</p>
                             <p>Một mục tiêu <strong>Full TP</strong>; SL theo cấu trúc. Không chốt một phần hoặc tự dời BE theo +1R/+2R. Đóng tay cần ghi lý do.</p>
-                            <a href="docs/CRT-LIQUIDITY-GUIDE.md" target="_blank" rel="noopener">Đọc hướng dẫn đã chuẩn hóa ↗</a>
+                            <a href="docs/CRT-LIQUIDITY-GUIDE.md" target="_blank" rel="noopener">Đọc hướng dẫn đã chuẩn hóa ↗</a><p><a href="docs/INDICATOR-REVIEW.md" target="_blank" rel="noopener">TS và bản rà soát chỉ báo cá nhân ↗</a> · <a href="indicators/funded-angler-v5.pine" download>Tải TFA v5 · Pine v6 (ứng viên)</a></p>
                         </div>
                     </details>
 
@@ -2611,14 +2611,14 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
 <!-- JavaScript Engine -->
 <script src="assets/trading-rules.js"></script>
 <script src="assets/account-store.js"></script>
-<script src="assets/cockpit.js?v=20261112-htf"></script>
+<script src="assets/cockpit.js?v=20261112-ts"></script>
 <script src="assets/news-radar.js?v=20261020-calendar"></script>
 <script src="assets/market-time.js?v=20261031-cycles"></script>
 <script src="assets/market-quarterly.js?v=20261031-cycles"></script>
 <script src="assets/market-hours.js?v=20261031-cycles"></script>
 <script src="assets/workspace.js?v=20261112-htf"></script>
 
-    <script src="assets/pond-model.js?v=20261112-htf"></script>
+    <script src="assets/pond-model.js?v=20261112-ts"></script>
     <script src="assets/pond-life.js"></script>
     <script src="assets/pond-clock.js"></script>
     <script src="assets/pond-schedule.js?v=20261112-htf"></script>

@@ -33,7 +33,8 @@ const { chromium } = require('../.review-tools/node_modules/playwright');
             assert.equal(await page.locator('#checklist-setup-' + setup + ' input:checked').count(), 0);
         }
         await page.locator('#liquidityGuide summary').click();
-        assert.equal(await page.locator('#liquidityGuide a').getAttribute('href'), 'docs/CRT-LIQUIDITY-GUIDE.md');
+        assert.equal(await page.locator('#liquidityGuide a').first().getAttribute('href'), 'docs/CRT-LIQUIDITY-GUIDE.md');
+        assert.equal(await page.locator('#liquidityGuide a[download]').getAttribute('href'), 'indicators/funded-angler-v5.pine');
         for (const width of [1440, 390, 320]) {
             await page.setViewportSize({ width, height: 1000 });
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'No page overflow');
@@ -50,6 +51,8 @@ const { chromium } = require('../.review-tools/node_modules/playwright');
         assert.match(prompt, /IRL|ERL/);
         assert.match(prompt, /NO_TRADE/);
         assert.match(prompt, /Outside Bar/);
+        assert.match(prompt, /Turtle Soup/);
+        assert.match(await page.locator('#checklist-setup-5').innerText(), /TS/);
         assert.doesNotMatch(prompt, /VÀO LỆNH NGAY/);
         assert.match(await page.locator('#aiAnalysisResultBox').innerText(), /Missing FRVP data/);
         await page.evaluate(() => testSampleAiScan());

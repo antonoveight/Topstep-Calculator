@@ -1,0 +1,421 @@
+// This Pine Script code is subject to the Mozilla Public License 2.0: https://mozilla.org/MPL/2.0/
+// Reworked from the user's CRT Pro v4.0 (chibao.txt).
+// The Funded Angler: confirmed HTF structure -> scenario -> selected LTF condition.
+// Implementation candidate: validate compilation and Bar Replay in TradingView before use.
+//@version=6
+indicator("The Funded Angler v5 - HTF / TS / LTF", shorttitle="TFA v5", overlay=true, max_lines_count=150, max_boxes_count=30, max_labels_count=150)
+
+const string NY = "America/New_York"
+const string VN = "Asia/Ho_Chi_Minh"
+const string G_HTF = "1. HTF structure and scenario"
+const string G_ENTRY = "2. LTF condition - choose one"
+const string G_TIME = "3. Time context - same windows as web"
+const string G_VIEW = "4. Display"
+
+htf = input.timeframe("60", "Structure HTF", options=["60", "120", "240", "1D"], group=G_HTF)
+structure = input.string("CRT", "Primary structure", options=["CRT", "Engulfing / Outside", "Inside Bar"], group=G_HTF)
+engulfKind = input.string("Either", "Engulfing group", options=["Body engulfing", "Outside bar", "Either"], group=G_HTF)
+bias = input.string("Observe", "Scenario direction - set manually", options=["Observe", "Bullish", "Bearish"], group=G_HTF)
+minSweepTicks = input.int(1, "TS minimum penetration (ticks)", minval=1, group=G_HTF)
+tsReference = input.string("C1 range", "CRT TS reference", options=["C1 range", "Marked HTF levels"], group=G_HTF)
+manualSsl = input.price(0.0, "Marked SSL / low to sweep (0 = missing)", group=G_HTF)
+manualBsl = input.price(0.0, "Marked BSL / high to sweep (0 = missing)", group=G_HTF)
+lifeHtf = input.int(3, "Pending scenario lifetime (HTF bars)", minval=1, maxval=24, group=G_HTF)
+requirePoi = input.bool(true, "Require marked HTF POI overlap", group=G_HTF, tooltip="Enter the marked zone below. Disabling this is an explicit choice, not a claim of equivalent quality.")
+poiLow = input.price(0.0, "Marked HTF POI lower price", group=G_HTF)
+poiHigh = input.price(0.0, "Marked HTF POI upper price", group=G_HTF)
+targetMode = input.string("Manual", "Single target reference", options=["Manual", "CRT opposite range"], group=G_HTF)
+manualTarget = input.price(0.0, "Manual Full TP reference (0 = missing)", group=G_HTF)
+manualInvalid = input.price(0.0, "Execution SL reference (0 = HTF invalidation)", group=G_HTF)
+minRR = input.float(2.0, "Minimum planned R:R", minval=0.5, maxval=20, step=0.25, group=G_HTF)
+
+entryMode = input.string("Line close", "Entry condition", options=["Line close", "Line touch", "Line retest", "POC close", "CISD", "MSS", "FVG retest", "OB retest"], group=G_ENTRY)
+manualLine = input.price(0.0, "BL / entry line (0 = missing)", group=G_ENTRY)
+manualPoc = input.price(0.0, "FRVP POC from chart (0 = missing)", group=G_ENTRY, tooltip="Manual reference only. This script does not calculate FRVP or infer volume from candles.")
+retestTicks = input.int(1, "Line retest tolerance (ticks)", minval=0, maxval=20, group=G_ENTRY)
+pivotLength = input.int(2, "MSS confirmed pivot left/right bars", minval=1, maxval=20, group=G_ENTRY)
+showLtfTs = input.bool(false, "Show additional LTF sweep/reclaim", group=G_ENTRY)
+ltfTsLookback = input.int(5, "LTF sweep reference: previous N bars", minval=2, maxval=50, group=G_ENTRY, tooltip="An optional local sweep variant, not the original 20-day Turtle Soup strategy. Not an extra entry gate.")
+
+timeGate = input.string("Context only", "Optional entry time filter", options=["Context only", "Web macros", "Web working windows"], group=G_TIME)
+showTimeBg = input.bool(true, "Shade macro windows", group=G_TIME)
+showQt = input.bool(true, "Show Daye intraday quarters", group=G_TIME)
+showTrueOpens = input.bool(false, "Plot actual midnight / session True Open prices", group=G_TIME, tooltip="Only available if an actual chart bar opens at the boundary. Not used as a signal or automatic bias.")
+showCluster = input.bool(true, "Mini HTF candles: C1 / C2 / forming", group=G_VIEW)
+clusterOffset = input.int(12, "Cluster offset (chart bars)", minval=3, maxval=80, group=G_VIEW)
+clusterWidth = input.int(4, "Mini candle width (chart bars)", minval=2, maxval=12, group=G_VIEW)
+showLevels = input.bool(true, "Range, EQ, invalidation and target references", group=G_VIEW)
+showPanel = input.bool(true, "Compact context table", group=G_VIEW)
+
+float chartSeconds = timeframe.in_seconds()
+float htfSeconds = timeframe.in_seconds(htf)
+if barstate.isfirst and (not chart.is_standard or na(chartSeconds) or chartSeconds >= htfSeconds)
+    runtime.error("Use a standard time chart below the selected HTF. Entry is evaluated only on M1/M3/M5.")
+bool isLtf = chartSeconds < htfSeconds and (chartSeconds == 60 or chartSeconds == 180 or chartSeconds == 300)
+float sweepSize = syminfo.mintick * minSweepTicks
+float tolerance = syminfo.mintick * retestTicks
+int biasDir = bias == "Bullish" ? 1 : bias == "Bearish" ? -1 : 0
+
+// Offset + lookahead_on: only already closed HTF candles feed the setup engine.
+[c2o, c2h, c2l, c2c, c2t, c2end, c1o, c1h, c1l, c1c, c1t] = request.security(syminfo.tickerid, htf,
+     [open[1], high[1], low[1], close[1], time[1], time_close[1], open[2], high[2], low[2], close[2], time[2]], lookahead=barmerge.lookahead_on)
+// Unconfirmed values below are isolated to the mini-candle display.
+[liveO, liveH, liveL, liveC, liveEnd] = request.security(syminfo.tickerid, htf, [open, high, low, close, time_close], lookahead=barmerge.lookahead_off)
+bool newHtf = timeframe.change(htf)
+bool htfEvent = newHtf and barstate.isconfirmed and not na(c1t)
+
+// TS = one-sided sweep/reclaim of the selected reference + strict close within C1.
+float lowRef = tsReference == "C1 range" ? c1l : manualSsl > 0 ? manualSsl : na
+float highRef = tsReference == "C1 range" ? c1h : manualBsl > 0 ? manualBsl : na
+bool tookLow = not na(lowRef) and c2l <= lowRef - sweepSize
+bool tookHigh = not na(highRef) and c2h >= highRef + sweepSize
+bool reclaimed = c2c > c1l and c2c < c1h
+bool sweptBothC1 = c2l <= c1l - sweepSize and c2h >= c1h + sweepSize
+bool doubleSweep = sweptBothC1 or (tookLow and tookHigh)
+bool tsBull = tookLow and not doubleSweep and reclaimed and c2c > lowRef
+bool tsBear = tookHigh and not doubleSweep and reclaimed and c2c < highRef
+bool outsideBar = c2h > c1h and c2l < c1l
+bool insideBar = c2h <= c1h and c2l >= c1l and (c2h < c1h or c2l > c1l)
+float prevBodyHigh = math.max(c1o, c1c)
+float prevBodyLow = math.min(c1o, c1c)
+float bodyHigh = math.max(c2o, c2c)
+float bodyLow = math.min(c2o, c2c)
+bool bodyCovers = bodyHigh >= prevBodyHigh and bodyLow <= prevBodyLow and (bodyHigh > prevBodyHigh or bodyLow < prevBodyLow)
+bool engulfBull = c2c > c2o and c1c < c1o and bodyCovers
+bool engulfBear = c2c < c2o and c1c > c1o and bodyCovers
+bool engulfSelected = engulfKind == "Body engulfing" ? engulfBull or engulfBear : engulfKind == "Outside bar" ? outsideBar : outsideBar or engulfBull or engulfBear
+
+// Display uses close-event civil time, not permanent EST / UTC-5.
+int stamp = na(time_close) ? time : time_close
+int nyMinute = hour(stamp, NY) * 60 + minute(stamp, NY)
+f_window(int value, int start, int finish) =>
+    value >= start and value < finish
+// Same 10 half-open macro intervals as assets/market-hours.js. No new claims about the schedule.
+string macro = f_window(nyMinute, 1130, 1150) ? "AS1" : f_window(nyMinute, 1190, 1210) ? "AS2" : f_window(nyMinute, 153, 180) ? "LM1" : f_window(nyMinute, 243, 270) ? "LM2" : f_window(nyMinute, 530, 550) ? "AM1" : f_window(nyMinute, 590, 610) ? "AM2" : f_window(nyMinute, 650, 670) ? "AM3" : f_window(nyMinute, 710, 730) ? "LNC" : f_window(nyMinute, 790, 820) ? "PM" : f_window(nyMinute, 915, 945) ? "CLS" : "-"
+int vnMinute = hour(stamp, VN) * 60 + minute(stamp, VN)
+int nyUtcHourDelta = (hour(stamp, NY) - hour(stamp, "Etc/UTC") + 24) % 24
+bool winter = nyUtcHourDelta == 19
+bool working = f_window(vnMinute, 465, 600) or f_window(vnMinute, 840, 960) or f_window(vnMinute, 1215 + (winter ? 60 : 0), 1350 + (winter ? 60 : 0))
+bool timeAllowed = timeGate == "Context only" or (timeGate == "Web macros" ? macro != "-" : working)
+float cycleMinute = (nyMinute + second(stamp, NY) / 60.0 - 1080 + 1440) % 1440
+int dayQuarter = int(math.floor(cycleMinute / 360)) + 1
+int sessionQuarter = int(math.floor((cycleMinute % 360) / 90)) + 1
+int microQuarter = int(math.floor((cycleMinute % 90) / 22.5)) + 1
+bgcolor(showTimeBg and macro != "-" ? color.new(color.teal, 92) : na, title="Macro observation window")
+
+// True Open prices are actual opens only. Never approximate a missing boundary with a later bar.
+// At 18:00 a new theoretical trading cycle begins: its TDO is the upcoming midnight.
+int dayOpenStamp = timestamp(NY, year(time, NY), month(time, NY), dayofmonth(time, NY) + (hour(time, NY) >= 18 ? 1 : 0), 0, 0)
+int sessionToHour = hour(time, NY) >= 18 ? 19 : hour(time, NY) >= 12 ? 13 : hour(time, NY) >= 6 ? 7 : 1
+int sessionOpenStamp = timestamp(NY, year(time, NY), month(time, NY), dayofmonth(time, NY), sessionToHour, 30)
+var int lastDayOpenStamp = na
+var int lastSessionOpenStamp = na
+var float dayOpenPrice = na
+var float sessionOpenPrice = na
+if na(lastDayOpenStamp) or dayOpenStamp != lastDayOpenStamp
+    dayOpenPrice := na
+    lastDayOpenStamp := dayOpenStamp
+if na(lastSessionOpenStamp) or sessionOpenStamp != lastSessionOpenStamp
+    sessionOpenPrice := na
+    lastSessionOpenStamp := sessionOpenStamp
+if time == dayOpenStamp
+    dayOpenPrice := open
+if time == sessionOpenStamp
+    sessionOpenPrice := open
+plot(showTrueOpens ? dayOpenPrice : na, "TDO actual open", color=color.new(color.aqua, 35), style=plot.style_linebr)
+plot(showTrueOpens ? sessionOpenPrice : na, "Session TO actual open", color=color.new(color.orange, 35), style=plot.style_linebr)
+
+var array<line> levels = array.new<line>()
+var array<label> notes = array.new<label>()
+f_note(string text, float price, bool up) =>
+    array.push(notes, label.new(bar_index, price, text, style=up ? label.style_label_up : label.style_label_down, color=color.new(up ? color.teal : color.orange, 15), textcolor=color.white, size=size.tiny))
+    if array.size(notes) > 70
+        label.delete(array.shift(notes))
+f_clearLevels() =>
+    while array.size(levels) > 0
+        line.delete(array.pop(levels))
+f_level(int leftTime, float price, color shade, string caption) =>
+    if showLevels and not na(price)
+        array.push(levels, line.new(leftTime, price, time_close, price, xloc=xloc.bar_time, extend=extend.right, color=shade, width=1))
+        array.push(notes, label.new(time_close, price, caption, xloc=xloc.bar_time, style=label.style_label_left, color=color.new(shade, 85), textcolor=shade, size=size.tiny))
+        if array.size(notes) > 70
+            label.delete(array.shift(notes))
+
+// Inside/Mother is persistent until resolution; the mother is not shifted every nested candle.
+var bool motherActive = false
+var float motherHigh = na
+var float motherLow = na
+var int motherTime = na
+var int insideCount = 0
+var string htfSummary = "Waiting for confirmed HTF"
+var int scenarioDir = 0
+var float rangeHigh = na
+var float rangeLow = na
+var float invalidation = na
+var float target = na
+var int armedAt = na
+var int ageHtf = 0
+var bool armed = false
+var bool entryNoted = false
+var string state = "Observe"
+var float deliveryLevel = na
+var float mssLevel = na
+var bool lineBroken = false
+var int breakIndex = na
+var float fvgTop = na
+var float fvgBottom = na
+var int fvgIndex = na
+var float obTop = na
+var float obBottom = na
+var int obIndex = na
+var float opposingOpen = na
+var float opposingLow = na
+var float opposingHigh = na
+var float lastPivotHigh = na
+var float lastPivotLow = na
+float pivotHigh = ta.pivothigh(high, pivotLength, pivotLength)
+float pivotLow = ta.pivotlow(low, pivotLength, pivotLength)
+if barstate.isconfirmed
+    if not na(pivotHigh)
+        lastPivotHigh := pivotHigh
+    if not na(pivotLow)
+        lastPivotLow := pivotLow
+
+bool structureEvent = false
+bool tsEvent = false
+bool invalidEvent = false
+bool targetTouchEvent = false
+bool expiryEvent = false
+bool entryEvent = false
+if htfEvent
+    if armed and not entryNoted
+        ageHtf += 1
+        if ageHtf >= lifeHtf
+            armed := false
+            state := "Expired - reassess HTF"
+            expiryEvent := true
+    int candidateDir = 0
+    float candidateHigh = c1h
+    float candidateLow = c1l
+    int candidateTime = c1t
+    bool candidate = false
+    if structure == "CRT"
+        htfSummary := doubleSweep ? "Both sides swept - ambiguous" : tsBull ? "CRT / TS low reclaimed" : tsBear ? "CRT / TS high reclaimed" : "No confirmed one-sided TS"
+        candidate := tsBull or tsBear
+        candidateDir := tsBull ? 1 : tsBear ? -1 : 0
+        tsEvent := candidate
+    else if structure == "Engulfing / Outside"
+        htfSummary := outsideBar and (engulfBull or engulfBear) ? "Outside + body engulfing" : outsideBar ? "Outside H-L" : engulfBull or engulfBear ? "Body engulfing" : "No selected engulfing pattern"
+        candidate := engulfSelected
+        candidateDir := biasDir
+        candidateHigh := c2h
+        candidateLow := c2l
+        candidateTime := c2t
+    else
+        if motherActive
+            bool motherLowSweep = c2l <= motherLow - sweepSize
+            bool motherHighSweep = c2h >= motherHigh + sweepSize
+            bool motherReclaim = c2c > motherLow and c2c < motherHigh
+            bool insideTsBull = motherLowSweep and not motherHighSweep and motherReclaim
+            bool insideTsBear = motherHighSweep and not motherLowSweep and motherReclaim
+            bool breakUp = c2c > motherHigh
+            bool breakDown = c2c < motherLow
+            candidate := insideTsBull or insideTsBear or breakUp or breakDown
+            candidateDir := insideTsBull or breakUp ? 1 : insideTsBear or breakDown ? -1 : 0
+            candidateHigh := motherHigh
+            candidateLow := motherLow
+            candidateTime := motherTime
+            tsEvent := insideTsBull or insideTsBear
+            htfSummary := candidate ? (tsEvent ? "Inside / mother TS reclaimed" : "Inside / mother close outside") : "Inside compression - wait"
+            if candidate or (motherLowSweep and motherHighSweep)
+                motherActive := false
+                if motherLowSweep and motherHighSweep
+                    candidate := false
+                    htfSummary := "Mother both sides swept - reassess"
+            else
+                insideCount += 1
+        if not motherActive and not candidate and insideBar
+            motherHigh := c1h
+            motherLow := c1l
+            motherTime := c1t
+            motherActive := true
+            insideCount := 1
+            htfSummary := "Mother / Inside confirmed - wait"
+    structureEvent := candidate
+    bool poiKnown = poiLow > 0 and poiHigh >= poiLow
+    bool poiOverlap = poiKnown and c2h >= poiLow and c2l <= poiHigh
+    bool poiAllowed = not requirePoi or poiOverlap
+    if candidate
+        f_note((tsEvent ? "TS confirmed / " : "HTF confirmed / ") + structure, candidateDir == 1 ? low : high, candidateDir == 1)
+    // Do not overwrite an active plan with a newer rolling candle pair.
+    if candidate and candidateDir != 0 and poiAllowed and not armed
+        scenarioDir := candidateDir
+        rangeHigh := candidateHigh
+        rangeLow := candidateLow
+        invalidation := scenarioDir == 1 ? math.min(c2l, candidateLow) : math.max(c2h, candidateHigh)
+        target := targetMode == "CRT opposite range" and structure == "CRT" ? (scenarioDir == 1 ? rangeHigh : rangeLow) : (manualTarget > 0 ? manualTarget : na)
+        armedAt := time
+        ageHtf := 0
+        armed := true
+        entryNoted := false
+        deliveryLevel := na
+        mssLevel := scenarioDir == 1 ? lastPivotHigh : lastPivotLow
+        lineBroken := false
+        breakIndex := na
+        fvgTop := na
+        fvgBottom := na
+        fvgIndex := na
+        obTop := na
+        obBottom := na
+        obIndex := na
+        opposingOpen := na
+        opposingHigh := na
+        opposingLow := na
+        state := "HTF scenario / wait LTF"
+        f_clearLevels()
+        f_level(candidateTime, rangeHigh, color.new(color.orange, 10), "R-UB")
+        f_level(candidateTime, rangeLow, color.new(color.teal, 10), "R-LB")
+        f_level(candidateTime, (rangeHigh + rangeLow) / 2, color.new(color.gray, 50), "EQ")
+        f_level(c2t, invalidation, color.new(color.red, 20), "INV ref")
+        f_level(c2t, target, color.new(color.aqua, 20), "CP ref")
+        if structure == "CRT" and tsReference == "Marked HTF levels"
+            f_level(c1t, scenarioDir == 1 ? lowRef : highRef, color.new(color.yellow, 20), "TS ref")
+    else if candidate and not armed
+        state := not poiAllowed ? "HTF POI missing / not overlapped" : "Set scenario direction"
+
+// Additional LTF TS: displayed separately, never substituted for the required HTF CRT TS.
+float priorLtfHigh = ta.highest(high[1], ltfTsLookback)
+float priorLtfLow = ta.lowest(low[1], ltfTsLookback)
+bool ltfTsBull = barstate.isconfirmed and isLtf and low <= priorLtfLow - sweepSize and high < priorLtfHigh and close > priorLtfLow and close < priorLtfHigh
+bool ltfTsBear = barstate.isconfirmed and isLtf and high >= priorLtfHigh + sweepSize and low > priorLtfLow and close < priorLtfHigh and close > priorLtfLow
+if showLtfTs and (ltfTsBull or ltfTsBear)
+    f_note("LTF TS / prior N range", ltfTsBull ? low : high, ltfTsBull)
+
+float linePrice = entryMode == "POC close" ? manualPoc : manualLine
+bool crossUpLine = linePrice > 0 and close > linePrice and close[1] <= linePrice
+bool crossDownLine = linePrice > 0 and close < linePrice and close[1] >= linePrice
+if armed and barstate.isconfirmed and isLtf
+    bool invalidHit = scenarioDir == 1 ? low <= invalidation : high >= invalidation
+    bool targetHit = not na(target) and (scenarioDir == 1 ? high >= target : low <= target)
+    // If both references trade in one candle, OHLC cannot establish their order.
+    if invalidHit or targetHit
+        invalidEvent := invalidHit
+        targetTouchEvent := targetHit and not invalidHit
+        state := invalidHit and targetHit ? "Both references touched - order unknown" : invalidHit ? "HTF invalidated" : "Target reference touched"
+        armed := false
+    if armed and not entryNoted
+        bool bullish = scenarioDir == 1
+        bool opposing = bullish ? close < open : close > open
+        bool priorOpposing = bullish ? close[1] < open[1] : close[1] > open[1]
+        if opposing
+            if na(deliveryLevel) or not priorOpposing
+                deliveryLevel := open
+            opposingOpen := open
+            opposingLow := low
+            opposingHigh := high
+        // Explicit CISD variant: close through the opening of the opposing candle run.
+        bool cisd = not na(deliveryLevel) and (bullish ? close > deliveryLevel and close[1] <= deliveryLevel : close < deliveryLevel and close[1] >= deliveryLevel)
+        // Explicit MSS variant: close beyond the last already-confirmed pivot frozen at arming.
+        bool mss = not na(mssLevel) and (bullish ? close > mssLevel and close[1] <= mssLevel : close < mssLevel and close[1] >= mssLevel)
+        bool newFvg = time[2] >= armedAt and (bullish ? low > high[2] : high < low[2])
+        if newFvg and na(fvgIndex)
+            fvgTop := bullish ? low : low[2]
+            fvgBottom := bullish ? high[2] : high
+            fvgIndex := bar_index
+        if not na(fvgIndex) and (bullish ? close < fvgBottom : close > fvgTop)
+            fvgTop := na
+            fvgBottom := na
+            fvgIndex := na
+        if cisd and not na(opposingOpen) and na(obIndex)
+            obTop := bullish ? opposingOpen : opposingHigh
+            obBottom := bullish ? opposingLow : opposingOpen
+            obIndex := bar_index
+        if not na(obIndex) and (bullish ? close < obBottom : close > obTop)
+            obTop := na
+            obBottom := na
+            obIndex := na
+        bool crossedLine = bullish ? crossUpLine : crossDownLine
+        bool lineTouch = linePrice > 0 and low <= linePrice + tolerance and high >= linePrice - tolerance and (bullish ? close >= linePrice : close <= linePrice)
+        bool lineRetest = lineBroken and bar_index > breakIndex and lineTouch
+        if crossedLine and not lineBroken
+            lineBroken := true
+            breakIndex := bar_index
+        bool fvgRetest = not na(fvgIndex) and bar_index > fvgIndex and low <= fvgTop and high >= fvgBottom and (bullish ? close > fvgTop : close < fvgBottom)
+        bool obRetest = not na(obIndex) and bar_index > obIndex and low <= obTop and high >= obBottom and (bullish ? close > obTop : close < obBottom)
+        bool selectedEntry = switch entryMode
+            "CISD" => cisd
+            "MSS" => mss
+            "FVG retest" => fvgRetest
+            "OB retest" => obRetest
+            "Line touch" => lineTouch
+            "Line retest" => lineRetest
+            => crossedLine
+        float executionSl = manualInvalid > 0 ? manualInvalid : invalidation
+        float risk = bullish ? close - executionSl : executionSl - close
+        float reward = not na(target) ? (bullish ? target - close : close - target) : na
+        bool plannedRR = risk > 0 and not na(reward) and reward > 0 and reward / risk >= minRR
+        bool biasAllowed = biasDir == scenarioDir
+        if selectedEntry and plannedRR and biasAllowed and timeAllowed
+            entryEvent := true
+            entryNoted := true
+            state := "LTF condition met / not an order"
+            f_note("LTF " + entryMode + " / " + str.tostring(reward / risk, "#.##") + "R planned", bullish ? low : high, bullish)
+        else
+            state := not biasAllowed ? "Observe / bias not aligned" : na(target) ? "Set one target reference" : not plannedRR ? "R:R / SL not valid" : not timeAllowed ? "Outside optional time filter" : "Wait selected LTF condition"
+
+plot(armed and entryMode == "FVG retest" ? fvgTop : na, "LTF FVG top", color=color.new(color.teal, 30), style=plot.style_linebr)
+plot(armed and entryMode == "FVG retest" ? fvgBottom : na, "LTF FVG bottom", color=color.new(color.teal, 30), style=plot.style_linebr)
+plot(armed and entryMode == "OB retest" ? obTop : na, "LTF OB candidate top", color=color.new(color.orange, 30), style=plot.style_linebr)
+plot(armed and entryMode == "OB retest" ? obBottom : na, "LTF OB candidate bottom", color=color.new(color.orange, 30), style=plot.style_linebr)
+plot(entryMode == "POC close" and manualPoc > 0 ? manualPoc : na, "Manual FRVP POC", color=color.new(color.yellow, 15), style=plot.style_linebr)
+plot((entryMode == "Line close" or entryMode == "Line touch" or entryMode == "Line retest") and manualLine > 0 ? manualLine : na, "Manual BL", color=color.new(color.blue, 15), style=plot.style_linebr)
+
+// Fixed object allocation: reuse the table and mini-candle bodies/wicks.
+var table panel = table.new(position.top_right, 2, 8, bgcolor=color.new(color.black, 15), border_width=1)
+var array<box> candleBodies = array.new<box>()
+var array<line> candleWicks = array.new<line>()
+var label countdown = label.new(bar_index, high, "", color=color.new(color.black, 100), textcolor=color.silver, style=label.style_label_left, size=size.tiny)
+if barstate.isfirst
+    for i = 0 to 2
+        array.push(candleBodies, box.new(bar_index, high, bar_index, low, border_color=color.new(color.gray, 100), bgcolor=color.new(color.gray, 100)))
+        array.push(candleWicks, line.new(bar_index, high, bar_index, low, color=color.new(color.gray, 100)))
+if barstate.islast
+    if showPanel
+        string quarterText = showQt ? "D Q" + str.tostring(dayQuarter) + " / 90 Q" + str.tostring(sessionQuarter) + " / micro Q" + str.tostring(microQuarter) : "Off"
+        array<string> headings = array.from("HTF / LTF", "Structure", "HTF closed", "Scenario", "Entry condition", "Macro / working", "QT - clock only", "NY / VN")
+        array<string> values = array.from(htf + " / " + timeframe.period + (isLtf ? " entry chart" : " observe only"), structure, htfSummary, state, entryMode + " / " + bias, macro + " / " + (working ? "in window" : "off window"), quarterText, str.format_time(stamp, "HH:mm", NY) + " / " + str.format_time(stamp, "HH:mm", VN))
+        for row = 0 to 7
+            table.cell(panel, 0, row, array.get(headings, row), text_color=color.silver, text_size=size.tiny)
+            table.cell(panel, 1, row, array.get(values, row), text_color=color.white, text_size=size.tiny)
+    if showCluster
+        for i = 0 to 2
+            float o = i == 0 ? c1o : i == 1 ? c2o : liveO
+            float h = i == 0 ? c1h : i == 1 ? c2h : liveH
+            float l = i == 0 ? c1l : i == 1 ? c2l : liveL
+            float c = i == 0 ? c1c : i == 1 ? c2c : liveC
+            int left = bar_index + clusterOffset + i * (clusterWidth + 2)
+            int middle = left + int(math.floor(clusterWidth / 2))
+            color shade = c >= o ? color.teal : color.orange
+            box body = array.get(candleBodies, i)
+            line wick = array.get(candleWicks, i)
+            box.set_lefttop(body, left, math.max(o, c))
+            box.set_rightbottom(body, left + clusterWidth, math.min(o, c))
+            box.set_bgcolor(body, color.new(shade, i == 2 ? 65 : 15))
+            box.set_border_color(body, shade)
+            box.set_text(body, i == 2 ? "forming" : i == 0 ? "C1" : "C2")
+            box.set_text_color(body, color.white)
+            box.set_text_size(body, size.tiny)
+            line.set_xy1(wick, middle, h)
+            line.set_xy2(wick, middle, l)
+            line.set_color(wick, shade)
+        int remaining = not na(liveEnd) ? math.max(0, int((liveEnd - timenow) / 1000)) : 0
+        string clockText = barstate.isrealtime ? "HTF forming / " + str.tostring(int(math.floor(remaining / 60))) + "m " + str.tostring(remaining % 60) + "s" : "HTF forming preview"
+        label.set_xy(countdown, bar_index + clusterOffset, math.max(c1h, c2h, liveH))
+        label.set_text(countdown, clockText)
+
+alertcondition(structureEvent and barstate.isconfirmed, "HTF structure confirmed", "TFA: selected HTF structure confirmed. Check marked POI, scenario and LTF condition.")
+alertcondition(tsEvent and barstate.isconfirmed, "TS HTF confirmed", "TFA: HTF sweep and reclaim confirmed. This is not an entry or a win-rate claim.")
+alertcondition(entryEvent and barstate.isconfirmed, "LTF selected condition", "TFA: selected LTF condition, manual bias, planned RR and optional time filter passed. No order was placed.")
+alertcondition(invalidEvent and barstate.isconfirmed, "HTF invalidation reference", "TFA: HTF invalidation reference touched. This does not confirm an actual SL fill.")
+alertcondition(targetTouchEvent and barstate.isconfirmed, "Target reference touched", "TFA: target reference touched. This does not confirm an actual Full TP fill.")
+alertcondition(expiryEvent and barstate.isconfirmed, "Pending scenario expired", "TFA: pending HTF scenario expired. Reassess structure and references.")

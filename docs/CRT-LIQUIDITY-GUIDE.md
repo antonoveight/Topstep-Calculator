@@ -37,7 +37,7 @@ Phân biệt **đang vượt biên** với **đã đóng vượt biên**. Một 
 
 | Cấu trúc HTF | Bối cảnh | Xác nhận cần giữ | Bỏ qua / đánh giá lại |
 | --- | --- | --- | --- |
-| CRT | C1/range và mức thanh khoản trên HTF đã chọn. | C2 quét rồi đóng trở lại theo quy tắc CRT; sau đó tìm điều kiện entry LTF đã chọn. | C2 đóng ngoài range hoặc điều kiện entry/vô hiệu chưa rõ. |
+| CRT / TS | C1/range và mức thanh khoản trên HTF đã chọn. | TS = C2 quét rồi lấy lại mức, đóng trở lại trong range; sau đó tìm điều kiện entry LTF đã chọn. | Chưa reclaim, C2 đóng ngoài range, quét hai biên mơ hồ hoặc điều kiện entry/vô hiệu chưa rõ. |
 | Engulfing / Outside Bar | Nến bao trùm thân hoặc High–Low tại vị trí HTF được đánh dấu. | Phân biệt mẫu, nến đã đóng và kịch bản hướng tới mục tiêu; LTF xác nhận entry. | Chỉ dựa màu nến, mặc định đảo chiều hoặc giả định có FVG. |
 | Inside Bar | Mother/Inside trên HTF; giữ biên mẹ ban đầu khi còn nén lồng nhau. | Kịch bản sweep trở lại hoặc đóng phá biên đã chọn; sau đó entry LTF phù hợp. | Còn nén, chưa có sự kiện/xác nhận hoặc retest thất bại. |
 

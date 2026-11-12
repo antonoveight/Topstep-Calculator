@@ -1,0 +1,953 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0
+// © CRT Pro v4.0 — Complete Candle Range Theory Trading System
+// Modules: HTF Bias & POI | Time Matrix | AMD Sequence | CISD | Risk Management
+// Based on: Romeo TPT & Legacy Trading methodology
+
+//@version=5
+indicator("CRT Pro v4.0 — Full System", shorttitle="CRT Pro", overlay=true,
+     max_lines_count=500, max_boxes_count=500, max_labels_count=500)
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INPUTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Core ──────────────────────────────────────────────────────────────────
+i_autoHTF   = input.bool  (true,     "Auto HTF from Chart TF",              "⚡ CRT Core",
+     tooltip="Pairing: 1m→1H | 5m-30m→4H | 1H-2H→1D | 4H-D→1W")
+i_manualHTF = input.timeframe("240", "Manual HTF (if Auto OFF)",            group="⚡ CRT Core")
+i_bodyRatio = input.float (0.5,      "N1 Min Body/Range Ratio",             group="⚡ CRT Core",
+     minval=0.1, maxval=1.0, step=0.05)
+i_showBox   = input.bool  (true,     "Show CRTH / CRTL Lines (N1 key levels)", "⚡ CRT Core")
+i_showMid   = input.bool  (true,     "Show 50% Midpoint Line",              "⚡ CRT Core")
+i_showLbl   = input.bool  (true,     "Show CRTH / CRTL Labels",             "⚡ CRT Core")
+i_extR      = input.int   (30,       "Extend Lines Right (bars)",           group="⚡ CRT Core",
+     minval=5, maxval=500)
+i_showHTFCluster = input.bool(true,  "Show HTF Candle Cluster (right side)", "⚡ CRT Core",
+     tooltip="Vẽ cụm nến HTF mini (N1/N2/N3) phía bên phải biểu đồ, cập nhật real-time theo LTF")
+i_clusterOffset  = input.int (15,    "HTF Cluster Offset (bars right)",     group="⚡ CRT Core",
+     minval=3, maxval=100)
+i_clusterWidth   = input.int (6,     "HTF Cluster Candle Width (bars)",     group="⚡ CRT Core",
+     minval=2, maxval=30)
+
+// ── Time Matrix ────────────────────────────────────────────────────────────
+i_timeEn    = input.bool  (true,     "Enable Killzone Time Filter",         "⏰ Time Matrix",
+     tooltip="Filter N1 by EST time:\n• 159: 1/5/9 AM (Forex)\n• 2610: 2/6/10 AM (Gold/Indices)")
+i_model     = input.string("159",    "HTF Model",                           group="⏰ Time Matrix",
+     options=["159","2610","Both"])
+i_kzLon     = input.bool  (true,     "London  KZ  (02:00–05:00 EST)",      "⏰ Time Matrix")
+i_kzNY      = input.bool  (true,     "New York AM  (08:00–11:00 EST)",     "⏰ Time Matrix")
+i_kzAsia    = input.bool  (false,    "Asia     KZ  (20:00–00:00 EST)",      "⏰ Time Matrix")
+i_kzCount   = input.int   (3,        "KZ Sessions to Show",                group="⏰ Time Matrix",
+     minval=1, maxval=20,
+     tooltip="Số lượng session gần nhất được hiển thị.\n1 = chỉ session mới nhất\n3 = 3 session gần nhất (default)\nTăng lên để review lịch sử")
+
+// ── AMD Sequence ───────────────────────────────────────────────────────────
+i_showAMD   = input.bool  (true,     "Show AMD Sequence Labels",            "📐 AMD Sequence")
+i_tbsMode   = input.string("TBS",   "N2 Detection Mode",                   group="📐 AMD Sequence",
+     options=["TBS","TWS","Both"],
+     tooltip="TBS (Turtle Body Soup): N2 body CLOSES beyond N1 level — HIGH PROBABILITY ✅\nTWS (Turtle Wick Soup): N2 wick sweeps, body closes inside — lower probability ❌\nBoth: detect either type")
+i_showSwp   = input.bool  (true,     "Show N2 Sweep Level Line",            "📐 AMD Sequence")
+
+// ── POI ────────────────────────────────────────────────────────────────────
+i_showOB    = input.bool  (true,     "Show Order Blocks (OB)",              "🎯 Bias & POI",
+     tooltip="Last opposing candle before impulse (HTF bars [3]-[4] from N1)")
+i_showFVG   = input.bool  (true,     "Show Fair Value Gaps (FVG)",          "🎯 Bias & POI")
+i_showLiq   = input.bool  (true,     "Show Liquidity Levels (SSL/BSL)",     "🎯 Bias & POI")
+i_showBias  = input.bool  (true,     "Show Daily Bias Table",               "🎯 Bias & POI")
+i_biasTF    = input.timeframe("D",  "Bias Reference Timeframe",             group="🎯 Bias & POI")
+i_bFilter   = input.bool  (true,     "Filter Signals by HTF Bias",          "🎯 Bias & POI")
+i_liqLB     = input.int   (20,       "Liquidity Lookback (bars)",           group="🎯 Bias & POI",
+     minval=5, maxval=100)
+
+
+// ── LTF CISD ──────────────────────────────────────────────────────────────
+i_cisd      = input.bool  (true,     "Show CISD — SMS after N2 TBS",       "🔍 LTF Confirm (CISD)",
+     tooltip="After N2 TBS: marks first LTF candle that flips direction through previous extreme.\nRepresents SMS (Shift in Market Structure) per CRT methodology — different from retail BOS.\nBull: bullish candle engulfs prior bearish candle HIGH.\nBear: bearish candle engulfs prior bullish candle LOW.\nNote: gated by Killzone when Time Filter is enabled.")
+
+// ── Colors ────────────────────────────────────────────────────────────────
+c_bull  = input.color(color.new(#00C853,  0), "Bullish",           "🎨 Colors")
+c_bear  = input.color(color.new(#D50000,  0), "Bearish",           "🎨 Colors")
+c_boxBl = input.color(color.new(#00C853, 85), "CRT Bull Box",      "🎨 Colors")
+c_boxBr = input.color(color.new(#D50000, 85), "CRT Bear Box",      "🎨 Colors")
+c_mid   = input.color(color.new(#FFD600, 50), "50% Midpoint",      "🎨 Colors")
+c_n2Bl  = input.color(color.new(#00BFA5,  0), "N2 TBS ↑ Bull",    "🎨 Colors")
+c_n2Br  = input.color(color.new(#FF6D00,  0), "N2 TBS ↓ Bear",    "🎨 Colors")
+c_obBl  = input.color(color.new(#42A5F5, 80), "Bullish OB",        "🎨 Colors")
+c_obBr  = input.color(color.new(#EF5350, 80), "Bearish OB",        "🎨 Colors")
+c_fvgBl = input.color(color.new(#66BB6A, 80), "Bullish FVG",       "🎨 Colors")
+c_fvgBr = input.color(color.new(#AB47BC, 80), "Bearish FVG",       "🎨 Colors")
+c_liq   = input.color(color.new(#FFA726,  0), "Liquidity SSL/BSL", "🎨 Colors")
+c_neut  = input.color(color.new(#9E9E9E,  0), "Neutral",           "🎨 Colors")
+c_kzL   = input.color(color.new(#1565C0, 97), "London KZ BG",      "🎨 Colors")
+c_kzN   = input.color(color.new(#1B5E20, 97), "NY KZ BG",          "🎨 Colors")
+c_kzA   = input.color(color.new(#4A148C, 97), "Asia KZ BG",        "🎨 Colors")
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTO HTF SELECTION
+// ═══════════════════════════════════════════════════════════════════════════
+f_htf() =>
+    t = timeframe.period
+    result = t == "1"   ? "60"  :
+             t == "3"   ? "60"  :
+             t == "5"   ? "240" :
+             t == "10"  ? "240" :
+             t == "15"  ? "240" :
+             t == "30"  ? "240" :
+             t == "60"  ? "1D"  :
+             t == "120" ? "1D"  :
+             t == "240" ? "1W"  :
+             t == "D"   ? "1W"  : "240"
+    result
+
+htfTF = i_autoHTF ? f_htf() : i_manualHTF
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+f_thick(_o, _h, _l, _c, _r) =>
+    rng = _h - _l
+    rng > 0 and math.abs(_c - _o) / rng >= _r
+
+f_bH(_o, _c) => math.max(_o, _c)
+f_bL(_o, _c) => math.min(_o, _c)
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SECURITY REQUESTS — 7 tuple calls (efficient, stays well within limits)
+// ═══════════════════════════════════════════════════════════════════════════
+// N1 = Accumulation (HTF bar[2])
+[n1h, n1l, n1o, n1c, n1t] = request.security(syminfo.tickerid, htfTF,
+     [high[2], low[2], open[2], close[2], time[2]], lookahead=barmerge.lookahead_off)
+
+// N2 = Manipulation / Turtle Soup (HTF bar[1])
+[n2h, n2l, n2o, n2c] = request.security(syminfo.tickerid, htfTF,
+     [high[1], low[1], open[1], close[1]], lookahead=barmerge.lookahead_off)
+
+// N3 = Distribution (HTF bar[0], current forming)
+[n3h, n3l, n3o, n3c, htfT] = request.security(syminfo.tickerid, htfTF,
+     [high, low, open, close, time], lookahead=barmerge.lookahead_off)
+
+// HTF bar close time — for countdown timer
+htfCloseTime = request.security(syminfo.tickerid, htfTF,
+     time_close, lookahead=barmerge.lookahead_off)
+
+// OB/FVG context — HTF bars [3] and [4]
+[b3h, b3l, b3o, b3c] = request.security(syminfo.tickerid, htfTF,
+     [high[3], low[3], open[3], close[3]], lookahead=barmerge.lookahead_off)
+
+[b4h, b4l, b4o, b4c] = request.security(syminfo.tickerid, htfTF,
+     [high[4], low[4], open[4], close[4]], lookahead=barmerge.lookahead_off)
+
+// Bias TF data
+[bPH, bPL] = request.security(syminfo.tickerid, i_biasTF,
+     [high[1], low[1]], lookahead=barmerge.lookahead_off)
+
+[bCH, bCL, bCC] = request.security(syminfo.tickerid, i_biasTF,
+     [high, low, close], lookahead=barmerge.lookahead_off)
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULE 2 — TIME MATRIX & KILLZONES
+// ═══════════════════════════════════════════════════════════════════════════
+n1hrNY  = hour(n1t, "America/New_York")
+n1m159  = n1hrNY == 1 or n1hrNY == 5  or n1hrNY == 9
+n1m2610 = n1hrNY == 2 or n1hrNY == 6  or n1hrNY == 10
+n1fits  = not i_timeEn or
+     (i_model == "159"  and n1m159)  or
+     (i_model == "2610" and n1m2610) or
+     (i_model == "Both" and (n1m159 or n1m2610))
+
+// Session of Interest (SOI) — times in EST (New York Time)
+ltfHr   = hour(time,   "America/New_York")
+ltfMin  = minute(time, "America/New_York")
+ltfMins = ltfHr * 60 + ltfMin   // total minutes from midnight EST
+// London:  02:00 – 05:00  (120 – 300 min)  ← standard CRT London KZ
+// NY AM:   08:00 – 11:00  (480 – 660 min)  ← standard CRT New York KZ
+// Asia:    20:00 – 00:00  (1200 – 1440 min) ← standard CRT Asia KZ
+// NOTE: Pine Script converts server UTC→"America/New_York" automatically (DST-aware)
+inLon  = ltfMins >= 120 and ltfMins < 300
+inNY   = ltfMins >= 480 and ltfMins < 660
+inAsia = ltfMins >= 1200
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULE 1 — DAILY BIAS
+// ═══════════════════════════════════════════════════════════════════════════
+swH  = bCH > bPH
+swL  = bCL < bPL
+caH  = bCC > bPH
+cbL  = bCC < bPL
+caL  = bCC > bPL
+cbH  = bCC < bPH
+
+isOut  = swH  and swL
+isIn   = not swH and not swL
+isSBr  = swH  and not swL and cbL
+isBr   = swH  and not swL and cbH  and not cbL
+isSBl  = swL  and not swH and caH
+isBl   = swL  and not swH and caL  and not caH
+
+htfBull = isSBl or isBl
+htfBear = isSBr or isBr
+
+bTxt    = isSBr ? "STRONG BEARISH" : isBr  ? "BEARISH"  :
+          isSBl ? "STRONG BULLISH" : isBl  ? "BULLISH"  :
+          isOut  ? "OUTSIDE ⚠️"    : isIn   ? "INSIDE ⚠️" : "NEUTRAL"
+bClr    = htfBear ? c_bear : htfBull ? c_bull : c_neut
+
+okBull = not i_bFilter or htfBull or (not htfBull and not htfBear)
+okBear = not i_bFilter or htfBear or (not htfBull and not htfBear)
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULE 3 — 3-CANDLE AMD SEQUENCE
+// ═══════════════════════════════════════════════════════════════════════════
+// N1 levels
+n1bH   = f_bH(n1o, n1c)
+n1bL   = f_bL(n1o, n1c)
+n1mid  = (n1h + n1l) / 2.0
+n1ok   = f_thick(n1o, n1h, n1l, n1c, i_bodyRatio) and n1fits
+
+// ── N2: TBS / TWS validation ──────────────────────────────────────────────
+// TBS (Turtle Body Soup — HIGH PROBABILITY):
+//   Bear TBS: N2 is BULLISH candle, CLOSE breaks ABOVE CRTH → expect price DOWN
+//   Bull TBS: N2 is BEARISH candle, CLOSE breaks BELOW CRTL → expect price UP
+//   FIX: Must check N2 close (not body top/bottom) — body open could be outside range
+//        even if close is inside, which would be a false signal.
+// TWS (Turtle Wick Soup — lower probability):
+//   Bear TWS: N2 wick sweeps HIGH of N1, close returns inside N1 BODY
+//   Bull TWS: N2 wick sweeps LOW of N1, close returns inside N1 BODY
+n2bH   = math.max(n2o, n2c)   // N2 body top
+n2bL   = math.min(n2o, n2c)   // N2 body bottom
+
+// TBS conditions — N2 CLOSE must break beyond N1 High/Low (not just body extreme)
+n2bearTBS = n1ok and (n2c > n2o) and n2c > n1h   // bullish N2: close above CRTH → SELL
+n2bullTBS = n1ok and (n2c < n2o) and n2c < n1l   // bearish N2: close below CRTL → BUY
+
+// TWS conditions (wick sweeps, body returns inside)
+n2swH  = n2h > n1h
+n2swL  = n2l < n1l
+n2inR  = n2c >= n1l and n2c <= n1h
+n2inB  = n2c >= n1bL and n2c <= n1bH
+n2bearTWS = n1ok and n2swH and not n2swL and n2inB   // close inside N1 body (tighter than full range)
+n2bullTWS = n1ok and n2swL and not n2swH and n2inB   // close inside N1 body (tighter than full range)
+
+// Select detection mode
+n2bull = i_tbsMode == "TBS"  ? n2bullTBS : i_tbsMode == "TWS" ? n2bullTWS : (n2bullTBS or n2bullTWS)
+n2bear = i_tbsMode == "TBS"  ? n2bearTBS : i_tbsMode == "TWS" ? n2bearTWS : (n2bearTBS or n2bearTWS)
+
+// Is it TBS or TWS (for label display)
+n2isTBS = (n2bull and n2bullTBS) or (n2bear and n2bearTBS)
+
+// N3: Distribution confirmation — N3 close crosses 50% MIDPOINT = AMD entry signal
+// Per CRT methodology: midpoint crossing (TP1) is the AMD entry/confirmation reference.
+// CRTH / CRTL on chart = TP2 targets (drawn as horizontal lines, always visible).
+n3bull = n2bull and n3c > n1mid   // N3 close above 50% midpoint → AMD Bull active ↑
+n3bear = n2bear and n3c < n1mid   // N3 close below 50% midpoint → AMD Bear active ↓
+// TP2 reach: N3 close breaks through CRT H/L = distribution fully complete
+n3bull_done = n2bull and n3c > n1h   // N3 above CRTH = TP2 reached for bull
+n3bear_done = n2bear and n3c < n1l   // N3 below CRTL = TP2 reached for bear
+// Forming: N2 confirmed but N3 hasn't crossed midpoint yet
+n3forming_bull = n2bull and not n3bull
+n3forming_bear = n2bear and not n3bear
+
+// Final filtered signals
+sigBull = n3bull and okBull
+sigBear = n3bear and okBear
+
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULE 1 POI — ORDER BLOCK & FVG DETECTION
+// Context: HTF bars [4] and [3] relative to N1
+// ═══════════════════════════════════════════════════════════════════════════
+// Bullish OB: bar[4] bearish, bar[3] breaks above bar[4] open → demand
+obBlOK  = b4c < b4o and b3c > b4o
+obBlTop = b4o
+obBlBot = b4l
+
+// Bearish OB: bar[4] bullish, bar[3] breaks below bar[4] open → supply
+obBrOK  = b4c > b4o and b3c < b4o
+obBrTop = b4h
+obBrBot = b4o
+
+// Bullish FVG: high[4] < low[N1] → upside gap via bar[3]
+fvgBlOK  = b4h < n1l
+fvgBlTop = n1l
+fvgBlBot = b4h
+
+// Bearish FVG: low[4] > high[N1] → downside gap via bar[3]
+fvgBrOK  = b4l > n1h
+fvgBrTop = b4l
+fvgBrBot = n1h
+
+// Liquidity: pivot highs/lows on current chart TF
+liqLB2  = math.max(2, i_liqLB / 2)
+pivH    = ta.pivothigh(high, liqLB2, liqLB2)
+pivL    = ta.pivotlow (low,  liqLB2, liqLB2)
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULE 4 — LTF CISD / SMS (Shift in Market Structure after N2 TBS)
+// Per CRT methodology: SMS ≠ BOS. SMS is a candle closing THROUGH a prior extreme,
+// signaling a directional flip. This simplified detection checks 1-bar engulfment:
+//   Bull CISD: bullish candle closes above previous bearish candle HIGH (↑ flip)
+//   Bear CISD: bearish candle closes below previous bullish candle LOW  (↓ flip)
+// Killzone gate: off-session candle flips are noise — require active KZ for quality.
+// ═══════════════════════════════════════════════════════════════════════════
+inKZ     = (i_kzLon and inLon) or (i_kzNY and inNY) or (i_kzAsia and inAsia)
+cisdGate = not i_timeEn or inKZ   // if time filter OFF → always allow; else require KZ
+cisdBl = i_cisd and n2bull and cisdGate and close > open and close[1] < open[1] and close > high[1]
+cisdBr = i_cisd and n2bear and cisdGate and close < open and close[1] > open[1] and close < low[1]
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HTF BAR CHANGE DETECTION
+// ═══════════════════════════════════════════════════════════════════════════
+htfChg = ta.change(htfT) != 0
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VAR DECLARATIONS
+// ═══════════════════════════════════════════════════════════════════════════
+var box   bxCRT   = na
+var line  lnMid   = na
+var line  lnCRTH  = na  // CRTH key level line (extends right from N1)
+var line  lnCRTL  = na  // CRTL key level line (extends right from N1)
+var label lbCRTH  = na
+var label lbCRTL  = na
+var label lbHTF   = na
+var label lbN2    = na
+var label lbTBS   = na   // TBS/TWS plotshape replacement — positioned at LTF extreme
+var label lbTP2   = na   // TP2 complete label — managed for cleanup
+var line  lnSwp   = na
+var label lbN3    = na
+var label lbCISD  = na
+// N2 extreme tracking — track LOW and HIGH extremes of every LTF bar, unconditionally.
+// Resets at each htfChg. At htfChg: extremes = N2's bars; n2bull/n2bear just became valid.
+var int   n2TkLowBar  = na   // bar_index of lowest LTF low since last htfChg
+var float n2TkLow     = na   // lowest LTF low since last htfChg
+var int   n2TkHighBar = na   // bar_index of highest LTF high since last htfChg
+var float n2TkHigh    = na   // highest LTF high since last htfChg
+var box   bxObBl  = na
+var box   bxObBr  = na
+var box   bxFvgBl = na
+var box   bxFvgBr = na
+var line  lnBSL   = na
+var line  lnSSL   = na
+var label lbBSL   = na
+var label lbSSL   = na
+var line  lnSL    = na   // SL reference: N2 wick extreme (position invalidation level)
+var label lbSL    = na
+// Killzone session boxes — array per session to limit history
+var box[] arrKzLon = array.new<box>()
+var float kzLonH   = na
+var float kzLonL   = na
+var bool  prevLon  = false
+var box[] arrKzNY  = array.new<box>()
+var float kzNYH    = na
+var float kzNYL    = na
+var bool  prevNY   = false
+var box[] arrKzAsi = array.new<box>()
+var float kzAsiH   = na
+var float kzAsiL   = na
+var bool  prevAsi  = false
+var bool  fN3     = false
+var bool  fN3done = false  // tracks if TP2-hit label has fired this HTF period
+var bool  fCISD   = false
+var int   htfS0   = na  // LTF bar_index: start of current HTF period (N3)
+var int   htfS1   = na  // LTF bar_index: start of N2 HTF period
+var int   htfS2   = na  // LTF bar_index: start of N1 HTF period
+var int   htfS3   = na  // LTF bar_index: start of bar[3] HTF period
+var int   htfS4   = na  // LTF bar_index: start of bar[4] HTF period (OB/FVG context)
+
+// ── HTF Candle Cluster — var declarations ─────────────────────────────────
+// N1 candle (Accumulation)
+var box   clN1Body  = na
+var line  clN1WickH = na
+var line  clN1WickL = na
+// N2 candle (Manipulation)
+var box   clN2Body  = na
+var line  clN2WickH = na
+var line  clN2WickL = na
+// N3 candle (Distribution — real-time forming)
+var box   clN3Body  = na
+var line  clN3WickH = na
+var line  clN3WickL = na
+// Countdown timer label
+var label clCountdown = na
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN DRAW BLOCK — Executes on each new confirmed HTF bar
+// ═══════════════════════════════════════════════════════════════════════════
+if htfChg and barstate.isconfirmed
+    // ── Update HTF period start trackers (shift history forward) ────────
+    // htfS0 = first LTF bar_index of the INCOMING period (N3)
+    // htfS1 = first LTF bar_index of N2 period
+    // htfS2 = first LTF bar_index of N1 period  ← anchor for CRT box
+    // htfS3/4 = first LTF bar_index of bar[3]/[4] ← anchor for OB/FVG
+    htfS4 := htfS3
+    htfS3 := htfS2
+    htfS2 := htfS1
+    htfS1 := htfS0
+    htfS0 := bar_index   // first confirmed LTF bar of the new HTF period
+
+    fN3     := false
+    fN3done := false
+    fCISD   := false
+
+    // ── Draw TBS/TWS label at the N2 LTF extreme (fires when N2 period just closed) ──
+    // At htfChg: n2bull/n2bear are NOW valid (N2 just closed → it is now HTF bar[1]).
+    // n2TkLow/n2TkHigh hold extremes of LTF bars that ran during N2's forming period
+    // (accumulated since the previous htfChg reset them when N2 started).
+    if i_showAMD
+        if n2bull and not na(n2TkLowBar)
+            label.delete(lbTBS)
+            _tbsTxt = n2isTBS ? "TBS↑" : "TWS↑"
+            lbTBS := label.new(n2TkLowBar, n2TkLow, _tbsTxt,
+                 style    = label.style_label_up,
+                 color    = color.new(c_n2Bl, 15),
+                 textcolor = color.white, size = size.small)
+        else if n2bear and not na(n2TkHighBar)
+            label.delete(lbTBS)
+            _tbsTxt = n2isTBS ? "TBS↓" : "TWS↓"
+            lbTBS := label.new(n2TkHighBar, n2TkHigh, _tbsTxt,
+                 style    = label.style_label_down,
+                 color    = color.new(c_n2Br, 15),
+                 textcolor = color.white, size = size.small)
+
+    // Reset extremes — tracking starts fresh for the new period beginning now
+    n2TkLowBar  := na
+    n2TkLow     := na
+    n2TkHighBar := na
+    n2TkHigh    := na
+
+    // Delete previous period elements
+    box.delete(bxCRT)
+    line.delete(lnMid)
+    line.delete(lnCRTH)
+    line.delete(lnCRTL)
+    label.delete(lbCRTH)
+    label.delete(lbCRTL)
+    label.delete(lbHTF)
+    label.delete(lbN2)
+    line.delete(lnSwp)
+    label.delete(lbN3)
+    label.delete(lbTP2)
+    label.delete(lbCISD)
+    line.delete(lnSL)
+    label.delete(lbSL)
+
+    // Require ≥ 3 HTF periods of history before drawing N1/N2 elements
+    if not na(htfS2)
+
+        // ── A: CRTH/CRTL level lines (box removed, lines only) ──────────────
+        if i_showBox and n1ok
+            // Thin horizontal lines from N1 start extending right
+            lnCRTH := line.new(htfS2, n1h, bar_index + i_extR, n1h,
+                 color = color.new(c_bear, 0), style = line.style_solid, width = 1)
+            lnCRTL := line.new(htfS2, n1l, bar_index + i_extR, n1l,
+                 color = color.new(c_bull, 0), style = line.style_solid, width = 1)
+
+        if i_showMid and n1ok
+            lnMid := line.new(
+                 htfS2, n1mid, bar_index + i_extR, n1mid,
+                 color = c_mid, style = line.style_dashed, width = 1)
+
+        if i_showLbl and n1ok
+            // Labels at RIGHT EDGE (x updated every bar via label.set_x in extend block)
+            lbCRTH := label.new(bar_index + i_extR, n1h, "CRTH  " + str.tostring(n1h, "#.####"),
+                 style = label.style_label_left,
+                 color = color.new(c_bear, 60), textcolor = c_bear, size = size.small)
+            lbCRTL := label.new(bar_index + i_extR, n1l, "CRTL  " + str.tostring(n1l, "#.####"),
+                 style = label.style_label_left,
+                 color = color.new(c_bull, 60), textcolor = c_bull, size = size.small)
+            // N1 info: at the start of N1 candle, upper right corner
+            n1info = "N1 [" + htfTF + "]  " + str.tostring(n1hrNY) + "h EST  " +
+                 (n1fits ? "✅ " + i_model : "⛔ Skip") +
+                 (n1c > n1o ? "  🟢" : "  🔴")
+            lbHTF := label.new(htfS2, n1h, n1info,
+                 style = label.style_label_lower_right,
+                 color = color.new(color.navy, 30), textcolor = color.white, size = size.small)
+
+        // ── B: N2 TBS/TWS LABEL + SWEEP LINE — anchored at N2 close bar
+        if i_showAMD and (n2bull or n2bear)
+            n2clr_  = n2bull ? c_n2Bl : c_n2Br
+            n2sty   = n2bull ? label.style_label_up : label.style_label_down
+            n2type  = n2isTBS ? "🐢 TBS" : "🐢 TWS"
+            // TBS: sweep level = N2 body extreme; TWS: sweep level = wick
+            n2y     = n2bull ? (n2isTBS ? n2bL : n2l) : (n2isTBS ? n2bH : n2h)
+            lbN2   := label.new(bar_index - 1, n2y,
+                 n2type + (n2bull ? "  ↑ BULL" : "  ↓ BEAR"),
+                 style=n2sty, color=color.new(n2clr_, 15), textcolor=color.white, size=size.normal)
+
+            if i_showSwp
+                lnSwp := line.new(htfS1, n2y, bar_index + i_extR, n2y,
+                     color=color.new(n2clr_, 40), style=line.style_dotted, width=2)
+
+        // ── C: SL Reference Line — N2 wick = position invalidation level ────────
+        // Bull setup (n2bull): N2 is bearish TBS candle → SL = N2 Low
+        // Bear setup (n2bear): N2 is bullish TBS candle → SL = N2 High
+        if i_showAMD and not na(htfS1)
+            if n2bull
+                lnSL := line.new(htfS1, n2l, bar_index + i_extR, n2l,
+                     color=color.new(c_bear, 30), style=line.style_dotted, width=1)
+                lbSL := label.new(bar_index + i_extR, n2l,
+                     "SL ▾  " + str.tostring(n2l, "#.####"),
+                     style=label.style_label_left, textcolor=c_bear,
+                     color=color.new(c_bear, 85), size=size.small)
+            else if n2bear
+                lnSL := line.new(htfS1, n2h, bar_index + i_extR, n2h,
+                     color=color.new(c_bull, 30), style=line.style_dotted, width=1)
+                lbSL := label.new(bar_index + i_extR, n2h,
+                     "SL ▴  " + str.tostring(n2h, "#.####"),
+                     style=label.style_label_left, textcolor=c_bull,
+                     color=color.new(c_bull, 85), size=size.small)
+
+
+    // ── D: ORDER BLOCK BOXES — anchored at bar[4] start (htfS4) ─────────
+    if i_showOB
+        box.delete(bxObBl)
+        box.delete(bxObBr)
+        if not na(htfS4)
+            if obBlOK
+                bxObBl := box.new(htfS4, obBlTop, bar_index+i_extR, obBlBot,
+                     border_color=color.new(c_obBl,0), border_width=1, bgcolor=c_obBl)
+            if obBrOK
+                bxObBr := box.new(htfS4, obBrTop, bar_index+i_extR, obBrBot,
+                     border_color=color.new(c_obBr,0), border_width=1, bgcolor=c_obBr)
+
+    // ── E: FVG BOXES — anchored at bar[4] start (htfS4) ─────────────────
+    if i_showFVG
+        box.delete(bxFvgBl)
+        box.delete(bxFvgBr)
+        if not na(htfS4)
+            if fvgBlOK
+                bxFvgBl := box.new(htfS4, fvgBlTop, bar_index+i_extR, fvgBlBot,
+                     border_color=color.new(c_fvgBl,0), border_width=1, bgcolor=c_fvgBl)
+            if fvgBrOK
+                bxFvgBr := box.new(htfS4, fvgBrTop, bar_index+i_extR, fvgBrBot,
+                     border_color=color.new(c_fvgBr,0), border_width=1, bgcolor=c_fvgBr)
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXTEND ELEMENTS RIGHT — Every bar
+// ═══════════════════════════════════════════════════════════════════════════
+// CRT box is removed — no extension needed
+// CRTH/CRTL lines + labels update right edge every bar
+if not na(lnCRTH)  and i_showBox
+    line.set_x2(lnCRTH,    bar_index + i_extR)
+if not na(lnCRTL)  and i_showBox
+    line.set_x2(lnCRTL,    bar_index + i_extR)
+if not na(lbCRTH)  and i_showLbl
+    label.set_x(lbCRTH,    bar_index + i_extR)
+if not na(lbCRTL)  and i_showLbl
+    label.set_x(lbCRTL,    bar_index + i_extR)
+if not na(lnMid)   and i_showMid
+    line.set_x2(lnMid,     bar_index + i_extR)
+if not na(lnSwp)   and i_showSwp
+    line.set_x2(lnSwp,     bar_index + i_extR)
+if not na(bxObBl)  and i_showOB
+    box.set_right(bxObBl,  bar_index + i_extR)
+if not na(bxObBr)  and i_showOB
+    box.set_right(bxObBr,  bar_index + i_extR)
+if not na(bxFvgBl) and i_showFVG
+    box.set_right(bxFvgBl, bar_index + i_extR)
+if not na(bxFvgBr) and i_showFVG
+    box.set_right(bxFvgBr, bar_index + i_extR)
+if not na(lnBSL)   and i_showLiq
+    line.set_x2(lnBSL,     bar_index + i_extR)
+    label.set_x(lbBSL,     bar_index + i_extR)
+if not na(lnSSL)   and i_showLiq
+    line.set_x2(lnSSL,     bar_index + i_extR)
+    label.set_x(lbSSL,     bar_index + i_extR)
+if not na(lnSL) and i_showAMD
+    line.set_x2(lnSL,      bar_index + i_extR)
+    label.set_x(lbSL,      bar_index + i_extR)
+
+// ═══════════════════════════════════════════════════════════════════════════
+// N3 AMD LABEL — fires first time N3 crosses midpoint (TP1 entry reference)
+// ═══════════════════════════════════════════════════════════════════════════
+if i_showAMD and (n3bull or n3bear) and not fN3 and barstate.isconfirmed
+    fN3    := true
+    n3clr_  = n3bull ? c_bull : c_bear
+    n3bOK   = n3bull ? okBull : okBear
+    n3txt   = "🔄 AMD " + (n3bull ? "↑ LONG" : "↓ SHORT") +
+              "  [50% ✓]" +
+              (i_bFilter ? (n3bOK ? "\n📡 Bias ✅" : "\n📡 Bias ⚠️") : "")
+    label.delete(lbN3)
+    lbN3 := label.new(bar_index, n3bull ? low : high, n3txt,
+         style    = n3bull ? label.style_label_up : label.style_label_down,
+         color    = color.new(n3clr_, 15),
+         textcolor = color.white, size = size.normal)
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TP2 COMPLETE LABEL — fires first time N3 breaks CRTH (bull) or CRTL (bear)
+// ═══════════════════════════════════════════════════════════════════════════
+if i_showAMD and (n3bull_done or n3bear_done) and not fN3done and barstate.isconfirmed
+    fN3done := true
+    n3dClr  = n3bull_done ? c_bull : c_bear
+    label.delete(lbTP2)
+    lbTP2 := label.new(bar_index, n3bull_done ? low : high,
+         "✅ TP2 " + (n3bull_done ? "↑" : "↓"),
+         style     = n3bull_done ? label.style_label_up : label.style_label_down,
+         color     = color.new(n3dClr, 10),
+         textcolor = color.white, size = size.small)
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CISD LABEL — Once per HTF period
+// ═══════════════════════════════════════════════════════════════════════════
+if i_cisd and (cisdBl or cisdBr) and not fCISD and barstate.isconfirmed
+    fCISD := true
+    cisdClr = cisdBl ? c_n2Bl : c_n2Br
+    label.delete(lbCISD)
+    lbCISD := label.new(bar_index, cisdBl ? low : high,
+         "⚡ CISD " + (cisdBl ? "↑" : "↓"),
+         style    = cisdBl ? label.style_label_up : label.style_label_down,
+         color    = color.new(cisdClr, 20), textcolor=color.white, size=size.small)
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LIQUIDITY LEVELS — SSL / BSL via pivot detection
+// ═══════════════════════════════════════════════════════════════════════════
+if not na(pivH) and i_showLiq
+    line.delete(lnBSL)
+    label.delete(lbBSL)
+    lnBSL := line.new(bar_index[liqLB2], pivH, bar_index + i_extR, pivH,
+         color=c_liq, style=line.style_dotted, width=1)
+    lbBSL := label.new(bar_index + i_extR, pivH, "BSL ▲",
+         style=label.style_label_left, textcolor=c_liq, color=color.new(c_liq, 80), size=size.small)
+
+if not na(pivL) and i_showLiq
+    line.delete(lnSSL)
+    label.delete(lbSSL)
+    lnSSL := line.new(bar_index[liqLB2], pivL, bar_index + i_extR, pivL,
+         color=c_liq, style=line.style_dotted, width=1)
+    lbSSL := label.new(bar_index + i_extR, pivL, "SSL ▼",
+         style=label.style_label_left, textcolor=c_liq, color=color.new(c_liq, 80), size=size.small)
+
+// ═══════════════════════════════════════════════════════════════════════════
+// N2 EXTREME TRACKING — unconditional, runs every confirmed LTF bar
+// Tracks lowest low + highest high since last htfChg reset.
+// When htfChg fires, these values = N2's LTF extremes (N2 just formed).
+// htfChg block runs FIRST (Pine top-to-bottom), so:
+//   1) htfChg draws TBS at tracked extremes, then resets them
+//   2) This block then seeds the NEW period's tracking with bar[0] values
+// ═══════════════════════════════════════════════════════════════════════════
+if barstate.isconfirmed
+    if na(n2TkLow) or low < n2TkLow
+        n2TkLow    := low
+        n2TkLowBar := bar_index
+    if na(n2TkHigh) or high > n2TkHigh
+        n2TkHigh    := high
+        n2TkHighBar := bar_index
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// KILLZONE BOXES — Limited history (i_kzCount sessions per type)
+// On session start: push new box, evict oldest when over limit
+// During session: update last box in array
+// ═══════════════════════════════════════════════════════════════════════════
+// ── London: 02:30–07:00 EST ───────────────────────────────────────────────
+if i_kzLon
+    if inLon
+        if not prevLon
+            kzLonH := high
+            kzLonL := low
+            _bLon  = box.new(bar_index, high, bar_index, low,
+                 border_color = color.new(#64B5F6, 30), border_width = 1,
+                 bgcolor      = c_kzL,
+                 text         = "London  02:00–05:00",
+                 text_color   = color.new(#64B5F6, 20),
+                 text_size    = size.small,
+                 text_valign  = text.align_top,
+                 text_halign  = text.align_left)
+            array.push(arrKzLon, _bLon)
+            if array.size(arrKzLon) > i_kzCount
+                box.delete(array.shift(arrKzLon))
+        else
+            kzLonH := math.max(kzLonH, high)
+            kzLonL := math.min(kzLonL, low)
+            _bCur  = array.last(arrKzLon)
+            box.set_top   (_bCur, kzLonH)
+            box.set_bottom(_bCur, kzLonL)
+            box.set_right (_bCur, bar_index)
+    prevLon := inLon
+
+// ── New York AM: 07:00–11:30 EST ──────────────────────────────────────────
+if i_kzNY
+    if inNY
+        if not prevNY
+            kzNYH := high
+            kzNYL := low
+            _bNY  = box.new(bar_index, high, bar_index, low,
+                 border_color = color.new(#81C784, 30), border_width = 1,
+                 bgcolor      = c_kzN,
+                 text         = "New York AM  08:00–11:00",
+                 text_color   = color.new(#81C784, 20),
+                 text_size    = size.small,
+                 text_valign  = text.align_top,
+                 text_halign  = text.align_left)
+            array.push(arrKzNY, _bNY)
+            if array.size(arrKzNY) > i_kzCount
+                box.delete(array.shift(arrKzNY))
+        else
+            kzNYH := math.max(kzNYH, high)
+            kzNYL := math.min(kzNYL, low)
+            _bCur  = array.last(arrKzNY)
+            box.set_top   (_bCur, kzNYH)
+            box.set_bottom(_bCur, kzNYL)
+            box.set_right (_bCur, bar_index)
+    prevNY := inNY
+
+// ── Asia: 18:00–02:30 EST ────────────────────────────────────────────────────
+if i_kzAsia
+    if inAsia
+        if not prevAsi
+            kzAsiH := high
+            kzAsiL := low
+            _bAsi  = box.new(bar_index, high, bar_index, low,
+                 border_color = color.new(#BA68C8, 30), border_width = 1,
+                 bgcolor      = c_kzA,
+                 text         = "Asia  20:00–00:00",
+                 text_color   = color.new(#BA68C8, 20),
+                 text_size    = size.small,
+                 text_valign  = text.align_top,
+                 text_halign  = text.align_left)
+            array.push(arrKzAsi, _bAsi)
+            if array.size(arrKzAsi) > i_kzCount
+                box.delete(array.shift(arrKzAsi))
+        else
+            kzAsiH := math.max(kzAsiH, high)
+            kzAsiL := math.min(kzAsiL, low)
+            _bCur  = array.last(arrKzAsi)
+            box.set_top   (_bCur, kzAsiH)
+            box.set_bottom(_bCur, kzAsiL)
+            box.set_right (_bCur, bar_index)
+    prevAsi := inAsia
+
+// Bias background tinting
+bgcolor(i_showBias and isSBl ? color.new(c_bull, 95) : na, title="Strong Bull BG")
+bgcolor(i_showBias and isBl  ? color.new(c_bull, 97) : na, title="Bull BG")
+bgcolor(i_showBias and isSBr ? color.new(c_bear, 95) : na, title="Strong Bear BG")
+bgcolor(i_showBias and isBr  ? color.new(c_bear, 97) : na, title="Bear BG")
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INFO TABLE — Daily Bias + AMD Status (top-right)
+// ═══════════════════════════════════════════════════════════════════════════
+var table tbl = na
+if i_showBias and barstate.islast
+    tbl := table.new(position.top_right, 2, 10,
+         bgcolor      = color.new(#2e3036, 0),
+         border_color = color.new(color.gray,  40),
+         border_width = 1,
+         frame_color  = color.new(#1A237E,  20),
+         frame_width  = 3)
+
+    lbg = color.new(color.black, 80)
+    vbg = color.new(color.black, 70)
+
+    // ── Header ──────────────────────────────────────────────────────────
+    table.cell(tbl, 0, 0, "⚡ CRT Pro v4.0",
+         text_color=color.white, text_size=size.normal,
+         bgcolor=color.new(#1A237E, 20), width=10)
+    table.cell(tbl, 1, 0, bTxt,
+         text_color=bClr, text_size=size.normal,
+         bgcolor=color.new(#1A237E, 40), width=16)
+
+    // ── Row 1: HTF / Model ───────────────────────────────────────────────
+    table.cell(tbl, 0, 1, "HTF / Model",
+         text_color=color.silver, text_size=size.small, bgcolor=lbg)
+    table.cell(tbl, 1, 1, htfTF + "  │  " + i_model,
+         text_color=color.white, text_size=size.small, bgcolor=vbg)
+
+    // ── Row 2: N1 Time ───────────────────────────────────────────────────
+    n1tStr = str.tostring(n1hrNY) + ":00h EST  " + (n1fits ? "✅" : "⛔")
+    table.cell(tbl, 0, 2, "N1 Time",
+         text_color=color.silver, text_size=size.small, bgcolor=lbg)
+    table.cell(tbl, 1, 2, n1tStr,
+         text_color=n1fits ? c_bull : c_neut, text_size=size.small, bgcolor=vbg)
+
+    // ── Row 3: Killzone ──────────────────────────────────────────────────
+    kzStr = inLon  ? "London 🇬🇧" : inNY ? "New York 🗽" : inAsia ? "Asia 🌏" : "Off-hours"
+    kzClr = inLon ? color.new(#64B5F6, 0) : inNY ? color.new(#81C784, 0) : inAsia ? color.new(#BA68C8, 0) : c_neut
+    table.cell(tbl, 0, 3, "Killzone",
+         text_color=color.silver, text_size=size.small, bgcolor=lbg)
+    table.cell(tbl, 1, 3, kzStr,
+         text_color=kzClr, text_size=size.small, bgcolor=vbg)
+
+    // ── Row 4: N1 Status ─────────────────────────────────────────────────
+    n1Str = n1ok ? "✅ CRT Candle" : "⛔ Invalid"
+    table.cell(tbl, 0, 4, "N1 (Accum.)",
+         text_color=color.silver, text_size=size.small, bgcolor=lbg)
+    table.cell(tbl, 1, 4, n1Str,
+         text_color=n1ok ? c_bull : c_neut, text_size=size.small, bgcolor=vbg)
+
+    // ── Row 5: CRTH / CRTL ──────────────────────────────────────────────
+    table.cell(tbl, 0, 5, "CRTH / CRTL",
+         text_color=color.silver, text_size=size.small, bgcolor=lbg)
+    table.cell(tbl, 1, 5,
+         str.tostring(n1h, "#.####") + "  /  " + str.tostring(n1l, "#.####"),
+         text_color=color.white, text_size=size.small, bgcolor=vbg)
+
+    // ── Row 6: Midpoint ──────────────────────────────────────────────────
+    table.cell(tbl, 0, 6, "Midpoint 50%",
+         text_color=color.silver, text_size=size.small, bgcolor=lbg)
+    table.cell(tbl, 1, 6, "── " + str.tostring(n1mid, "#.####") + " ──",
+         text_color=c_mid, text_size=size.small, bgcolor=vbg)
+
+    // ── Row 7: N2 Manipulation ───────────────────────────────────────────
+    n2mode  = n2isTBS ? "TBS" : "TWS"
+    n2Str   = n2bull ? "🐢 " + n2mode + "  ↑ BULL" : n2bear ? "🐢 " + n2mode + "  ↓ BEAR" : "— None —"
+    n2TClr  = n2bull ? c_n2Bl : n2bear ? c_n2Br : c_neut
+    table.cell(tbl, 0, 7, "N2 (Manip.)",
+         text_color=color.silver, text_size=size.small, bgcolor=lbg)
+    table.cell(tbl, 1, 7, n2Str,
+         text_color=n2TClr, text_size=size.small, bgcolor=vbg)
+
+    // ── Row 8: N3 Distribution ───────────────────────────────────────────
+    amdStr = n3bull_done      ? "✅ TP2 Hit ↑ LONG"   : n3bear_done      ? "✅ TP2 Hit ↓ SHORT"  :
+             n3bull           ? "🔄 AMD ↑ → TP1"    : n3bear           ? "🔄 AMD ↓ → TP1"    :
+             n3forming_bull   ? "⏳ N3 ↑ Forming..." : n3forming_bear   ? "⏳ N3 ↓ Forming..." :
+             (n2bull or n2bear) ? "⏳ N2 Done, Wait" : "○ Watching"
+    amdClr = (n3bull_done or n3bear_done)         ? (n3bull_done ? c_bull : c_bear)   :
+             (n3bull or n3bear)                   ? (n3bull ? c_bull : c_bear)         :
+             (n2bull or n2bear)                   ? color.yellow                       : c_neut
+    table.cell(tbl, 0, 8, "N3 (Dist.)",
+         text_color=color.silver, text_size=size.small, bgcolor=lbg)
+    table.cell(tbl, 1, 8, amdStr,
+         text_color=amdClr, text_size=size.small, bgcolor=vbg)
+
+    // ── Row 9: Bias Alignment ────────────────────────────────────────────
+    alStr = not i_bFilter ? "Filter OFF" : (n2bull and okBull) ? "✅ Bull Aligned" : (n2bear and okBear) ? "✅ Bear Aligned" : (n2bull or n2bear) ? "⚠️ Not Aligned" : "—"
+    alClr = (n2bull and okBull) or (n2bear and okBear) ? c_bull : (n2bull or n2bear) ? c_bear : c_neut
+    table.cell(tbl, 0, 9, "Bias Align",
+         text_color=color.silver, text_size=size.small, bgcolor=lbg)
+    table.cell(tbl, 1, 9, alStr,
+         text_color=alClr, text_size=size.small, bgcolor=vbg)
+
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HTF CANDLE CLUSTER — Real-time mini candles on right side of chart
+// Draws N1 (Accumulation), N2 (Manipulation), N3 (Distribution-forming)
+// Runs on barstate.islast → updates every LTF tick in real time
+// ═══════════════════════════════════════════════════════════════════════════
+if i_showHTFCluster and barstate.islast
+
+    // ── Delete all previous cluster elements ─────────────────────────────
+    box.delete(clN1Body)
+    line.delete(clN1WickH)
+    line.delete(clN1WickL)
+    box.delete(clN2Body)
+    line.delete(clN2WickH)
+    line.delete(clN2WickL)
+    box.delete(clN3Body)
+    line.delete(clN3WickH)
+    line.delete(clN3WickL)
+    label.delete(clCountdown)
+
+    // ── Layout geometry ───────────────────────────────────────────────────
+    clBase = bar_index + i_clusterOffset
+    clW    = i_clusterWidth
+    clGap  = math.max(1, clW / 4)
+
+    // Column X positions: N1 | N2 | N3
+    x1L = clBase
+    x1R = x1L + clW
+    x2L = x1R + clGap
+    x2R = x2L + clW
+    x3L = x2R + clGap
+    x3R = x3L + clW
+
+    // ── Price scale: unified range across all 3 HTF candles ──────────────
+    allH = math.max(n1h, n2h, n3h)
+    allL = math.min(n1l, n2l, n3l)
+    rng  = allH - allL
+
+    // Only draw if we have valid price data
+    if rng > 0
+
+        // ── Candle colors: bull = solid green, bear = solid black ─────────
+        clBull = color.new(#00C853, 0)   // solid green
+        clBear = color.new(#000000, 0)   // solid black
+
+        // ── N1 Candle — Accumulation ──────────────────────────────────────
+        n1BodyT = math.max(n1o, n1c)
+        n1BodyB = math.min(n1o, n1c)
+        n1clr   = n1c >= n1o ? clBull : clBear
+        n1midX  = (x1L + x1R) / 2
+
+        clN1Body := box.new(
+             x1L, n1BodyT, x1R, n1BodyB,
+             border_color = n1clr, border_width = 1,
+             bgcolor      = n1clr)
+        clN1WickH := line.new(
+             n1midX, n1h, n1midX, n1BodyT,
+             color = n1clr, width = 1)
+        clN1WickL := line.new(
+             n1midX, n1BodyB, n1midX, n1l,
+             color = n1clr, width = 1)
+
+        // ── N2 Candle — Manipulation / TBS ───────────────────────────────
+        n2BodyT = math.max(n2o, n2c)
+        n2BodyB = math.min(n2o, n2c)
+        n2clr   = n2c >= n2o ? clBull : clBear
+        n2midX  = (x2L + x2R) / 2
+
+        clN2Body := box.new(
+             x2L, n2BodyT, x2R, n2BodyB,
+             border_color = n2clr, border_width = 1,
+             bgcolor      = n2clr)
+        clN2WickH := line.new(
+             n2midX, n2h, n2midX, n2BodyT,
+             color = n2clr, width = 1)
+        clN2WickL := line.new(
+             n2midX, n2BodyB, n2midX, n2l,
+             color = n2clr, width = 1)
+
+        // ── N3 Candle — Distribution (forming, real-time) ─────────────────
+        // Use actual N3 open from HTF security request (not N1 midpoint approximation)
+        n3BodyT = math.max(n3o, n3c)
+        n3BodyB = math.min(n3o, n3c)
+        n3clr   = n3c >= n3o ? clBull : clBear
+        n3midX  = (x3L + x3R) / 2
+
+        clN3Body := box.new(
+             x3L, n3BodyT, x3R, n3BodyB,
+             border_color = n3clr, border_width = 1,
+             bgcolor      = n3clr)
+        clN3WickH := line.new(
+             n3midX, n3h, n3midX, n3BodyT,
+             color = n3clr, width = 1)
+        clN3WickL := line.new(
+             n3midX, n3BodyB, n3midX, n3l,
+             color = n3clr, width = 1)
+
+        // ── Countdown timer: time remaining until current HTF bar closes ──
+        // htfCloseTime = close timestamp of current HTF bar (ms)
+        msLeft   = math.max(0, htfCloseTime - timenow)
+        cdH      = math.floor(msLeft / 3600000)
+        cdM      = math.floor((msLeft % 3600000) / 60000)
+        cdS      = math.floor((msLeft % 60000)   / 1000)
+        cdTxt    = (cdH > 0 ? str.tostring(cdH) + "h " : "") +
+                   (cdM > 0 or cdH > 0 ? str.tostring(cdM) + "m " : "") +
+                   str.tostring(cdS) + "s"
+        cdClr    = n3clr
+
+        clCountdown := label.new(
+             n3midX, allL - rng * 0.08,
+             cdTxt,
+             style     = label.style_label_up,
+             color     = color.new(#ffffff, 37),
+             textcolor = cdClr,
+             size      = size.small)
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════════════════════════════════════════════
+alertcondition(n2bull,      "CRT: Bull TBS",         "CRT Pro 🐢 Bull TBS — N2 swept CRTL, closed below it")
+alertcondition(n2bear,      "CRT: Bear TBS",         "CRT Pro 🐢 Bear TBS — N2 swept CRTH, closed above it")
+alertcondition(n3bull,      "CRT: AMD Bull Active",  "CRT Pro 🔄 AMD Bull — N3 crossed 50% midpoint (TP1 zone)")
+alertcondition(n3bear,      "CRT: AMD Bear Active",  "CRT Pro 🔄 AMD Bear — N3 crossed 50% midpoint (TP1 zone)")
+alertcondition(n3bull_done, "CRT: TP2 Bull Hit",     "CRT Pro ✅ TP2 Bull — N3 closes ABOVE CRTH (full distribution)")
+alertcondition(n3bear_done, "CRT: TP2 Bear Hit",     "CRT Pro ✅ TP2 Bear — N3 closes BELOW CRTL (full distribution)")
+alertcondition(sigBull,     "CRT: 🌟 Signal Bull",   "CRT Pro 🎯 BULL — AMD + HTF Bias Aligned")
+alertcondition(sigBear,     "CRT: 🌟 Signal Bear",   "CRT Pro 🎯 BEAR — AMD + HTF Bias Aligned")
+alertcondition(cisdBl,      "CRT: CISD Bull",        "CRT Pro ⚡ CISD Bull — SMS candle flip (KZ gated)")
+alertcondition(cisdBr,      "CRT: CISD Bear",        "CRT Pro ⚡ CISD Bear — SMS candle flip (KZ gated)")
+alertcondition(isSBl,       "Bias: Strong Bull",     "Daily Bias: STRONG BULLISH")
+alertcondition(isSBr,       "Bias: Strong Bear",     "Daily Bias: STRONG BEARISH")
+

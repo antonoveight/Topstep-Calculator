@@ -2698,7 +2698,7 @@ const accountData = TradingRules.accounts;
 
 HỆ THỐNG BA LỚP:
 1. CẤU TRÚC HTF: chỉ CRT, Engulfing/Outside Bar, Inside Bar. Có thể chồng lấp; nêu cấu trúc chính và mẫu đi kèm. Trend/AMD/Break chỉ là bối cảnh hoặc hành vi, không phải setup riêng. Chỉ gọi HTF/LTF khi rõ nhãn khung trong ảnh; thiếu khung thì ghi chưa đủ dữ liệu.
-- CRT: chọn C1/range, C2 quét mức đã chọn rồi đóng trở lại C1. Nến đang chạy chưa xác nhận; đóng ngoài làm mất điều kiện sweep này, chưa chứng minh breakout thành công.
+- CRT / TS (Turtle Soup): chọn C1/range và mức thanh khoản HTF. TS là C2 quét rồi reclaim mức, đóng trở lại C1; ghi rõ mức và thời điểm xác nhận. CISD/MSS trên LTF là xác nhận entry riêng, không thay TS HTF và không phải hai tên đồng nghĩa. Quét cả hai biên chưa cho hướng rõ. Nến đang chạy chưa xác nhận; đóng ngoài làm mất điều kiện sweep này, chưa chứng minh breakout thành công.
 - Engulfing: bao trùm thân; Outside Bar: bao trùm High-Low. Phân biệt mẫu, vị trí và hướng kỳ vọng; không mặc định đảo chiều hoặc tạo FVG.
 - Inside Bar: high không vượt và low không thấp hơn mẹ, ít nhất một biên hẹp hơn. Giữ biên mẹ ban đầu khi còn nén lồng nhau; chọn sweep trở lại hoặc đóng phá biên theo kịch bản.
 2. KỊCH BẢN HTF: range tham chiếu, vùng chờ/thanh khoản, hướng kỳ vọng, một mục tiêu Full TP và điều kiện vô hiệu. IRL/ERL luôn gắn range/khung; không coi mục tiêu là chắc chắn. EQ là trung điểm range, CE là trung điểm vùng mất cân bằng, POC là mức khối lượng FRVP: không dùng thay nhau.

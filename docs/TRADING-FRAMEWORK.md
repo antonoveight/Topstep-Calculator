@@ -14,7 +14,7 @@ Các lựa chọn timeframe trên web là khung làm việc thủ công, không 
 
 ## 2. Quy ước cấu trúc
 
-- **CRT:** ghi C1/range, mức bị C2 quét và thời điểm C2 đóng trở lại. Nếu nến HTF đang chạy, chỉ coi là ứng viên. Đóng ngoài range làm mất điều kiện sweep đang xét; không tự chứng minh breakout bền vững.
+- **CRT / TS (Turtle Soup):** ghi C1/range, mức thanh khoản bị C2 quét rồi lấy lại (reclaim), và thời điểm C2 HTF đóng trở lại trong C1. Đây là TS theo quy ước cá nhân của hệ thống: một lần phá mức thất bại, không phải tín hiệu chỉ vì chạm mức. Nếu nến HTF đang chạy, chỉ coi là ứng viên. Đóng ngoài range làm mất điều kiện TS này; không tự chứng minh breakout bền vững. Quét cả hai biên được đánh dấu mơ hồ, không tự chọn hướng.
 - **Engulfing/Outside:** hai định nghĩa được ghi trong cùng nhóm UI nhưng không đồng nghĩa. Engulfing xét thân; Outside xét High–Low. Nêu rõ mẫu thực tế trong ghi chú; không suy ra đảo chiều hoặc FVG chỉ từ hình dạng.
 - **Inside Bar:** High không vượt và Low không thấp hơn mẹ, ít nhất một biên hẹp hơn. Giữ Mother High/Low ban đầu khi còn nén lồng nhau; ghi Inside High/Low nếu dùng cho kịch bản. Chưa có sweep/break xác nhận thì tiếp tục chờ.
 - Các mẫu có thể chồng lấp; chọn cấu trúc chính cho lượt, ghi cấu trúc bổ trợ trong note.
@@ -25,6 +25,10 @@ Các lựa chọn timeframe trên web là khung làm việc thủ công, không 
 2. Kịch bản HTF đã rõ: mức chờ, sự kiện, hướng, một mục tiêu và vô hiệu.
 3. Điều kiện entry LTF được chọn đã xác nhận theo kịch bản HTF.
 4. Đã thực hiện entry theo kế hoạch, với SL và Full TP rõ ràng.
+
+**TS và CISD/MSS khác vai trò:** TS xác nhận sự kiện quét/lấy lại mức trong kịch bản CRT HTF; CISD hoặc MSS là những cách xác nhận entry trên LTF. Không có TS đúng vị trí thì không gọi một tín hiệu CISD/MSS riêng lẻ là CRT đã hợp lệ. Không bắt buộc dùng đồng thời CISD và MSS; nếu chọn entry khác như POC/FVG/OB/line thì phải có điều kiện được định nghĩa trước. Việc thêm TS chưa chứng minh tỷ lệ thắng cao hơn; cần kiểm chứng trên sản phẩm, timeframe và mẫu giao dịch cụ thể.
+
+Xem [bản rà soát chỉ báo và đặc tả thực thi](INDICATOR-REVIEW.md) cùng mã Pine ứng viên tại `indicators/funded-angler-v5.pine`.
 
 Đây là ghi nhận của người dùng. Web không có feed OHLC/volume để tự kiểm chứng; tick sai thứ tự không tự hoàn thành bước còn thiếu. “Đã ghi nhận vào lệnh” không có nghĩa web gửi lệnh.
 

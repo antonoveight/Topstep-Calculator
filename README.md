@@ -53,6 +53,10 @@ Dữ liệu lưu trong LocalStorage. Hãy dùng cùng trình duyệt và cùng �
 
 ## Bổ sung CRT và bối cảnh thanh khoản
 
+CRT có TS (Turtle Soup) ở tầng HTF: quét mức đã đánh dấu rồi reclaim/đóng trở lại range; CISD và MSS là các lựa chọn xác nhận entry LTF riêng. Không đồng nhất close ngoài range với TS và không tự gán tỷ lệ thắng.
+
+Chỉ báo cá nhân: [TFA v5 · Pine v6](indicators/funded-angler-v5.pine), bản sao [chibao.txt](chibao.txt), [bản rà soát và hướng dẫn kiểm tra](docs/INDICATOR-REVIEW.md). Code cũ được giữ trong `indicators/archive/crt-pro-v4-original.pine`. Nguồn mới là bản ứng viên chưa biên dịch trong Pine Editor; các điều kiện cơ học cần được kiểm chứng bằng Bar Replay/backtest. Chỉnh `.pine`, chạy `node tools/sync-indicator.cjs` để đồng bộ `chibao.txt`.
+
 [Hướng dẫn đã chuẩn hóa](docs/CRT-LIQUIDITY-GUIDE.md) bổ sung range tham chiếu, IRL/ERL, Mother/Inside Bar và phân biệt sweep/break cho ba cấu trúc HTF. Trong Checklist, mở hướng dẫn **Cấu trúc** HTF hoặc **Bản đồ thanh khoản · IRL / ERL** để đọc khi cần; các hướng dẫn mặc định thu gọn, không xuất hiện trong khung live. AI Chart Lens dùng cùng quy ước, ghi rõ khi ảnh thiếu dữ liệu FRVP/nến đóng/giá thay vì tự tạo mức.
 
 Giữ một mục tiêu Full TP, SL theo cấu trúc và ghi lý do đóng tay. Không tích hợp chốt một phần, BE theo số R hoặc indicator Pine chưa kiểm chứng từ cẩm nang gốc. Đây là bổ sung kiến thức; không tự hoàn thành checkbox, xác nhận tín hiệu hoặc thay đổi PnL.
@@ -148,6 +152,7 @@ node tools/sync-html.cjs
 node tests/review.cjs
 node tests/liquidity-guide.cjs
 node tests/htf-framework.cjs
+node tests/indicator-contract.cjs
 node tests/workspace.cjs
 node tests/integrations.cjs
 node tests/pond.cjs

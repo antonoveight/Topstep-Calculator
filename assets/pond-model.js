@@ -5,6 +5,7 @@ const PondLogic = (() => {
     const steps=['Xác nhận cấu trúc HTF','Chốt kịch bản HTF','Xác nhận entry LTF','Đã vào lệnh theo kế hoạch'];
     const config=(name,visual,effect)=>({name,visual,steps,effect,status:['Đang quan sát HTF','Đã xác nhận cấu trúc HTF','Đã chọn kịch bản HTF','Đã xác nhận entry LTF','Đã ghi nhận vào lệnh'],actions:['Đánh dấu HTF','Chốt kịch bản','Chờ entry LTF','Ghi nhận vào lệnh']});
     const setups={5:config('CRT · HTF',1,['cast','approach','bite','hook']),6:config('Engulfing / Outside · HTF',2,['cast','pullback','bite','hook']),7:config('Inside Bar · HTF',4,['cast','breakout','settle','hook'])};
+    setups[5].status[1]='Đã xác nhận CRT / TS trên HTF';
     function name(id){return setups[id]?.name||(legacyNames[id]||'Chưa phân loại');}
     function visual(id){return setups[id]?.visual||Number(id)||1;}
     function derive(steps,risk,setup=5) {
