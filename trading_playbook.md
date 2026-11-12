@@ -7,6 +7,8 @@
 
 ---
 
+> **Bổ sung chuẩn hóa:** [CRT và bối cảnh thanh khoản](docs/CRT-LIQUIDITY-GUIDE.md) bổ sung Mother/Inside Bar, phân biệt sweep/breakout và khung IRL–ERL. Khi có xung đột, dùng quy ước của bản bổ sung: một mục tiêu Full TP, SL theo cấu trúc, cho phép ghi nhận đóng tay kèm lý do; không chốt một phần hoặc tự dời BE theo số R. Các mức R:R và diễn giải xác suất trong sổ tay là giả thuyết cần kiểm chứng, không phải kết quả được bảo đảm.
+
 ## MỤC LỤC
 1. [Triết Lý Cốt Lõi & Tâm Lý Học Quản Trị Vốn](#1-triết-lý-cốt-lõi--tâm-lý-học-quản-trị-vốn)
 2. [Khái Niệm "Thời Gian Làm Việc" & Chuỗi Khung Thời Gian H1 – M5/M3](#2-khái-niệm-thời-gian-làm-việc--chuỗi-khung-thời-gian-h1--m5m3)
@@ -183,7 +185,7 @@ Không kéo tù mù hay xê dịch tùy ý. Điểm neo cố định 100%:
 1. **Cho lệnh không gian thở tự nhiên:** Sau khi vào lệnh, giữ nguyên Stop Loss ban đầu (sau chóp râu C2).
 2. **Chỉ dời Stop Loss theo Cấu Trúc Swing Mới (Structure-Based Trailing):**  
    - Chỉ dời SL khi trên khung **M5 hình thành một Đáy Mới Cao Hơn (Higher Low)** hoặc **Đỉnh Mới Thấp Hơn (Lower High)** rõ ràng có nến xác nhận. Dời SL núp sau đáy/đỉnh cấu trúc mới này.
-3. **Triết lý All-or-Nothing:** Nếu không có cấu trúc mới bảo vệ, chấp nhận để lệnh tự động chạm **Full TP ($+2\text{R}$ hoặc $+3\text{R}$)** hoặc dính **$-1\text{R}$**. Không can thiệp tay, không chốt non, không dời BE sớm.
+3. **Một mục tiêu toàn bộ:** Nếu không có cấu trúc mới bảo vệ, giữ SL theo kế hoạch và mục tiêu Full TP đã chọn trước. Không chốt một phần hoặc tự dời BE theo số R. Có thể ghi nhận đóng tay kèm lý do thực tế; chưa thống nhất tiêu chí định lượng thì không tự coi đóng tay là tuân thủ chỉ vì có lãi.
 
 ---
 

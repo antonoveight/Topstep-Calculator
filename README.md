@@ -47,6 +47,12 @@ Dữ liệu lưu trong LocalStorage. Hãy dùng cùng trình duyệt và cùng �
 - Xuất CSV EOD; sao lưu/khôi phục JSON gồm cả hai vòng, payout và tùy chọn checklist/giao diện.
 - Userscript Tampermonkey hỗ trợ lấy PnL từ giao diện TopstepX.
 
+## Bổ sung CRT và bối cảnh thanh khoản
+
+[Hướng dẫn đã chuẩn hóa](docs/CRT-LIQUIDITY-GUIDE.md) bổ sung range tham chiếu, IRL/ERL, Mother/Inside Bar và phân biệt sweep/break cho bốn setup. Trong Checklist, mở **Bối cảnh** của setup hoặc **Bản đồ thanh khoản · IRL / ERL** để đọc khi cần; các hướng dẫn mặc định thu gọn, không xuất hiện trong khung live. AI Chart Lens dùng cùng quy ước, ghi rõ khi ảnh thiếu dữ liệu FRVP/nến đóng/giá thay vì tự tạo mức.
+
+Giữ một mục tiêu Full TP, SL theo cấu trúc và ghi lý do đóng tay. Không tích hợp chốt một phần, BE theo số R hoặc indicator Pine chưa kiểm chứng từ cẩm nang gốc. Đây là bổ sung kiến thức; không tự hoàn thành checkbox, xác nhận tín hiệu hoặc thay đổi PnL.
+
 ## Quy tắc tính toán
 
 MLL dựa trên **số dư chốt ngày**, không lấy đỉnh của từng bản ghi trong cùng ngày. Chu kỳ payout loại ngày yêu cầu payout trước. Standard cần 5 ngày thắng từ $150; sau payout đầu, phải có lợi nhuận ròng dương trong chu kỳ mới. Consistency cần 3 ngày và ngày lãi cao nhất không quá 40% lợi nhuận ròng chu kỳ. Payout tối đa bằng 50% số dư XFA và chịu trần theo gói.
@@ -136,6 +142,7 @@ Chỉnh `index.html`, sau đó đồng bộ bản tương thích. Chỉ phần p
 npm install --prefix .review-tools --no-save playwright
 node tools/sync-html.cjs
 node tests/review.cjs
+node tests/liquidity-guide.cjs
 node tests/workspace.cjs
 node tests/integrations.cjs
 node tests/pond.cjs

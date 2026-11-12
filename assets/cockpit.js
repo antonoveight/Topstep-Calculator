@@ -2673,8 +2673,8 @@ TRADER VỪA TẢI LÊN MỘT ẢNH BIỂU ĐỒ (CÓ THỂ LÀ ẢNH CHỤP 1 K
 
 BẮT BUỘC FORMAT CÂU TRẢ LỜI NGẮN GỌN - DỨT KHOÁT - ĐỊNH HƯỚNG RÕ RÀNG HƯỚNG ĐI VÀ VIỆC CẦN LÀM:
 1. HƯỚNG LỆNH (DIRECTION): Bắt buộc xác định rõ là "LONG" (Mua), "SHORT" (Bán), hoặc "NO_TRADE" (Đứng ngoài / Chưa đủ điều kiện).
-2. VIỆC CẦN LÀM NGAY (SUMMARY DIRECTIVE): 1 câu mệnh lệnh ngắn gọn, dứt khoát nêu hành động chính xác trader cần thực hiện ngay lúc này (Ví dụ: "Chờ nến 1M đóng xanh qua POC 2664 rồi mở Long ngay, SL 2658" hoặc "Vào lệnh Short ngay khi nến hiện tại đóng cửa dưới 2680" hoặc "Đứng ngoài, giá đang nén trong range chưa có tín hiệu").
-3. KẾ HOẠCH THỰC THI (LEVELS): Nêu rõ vùng Entry, mức SL (kèm số ticks), và mức TP (đạt chuẩn tỷ lệ 1:2 hoặc 1:3).
+2. VIỆC CẦN THEO DÕI (SUMMARY DIRECTIVE): Một câu ngắn nêu bằng chứng còn thiếu hoặc điều kiện cần chờ. Không thúc giục vào lệnh từ ảnh tĩnh; chưa xác minh thì dùng NO_TRADE.
+3. KẾ HOẠCH CÓ ĐIỀU KIỆN (LEVELS): Chỉ nêu giá Entry/SL/Full TP đọc được rõ từ ảnh. Thiếu thang giá, tick size hoặc mốc tham chiếu thì ghi "Chưa đủ dữ liệu"; không tự tạo giá, ticks hoặc R:R để lấp chỗ trống.
 
 NGUYÊN TẮC XỬ LÝ 2 TÌNH HUỐNG (BẮT BUỘC TUÂN THỦ):
 
@@ -2688,37 +2688,45 @@ TÌNH HUỐNG 2: NẾU TRADER CHƯA KẺ VẼ GÌ (BIỂU ĐỒ SẠCH / CHART N
 - TUYỆT ĐỐI KHÔNG ĐƯỢC TỪ CHỐI PHÂN TÍCH HOẶC NÓI RẰNG "DO CHƯA VẼ NÊN KHÔNG THỂ ĐÁNH GIÁ"!
 - BẠN PHẢI TỰ ĐỘNG ĐÓNG VAI TRÒ CHUYÊN GIA TỰ PHÂN TÍCH TOÀN DIỆN TỪ ĐẦU CHO TRADER:
   + "status": "AI_TU_PHAN_TICH".
-  + "statusText": "AI Tự Soi Kèo & Lên Kế Hoạch 🔍".
+  + "statusText": "AI đọc bối cảnh & điều kiện chờ".
   + "feedback": Phân tích cấu trúc ngắn gọn:
     * HTF (15M/1H nếu có): Xu hướng chính, đỉnh đáy then chốt (ONH/ONL, PDH/PDL).
     * LTF (1M/5M): Trạng thái nén, sóng đẩy hay quét râu?
-    * GỢI Ý KẺ VẼ: Kéo FRVP từ đâu đến đâu (Open Anchor), POC then chốt ở mức giá nào.
+    * GỢI Ý KẺ VẼ: Nêu range và mốc có thể xác định từ ảnh. Không suy ra POC hoặc volume khi ảnh không hiển thị FRVP; chỉ gợi ý anchor cần kiểm tra.
 
 QUY TẮC 4 SETUP THỰC CHIẾN CỦA HỆ THỐNG:
-1. Setup 1 (CRT - FRVP): Kéo FRVP từ Open Anchor đến nến trước nến Sweep (hoặc qua nến Sweep). POC phải ở Cực Trị (A+) hoặc Giữa (50%). Thân nến phải đóng cửa dứt khoát qua POC (không chấp nhận chỉ thò râu). Nếu POC nằm sát Target -> Bỏ lệnh.
-2. Setup 2 (Trend): Đánh dấu High & Low con sóng đẩy -> Kéo FRVP cả sóng. Giá hồi về POC -> BẮT BUỘC phải chờ tạo Đáy mới cục bộ (Local Higher Low) giữ vững trên POC, tuyệt đối không limit mù.
+1. Setup 1 (CRT - FRVP): C2 H1 quét mức HTF rồi đóng trở lại trong C1; chưa đóng thì chưa xác nhận. Anchor FRVP từ lúc mở H1 quét đến cực trị râu C2 trên M5/M3. Chờ M5/M3 đóng qua POC. POC sát Open H1 -> bỏ qua; POC giữa -> đo R:R tối thiểu 1:2 theo kế hoạch. C2 đóng ngoài C1 -> hủy setup sweep này, chưa tự chứng minh breakout thành công. Không xác nhận anchor/POC chỉ từ hình nến.
+2. Setup 2 (Trend): Đánh dấu High & Low sóng đẩy -> FRVP theo sóng. Hồi POC/vùng đã chọn, chờ HL cho Long hoặc LH cho Short được xác nhận và phản ứng phù hợp tại POC; không limit mù hoặc đuổi giá. Inside Bar trong nhịp hồi chỉ là trạng thái chờ.
 3. Setup 3 (AMD): Vùng tích lũy Range A (có POC-A) -> Giá quét râu Manipulation (Judas Swing) thoát biên -> Chui ngược lại retest POC-A và bị từ chối (Rejection) mới vào lệnh.
-4. Setup 4 (Break): Range Sideway tích lũy nén -> Nến thân lớn đóng cửa dứt khoát thoát hộp -> Retest POC hoặc VAH/VAL.
+4. Setup 4 (Break): Range nén -> nến xác nhận đóng ngoài hộp -> retest POC/VAH/VAL hoặc vùng đã chọn và giữ cấu trúc. Nested Inside Bars: giữ biên mẹ ban đầu khi còn nén; retest thất bại cần đánh giá lại.
+
+KHUNG BỐI CẢNH THANH KHOẢN (ÁP DỤNG CHO CẢ BỐN SETUP):
+- Nêu range tham chiếu và khung thời gian; ERL là thanh khoản ngoài range, đỉnh/đáy nội bộ là thanh khoản trong range. Phân biệt vùng FVG/OB với các đỉnh/đáy này. Không suy ra mục tiêu chắc chắn từ IRL -> ERL.
+- POC là mức khối lượng FRVP, EQ là trung điểm range, CE là trung điểm vùng mất cân bằng: không dùng thay thế nhau.
+- Outside Bar bao trùm High-Low; Engulfing bao trùm thân; Inside Bar nằm trong biên mẹ. Không mặc định Outside Bar tạo FVG; cần quan sát mẫu ba nến riêng.
+- Trình tự đọc: range -> vùng chờ -> sự kiện sweep/break -> xác nhận -> mục tiêu và điểm vô hiệu. Nếu thiếu khung, nến đóng, FRVP hoặc giá rõ thì ghi thiếu dữ liệu, direction NO_TRADE. Không bịa tỷ lệ thắng hay kết luận breakout thật chỉ từ một nến.
+- Macro/Quarterly Theory chỉ là bối cảnh thời gian; không tự tạo hướng lệnh, sweep hoặc AMD.
+- Quản trị: một Full TP, SL theo điểm vô hiệu; chỉ trailing khi có swing M5 mới được xác nhận. Không chốt một phần, không tự dời BE tại +1R/+2R. Đóng tay được ghi nhận kèm lý do; không mặc định là tuân thủ.
 
 HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT NÀO NGOÀI JSON NÀY):
 {
   "direction": "LONG" | "SHORT" | "NO_TRADE",
   "directionText": "🟢 LONG (MUA)" | "🔴 SHORT (BÁN)" | "⚪ ĐỨNG NGOÀI (NO TRADE)" | "⏳ CHỜ TÍN HIỆU",
-  "summaryDirective": "1 câu mệnh lệnh dứt khoát xác định việc cần làm ngay (Ví dụ: Chờ nến 1M đóng xanh qua POC 2664 rồi mở Long ngay, SL 2658)",
-  "action": "VÀO LỆNH NGAY" | "CHỜ NẾN ĐÓNG CỬA" | "CANH PULLBACK POC" | "CHỜ QUÉT RÂU" | "ĐỨNG NGOÀI" | "BỎ KÈO (SKIP)",
+  "summaryDirective": "Một câu về điều kiện chờ hoặc bằng chứng còn thiếu",
+  "action": "CHỜ XÁC NHẬN" | "CHỜ NẾN ĐÓNG CỬA" | "CANH PULLBACK POC" | "CHỜ QUÉT RÂU" | "ĐỨNG NGOÀI" | "BỎ KÈO (SKIP)",
   "actionColor": "green" | "blue" | "gold" | "red",
   "setupIdentified": "Setup 1: CRT - FRVP" | "Setup 2: Trend" | "Setup 3: AMD" | "Setup 4: Break" | "Chưa Đủ Điều Kiện / Đang Tích Lũy",
-  "pocPosition": "Cực Trị (A+)" | "Cân Bằng 50%" | "Sát Target (Cản Cấm Vào)" | "Vùng POC Đề Xuất",
+  "pocPosition": "Cực Trị (A+)" | "Giữa range" | "Sát Open H1 (Bỏ qua)" | "Chưa đủ dữ liệu FRVP",
   "entryPlan": "Khoảng giá Entry cụ thể",
   "slPlan": "Giá SL (kèm số ticks / điểm)",
-  "tpPlan": "Giá TP (đạt chuẩn 1:2 hoặc 1:3)",
-  "slTpPlan": "SL đặt tại... TP kỳ vọng 1:2 / 1:3...",
+  "tpPlan": "Một mục tiêu Full TP đọc được từ ảnh hoặc Chưa đủ dữ liệu",
+  "slTpPlan": "SL theo vô hiệu, một Full TP; chỉ tính R:R khi đủ giá rõ ràng",
   "drawingCheck": {
     "status": "DUNG" | "CHUA_DUNG" | "AI_TU_PHAN_TICH",
     "statusText": "Nét vẽ chuẩn xác ✓" | "Nét vẽ chưa chuẩn / Cần chỉnh ⚠" | "AI Tự Soi Kèo & Lên Kế Hoạch 🔍",
     "feedback": "Nhận xét ngắn gọn 2-3 gạch đầu dòng: Chỗ đúng/sai (nếu có vẽ) HOẶC gợi ý kẻ FRVP và cấu trúc HTF/LTF (nếu chart sạch)"
   },
-  "disciplineAdvice": "1 câu nhắc nhở kỷ luật quản trị vốn Topstep (DLL, dời SL khi +1R / +2R)."
+  "disciplineAdvice": "Một câu về giới hạn rủi ro đã xác nhận, SL theo cấu trúc và Full TP; đóng tay ghi lý do."
 }`;
 
             try {
@@ -2872,7 +2880,7 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                         pocPosition: "Tham khảo biểu đồ",
                         action: "CÂN NHẮC KỸ",
                         actionColor: "gold",
-                        slTpPlan: "Tuân thủ R:R 1:2",
+                        slTpPlan: "Chưa đủ dữ liệu xác nhận Entry / SL / Full TP",
                         disciplineAdvice: "Kỷ luật bảo vệ vốn."
                     };
                 }
@@ -2947,8 +2955,8 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
 
             const directiveText = res.summaryDirective || res.action || "Theo dõi chặt chẽ phản ứng giá";
             const entryVal = res.entryPlan || (res.action ? res.action : "Chờ kích hoạt");
-            const slVal = res.slPlan || (res.slTpPlan ? res.slTpPlan.split('.')[0] : "Sau râu nến");
-            const tpVal = res.tpPlan || "R:R 1:2 hoặc 1:3";
+            const slVal = res.slPlan || (res.slTpPlan ? res.slTpPlan.split('.')[0] : "Chưa đủ dữ liệu SL");
+            const tpVal = res.tpPlan || "Chưa đủ dữ liệu Full TP";
 
             resultBox.innerHTML = `
                 <!-- 1. Executive Direction & Action Directive Bar -->
@@ -3031,21 +3039,21 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                 const sampleData = {
                     direction: "SHORT",
                     directionText: "🔴 SHORT (BÁN)",
-                    summaryDirective: "CHỜ NẾN 1M ĐÓNG CỬA DỨT KHOÁT DƯỚI POC 2664 RỒI MỞ LỆNH SHORT NGAY",
+                    summaryDirective: "Ví dụ giả định: chờ C2 H1 đóng trong C1, rồi M5/M3 xác nhận dưới POC; kiểm tra SL và Full TP trước khi quyết định",
                     action: "CHỜ NẾN ĐÓNG CỬA",
                     actionColor: "gold",
                     setupIdentified: "Setup 1: CRT - FRVP",
                     pocPosition: "Cực Trị (A+)",
-                    entryPlan: "2663.5 - 2664.0 (sau nến đóng)",
-                    slPlan: "2667.0 (ngoài râu sweep -12 ticks)",
-                    tpPlan: "2657.0 (Tỷ lệ 1:2 tại CRTL)",
-                    slTpPlan: "SL 2667.0 (-12 ticks). TP 2657.0 (1:2 tại CRTL).",
+                    entryPlan: "Giả định 2664.0 sau xác nhận",
+                    slPlan: "Giả định 2667.0 ngoài cực trị sweep",
+                    tpPlan: "Một Full TP giả định 2658.0 (2R)",
+                    slTpPlan: "Ví dụ: Entry 2664.0, SL 2667.0, Full TP 2658.0 = 2R; chưa tính phí/trượt giá.",
                     drawingCheck: {
                         status: "CHUA_DUNG",
                         statusText: "Nét vẽ chưa chuẩn ⚠",
                         feedback: "• Bạn đã kẻ đúng hộp tích lũy Range.\n• LỖI: Điểm kéo FRVP lại lấy nhầm từ cây nến breakout thay vì Open Anchor.\n• Nến hiện tại mới chỉ quét râu qua POC chứ chưa đóng thân nến dứt khoát."
                     },
-                    disciplineAdvice: "Kiên nhẫn chờ nến 1M đóng cửa xác nhận vượt POC. Khi giá chạy +1R dời SL về -0.5R, +2R dời SL về BE."
+                    disciplineAdvice: "Ví dụ minh họa, không phải tín hiệu hiện tại. Giữ SL theo vô hiệu, chỉ trailing theo swing M5 được xác nhận; không tự dời BE theo số R."
                 };
                 renderAiAnalysisResult(sampleData, "Demo Thẩm Định Vẽ");
             } else {
@@ -3053,21 +3061,21 @@ HÃY TRẢ LỜI ĐÚNG ĐỊNH DẠNG JSON SAU (KHÔNG DÙNG BACKTICKS HAY TEXT
                 const sampleData = {
                     direction: "LONG",
                     directionText: "🟢 LONG (MUA)",
-                    summaryDirective: "CANH MUA (LONG) TẠI POC 2664 KHI NẾN 1M TẠO ĐÁY LOCAL HIGHER LOW XÁC NHẬN",
+                    summaryDirective: "Ví dụ giả định: chờ nhịp hồi POC và Higher Low M5 được xác nhận; kiểm tra mục tiêu và điểm vô hiệu",
                     action: "CANH PULLBACK POC",
                     actionColor: "blue",
                     setupIdentified: "Setup 2: Trend",
-                    pocPosition: "Cân Bằng 50%",
-                    entryPlan: "2664.0 - 2665.0 (vùng POC sóng đẩy)",
-                    slPlan: "2661.0 (dưới Local Low -15 ticks)",
-                    tpPlan: "2672.0 - 2680.0 (Tỷ lệ 1:2.5 về đỉnh cũ)",
-                    slTpPlan: "SL 2661.0 (dưới Local Low). TP 2680.0 (1:2.5 tại đỉnh sóng).",
+                    pocPosition: "POC giữa range (giả định)",
+                    entryPlan: "Giả định 2664.0 sau xác nhận",
+                    slPlan: "Giả định 2661.0 dưới swing hồi",
+                    tpPlan: "Một Full TP giả định 2670.0 (2R)",
+                    slTpPlan: "Ví dụ: Entry 2664.0, SL 2661.0, Full TP 2670.0 = 2R; chưa tính phí/trượt giá.",
                     drawingCheck: {
                         status: "AI_TU_PHAN_TICH",
                         statusText: "AI Tự Soi Kèo & Lên Kế Hoạch 🔍",
                         feedback: "• Khung 15M: Xu hướng Tăng mạnh, sóng đẩy bứt phá từ 2650 lên 2680.\n• Khung 1M: Đang có nhịp hồi sâu (pullback) về vùng cân bằng giá trị.\n• GỢI Ý ĐIỂM KẺ: Kéo FRVP từ đáy 2650 lên đỉnh 2680, đường POC then chốt hội tụ tại 2664."
                     },
-                    disciplineAdvice: "Tuyệt đối không đặt Limit order mù tại POC. Bắt buộc chờ nến 1M xác nhận tạo đáy mới giữ vững trên POC."
+                    disciplineAdvice: "Ví dụ minh họa: chờ Higher Low M5 được xác nhận tại vùng đã chọn; một Full TP, đóng tay ghi lý do."
                 };
                 renderAiAnalysisResult(sampleData, "Demo AI Tự Soi Kèo");
             }
