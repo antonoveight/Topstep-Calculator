@@ -1,6 +1,6 @@
 // Mozilla Public License 2.0: https://mozilla.org/MPL/2.0/
 // The Funded Angler - automatic, confirmed HTF model registry.
-// Prior version passed editor diagnostics; latest reference-visibility fix needs editor/chart validation.
+// Prior version passed editor diagnostics; latest EGF reaction / confirmation changes need chart validation.
 // See docs/INDICATOR-AUTO-MODELS.md for exact lifecycle, priority and validation limits.
 //@version=6
 indicator("The Funded Angler v6 - Auto HTF", shorttitle="TFA v6", overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=120, max_boxes_count=30, max_labels_count=300)
@@ -27,15 +27,15 @@ biasTf = input.timeframe("1D", "Bias TF (>= HTF)", options=["60", "120", "240", 
 biasLife = input.int(3, "Bias persistence (reference bars)", minval=1, maxval=20, group=G_BIAS, tooltip="Giữ bias khi chưa có sự kiện cấu trúc mới tối đa số nến tham chiếu này, rồi về neutral. Mặc định 3 nến D1.")
 biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutral"], group=G_BIAS, tooltip="Auto dùng quy tắc cấu trúc của script. Long/Short/Neutral là ý kiến chủ động của bạn; reset khi bối cảnh thay đổi.")
 filterBias = input.bool(true, "Require bias alignment for E", group=G_BIAS, tooltip="Bật: entry E cần bias cùng hướng. Auto neutral hoặc ngược hướng sẽ không có tam giác dù model HTF vẫn hợp lệ.")
-entryMode = input.string("Auto", "LTF condition", options=["Auto", "CISD", "MSS", "FVG retest", "OB retest", "POC close", "Line close", "Line touch", "Line retest"], group=G_ENTRY, tooltip="Auto dùng điều kiện tương ứng model. Các lựa chọn khác thay thế điều kiện Auto nhưng vẫn cần model có hướng, R:R, SL/CP và các filter hợp lệ. Xem docs/INDICATOR-SETTINGS.md.")
-pivotLength = input.int(2, "LTF pivot confirmation L/R", minval=1, maxval=10, group=G_ENTRY, tooltip="Pivot LTF cần số nến trái/phải này. MSS dùng mức pivot đã biết khi kích hoạt model; mặc định 2.")
+entryMode = input.string("Auto", "LTF condition", options=["Auto", "CISD", "MSS", "FVG retest", "OB retest", "POC close", "Line close", "Line touch", "Line retest"], group=G_ENTRY, tooltip="Auto dùng điều kiện tương ứng model. Với EGF, mọi mode đều chờ chạm IRL và đóng trở lại phía ERL; chọn riêng CISD/MSS/POC/Line không bỏ qua pha phản ứng này. Vẫn cần R:R, SL/CP, bias và time nếu bật. Xem docs/INDICATOR-SETTINGS.md.")
+pivotLength = input.int(2, "LTF pivot confirmation L/R", minval=1, maxval=10, group=G_ENTRY, tooltip="Pivot cần số nến trái/phải này, mặc định 2. MSS dùng pivot đã biết lúc kích hoạt model; riêng EGF lấy lại pivot đã xác nhận tại lần chạm IRL. Không lùi tín hiệu về bar pivot quá khứ.")
 manualPoc = input.price(0.0, "FRVP POC (manual, optional)", group=G_ENTRY, tooltip="Nhập POC thực từ FRVP khi chọn POC close. Script không tự tính FRVP/POC từ chart; 0 là chưa nhập.")
 manualLine = input.price(0.0, "BL (manual, optional)", group=G_ENTRY, tooltip="Nhập giá line khi chọn Line close/touch/retest. Close: đóng cắt mức; touch: chạm và đóng đúng phía; retest: đã break rồi quay lại ở nến sau.")
 manualInvalid = input.price(0.0, "Execution SL (0 = HTF INV)", group=G_ENTRY, tooltip="0 dùng INV HTF để tính R:R. Nhập SL cấu trúc entry của bạn nếu khác. Không thay INV của registry HTF.")
 manualTarget = input.price(0.0, "CP override (0 = model CP)", group=G_ENTRY, tooltip="0 dùng CP của model. Nếu chưa có CP đúng theo kế hoạch, có thể nhập đích cụ thể. Không tự coi CRTH luôn là TP hoặc CRTL luôn là TP.")
 minRR = input.float(2.0, "Minimum planned R:R", minval=0.5, maxval=20, step=0.25, group=G_ENTRY, tooltip="Gate R:R dự kiến tại close nến tín hiệu, mặc định 2. Không phải mức chốt một phần và không đảm bảo R thực nhận.")
 retestTicks = input.int(1, "Retest tolerance (ticks)", minval=0, maxval=20, group=G_ENTRY, tooltip="Dung sai cho chạm BL/biên mother, tính theo tick. Không phải độ dày tùy ý cho toàn bộ vùng FVG/OB.")
-showConfirm = input.bool(false, "C / M confirmation marks", group=G_ENTRY, tooltip="Bật: thêm tam giác xác nhận và line CISD/MSS từ đúng nến LTF xác nhận, giữ nguyên mức giá và kéo hữu hạn. B/S là xác nhận sơ bộ; BUY/SELL là entry đủ gate. Xanh=Buy, đỏ=Sell. Tắt chỉ ẩn phần C/M, không đổi điều kiện entry, bias, R:R hay alert.")
+showConfirm = input.bool(false, "C / M confirmation marks", group=G_ENTRY, tooltip="Bật: chọn một xác nhận C hoặc M cho mỗi lượt bối cảnh hợp lệ, vẽ tam giác và một line. Cùng bar ưu tiên C, trừ mode MSS. EGF phải có phản ứng IRL hướng ERL trước khi đánh dấu. B/S là sơ bộ; BUY/SELL là entry đủ gate. Xanh Buy, đỏ Sell. Tắt không đổi logic entry/alert.")
 timeGate = input.string("Context only", "Time filter for E", options=["Context only", "Web macros", "Web working windows"], group=G_TIME, tooltip="Context only chỉ quan sát giờ. Web macros/working windows chặn E ngoài cửa sổ tương ứng của web theo America/New_York, có DST.")
 showTimeBg = input.bool(false, "Macro background", group=G_TIME, tooltip="Tô nền các macro để quan sát; không tự tạo tín hiệu hay thay bias.")
 showQt = input.bool(true, "QT clock context", group=G_TIME, tooltip="Hiện đồng hồ quý intraday trong panel. QT chỉ là bối cảnh thời gian, không tự suy ra hướng lệnh.")
@@ -430,6 +430,8 @@ var float obTop = na
 var float obBottom = na
 var int obIndex = na
 var bool irlTouched = false
+var int irlTouchTime = na
+var bool irlFailed = false
 var int trackedIrl = na
 var bool boundaryTouched = false
 var bool lineBroken = false
@@ -451,6 +453,21 @@ bool changedModel = modelKey != selectedKey
 bool changedIrl = not na(sIrlT) ? na(trackedIrl) or trackedIrl != sIrlT : not na(trackedIrl)
 if changedIrl
     irlTouched := false
+    irlTouchTime := na
+    irlFailed := false
+    if sKind == 2 and sPhase != 1
+        cNoted := false
+        mNoted := false
+        deliveryLevel := na
+        opposingOpen := na
+        opposingHigh := na
+        opposingLow := na
+        fvgIndex := na
+        fvgTop := na
+        fvgBottom := na
+        obIndex := na
+        obTop := na
+        obBottom := na
     trackedIrl := sIrlT
 if changedModel
     selectedKey := modelKey
@@ -467,6 +484,8 @@ if changedModel
     obBottom := na
     obIndex := na
     irlTouched := false
+    irlTouchTime := na
+    irlFailed := false
     boundaryTouched := false
     lineBroken := false
     breakIndex := na
@@ -488,11 +507,32 @@ float target = manualTarget > 0 ? manualTarget : sCp
 float executionSl = manualInvalid > 0 ? manualInvalid : sInv
 bool armed = not na(sId) and sDir != 0
 bool alreadyEmitted = array.includes(emitted, modelKey)
+bool egfScenario = sKind == 2 and sPhase != 1
+bool reactionStarted = false
+bool egfReady = false
 if armed and barstate.isconfirmed and isLtf and time >= activatedAt
     bool bullish = sDir == 1
     bool invalidBar = bullish ? low <= executionSl : high >= executionSl
     if not na(target) and (bullish ? high >= target : low <= target)
         localTargetTaken := true
+    bool touchesIrl = not na(sIrlH) and not na(sIrlL) and low <= sIrlH and high >= sIrlL
+    if touchesIrl and not irlTouched
+        irlTouched := true
+        irlTouchTime := time
+        if egfScenario
+            reactionStarted := true
+            mssLevel := bullish ? lastPivotHigh : lastPivotLow
+            fvgIndex := na
+            fvgTop := na
+            fvgBottom := na
+            obIndex := na
+            obTop := na
+            obBottom := na
+            cNoted := false
+            mNoted := false
+    if egfScenario and irlTouched and (bullish ? close < sIrlL : close > sIrlH)
+        irlFailed := true
+    int phaseAt = egfScenario ? irlTouchTime : activatedAt
     bool opposing = bullish ? close < open : close > open
     bool priorOpposing = bullish ? close[1] < open[1] : close[1] > open[1]
     if opposing
@@ -503,7 +543,7 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
         opposingLow := low
     bool cisd = not na(deliveryLevel) and (bullish ? close > deliveryLevel and close[1] <= deliveryLevel : close < deliveryLevel and close[1] >= deliveryLevel)
     bool mss = not na(mssLevel) and (bullish ? close > mssLevel and close[1] <= mssLevel : close < mssLevel and close[1] >= mssLevel)
-    bool newFvg = time[2] >= activatedAt and (bullish ? low > high[2] : high < low[2])
+    bool newFvg = not na(phaseAt) and time[2] >= phaseAt and (bullish ? low > high[2] : high < low[2])
     if newFvg and na(fvgIndex)
         fvgTop := bullish ? low : low[2]
         fvgBottom := bullish ? high[2] : high
@@ -512,7 +552,7 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
         fvgIndex := na
         fvgTop := na
         fvgBottom := na
-    if cisd and not na(opposingOpen) and na(obIndex)
+    if cisd and not na(opposingOpen) and na(obIndex) and (not egfScenario or irlTouched)
         obTop := bullish ? opposingOpen : opposingHigh
         obBottom := bullish ? opposingLow : opposingOpen
         obIndex := bar_index
@@ -522,8 +562,6 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
         obBottom := na
     bool fvgRetest = not na(fvgIndex) and bar_index > fvgIndex and low <= fvgTop and high >= fvgBottom and (bullish ? close > fvgTop : close < fvgBottom)
     bool obRetest = not na(obIndex) and bar_index > obIndex and low <= obTop and high >= obBottom and (bullish ? close > obTop : close < obBottom)
-    if not na(sIrlH) and low <= sIrlH and high >= sIrlL
-        irlTouched := true
     float boundary = bullish ? sHi : sLo
     if low <= boundary + tolerance and high >= boundary - tolerance
         boundaryTouched := true
@@ -533,8 +571,11 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
     if crossedLine and not lineBroken
         lineBroken := true
         breakIndex := bar_index
-    bool autoEntry = sKind == 1 or sPhase == 1 ? (cisd or mss) : sKind == 3 and sPhase == 2 ? boundaryTouched and (cisd or mss or fvgRetest) : irlTouched and (cisd or mss or fvgRetest or obRetest)
-    bool selectedEntry = switch entryMode
+    bool egfPathReady = irlTouched and not irlFailed and not na(target) and not na(sIrlH) and not na(sIrlL) and (bullish ? close > sIrlH and target > close and target > sIrlH : close < sIrlL and target < close and target < sIrlL)
+    egfReady := egfPathReady
+    bool confirmationContext = sKind == 1 or sPhase == 1 ? true : sKind == 3 and sPhase == 2 ? boundaryTouched : egfPathReady
+    bool autoEntry = sKind == 1 or sPhase == 1 ? (cisd or mss) : sKind == 3 and sPhase == 2 ? boundaryTouched and (cisd or mss or fvgRetest) : egfPathReady and (cisd or mss or fvgRetest or obRetest)
+    bool rawEntry = switch entryMode
         "Auto" => autoEntry
         "CISD" => cisd
         "MSS" => mss
@@ -543,23 +584,30 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
         "Line touch" => lineTouch
         "Line retest" => lineRetest
         => crossedLine
+    bool selectedEntry = rawEntry and (not egfScenario or egfPathReady)
     float risk = bullish ? close - executionSl : executionSl - close
     float reward = not na(target) ? (bullish ? target - close : close - target) : na
     bool plannedRR = risk > 0 and not na(reward) and reward > 0 and reward / risk >= minRR
     bool biasAllowed = not filterBias or biasDir == sDir
-    if showConfirm and not alreadyEmitted
-        cMark := cisd and not cNoted
-        mMark := mss and not mNoted
+    if showConfirm and confirmationContext and not invalidBar and not localTargetTaken and not alreadyEmitted and not cNoted and not mNoted
+        cMark := cisd and entryMode != "MSS"
+        mMark := mss and not cMark and entryMode != "CISD"
         cMarkPrice := cMark ? deliveryLevel : na
         mMarkPrice := mMark ? mssLevel : na
-        cNoted := cNoted or cisd
-        mNoted := mNoted or mss
+        cNoted := cNoted or cMark
+        mNoted := mNoted or mMark
+    string detectedTag = entryMode == "MSS" ? "M" : entryMode == "CISD" ? "C" : entryMode == "FVG retest" ? "F" : entryMode == "OB retest" ? "O" : entryMode == "POC close" ? "P" : entryMode == "Line close" or entryMode == "Line touch" or entryMode == "Line retest" ? "BL" : cisd ? "C" : mss ? "M" : fvgRetest ? "F" : "O"
     // Optional clock gate applies to E only.
     if selectedEntry and plannedRR and biasAllowed and timeAllowed and not invalidBar and not localTargetTaken and not alreadyEmitted
         entryEvent := true
         entryLong := bullish
         entryShort := not bullish
-        signalTag := entryMode == "POC close" ? "P" : entryMode == "Line close" or entryMode == "Line touch" or entryMode == "Line retest" ? "BL" : cisd ? "C" : mss ? "M" : fvgRetest ? "F" : "O"
+        signalTag := detectedTag
+        if showConfirm and (detectedTag == "C" or detectedTag == "M")
+            cMark := detectedTag == "C"
+            mMark := detectedTag == "M"
+            cMarkPrice := cMark ? deliveryLevel : na
+            mMarkPrice := mMark ? mssLevel : na
         array.push(emitted, modelKey)
         if array.size(emitted) > 128
             array.shift(emitted)
@@ -590,11 +638,24 @@ if changedModel
     confirmedMIndex := na
     confirmedCBucket := na
     confirmedMBucket := na
+if egfScenario and (changedIrl or reactionStarted)
+    confirmedC := na
+    confirmedM := na
+    confirmedCIndex := na
+    confirmedMIndex := na
+    confirmedCBucket := na
+    confirmedMBucket := na
 if cMark
+    confirmedM := na
+    confirmedMIndex := na
+    confirmedMBucket := na
     confirmedC := cMarkPrice
     confirmedCIndex := bar_index
     confirmedCBucket := bucketCounter
 if mMark
+    confirmedC := na
+    confirmedCIndex := na
+    confirmedCBucket := na
     confirmedM := mMarkPrice
     confirmedMIndex := bar_index
     confirmedMBucket := bucketCounter
@@ -640,17 +701,17 @@ var array<box> clusterBodies = array.new<box>()
 var array<line> clusterWicks = array.new<line>()
 var array<label> clusterLabels = array.new<label>()
 var box irlBox = box.new(bar_index, high, bar_index, low, xloc=xloc.bar_index, force_overlay=true, bgcolor=color.new(color.teal, 100), border_color=color.new(color.teal, 100))
-var label clockLabel = label.new(bar_index, high, "", force_overlay=true, style=label.style_label_up, color=chart.bg_color, textcolor=chart.fg_color, size=chartFont)
+var label clockLabel = label.new(bar_index, high, "", force_overlay=true, style=label.style_label_up, color=color.new(chart.bg_color, 100), textcolor=chart.fg_color, size=chartFont)
 var table panel = table.new(position.top_right, 2, 6, bgcolor=color.new(#111820, 12), border_width=0)
 if barstate.isfirst
     for i = 0 to 15
         array.push(levelLines, line.new(bar_index, high, bar_index, high, xloc=xloc.bar_index, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
-        array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_left, textalign=text.align_left, size=chartFont, color=chart.bg_color))
+        array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_left, textalign=text.align_left, size=chartFont, color=color.new(chart.bg_color, 100)))
         array.push(labelLeaders, line.new(bar_index, high, bar_index, high, force_overlay=true, style=line.style_dotted, color=color.new(color.gray, 100)))
     for i = 0 to 3
         array.push(clusterBodies, box.new(bar_index, high, bar_index, low, force_overlay=true, bgcolor=color.new(color.gray, 100), border_color=color.new(color.gray, 100)))
         array.push(clusterWicks, line.new(bar_index, high, bar_index, low, width=1, style=line.style_solid, force_overlay=true, color=color.new(color.gray, 100)))
-        array.push(clusterLabels, label.new(bar_index, low, "", force_overlay=true, style=label.style_label_up, color=chart.bg_color, textcolor=chart.fg_color, size=chartFont))
+        array.push(clusterLabels, label.new(bar_index, low, "", force_overlay=true, style=label.style_label_up, color=color.new(chart.bg_color, 100), textcolor=chart.fg_color, size=chartFont))
 f_tag(int flags, int kind, int phase) =>
     string base = kind == 1 ? "CRT" : kind == 3 ? "ISB" : f_has(flags, 2) ? "EGF" : "OUT"
     base + ((kind == 1 or kind == 3) and f_has(flags, 2) ? "/E" : "") + (phase == 1 ? "/TS" : phase == 2 ? "/BR" : "")
@@ -730,7 +791,7 @@ f_note(string noteText, bool up, bool qualified = false) =>
     string captionText = up ? "\n" + noteText : noteText + "\n"
     string hint = (qualified ? (up ? "Buy entry / " : "Sell entry / ") + signalTag : (up ? "Bullish confirmation / " : "Bearish confirmation / ") + noteText + " (not entry)")
     if historyMarks > 0
-        array.push(eventTexts, label.new(bar_index, na, captionText, xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_label_up : label.style_label_down, color=chart.bg_color, textalign=text.align_center, textcolor=chart.fg_color, size=chartFont, force_overlay=true, tooltip=hint))
+        array.push(eventTexts, label.new(bar_index, na, captionText, xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_label_up : label.style_label_down, color=color.new(chart.bg_color, 100), textalign=text.align_center, textcolor=chart.fg_color, size=chartFont, force_overlay=true, tooltip=hint))
         array.push(eventLabels, label.new(bar_index, na, "", xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_triangleup : label.style_triangledown, color=markerColor, size=size.tiny, force_overlay=true, tooltip=hint))
         array.push(eventBuckets, bucketCounter)
     while array.size(eventLabels) > historyMarks
@@ -741,7 +802,7 @@ f_note(string noteText, bool up, bool qualified = false) =>
 if entryEvent and showEntryTriangles
     f_note((entryLong ? "BUY " : "SELL ") + signalTag, entryLong, true)
 else if cMark or mMark
-    f_note((sDir == 1 ? "B " : "S ") + (cMark and mMark ? "C/M" : cMark ? "C" : "M"), sDir == 1)
+    f_note((sDir == 1 ? "B " : "S ") + (cMark ? "C" : "M"), sDir == 1)
 
 if recentOnly and barstate.islast
     int markIndex = array.size(eventLabels) - 1
@@ -773,8 +834,8 @@ if barstate.islast
     f_level(10, s3Lo, "RL #3", color.new(color.silver, 85), showSecondary and onHtf and drawActive and not na(s3Id))
     f_level(11, manualTarget, "CPe", color.blue, showLevels and drawActive and manualTarget > 0)
     f_level(12, manualInvalid, "SL", color.new(color.red, 35), showLevels and drawActive and manualInvalid > 0)
-    bool cLevelActive = showConfirm and isLtf and not na(confirmedCIndex) and (not recentOnly or bucketCounter - confirmedCBucket <= drawHtfBars)
-    bool mLevelActive = showConfirm and isLtf and not na(confirmedMIndex) and (not recentOnly or bucketCounter - confirmedMBucket <= drawHtfBars)
+    bool cLevelActive = showConfirm and isLtf and not na(confirmedCIndex) and (not egfScenario or (not irlFailed and not localTargetTaken)) and (not recentOnly or bucketCounter - confirmedCBucket <= drawHtfBars)
+    bool mLevelActive = showConfirm and isLtf and not na(confirmedMIndex) and (not egfScenario or (not irlFailed and not localTargetTaken)) and (not recentOnly or bucketCounter - confirmedMBucket <= drawHtfBars)
     color confirmationColor = sDir == 1 ? color.lime : color.red
     f_level(13, confirmedC, "CISD", confirmationColor, cLevelActive, confirmedCIndex)
     f_level(14, confirmedM, "MSS", confirmationColor, mLevelActive, confirmedMIndex)
@@ -791,7 +852,7 @@ if barstate.islast
     f_layoutLabels()
     if showPanel
         string dirText = biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
-        string stateText = not hasModel ? "WAIT" : sDir == 0 ? "COMP" : localTargetTaken ? "CP?" : alreadyEmitted ? "E" : na(target) ? "CP -" : "LTF"
+        string stateText = not hasModel ? "WAIT" : sDir == 0 ? "COMP" : localTargetTaken ? "CP?" : alreadyEmitted ? "E" : na(target) ? "CP -" : egfScenario and irlFailed ? "IRL X" : egfScenario and not irlTouched ? "IRL WAIT" : egfScenario and not egfReady ? "IRL" : "LTF"
         array<string> headings = array.from("TF", "#1", "B", "IRL", "T", "S")
         array<string> values = array.from(htf + " / " + timeframe.period, tag + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? (sIrlKind == 1 ? "FVG" : "OB?") : "-", macroNow + (showQt ? " Q" + str.tostring(dayQuarter) + "/" + str.tostring(sessionQuarter) : ""), not sReady ? "HIST" : stateText + (sDropped > 0 ? " +" : ""))
         for row = 0 to 5

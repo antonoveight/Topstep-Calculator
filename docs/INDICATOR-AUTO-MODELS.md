@@ -79,11 +79,11 @@ Mặc định **Auto**, khung tham chiếu D1, có thể chọn khung khác >= H
 | Model #1 | Điều kiện Auto LTF |
 | --- | --- |
 | CRT/TS, hoặc model đã resolve bằng TS | CISD **hoặc** MSS sau xác nhận HTF. |
-| EGF/OUT có hướng | Đã chạm IRL HTF hiện hành; sau đó có CISD/MSS hoặc retest FVG/OB LTF. Thiếu IRL thì tiếp tục chờ. |
+| EGF/OUT có hướng | Đã chạm IRL HTF hiện hành và đóng trở lại phía hướng tới ERL/CP; sau đó có một xác nhận C hoặc M, hoặc retest FVG/OB LTF hình thành trong pha phản ứng. Không đánh dấu nhịp hồi vào IRL như entry ngược hướng. |
 | ISB breakout | Đã retest biên mother bị phá; có CISD/MSS hoặc retest FVG LTF. |
 | ISB/OUT chưa có hướng | Quan sát, không entry. |
 
-CISD là biến thể close qua open đầu chuỗi nến đối hướng; MSS là close qua pivot đã được xác nhận và biết khi kích hoạt theo model. Không gọi chúng là cùng khái niệm. FVG LTF phải hình thành sau kích hoạt; retest ở bar sau khi gap đã biết. OB LTF là candidate sau CISD cơ học. Các điều kiện cụ thể cần người dùng kiểm chứng với cách đọc cá nhân.
+CISD là biến thể close qua open đầu chuỗi nến đối hướng; MSS là close qua pivot đã được xác nhận và biết khi kích hoạt theo model. Trong hệ thống này chúng chung vai trò xác nhận đổi hướng, nhưng dùng hai hình thái/mức khác nhau; không bắt buộc đồng thời. FVG LTF phải hình thành sau kích hoạt; retest ở bar sau khi gap đã biết. OB LTF là candidate sau CISD cơ học. Các điều kiện cụ thể cần người dùng kiểm chứng với cách đọc cá nhân.
 
 E cần bar đóng, CP/SL hợp lệ và R:R tối thiểu theo giá close tham chiếu (mặc định 2), bias phù hợp nếu bật, time gate nếu bật. Không phát E trên bar đã chạm SL tham chiếu hoặc sau khi LTF đã thấy CP bị chạm. Một E cho mỗi model/revision, kể cả nếu primary được đọc lại. Script không gửi lệnh, ghi fill, PnL, partial exit hoặc BE tự động.
 
@@ -95,15 +95,15 @@ Cụm nến dùng **C1/C2 của model #1**, không phải luôn hai nến HTF g�
 
 OHLC live được gom từ nến chart đang mở theo `time(HTF)`: open của bar đầu, high lớn nhất, low nhỏ nhất và close mới nhất. Chỉ hiển thị preview nếu có dữ liệu từ đúng đầu bucket HTF, tránh vẽ một nến thiếu đầu lịch sử như nến đầy đủ. Cache các bucket đã hoàn tất được đối chiếu theo timestamp để vẽ C1/C2/C3; khi không có cache đầy đủ, dùng OHLC HTF đã xác nhận. Tooltip caption ghi timestamp, O/H/L/C và nguồn dữ liệu để đối chiếu trực tiếp.
 
-Nhãn chart: `CRT`, `TS`, `EGF`, `OUT`, `ISB`, `BR`, `RH/RL`, `EQ`, `ERL+/−`, `CP`, `INV`, `FVG`, `OB?`. LTF: tam giác **Tiny** xanh hướng lên nằm dưới nến Buy, đỏ hướng xuống nằm trên nến Sell; dùng trực tiếp `yloc.belowbar/abovebar`, không offset bằng ATR/giá. Chữ rời `BUY C`, `SELL M`… ghi hướng entry và xác nhận C/M/F/O/BL/P. `C`, `M` là xác nhận tham khảo theo hướng model HTF, mặc định tắt; khi bật ghi rõ `B C`, `S M`, hoặc `B C/M`/`S C/M` nếu cùng nến. Nhãn viết tắt B/S là xác nhận sơ bộ chưa qua đầy đủ gate entry; nến hồi xanh không tự biến xác nhận của model giảm thành Buy. Phía Buy luôn dưới nến, phía Sell luôn trên nến, không phụ thuộc màu thân nến. Nếu cùng nến đủ entry, chỉ vẽ entry. Tooltip phân biệt confirmation với entry. Chữ theo màu foreground chart để đọc được trên nền sáng/tối; dấu và chữ được xóa cùng nhau theo giới hạn lịch sử. Nhãn ngắn không có nghĩa đã vào lệnh thật.
+Nhãn chart: `CRT`, `TS`, `EGF`, `OUT`, `ISB`, `BR`, `RH/RL`, `EQ`, `ERL+/−`, `CP`, `INV`, `FVG`, `OB?`. LTF: tam giác **Tiny** xanh hướng lên nằm dưới nến Buy, đỏ hướng xuống nằm trên nến Sell; dùng trực tiếp `yloc.belowbar/abovebar`, không offset bằng ATR/giá. Chữ rời `BUY C`, `SELL M`… ghi hướng entry và xác nhận C/M/F/O/BL/P. `C`, `M` là xác nhận tham khảo theo hướng model HTF, mặc định tắt; khi bật ghi rõ `B C`, `S M`, chọn một loại duy nhất; nếu cùng nến ưu tiên C trừ khi chọn riêng MSS. Nhãn viết tắt B/S là xác nhận sơ bộ chưa qua đầy đủ gate entry; nến hồi xanh không tự biến xác nhận của model giảm thành Buy. Phía Buy luôn dưới nến, phía Sell luôn trên nến, không phụ thuộc màu thân nến. Nếu cùng nến đủ entry, chỉ vẽ entry. Tooltip phân biệt confirmation với entry. Chữ theo màu foreground chart để đọc được trên nền sáng/tối; dấu và chữ được xóa cùng nhau theo giới hạn lịch sử. Nhãn ngắn không có nghĩa đã vào lệnh thật.
 
 Râu nến HTF dùng line solid mảnh **1 px**, cùng một màu foreground của chart giảm nhẹ độ đậm cho cả nến tăng/giảm. Độ rộng thân lẻ được làm tròn xuống số chẵn để trục râu ở đúng giữa thân. Thân và râu giữ nguyên OHLC, không thay đổi phép tổng hợp nến.
 
 Trong **5. Display → Signal history: latest marks (0 = hide)**, chọn số dấu gần nhất cần giữ: mặc định **1**, tối đa 100; 0 ẩn toàn bộ dấu tín hiệu lịch sử. Dấu cũ nhất được xóa trước. `Buy / Sell triangles` mặc định bật, dấu C/M và model phụ mặc định tắt.
 
-Khi bật C/M, vẽ thêm line **CISD** và **MSS** giữ nguyên giá tại xác nhận, mỗi line bắt đầu tại `bar_index` của nến xác nhận tương ứng và kéo tối đa horizon. Chúng không phụ thuộc checkbox hiển thị range HTF; tuổi line tính từ bucket xác nhận, reset khi model/revision đổi. CISD và MSS khác nến không bị gộp mất mốc đầu chỉ vì trùng giá. Bật/tắt C/M không thay logic E hoặc alert và không quyết định có được hiện mức HTF hay không.
+Khi bật C/M, chỉ giữ **một line CISD hoặc MSS** cho lượt xác nhận hiện hành, giữ nguyên giá tại xác nhận, bắt đầu tại `bar_index` nến xác nhận và kéo tối đa horizon. Chọn loại đủ điều kiện bối cảnh xuất hiện trước; cùng nến ưu tiên CISD, trừ khi chọn riêng MSS. Chúng không phụ thuộc checkbox hiển thị range HTF; tuổi line tính từ bucket xác nhận, reset khi model/revision đổi. Không vẽ đồng thời cả hai mức C và M. Khi entry đủ gate dùng C hoặc M, chỉ giữ mức khớp loại entry đó. Bật/tắt C/M không thay logic E hoặc alert và không quyết định có được hiện mức HTF hay không.
 
-Nhãn giá được giãn theo thứ tự giá với khoảng cách dựa dải giá các nến đang nhìn/cỡ chữ. Nếu chữ dịch khỏi mức giá, đường dẫn chấm nối về giá thật; các đường ngang và giá cấu trúc không dịch. Nhãn có nền chart để che nét phía sau, chữ IRL chuyển từ trong box sang cột nhãn. Không thể khẳng định không chồng lấn ở mọi mức zoom/scale vì Pine không cung cấp kích thước chữ hay thang giá pixel. Cần kiểm chứng trực tiếp bản này trên chart; các test Node chỉ kiểm tra công thức sắp xếp/neo/mức hữu hạn.
+Nhãn giá được giãn theo thứ tự giá với khoảng cách dựa dải giá các nến đang nhìn/cỡ chữ. Nếu chữ dịch khỏi mức giá, đường dẫn chấm nối về giá thật; các đường ngang và giá cấu trúc không dịch. Nhãn chữ có nền trong suốt, không có mảng trắng phía sau; chữ IRL chuyển từ trong box sang cột nhãn. Không thể khẳng định không chồng lấn ở mọi mức zoom/scale vì Pine không cung cấp kích thước chữ hay thang giá pixel. Cần kiểm chứng trực tiếp bản này trên chart; các test Node chỉ kiểm tra công thức sắp xếp/neo/mức hữu hạn.
 
 `Hide drawings without a recent signal` mặc định bật. `Drawing horizon / recency (HTF bars)` mặc định **3**, có thể chọn 2 hoặc giá trị khác từ 1–12. Dấu LTF quá tuổi này bị xóa. Model HTF mới xác nhận hoặc mới resolve trong cửa sổ này được coi là tín hiệu cấu trúc gần nhất trên cả HTF/LTF. Trên LTF chưa có C/M/E, các mức RH/RL/EQ/INV/CP/ERL và IRL lấy điểm bắt đầu tại nến LTF đầu tiên nhận model; nếu có dấu C/M/E của model hiện hành, dùng nến tín hiệu đó. Nhờ vậy tắt C/M không làm mất tổng quan HTF trước entry. Không có model/tín hiệu tương ứng còn gần thì không vẽ phần đó; không dựng ERL khi chưa có swing hợp lệ. Tuổi LTF tính theo bucket HTF thực đã đi qua, không theo số giờ nghỉ cuối tuần.
 
@@ -129,4 +129,23 @@ Thứ tự kiểm tra thực tế: thêm mới trên H1/HTF H1 → xác nhận #
 
 Nguồn kỹ thuật: [HTF requests](https://www.tradingview.com/pine-script-docs/concepts/other-timeframes-and-data/), [bar states](https://www.tradingview.com/pine-script-docs/concepts/bar-states/), [objects](https://www.tradingview.com/pine-script-docs/language/objects/). Các quy tắc chọn model/bias ở đây là đặc tả triển khai cá nhân, không phải cam kết xác suất hoặc một bộ luật duy nhất của ICT.
 
-Nhãn tín hiệu dùng ASCII để giảm phụ thuộc ký tự/font: entry `BUY C`/`SELL M`, xác nhận sơ bộ `B C/M`/`S C/M`. Mọi tam giác cùng quy tắc Buy xanh (lime), Sell đỏ, cỡ Tiny; loại tín hiệu phân biệt qua nội dung chữ và tooltip, không dùng màu cam/teal cho C/M. Nguồn giữ UTF-8 để tooltip tiếng Việt có đầy đủ dấu. Chưa xác nhận lỗi font trên chart thực tế; kiểm tra mã hóa không thấy ký tự thay thế hoặc ký tự zero-width.
+Nhãn tín hiệu dùng ASCII để giảm phụ thuộc ký tự/font: entry `BUY C`/`SELL M`, xác nhận sơ bộ `B C`/`S M`. Mọi tam giác cùng quy tắc Buy xanh (lime), Sell đỏ, cỡ Tiny; loại tín hiệu phân biệt qua nội dung chữ và tooltip, không dùng màu cam/teal cho C/M. Nguồn giữ UTF-8 để tooltip tiếng Việt có đầy đủ dấu. Chưa xác nhận lỗi font trên chart thực tế; kiểm tra mã hóa không thấy ký tự thay thế hoặc ký tự zero-width.
+
+## EGF: pha hồi IRL và pha đi tới ERL
+
+Kiểm tra cho bản sửa này: Node thực thi các công thức điều kiện theo fixture EGF tăng/giảm, chưa chạm/đang trong/vượt IRL, mục tiêu sai phía/thiếu mục tiêu, override không bỏ qua pha phản ứng, chọn một C/M và tag đúng mode. Đã thử Pine Editor tạm nhưng editor không nhận thao tác dán ở lần này; chưa có chẩn đoán cú pháp mới hoặc kiểm chứng chart/Replay cho thay đổi pha EGF. Các kết quả editor `success: true` nêu ở trên thuộc bản trước.
+
+EGF/OUT có hướng (không phải nhánh resolve bằng TS) chỉ tìm entry cùng hướng kịch bản sau phản ứng IRL:
+
+| Kịch bản | Điều kiện trước xác nhận/entry | Hướng và đích |
+| --- | --- | --- |
+| EGF tăng | Có bar LTF thật sự chạm vùng IRL được chọn, sau đó close trên biên trên IRL; CP cao hơn giá và vùng IRL | Buy tới ERL+/CP |
+| EGF giảm | Có bar LTF thật sự chạm IRL, sau đó close dưới biên dưới IRL; CP thấp hơn giá và vùng IRL | Sell tới ERL-/CP |
+
+Giá mới đi về phía IRL chưa phải entry. Giá đã ở xa IRL nhưng chưa quan sát được lần chạm sau kích hoạt model cũng không được suy ra là đã phản ứng. Nến chạm và đóng trở lại đúng phía trong cùng bar có thể hợp lệ; đây là dữ liệu OHLC đóng nến, không xác định thứ tự tick nội bộ. Không ép đảo hướng chỉ vì giá đang hồi hoặc bias ngược; bias vẫn là gate riêng. Thiếu IRL hoặc CP hợp lệ thì chờ.
+
+Nếu đã chạm rồi đóng vượt biên xa của vùng (Buy: dưới đáy IRL; Sell: trên đỉnh IRL), khóa lượt phản ứng IRL đó trên LTF. Chỉ reset khi vùng được chọn/model thay đổi. Đây là khóa entry LTF, không tự hủy registry HTF trước khi HTF đóng. Nếu ERL/CP đã bị lấy, không phát xác nhận mới để đuổi giá.
+
+MSS lấy lại pivot LTF đã biết tại lần chạm IRL. FVG/OB LTF cũ trước pha chạm được bỏ; FVG mới cần ba nến từ pha chạm trở đi và retest ở bar sau. Các mode CISD/MSS/FVG/OB/POC/Line chọn riêng vẫn phải qua điều kiện phản ứng IRL của EGF; chúng không cho phép bỏ qua pha này. Một E cho model/revision vẫn giữ nguyên, không tự tạo thêm lệnh khi đổi vùng. Panel S: IRL WAIT = chưa chạm; IRL = chờ đóng ra đúng phía; IRL X = vùng bị đóng xuyên trên LTF.
+
+CISD/MSS chung vai trò xác nhận trong quy trình, nhưng không đổi công thức thành cùng một phép đo: C là close vượt run-open đối hướng; M là close vượt pivot đã xác nhận. Chỉ một xác nhận sơ bộ cho mỗi lượt; nếu cả hai cùng bar thì ưu tiên C, trừ mode MSS. Nếu entry C/M đủ gate xuất hiện sau xác nhận sơ bộ, line hiện hành chuyển sang loại của entry và xóa loại còn lại. Confirmation chưa qua gate bias/R:R/time không phải lệnh thật. Không thêm ngưỡng displacement chưa được đặc tả/backtest.

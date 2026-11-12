@@ -154,7 +154,7 @@ assert.match(source,/if array.size\(models\) < queueLimit/);
 assert.match(source,/last_bar_time - int\(timeframe.in_seconds\(\) \* 1000\) \* scanDepth/);
 assert.match(source,/f_biasSnapshot\(true\)/);
 assert.match(source,/sKind == 3 and sPhase == 2 \? boundaryTouched/);
-assert.match(source,/irlTouched and \(cisd or mss or fvgRetest or obRetest\)/);
+assert.match(source,/egfPathReady and \(cisd or mss or fvgRetest or obRetest\)/);
 assert.match(source,/label.set_tooltip\(caption/);
 function biasEvent(before,now){
  const ctx={low:now.l,high:now.h,close:now.c,previous:{low:before.l,high:before.h,close:before.c,open:before.o}};
@@ -165,12 +165,38 @@ assert.equal(biasEvent(first,ts),1);
 assert.equal(biasEvent(first,bar(3,105,111,101,108)),-1);
 assert.equal(biasEvent(first,bar(3,106,112,102,111)),1);
 assert.equal(biasEvent(first,bar(3,104,111,99,105)),0,'Ambiguous outside is not an automatic directional bias');
-const autoCtx={sKind:1,sPhase:1,cisd:true,mss:false,fvgRetest:false,obRetest:false,irlTouched:false,boundaryTouched:false};
+const autoCtx={sKind:1,sPhase:1,cisd:true,mss:false,fvgRetest:false,obRetest:false,egfPathReady:false,boundaryTouched:false};
 assert.equal(evaluate('autoEntry',autoCtx),true);
 assert.equal(evaluate('autoEntry',{...autoCtx,sKind:2,sPhase:3}),false,'EGF needs its own IRL touch');
-assert.equal(evaluate('autoEntry',{...autoCtx,sKind:2,sPhase:3,irlTouched:true}),true);
+assert.equal(evaluate('autoEntry',{...autoCtx,sKind:2,sPhase:3,egfPathReady:true}),true);
 assert.equal(evaluate('autoEntry',{...autoCtx,sKind:3,sPhase:2}),false,'ISB breakout needs mother-boundary retest');
 assert.equal(evaluate('autoEntry',{...autoCtx,sKind:3,sPhase:2,boundaryTouched:true}),true);
+const isNa=x=>x==null||Number.isNaN(x);
+const egfBase={irlTouched:true,irlFailed:false,target:90,sIrlH:110,sIrlL:105,bullish:false,close:103,na:isNa};
+assert.equal(evaluate('egfPathReady',egfBase),true,'Bearish EGF reacts below supply IRL toward a lower ERL');
+assert.equal(evaluate('egfPathReady',{...egfBase,irlTouched:false}),false,'Never infer IRL visit from price merely being below it');
+assert.equal(evaluate('egfPathReady',{...egfBase,close:108}),false,'Still inside IRL, wait for rejection');
+assert.equal(evaluate('egfPathReady',{...egfBase,close:112}),false,'Retracement above supply is not a Sell reaction');
+assert.equal(evaluate('egfPathReady',{...egfBase,irlFailed:true}),false,'Broken IRL cannot reuse a previous touch');
+assert.equal(evaluate('egfPathReady',{...egfBase,target:120}),false,'Do not Sell toward an upside target');
+assert.equal(evaluate('egfPathReady',{...egfBase,target:null}),false,'No invented ERL target');
+assert.equal(evaluate('egfPathReady',{...egfBase,bullish:true,close:112,target:130}),true,'Bullish EGF reacts above demand IRL toward higher ERL');
+assert.equal(evaluate('egfPathReady',{...egfBase,bullish:true,close:112,target:90}),false);
+assert.equal(evaluate('selectedEntry',{rawEntry:true,egfScenario:true,egfPathReady:false}),false,'Manual LTF mode cannot bypass EGF IRL reaction');
+assert.equal(evaluate('selectedEntry',{rawEntry:true,egfScenario:false,egfPathReady:false}),true,'Other model entry modes keep their existing behavior');
+const cExpr=source.match(/cMark := (cisd and entryMode[^\n]+)/)[1];
+const mExpr=source.match(/mMark := (mss and not cMark[^\n]+)/)[1];
+for(const entryMode of ['Auto','CISD','MSS']){
+ const cMark=evaluateExpr(cExpr,{cisd:true,entryMode});
+ const mMark=evaluateExpr(mExpr,{mss:true,cMark,entryMode});
+ assert.notEqual(cMark,mMark,'A simultaneous C/M chooses exactly one confirmation');
+ assert.equal(mMark,entryMode==='MSS');
+}
+assert.match(source,/not cNoted and not mNoted/,'One preliminary confirmation per active reaction');
+for(const entryMode of ['MSS','CISD','FVG retest','OB retest','POC close','Line retest']){
+ const expected={'MSS':'M','CISD':'C','FVG retest':'F','OB retest':'O','POC close':'P','Line retest':'BL'}[entryMode];
+ assert.equal(evaluate('detectedTag',{entryMode,cisd:true,mss:true,fvgRetest:true}),expected,'Entry tag matches chosen mode, even if C/M overlap');
+}
 assert.match(source,/historyMarks = input.int\(1,/);
 assert.match(source,/recentOnly = input.bool\(true,/);
 assert.doesNotMatch(source,/extend=extend.right/,'No unbounded level projection');

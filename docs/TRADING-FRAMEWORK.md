@@ -28,6 +28,8 @@ Các lựa chọn timeframe trên web là khung làm việc thủ công, không 
 
 **TS và CISD/MSS khác vai trò:** TS xác nhận sự kiện quét/lấy lại mức trong kịch bản CRT HTF; CISD hoặc MSS là những cách xác nhận entry trên LTF. Không có TS đúng vị trí thì không gọi một tín hiệu CISD/MSS riêng lẻ là CRT đã hợp lệ. Không bắt buộc dùng đồng thời CISD và MSS; nếu chọn entry khác như POC/FVG/OB/line thì phải có điều kiện được định nghĩa trước. Việc thêm TS chưa chứng minh tỷ lệ thắng cao hơn; cần kiểm chứng trên sản phẩm, timeframe và mẫu giao dịch cụ thể.
 
+Trong chỉ báo cá nhân, CISD/MSS chung vai trò xác nhận đổi hướng theo hai hình thái: vượt run-open đối hướng hoặc vượt pivot đã xác nhận. Một lượt chỉ hiển thị một xác nhận; cùng bar ưu tiên CISD, trừ khi chọn riêng MSS. EGF có hướng tìm phản ứng tại IRL để đi về ERL tương ứng, không phát xác nhận chỉ vì xuất hiện C/M ở ngoài pha chờ: tăng chạm IRL rồi đóng lên khỏi vùng để tìm Buy tới ERL+, giảm chạm IRL rồi đóng xuống khỏi vùng để tìm Sell tới ERL−. Hướng này là kịch bản có điều kiện, không phải bảo đảm đường đi giá. Các đặc tả thực thi xem [Auto Models](INDICATOR-AUTO-MODELS.md).
+
 Xem [chỉ báo Auto HTF và đặc tả hiệu lực/bias/entry](INDICATOR-AUTO-MODELS.md), nguồn `indicators/funded-angler-v6.pine`. Chỉ báo tự nhận diện từ giá; checklist web vẫn là ghi nhận thủ công, không tự nhận feed hoặc tín hiệu từ TradingView.
 
 Đây là ghi nhận của người dùng. Web không có feed OHLC/volume để tự kiểm chứng; tick sai thứ tự không tự hoàn thành bước còn thiếu. “Đã ghi nhận vào lệnh” không có nghĩa web gửi lệnh.
