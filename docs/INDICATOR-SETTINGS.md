@@ -64,14 +64,14 @@ Tên dưới đây khớp tên trong Inputs; di chuột vào biểu tượng tr�
 | CP override | 0 dùng CP model; nhập đích cá nhân khi cần. CRTH/CRTL có vai trò tùy bias/kịch bản, không cố định thành TP. |
 | Minimum planned R:R | Tính tại close nến entry với SL/CP tham chiếu. Không phải R nhận thực tế. |
 | Retest tolerance | Dung sai tick cho BL/biên mother, không mở rộng mọi vùng FVG/OB. |
-| C / M confirmation marks | Tham khảo sơ bộ; mặc định tắt. Khi bật: tam giác dưới nến tăng/trên nến giảm, chữ C/M rời theo màu nền chart; C và M cùng nến gộp C/M, entry cùng nến được ưu tiên. Chúng cũng chiếm giới hạn latest marks. |
+| C / M confirmation marks | Tham khảo sơ bộ theo hướng model, mặc định tắt. B?·C/M dưới nến = phía Buy chưa đủ gate; S?·C/M trên nến = phía Sell chưa đủ gate. Tam giác Tiny neo trực tiếp theo nến, không theo màu thân. Entry cùng nến được ưu tiên. Chúng cũng chiếm giới hạn latest marks. |
 | Time filter for E | Context only không chặn giờ; Web macros/working windows chỉ cho E trong cửa sổ tương ứng web, dùng giờ New York có DST. |
 | Macro background | Chỉ tô nền context. |
 | QT clock context | Đồng hồ quý intraday; không quyết định bias. |
 | Actual TDO / session TO prices | Plot giá mở đúng mốc nếu có dữ liệu; có lịch sử riêng, mặc định tắt. |
 | Model HTF candle cluster | C1/C2/C3 của model ưu tiên, không nhất thiết là ba nến mới nhất. |
 | Additional live HTF candle | N* live bổ sung khi C3 đã cố định; preview thiếu đầu bucket không hiển thị. |
-| Cluster offset / body width | Offset yêu cầu 15 bar / thân 6 bar mặc định. Khi có line, cụm tự lùi tối thiểu để dành khoảng cho chú thích bên phải line theo cỡ chữ. Nếu zoom ngang quá nhỏ, tăng offset hoặc giãn chart để đủ chỗ chữ theo pixel. Râu nến rộng 2 px. Không đổi OHLC. |
+| Cluster offset / body width | Offset yêu cầu 15 bar / thân 6 bar mặc định. Khi có line, cụm tự lùi tối thiểu để dành khoảng cho chú thích bên phải line theo cỡ chữ. Nếu zoom ngang quá nhỏ, tăng offset hoặc giãn chart để đủ chỗ chữ theo pixel. Râu nến solid mảnh 1 px, đồng màu; độ rộng thân lẻ làm tròn xuống số chẵn để râu đúng tâm. Không đổi OHLC. |
 | Model range / ERL / CP | Các mức cấu trúc; trên LTF bắt đầu từ nến xác nhận điều kiện. Nhãn bên phải line; các mức trùng giá gộp nhãn thay vì viết chồng. |
 | Two newer active ranges | Hai model phụ trên HTF, mặc định tắt; không đổi thứ tự registry. |
 | Compact panel | Dashboard góc trên phải; kích thước tự theo chữ/nội dung. |

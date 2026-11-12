@@ -35,7 +35,7 @@ manualInvalid = input.price(0.0, "Execution SL (0 = HTF INV)", group=G_ENTRY, to
 manualTarget = input.price(0.0, "CP override (0 = model CP)", group=G_ENTRY, tooltip="0 dùng CP của model. Nếu chưa có CP đúng theo kế hoạch, có thể nhập đích cụ thể. Không tự coi CRTH luôn là TP hoặc CRTL luôn là TP.")
 minRR = input.float(2.0, "Minimum planned R:R", minval=0.5, maxval=20, step=0.25, group=G_ENTRY, tooltip="Gate R:R dự kiến tại close nến tín hiệu, mặc định 2. Không phải mức chốt một phần và không đảm bảo R thực nhận.")
 retestTicks = input.int(1, "Retest tolerance (ticks)", minval=0, maxval=20, group=G_ENTRY, tooltip="Dung sai cho chạm BL/biên mother, tính theo tick. Không phải độ dày tùy ý cho toàn bộ vùng FVG/OB.")
-showConfirm = input.bool(false, "C / M confirmation marks", group=G_ENTRY, tooltip="Dấu C=CISD, M=MSS tham khảo, chưa qua đầy đủ gate entry. Mặc định tắt để ưu tiên tam giác Buy/Sell; nếu bật sẽ cùng dùng giới hạn lịch sử dấu.")
+showConfirm = input.bool(false, "C / M confirmation marks", group=G_ENTRY, tooltip="Xác nhận sơ bộ theo hướng model HTF: B? là phía Buy, S? là phía Sell; C=CISD, M=MSS. Dấu ? chưa qua đầy đủ gate entry, kể cả bias/R:R/time. Bật để kiểm tra logic; mặc định tắt nếu chỉ muốn thấy entry đủ điều kiện.")
 timeGate = input.string("Context only", "Time filter for E", options=["Context only", "Web macros", "Web working windows"], group=G_TIME, tooltip="Context only chỉ quan sát giờ. Web macros/working windows chặn E ngoài cửa sổ tương ứng của web theo America/New_York, có DST.")
 showTimeBg = input.bool(false, "Macro background", group=G_TIME, tooltip="Tô nền các macro để quan sát; không tự tạo tín hiệu hay thay bias.")
 showQt = input.bool(true, "QT clock context", group=G_TIME, tooltip="Hiện đồng hồ quý intraday trong panel. QT chỉ là bối cảnh thời gian, không tự suy ra hướng lệnh.")
@@ -43,7 +43,7 @@ showTrueOpens = input.bool(false, "Actual TDO / session TO prices", group=G_TIME
 showCluster = input.bool(true, "Model HTF candle cluster", group=G_VIEW, tooltip="Cụm HTF của model ưu tiên, không nhất thiết là các nến mới nhất. C1/C2/C3 là nến nguồn, N* là live.")
 clusterLive = input.bool(true, "Additional live HTF candle", group=G_VIEW, tooltip="Thêm N* khi C3 của model đã cố định. Live cần dữ liệu từ đầu bucket HTF để không vẽ nến thiếu đầu.")
 clusterOffset = input.int(15, "Cluster offset (bars)", minval=3, maxval=80, group=G_VIEW, tooltip="Khoảng cách từ bar chart cuối đến cụm HTF, theo số bar chart. Mặc định 15; chữ lớn có thể tăng 20-25 để thoáng hơn.")
-clusterWidth = input.int(6, "Cluster body width (bars)", minval=2, maxval=16, group=G_VIEW, tooltip="Độ rộng thân nến HTF chiếu bên phải, theo số bar chart. Mặc định 6; không ảnh hưởng OHLC.")
+clusterWidth = input.int(6, "Cluster body width (bars)", minval=2, maxval=16, group=G_VIEW, tooltip="Độ rộng thân nến HTF, mặc định 6 bar. Số lẻ được làm tròn xuống số chẵn để râu luôn đúng tâm thân. Không ảnh hưởng OHLC; râu đồng bộ line mảnh 1 px.")
 showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW, tooltip="Hiện range, EQ, INV, CP và ERL của model. Trên LTF chỉ xuất hiện từ nến xác nhận điều kiện của model đang xét.")
 showSecondary = input.bool(false, "Two newer active ranges (faint)", group=G_VIEW, tooltip="Thêm range hai model mới hơn trên chart HTF. Mặc định tắt; model cũ còn hiệu lực vẫn được ưu tiên trong registry.")
 showPanel = input.bool(true, "Compact panel", group=G_VIEW, tooltip="Bảng tổng quan cố định góc trên phải. TF=khung, #1=model ưu tiên, B=bias, IRL=vùng, T=thời gian, S=trạng thái.")
@@ -607,7 +607,6 @@ var array<int> renderedPriorities = array.new<int>(13, 0)
 var array<label> eventLabels = array.new<label>()
 var array<label> eventTexts = array.new<label>()
 var array<int> eventBuckets = array.new<int>()
-float markerGap = math.max(nz(ta.atr(14), high - low) * 0.18, syminfo.mintick * 5)
 var array<box> clusterBodies = array.new<box>()
 var array<line> clusterWicks = array.new<line>()
 var array<label> clusterLabels = array.new<label>()
@@ -620,7 +619,7 @@ if barstate.isfirst
         array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_left, textalign=text.align_left, size=chartFont, color=color.new(color.black, 100)))
     for i = 0 to 3
         array.push(clusterBodies, box.new(bar_index, high, bar_index, low, force_overlay=true, bgcolor=color.new(color.gray, 100), border_color=color.new(color.gray, 100)))
-        array.push(clusterWicks, line.new(bar_index, high, bar_index, low, width=2, force_overlay=true, color=color.new(color.gray, 100)))
+        array.push(clusterWicks, line.new(bar_index, high, bar_index, low, width=1, style=line.style_solid, force_overlay=true, color=color.new(color.gray, 100)))
         array.push(clusterLabels, label.new(bar_index, low, "", force_overlay=true, style=label.style_none, textcolor=color.silver, size=chartFont))
 f_tag(int flags, int kind, int phase) =>
     string base = kind == 1 ? "CRT" : kind == 3 ? "ISB" : f_has(flags, 2) ? "EGF" : "OUT"
@@ -658,13 +657,13 @@ f_level(int slot, float price, string caption, color shade, bool visible) =>
             array.set(renderedPriorities, owner, f_levelPriority(slot))
             line.set_color(array.get(levelLines, owner), shade)
             label.set_textcolor(ownerLabel, shade)
-f_note(string noteText, float price, color shade, bool up, bool qualified = false) =>
-    float markerY = up ? price - markerGap : price + markerGap
-    float captionY = up ? markerY - markerGap * 2 : markerY + markerGap * 2
+f_note(string noteText, color shade, bool up, bool qualified = false) =>
+    string markerLocation = up ? yloc.belowbar : yloc.abovebar
+    string captionText = up ? "\n\n" + noteText : noteText + "\n\n"
     string hint = (qualified ? (up ? "Buy entry / " : "Sell entry / ") + signalTag : (up ? "Bullish confirmation / " : "Bearish confirmation / ") + noteText + " (not entry)")
     if historyMarks > 0
-        array.push(eventLabels, label.new(bar_index, markerY, "", xloc=xloc.bar_index, yloc=yloc.price, style=up ? label.style_triangleup : label.style_triangledown, color=shade, size=size.small, force_overlay=true, tooltip=hint))
-        array.push(eventTexts, label.new(bar_index, captionY, noteText, xloc=xloc.bar_index, yloc=yloc.price, style=up ? label.style_label_up : label.style_label_down, color=color.new(color.black, 100), textcolor=chart.fg_color, size=chartFont, force_overlay=true, tooltip=hint))
+        array.push(eventLabels, label.new(bar_index, na, "", xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_triangleup : label.style_triangledown, color=shade, size=size.tiny, force_overlay=true, tooltip=hint))
+        array.push(eventTexts, label.new(bar_index, na, captionText, xloc=xloc.bar_index, yloc=markerLocation, style=label.style_none, textalign=text.align_center, textcolor=chart.fg_color, size=chartFont, force_overlay=true, tooltip=hint))
         array.push(eventBuckets, bucketCounter)
     while array.size(eventLabels) > historyMarks
         label.delete(array.shift(eventLabels))
@@ -672,9 +671,9 @@ f_note(string noteText, float price, color shade, bool up, bool qualified = fals
         array.shift(eventBuckets)
 
 if entryEvent and showEntryTriangles
-    f_note((entryLong ? "B" : "S") + "·" + signalTag, entryLong ? low : high, entryLong ? color.lime : color.red, entryLong, true)
+    f_note((entryLong ? "B" : "S") + "·" + signalTag, entryLong ? color.lime : color.red, entryLong, true)
 else if cMark or mMark
-    f_note(cMark and mMark ? "C/M" : cMark ? "C" : "M", sDir == 1 ? low : high, cMark ? color.teal : color.orange, sDir == 1)
+    f_note((sDir == 1 ? "B?·" : "S?·") + (cMark and mMark ? "C/M" : cMark ? "C" : "M"), sDir == 1 ? color.teal : color.orange, sDir == 1)
 
 if recentOnly and barstate.islast
     int markIndex = array.size(eventLabels) - 1
@@ -739,21 +738,23 @@ if barstate.islast
             h := array.get(candleHighs, cached)
             l := array.get(candleLows, cached)
             c := array.get(candleCloses, cached)
-        int left = clusterStartIndex + i * (clusterWidth + 2)
-        int middle = left + int(math.floor(clusterWidth / 2))
+        int candleWidth = clusterWidth - clusterWidth % 2
+        int left = clusterStartIndex + i * (candleWidth + 2)
+        int middle = left + int(candleWidth / 2)
         color shade = c >= o ? color.teal : color.new(#161b22, 0)
         box body = array.get(clusterBodies, i)
         line wick = array.get(clusterWicks, i)
         label caption = array.get(clusterLabels, i)
         if visible
             box.set_lefttop(body, left, math.max(o, c))
-            box.set_rightbottom(body, left + clusterWidth, math.min(o, c))
+            box.set_rightbottom(body, left + candleWidth, math.min(o, c))
             line.set_xy1(wick, middle, h)
             line.set_xy2(wick, middle, l)
             label.set_xy(caption, middle, labelY)
         box.set_bgcolor(body, color.new(shade, visible ? 0 : 100))
         box.set_border_color(body, visible ? (c >= o ? color.teal : color.silver) : color.new(color.gray, 100))
-        line.set_color(wick, visible ? (c >= o ? color.teal : color.silver) : color.new(color.gray, 100))
+        line.set_width(wick, 1)
+        line.set_color(wick, color.new(chart.fg_color, visible ? 25 : 100))
         label.set_text(caption, visible ? (i == 0 ? "C1" : i == 1 ? "C2" : i == 2 and thirdFrozen ? (sKind == 3 and sPhase == 1 ? "TS" : sPhase == 2 ? "BR" : "C3") : "N*") : "")
         label.set_tooltip(caption, visible ? str.format_time(sourceTime, "dd/MM HH:mm", NY) + " | O " + str.tostring(o, format.mintick) + " H " + str.tostring(h, format.mintick) + " L " + str.tostring(l, format.mintick) + " C " + str.tostring(c, format.mintick) + (cached >= 0 or sourceTime == liveT ? " / chart OHLC" : " / confirmed HTF") : "")
     int remaining = not na(liveEnd) ? math.max(0, int((liveEnd - timenow) / 1000)) : 0

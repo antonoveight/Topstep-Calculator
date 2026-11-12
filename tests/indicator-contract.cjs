@@ -181,11 +181,15 @@ assert.match(source,/line.set_xy1\(ln, drawAnchorIndex, price\)/);
 assert.match(source,/box.set_lefttop\(irlBox, drawAnchorIndex, sIrlH\)/);
 assert.match(source,/liveComplete := time == bucketTime/,'Never invent first incomplete bucket open');
 assert.match(source,/array.indexof\(candleTimes, sourceTime\)/,'Cluster cache must match exact source candle');
-// Check the actual price-coordinate expressions on both sides of a candle.
-for(const up of [true,false])for(const price of [0.005,100,3904.715,20200])for(const markerGap of [0.0001,0.5,10]){
- const markerY=evaluate('markerY',{up,price,markerGap});
- const captionY=evaluate('captionY',{up,markerY,markerGap});
- assert.ok(up ? captionY<markerY && markerY<price : captionY>markerY && markerY>price,'Marker and caption stay outside the appropriate candle extreme');
+// Native candle-relative placement must not depend on ATR or price-scale offsets.
+for(const up of [true,false]){
+ const yloc={belowbar:'belowbar',abovebar:'abovebar'};
+ assert.equal(evaluate('markerLocation',{up,yloc}),up?'belowbar':'abovebar');
+}
+for(const clusterWidth of [2,3,6,7,15,16]){
+ const candleWidth=evaluate('candleWidth',{clusterWidth});
+ const left=100,middle=evaluate('middle',{left,candleWidth,int:Math.trunc});
+ assert.equal(middle,(left+left+candleWidth)/2,'Wick is centered on body, including odd requested widths');
 }
 const na=x=>x==null||Number.isNaN(x),int=Math.trunc;
 for(const htfSeconds of [3600,7200,14400,86400])for(const chartSeconds of [60,180,300,htfSeconds])for(const drawHtfBars of [2,3])for(const offset of [3,15,80]){
