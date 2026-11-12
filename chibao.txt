@@ -1,6 +1,6 @@
 // Mozilla Public License 2.0: https://mozilla.org/MPL/2.0/
 // The Funded Angler - automatic, confirmed HTF model registry.
-// Prior version passed editor diagnostics; latest EGF reaction / confirmation changes need chart validation.
+// Latest context/source-anchor refactor still requires Pine Editor and chart validation.
 // See docs/INDICATOR-AUTO-MODELS.md for exact lifecycle, priority and validation limits.
 //@version=6
 indicator("The Funded Angler v6 - Auto HTF", shorttitle="TFA v6", overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=120, max_boxes_count=30, max_labels_count=300)
@@ -13,44 +13,44 @@ const string G_ENTRY = "3. LTF"
 const string G_TIME = "4. Time"
 const string G_VIEW = "5. Display"
 htf = input.timeframe("60", "HTF", options=["60", "120", "240", "1D"], group=G_HTF, tooltip="Khung xác định CRT/TS, Engulfing/Outside hoặc Inside Bar. Bắt đầu H1 (60), dùng H2 nếu đó là khung bạn đọc cấu trúc. Chart LTF chỉ tìm entry.")
-minSweepTicks = input.int(1, "TS penetration (ticks)", minval=1, group=G_HTF, tooltip="Độ xuyên tối thiểu qua mức sweep, tính theo tick của symbol. 1 tick chỉ là ngưỡng nhận diện, không đảm bảo chất lượng TS.")
-scanDepth = input.int(1000, "Recovery window (HTF calendar intervals)", minval=100, maxval=2500, group=G_HTF, tooltip="Cửa sổ khôi phục registry theo khoảng lịch HTF, không phải số dấu hiển thị. Giữ 1000; HIST nghĩa là chart chưa tải đủ lịch sử.")
-queueLimit = input.int(12, "Active models maximum", minval=3, maxval=16, group=G_HTF, tooltip="Số model còn hiệu lực lưu tối đa. Giữ 12; model cũ còn hiệu lực được ưu tiên, không chọn model mới chỉ vì vừa xuất hiện.")
-lifeHtf = input.int(0, "Model expiry (HTF bars; 0 = no expiry)", minval=0, maxval=500, group=G_HTF, tooltip="0 giữ model tới khi điều kiện cấu trúc kết thúc. Khác với giới hạn 3 nến chỉ dành cho hiển thị.")
-invalidMode = input.string("Close", "Invalidation", options=["Close", "Wick"], group=G_HTF, tooltip="Close: HTF đóng vượt INV mới hủy cấu trúc. Wick: chỉ cần râu vượt INV. Không phải chế độ mô phỏng SL của lệnh thật.")
-htfPivotLength = input.int(2, "HTF swing confirmation L/R", minval=1, maxval=10, group=G_HTF, tooltip="Pivot HTF cần số nến trái/phải này để xác nhận ERL. 2 nghĩa là biết swing sau hai nến bên phải; không phát tín hiệu ngược về quá khứ.")
-allowOb = input.bool(true, "Show mechanical OB candidates", group=G_HTF, tooltip="Cho phép vùng OB candidate cơ học khi không có FVG phù hợp. OB? là vùng tham khảo cần tự kiểm tra, không phải xác nhận chất lượng.")
-tsReference = input.string("C1 range", "CRT TS reference", options=["C1 range", "Marked HTF levels"], group=G_HTF, tooltip="C1 range dùng biên C1 cho Turtle Soup. Marked HTF levels dùng SSL/BSL nhập bên dưới; chỉ chọn khi thực sự có mức tham chiếu riêng.")
-manualSsl = input.price(0.0, "Optional SSL", group=G_HTF, tooltip="Giá SSL do bạn đánh dấu. 0 không có mức nhập tay. Chỉ tham gia TS khi chọn Marked HTF levels.")
-manualBsl = input.price(0.0, "Optional BSL", group=G_HTF, tooltip="Giá BSL do bạn đánh dấu. 0 không có mức nhập tay. Chỉ tham gia TS khi chọn Marked HTF levels.")
+minSweepTicks = 1
+scanDepth = 1000
+queueLimit = 12
+lifeHtf = 0
+invalidMode = "Close"
+htfPivotLength = 2
+allowOb = true
+tsReference = "C1 range"
+manualSsl = 0.0
+manualBsl = 0.0
 biasTf = input.timeframe("1D", "Bias TF (>= HTF)", options=["60", "120", "240", "1D", "1W"], group=G_BIAS, tooltip="Khung tham chiếu bias riêng, phải >= HTF. D1 là cấu hình khởi đầu; không đồng nghĩa bias cá nhân đọc từ FRVP/day high-low.")
-biasLife = input.int(3, "Bias persistence (reference bars)", minval=1, maxval=20, group=G_BIAS, tooltip="Giữ bias khi chưa có sự kiện cấu trúc mới tối đa số nến tham chiếu này, rồi về neutral. Mặc định 3 nến D1.")
+biasLife = 3
 biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutral"], group=G_BIAS, tooltip="Auto dùng quy tắc cấu trúc của script. Long/Short/Neutral là ý kiến chủ động của bạn; reset khi bối cảnh thay đổi.")
-filterBias = input.bool(true, "Require bias alignment for E", group=G_BIAS, tooltip="Bật: entry E cần bias cùng hướng. Auto neutral hoặc ngược hướng sẽ không có tam giác dù model HTF vẫn hợp lệ.")
-entryMode = input.string("Auto", "LTF condition", options=["Auto", "CISD", "MSS", "FVG retest", "OB retest", "POC close", "Line close", "Line touch", "Line retest"], group=G_ENTRY, tooltip="Auto dùng điều kiện tương ứng model. Với EGF, mọi mode đều chờ chạm IRL và đóng trở lại phía ERL; chọn riêng CISD/MSS/POC/Line không bỏ qua pha phản ứng này. Vẫn cần R:R, SL/CP, bias và time nếu bật. Xem docs/INDICATOR-SETTINGS.md.")
-pivotLength = input.int(2, "LTF pivot confirmation L/R", minval=1, maxval=10, group=G_ENTRY, tooltip="Pivot cần số nến trái/phải này, mặc định 2. MSS dùng pivot đã biết lúc kích hoạt model; riêng EGF lấy lại pivot đã xác nhận tại lần chạm IRL. Không lùi tín hiệu về bar pivot quá khứ.")
-manualPoc = input.price(0.0, "FRVP POC (manual, optional)", group=G_ENTRY, tooltip="Nhập POC thực từ FRVP khi chọn POC close. Script không tự tính FRVP/POC từ chart; 0 là chưa nhập.")
-manualLine = input.price(0.0, "BL (manual, optional)", group=G_ENTRY, tooltip="Nhập giá line khi chọn Line close/touch/retest. Close: đóng cắt mức; touch: chạm và đóng đúng phía; retest: đã break rồi quay lại ở nến sau.")
-manualInvalid = input.price(0.0, "Execution SL (0 = HTF INV)", group=G_ENTRY, tooltip="0 dùng INV HTF để tính R:R. Nhập SL cấu trúc entry của bạn nếu khác. Không thay INV của registry HTF.")
-manualTarget = input.price(0.0, "CP override (0 = model CP)", group=G_ENTRY, tooltip="0 dùng CP của model. Nếu chưa có CP đúng theo kế hoạch, có thể nhập đích cụ thể. Không tự coi CRTH luôn là TP hoặc CRTL luôn là TP.")
-minRR = input.float(2.0, "Minimum planned R:R", minval=0.5, maxval=20, step=0.25, group=G_ENTRY, tooltip="Gate R:R dự kiến tại close nến tín hiệu, mặc định 2. Không phải mức chốt một phần và không đảm bảo R thực nhận.")
-retestTicks = input.int(1, "Retest tolerance (ticks)", minval=0, maxval=20, group=G_ENTRY, tooltip="Dung sai cho chạm BL/biên mother, tính theo tick. Không phải độ dày tùy ý cho toàn bộ vùng FVG/OB.")
-showConfirm = input.bool(false, "C / M confirmation marks", group=G_ENTRY, tooltip="Bật: chọn một xác nhận C hoặc M cho mỗi lượt bối cảnh hợp lệ, vẽ tam giác và một line. Cùng bar ưu tiên C, trừ mode MSS. EGF phải có phản ứng IRL hướng ERL trước khi đánh dấu. B/S là sơ bộ; BUY/SELL là entry đủ gate. Xanh Buy, đỏ Sell. Tắt không đổi logic entry/alert.")
+filterBias = true
+entryMode = input.string("Auto", "LTF condition", options=["Auto", "CISD", "MSS", "FVG retest", "OB retest"], group=G_ENTRY, tooltip="Điều kiện phát tam giác hướng đi, không phải giá entry cố định. EGF chờ chạm IRL rồi xác nhận LTF về phía ERL theo bias; mọi mode đều qua gate này. FVG/OB chỉ lọc nội bộ, không vẽ vùng. Không áp min R:R tại close tín hiệu vì bạn tự chọn entry thực tế.")
+pivotLength = 2
+manualPoc = 0.0
+manualLine = 0.0
+manualInvalid = 0.0
+manualTarget = 0.0
+minRR = 0.0
+retestTicks = 1
+showConfirm = false
 timeGate = input.string("Context only", "Time filter for E", options=["Context only", "Web macros", "Web working windows"], group=G_TIME, tooltip="Context only chỉ quan sát giờ. Web macros/working windows chặn E ngoài cửa sổ tương ứng của web theo America/New_York, có DST.")
 showTimeBg = input.bool(false, "Macro background", group=G_TIME, tooltip="Tô nền các macro để quan sát; không tự tạo tín hiệu hay thay bias.")
 showQt = input.bool(true, "QT clock context", group=G_TIME, tooltip="Hiện đồng hồ quý intraday trong panel. QT chỉ là bối cảnh thời gian, không tự suy ra hướng lệnh.")
-showTrueOpens = input.bool(false, "Actual TDO / session TO prices", group=G_TIME, tooltip="Hiện TDO/TO khi có bar mở đúng mốc. Đây là plot bối cảnh riêng có lịch sử; tắt để chart gọn.")
+showTrueOpens = false
 showCluster = input.bool(true, "Model HTF candle cluster", group=G_VIEW, tooltip="Cụm HTF của model ưu tiên, không nhất thiết là các nến mới nhất. C1/C2/C3 là nến nguồn, N* là live.")
-clusterLive = input.bool(true, "Additional live HTF candle", group=G_VIEW, tooltip="Thêm N* khi C3 của model đã cố định. Live cần dữ liệu từ đầu bucket HTF để không vẽ nến thiếu đầu.")
-clusterOffset = input.int(15, "Cluster offset (bars)", minval=3, maxval=80, group=G_VIEW, tooltip="Khoảng cách từ bar chart cuối đến cụm HTF, theo số bar chart. Mặc định 15; chữ lớn có thể tăng 20-25 để thoáng hơn.")
-clusterWidth = input.int(6, "Cluster body width (bars)", minval=2, maxval=16, group=G_VIEW, tooltip="Độ rộng thân nến HTF, mặc định 6 bar. Số lẻ được làm tròn xuống số chẵn để râu luôn đúng tâm thân. Không ảnh hưởng OHLC; râu đồng bộ line mảnh 1 px.")
-showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW, tooltip="Hiện RH/RL/EQ/INV/CP/ERL của model HTF đã xác nhận, kể cả chưa có C/M hoặc entry. Trên LTF bắt đầu từ nến nhận model; nếu có tín hiệu gần nhất thì dùng nến tín hiệu. Không phụ thuộc checkbox C/M. ERL thiếu swing hợp lệ vẫn để trống.")
-showSecondary = input.bool(false, "Two newer active ranges (faint)", group=G_VIEW, tooltip="Thêm range hai model mới hơn trên chart HTF. Mặc định tắt; model cũ còn hiệu lực vẫn được ưu tiên trong registry.")
+clusterLive = true
+clusterOffset = input.int(30, "Cluster offset (bars)", minval=3, maxval=80, group=G_VIEW, tooltip="Khoảng cách từ bar chart cuối đến cụm HTF, theo số bar chart. Mặc định 30 bar để cách xa cột chú thích.")
+clusterWidth = input.int(4, "Cluster body width (bars)", minval=2, maxval=16, group=G_VIEW, tooltip="Độ rộng thân nến HTF, mặc định 4 bar. Số lẻ được làm tròn xuống số chẵn để râu luôn đúng tâm thân. Không ảnh hưởng OHLC; râu đồng bộ line mảnh 1 px.")
+showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW, tooltip="Các mức nối từ nến tạo cực trị/swing tương ứng, không từ nến tín hiệu. EQ 50% dùng neo tổng quan. Nếu nguồn không có trong dữ liệu chart hoặc chưa có ERL hợp lệ thì không ghim giả. Tắt chỉ ẩn line, không đổi tín hiệu.")
+showSecondary = false
 showPanel = input.bool(true, "Compact panel", group=G_VIEW, tooltip="Bảng tổng quan cố định góc trên phải. TF=khung, #1=model ưu tiên, B=bias, IRL=vùng, T=thời gian, S=trạng thái.")
-historyMarks = input.int(1, "Signal history: latest marks (0 = hide)", minval=0, maxval=100, group=G_VIEW, tooltip="Mặc định giữ 1 dấu gần nhất. 0 ẩn dấu, tối đa 100; dấu cũ xóa trước. C/M nếu bật cũng tính vào giới hạn này. Không đổi nhận diện hoặc alert.")
+historyMarks = input.int(1, "Signal history: latest marks (0 = hide)", minval=0, maxval=100, group=G_VIEW, tooltip="Mặc định giữ 1 tam giác hướng đi gần nhất. 0 ẩn dấu, tối đa 100; dấu cũ xóa trước. Không đổi nhận diện hoặc alert.")
 recentOnly = input.bool(true, "Hide drawings without a recent signal", group=G_VIEW, tooltip="Ẩn phần vẽ quá cửa sổ gần nhất. Cụm HTF gần đây có thể hiện trước entry LTF để xem tổng quan; không có nghĩa đã có lệnh.")
-drawHtfBars = input.int(3, "Drawing horizon / recency (HTF bars)", minval=1, maxval=12, group=G_VIEW, tooltip="Vừa giới hạn chiều dài đường/vùng, vừa giới hạn tuổi dấu khi bật chế độ gần nhất. Mặc định 3; có thể dùng 2 để gọn. Không hủy hiệu lực model.")
-showEntryTriangles = input.bool(true, "Buy / Sell triangles", group=G_VIEW, tooltip="Tam giác B xanh hướng lên / S đỏ hướng xuống tại bar LTF đã đóng, chỉ sau khi đủ gate entry. Không phải lệnh được thực thi.")
+drawHtfBars = input.int(3, "Drawing horizon / recency (HTF bars)", minval=1, maxval=12, group=G_VIEW, tooltip="Giới hạn phần chiếu về trước và tuổi hình, mặc định 3 HTF. Đầu line vẫn nối về swing nguồn cũ. Không hủy hiệu lực model.")
+showEntryTriangles = true
 chartTextSize = input.string("Normal", "Chart text size", options=["Small", "Normal", "Large", "Huge"], group=G_VIEW, tooltip="Normal tăng hai mức so với Tiny trước đây. Áp dụng cho nhãn mức giá, vùng IRL, caption HTF và đồng hồ; không đổi tọa độ giá.")
 dashboardTextSize = input.string("Small", "Dashboard text size", options=["Small", "Normal", "Large"], group=G_VIEW, tooltip="Small lớn hơn một mức so với dashboard cũ. Chọn Normal khi chia đôi màn hình hoặc live.")
 string chartFont = chartTextSize == "Small" ? size.small : chartTextSize == "Large" ? size.large : chartTextSize == "Huge" ? size.huge : size.normal
@@ -88,6 +88,24 @@ f_patterns(float c1o, float c1h, float c1l, float c1c, float c2o, float c2h, flo
     bool engulfBear = c2c < c2o and c1c > c1o and bodyCovers
     [tsBull, tsBear, outsideBar, insideBar, engulfBull, engulfBear]
 
+f_biasCore() =>
+    var int direction = 0
+    var int age = 0
+    bool lowTaken = low < low[1]
+    bool highTaken = high > high[1]
+    bool inPrior = close > low[1] and close < high[1]
+    int nextDir = lowTaken and not highTaken and inPrior ? 1 : highTaken and not lowTaken and inPrior ? -1 : close > high[1] ? 1 : close < low[1] ? -1 : 0
+    age += 1
+    if nextDir != 0
+        direction := nextDir
+        age := 0
+    else if (lowTaken and highTaken and inPrior) or age >= biasLife
+        direction := 0
+    [direction, age]
+f_biasSnapshot(bool previous) =>
+    [direction, age] = f_biasCore()
+    [previous ? direction[1] : direction, previous ? age[1] : age]
+
 // All registry decisions execute IN the selected HTF, never from chart/LTF bars.
 type Model
     int uid = na
@@ -105,6 +123,12 @@ type Model
     float cp = na
     float erlU = na
     float erlL = na
+    int hiT = na
+    int loT = na
+    int invT = na
+    int cpT = na
+    int erlUT = na
+    int erlLT = na
     float irlH = na
     float irlL = na
     int irlT = na
@@ -137,6 +161,9 @@ type Liquidity
     int born = na
 
 f_engine() =>
+    [localBias, localBiasAge] = f_biasCore()
+    [higherBias, higherBiasAge] = request.security(syminfo.tickerid, biasTf, f_biasSnapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+    int contextBias = biasMode == "Auto" ? (biasTf == htf ? localBias : nz(higherBias)) : biasMode == "Long" ? 1 : biasMode == "Short" ? -1 : 0
     var array<Model> models = array.new<Model>()
     var array<Zone> zones = array.new<Zone>()
     var array<Liquidity> swings = array.new<Liquidity>()
@@ -184,12 +211,26 @@ f_engine() =>
     int mi = array.size(models) - 1
     while mi >= 0
         Model m = array.get(models, mi)
-        if na(m.cT) and time > m.bT and m.dir != 0
+        if na(m.cT) and time > m.bT and (m.dir != 0 or m.kind == 2)
             m.cO := open
             m.cH := high
             m.cL := low
             m.cC := close
             m.cT := time
+        // EGF direction is a bias-led scenario, never the color of the engulfing candle.
+        if m.kind == 2 and m.dir != contextBias
+            m.dir := contextBias
+            m.phase := 0
+            m.resolvedAt := time_close
+            m.resolvedIndex := bar_index
+            m.inv := contextBias == 1 ? m.lo : contextBias == -1 ? m.hi : na
+            m.invT := contextBias == 1 ? m.loT : contextBias == -1 ? m.hiT : na
+            m.cp := na
+            m.cpT := na
+            m.irlH := na
+            m.irlL := na
+            m.irlT := na
+            m.irlKind := 0
         bool older = time_close > m.confirmedAt
         bool bad = older and m.dir != 0 and (m.dir == 1 ? (invalidMode == "Close" ? close < m.inv : low < m.inv) : (invalidMode == "Close" ? close > m.inv : high > m.inv))
         bool reached = older and not na(m.cp) and m.dir != 0 and (m.dir == 1 ? high >= m.cp : low <= m.cp)
@@ -199,7 +240,7 @@ f_engine() =>
             retiredReason := bad and reached ? 4 : bad ? 1 : reached ? 2 : 3
             array.remove(models, mi)
         else
-            if m.dir == 0 and older
+            if m.kind == 3 and m.dir == 0 and older
                 bool sweepLo = low <= m.lo - sweepSize
                 bool sweepHi = high >= m.hi + sweepSize
                 bool backIn = close > m.lo and close < m.hi
@@ -214,6 +255,8 @@ f_engine() =>
                     m.resolvedAt := time_close
                     m.resolvedIndex := bar_index
                     m.inv := resolveDir == 1 ? math.min(low, m.lo) : math.max(high, m.hi)
+                    m.invT := resolveDir == 1 ? (low < m.lo ? time : m.loT) : (high > m.hi ? time : m.hiT)
+                    m.cpT := backIn ? (resolveDir == 1 ? m.hiT : m.loT) : na
                     m.cp := backIn ? (resolveDir == 1 ? m.hi : m.lo) : na
                     m.cO := open
                     m.cH := high
@@ -241,10 +284,14 @@ f_engine() =>
         if array.size(models) < queueLimit
             int flags = (crt ? 1 : 0) + (engulfBull or engulfBear ? 2 : 0) + (isb ? 4 : 0) + (outsideBar ? 8 : 0)
             int kind = crt ? 1 : isb ? 3 : 2
-            int direction = crt ? (tsBull ? 1 : -1) : kind == 2 ? (engulfBull ? 1 : engulfBear ? -1 : close > high[1] ? 1 : close < low[1] ? -1 : 0) : 0
+            int direction = crt ? (tsBull ? 1 : -1) : kind == 2 ? contextBias : 0
             float rh = kind == 2 ? math.max(high, high[1]) : high[1]
             float rl = kind == 2 ? math.min(low, low[1]) : low[1]
-            Model fresh = Model.new(uid=time, flags=flags, kind=kind, phase=crt ? 1 : direction != 0 ? 3 : 0, dir=direction, bornIndex=bar_index, confirmedAt=time_close, resolvedAt=direction != 0 ? time_close : na, hi=rh, lo=rl, inv=direction == 1 ? math.min(low, rl) : direction == -1 ? math.max(high, rh) : na, cp=crt ? (direction == 1 ? rh : rl) : na, aO=open[1], aH=high[1], aL=low[1], aC=close[1], aT=time[1], bO=open, bH=high, bL=low, bC=close, bT=time)
+            Model fresh = Model.new(uid=time, flags=flags, kind=kind, phase=crt ? 1 : 0, dir=direction, bornIndex=bar_index, confirmedAt=time_close, resolvedAt=direction != 0 ? time_close : na, hi=rh, lo=rl, inv=direction == 1 ? math.min(low, rl) : direction == -1 ? math.max(high, rh) : na, cp=crt ? (direction == 1 ? rh : rl) : na, aO=open[1], aH=high[1], aL=low[1], aC=close[1], aT=time[1], bO=open, bH=high, bL=low, bC=close, bT=time)
+            fresh.hiT := kind == 2 and high > high[1] ? time : time[1]
+            fresh.loT := kind == 2 and low < low[1] ? time : time[1]
+            fresh.invT := direction == 1 ? (low < rl ? time : fresh.loT) : direction == -1 ? (high > rh ? time : fresh.hiT) : na
+            fresh.cpT := crt ? (direction == 1 ? fresh.hiT : fresh.loT) : na
             array.push(models, fresh)
         else
             dropped += 1
@@ -255,17 +302,24 @@ f_engine() =>
             Model m = array.get(models, i)
             float up = na
             float dn = na
+            int upT = na
+            int dnT = na
             if array.size(swings) > 0
                 for j = 0 to array.size(swings) - 1
                     Liquidity q = array.get(swings, j)
                     if q.side == 1 and q.price > m.hi and (na(up) or q.price < up)
                         up := q.price
+                        upT := q.born
                     if q.side == -1 and q.price < m.lo and (na(dn) or q.price > dn)
                         dn := q.price
+                        dnT := q.born
             m.erlU := up
             m.erlL := dn
+            m.erlUT := upT
+            m.erlLT := dnT
             if m.dir != 0 and na(m.cp)
                 m.cp := m.dir == 1 ? up : dn
+                m.cpT := m.dir == 1 ? upT : dnT
             if not na(m.irlT) and m.dir != 0 and m.irlDir != m.dir
                 m.irlT := na
                 m.irlH := na
@@ -289,38 +343,21 @@ f_engine() =>
     Model secondModel = array.size(models) > 1 ? array.get(models, 1) : Model.new()
     Model thirdModel = array.size(models) > 2 ? array.get(models, 2) : Model.new()
     bool historyReady = firstSeen <= scanStart
-    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, secondModel.uid, secondModel.flags, secondModel.kind, secondModel.phase, secondModel.hi, secondModel.lo, secondModel.aT, thirdModel.uid, thirdModel.flags, thirdModel.kind, thirdModel.phase, thirdModel.hi, thirdModel.lo, thirdModel.aT, lastRetired, retiredReason, dropped, historyReady, bar_index - nz(selected.resolvedIndex, selected.bornIndex)]
+    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, secondModel.uid, secondModel.flags, secondModel.kind, secondModel.phase, secondModel.hi, secondModel.lo, secondModel.aT, thirdModel.uid, thirdModel.flags, thirdModel.kind, thirdModel.phase, thirdModel.hi, thirdModel.lo, thirdModel.aT, lastRetired, retiredReason, dropped, historyReady, bar_index - nz(selected.resolvedIndex, selected.bornIndex), selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT]
 
 // f_snapshot uses per-field scalar offsets, not an object/collection request.
 // On the HTF chart: previous output while forming, current output once the bar closes.
 // On lower charts: always previous CONFIRMED HTF output + lookahead_on.
 f_snapshot(bool previous) =>
-    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51] = f_engine()
-    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51]
+    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57] = f_engine()
+    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57]
 
-[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, s2Id, s2Flags, s2Kind, s2Phase, s2Hi, s2Lo, s2AT, s3Id, s3Flags, s3Kind, s3Phase, s3Hi, s3Lo, s3AT, sRetired, sReason, sDropped, sReady, sModelAge] = if onHtf
+[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, s2Id, s2Flags, s2Kind, s2Phase, s2Hi, s2Lo, s2AT, s3Id, s3Flags, s3Kind, s3Phase, s3Hi, s3Lo, s3AT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT] = if onHtf
     f_snapshot(not barstate.isconfirmed)
 else
     request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
 
 // Independent bias from the chosen reference TF: confirmed reclaim or range close-through.
-f_biasCore() =>
-    var int direction = 0
-    var int age = 0
-    bool lowTaken = low < low[1]
-    bool highTaken = high > high[1]
-    bool inPrior = close > low[1] and close < high[1]
-    int nextDir = lowTaken and not highTaken and inPrior ? 1 : highTaken and not lowTaken and inPrior ? -1 : close > high[1] ? 1 : close < low[1] ? -1 : 0
-    age += 1
-    if nextDir != 0
-        direction := nextDir
-        age := 0
-    else if (lowTaken and highTaken and inPrior) or age >= biasLife
-        direction := 0
-    [direction, age]
-f_biasSnapshot(bool previous) =>
-    [direction, age] = f_biasCore()
-    [previous ? direction[1] : direction, previous ? age[1] : age]
 [autoBias, autoBiasAge] = if chartSeconds == timeframe.in_seconds(biasTf)
     f_biasSnapshot(not barstate.isconfirmed)
 else
@@ -337,6 +374,8 @@ var float liveL = na
 var float liveC = na
 var int liveT = na
 var int liveEnd = na
+var int liveHighTime = na
+var int liveLowTime = na
 var bool liveComplete = false
 var int bucketCounter = 0
 var array<int> candleTimes = array.new<int>()
@@ -344,6 +383,8 @@ var array<float> candleOpens = array.new<float>()
 var array<float> candleHighs = array.new<float>()
 var array<float> candleLows = array.new<float>()
 var array<float> candleCloses = array.new<float>()
+var array<int> candleHighTimes = array.new<int>()
+var array<int> candleLowTimes = array.new<int>()
 bool newBucket = na(liveT) or bucketTime != liveT
 if newBucket
     if not na(liveT) and liveComplete
@@ -352,12 +393,16 @@ if newBucket
         array.push(candleHighs, liveH)
         array.push(candleLows, liveL)
         array.push(candleCloses, liveC)
+        array.push(candleHighTimes, liveHighTime)
+        array.push(candleLowTimes, liveLowTime)
         if array.size(candleTimes) > 1000
             array.shift(candleTimes)
             array.shift(candleOpens)
             array.shift(candleHighs)
             array.shift(candleLows)
             array.shift(candleCloses)
+            array.shift(candleHighTimes)
+            array.shift(candleLowTimes)
     bucketCounter += 1
     liveT := bucketTime
     liveEnd := bucketEnd
@@ -365,8 +410,14 @@ if newBucket
     liveH := high
     liveL := low
     liveC := close
+    liveHighTime := time
+    liveLowTime := time
     liveComplete := time == bucketTime
 else
+    if high > liveH
+        liveHighTime := time
+    if low < liveL
+        liveLowTime := time
     liveH := math.max(liveH, high)
     liveL := math.min(liveL, low)
     liveC := close
@@ -571,7 +622,7 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
     if crossedLine and not lineBroken
         lineBroken := true
         breakIndex := bar_index
-    bool egfPathReady = irlTouched and not irlFailed and not na(target) and not na(sIrlH) and not na(sIrlL) and (bullish ? close > sIrlH and target > close and target > sIrlH : close < sIrlL and target < close and target < sIrlL)
+    bool egfPathReady = irlTouched and not irlFailed and not na(target) and not na(sIrlH) and not na(sIrlL) and (bullish ? close > sIrlL and target > close and target > sIrlH : close < sIrlH and target < close and target < sIrlL)
     egfReady := egfPathReady
     bool confirmationContext = sKind == 1 or sPhase == 1 ? true : sKind == 3 and sPhase == 2 ? boundaryTouched : egfPathReady
     bool autoEntry = sKind == 1 or sPhase == 1 ? (cisd or mss) : sKind == 3 and sPhase == 2 ? boundaryTouched and (cisd or mss or fvgRetest) : egfPathReady and (cisd or mss or fvgRetest or obRetest)
@@ -598,7 +649,7 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
         mNoted := mNoted or mMark
     string detectedTag = entryMode == "MSS" ? "M" : entryMode == "CISD" ? "C" : entryMode == "FVG retest" ? "F" : entryMode == "OB retest" ? "O" : entryMode == "POC close" ? "P" : entryMode == "Line close" or entryMode == "Line touch" or entryMode == "Line retest" ? "BL" : cisd ? "C" : mss ? "M" : fvgRetest ? "F" : "O"
     // Optional clock gate applies to E only.
-    if selectedEntry and plannedRR and biasAllowed and timeAllowed and not invalidBar and not localTargetTaken and not alreadyEmitted
+    if selectedEntry and risk > 0 and not na(target) and reward > 0 and biasAllowed and timeAllowed and not invalidBar and not localTargetTaken and not alreadyEmitted
         entryEvent := true
         entryLong := bullish
         entryShort := not bullish
@@ -620,6 +671,7 @@ var int lastVisualIndex = na
 var int lastVisualBucket = na
 var string lastVisualKey = ""
 var int modelObservedIndex = na
+var int modelObservedTime = na
 var float confirmedC = na
 var float confirmedM = na
 var int confirmedCIndex = na
@@ -628,6 +680,7 @@ var int confirmedCBucket = na
 var int confirmedMBucket = na
 if changedModel
     modelObservedIndex := not na(sId) ? bar_index : na
+    modelObservedTime := not na(sId) ? time : na
     lastVisualTime := na
     lastVisualIndex := na
     lastVisualBucket := na
@@ -675,6 +728,7 @@ f_sourceIndex(int sourceTime) =>
 int modelAnchorTime = not na(sResolved) and sResolved > sConfirmed and not na(sCT) ? sCT : sBT
 int modelAnchorIndex = onHtf and barstate.islast and not na(sId) and (not recentOnly or sModelAge <= drawHtfBars) ? f_sourceIndex(modelAnchorTime) : na
 int drawAnchorIndex = onHtf ? modelAnchorIndex : lastVisualKey == modelKey and not na(lastVisualIndex) ? lastVisualIndex : modelObservedIndex
+int drawAnchorTime = onHtf ? modelAnchorTime : lastVisualKey == modelKey and not na(lastVisualTime) ? lastVisualTime : modelObservedTime
 int drawSpan = int(math.ceil(drawHtfBars * htfSeconds / chartSeconds))
 int labelLaneBars = chartTextSize == "Huge" ? 24 : chartTextSize == "Large" ? 18 : chartTextSize == "Small" ? 10 : 14
 int clusterStartIndex = bar_index + (showLevels or showConfirm ? math.max(clusterOffset, labelLaneBars + 5) : clusterOffset)
@@ -695,17 +749,15 @@ var array<int> renderedAnchors = array.new<int>(16, na)
 var array<int> renderedEnds = array.new<int>(16, na)
 var array<line> labelLeaders = array.new<line>()
 var array<label> eventLabels = array.new<label>()
-var array<label> eventTexts = array.new<label>()
 var array<int> eventBuckets = array.new<int>()
 var array<box> clusterBodies = array.new<box>()
 var array<line> clusterWicks = array.new<line>()
 var array<label> clusterLabels = array.new<label>()
-var box irlBox = box.new(bar_index, high, bar_index, low, xloc=xloc.bar_index, force_overlay=true, bgcolor=color.new(color.teal, 100), border_color=color.new(color.teal, 100))
 var label clockLabel = label.new(bar_index, high, "", force_overlay=true, style=label.style_label_up, color=color.new(chart.bg_color, 100), textcolor=chart.fg_color, size=chartFont)
 var table panel = table.new(position.top_right, 2, 6, bgcolor=color.new(#111820, 12), border_width=0)
 if barstate.isfirst
     for i = 0 to 15
-        array.push(levelLines, line.new(bar_index, high, bar_index, high, xloc=xloc.bar_index, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
+        array.push(levelLines, line.new(time, high, time, high, xloc=xloc.bar_time, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
         array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_left, textalign=text.align_left, size=chartFont, color=color.new(chart.bg_color, 100)))
         array.push(labelLeaders, line.new(bar_index, high, bar_index, high, force_overlay=true, style=line.style_dotted, color=color.new(color.gray, 100)))
     for i = 0 to 3
@@ -717,12 +769,35 @@ f_tag(int flags, int kind, int phase) =>
     base + ((kind == 1 or kind == 3) and f_has(flags, 2) ? "/E" : "") + (phase == 1 ? "/TS" : phase == 2 ? "/BR" : "")
 f_levelPriority(int slot) =>
     slot == 12 ? 5 : slot == 3 ? 4 : slot == 11 ? 3 : slot == 4 ? 2 : 1
-f_level(int slot, float price, string caption, color shade, bool visible, int sourceIndex = na, bool stroke = true) =>
+f_extremeTime(int sourceTime, float price) =>
+    int found = onHtf ? sourceTime : na
+    int cached = array.indexof(candleTimes, sourceTime)
+    if not onHtf and cached >= 0
+        if math.abs(price - array.get(candleHighs, cached)) < syminfo.mintick * 0.5
+            found := array.get(candleHighTimes, cached)
+        else if math.abs(price - array.get(candleLows, cached)) < syminfo.mintick * 0.5
+            found := array.get(candleLowTimes, cached)
+    if not onHtf and na(found) and not na(sourceTime) and sourceTime + int(htfSeconds * 1000) > time[math.min(bar_index, 4999)]
+        for offset = 0 to math.min(bar_index, 4999)
+            if time[offset] >= sourceTime and time[offset] < sourceTime + int(htfSeconds * 1000) and (math.abs(high[offset] - price) < syminfo.mintick * 0.5 or math.abs(low[offset] - price) < syminfo.mintick * 0.5)
+                found := time[offset]
+                break
+    found
+f_indexTime(int index) =>
+    int found = na
+    if not na(index)
+        if index > bar_index
+            found := time + int((index - bar_index) * chartSeconds * 1000)
+        else if bar_index - index <= 4999
+            found := time[bar_index - index]
+    found
+f_level(int slot, float price, string caption, color shade, bool visible, int sourceTime = na) =>
     line ln = array.get(levelLines, slot)
     label lb = array.get(levelLabels, slot)
-    int anchor = na(sourceIndex) ? drawAnchorIndex : sourceIndex
-    int endpoint = not na(anchor) ? math.min(anchor + drawSpan, drawingClipIndex) : na
-    bool ok = visible and not na(anchor) and anchor >= bar_index - 9999 and endpoint >= anchor and not na(price)
+    int anchor = na(sourceTime) ? drawAnchorTime : f_extremeTime(sourceTime, price)
+    int endpoint = drawEndIndex
+    int endTime = f_indexTime(endpoint)
+    bool ok = visible and not na(anchor) and not na(endTime) and endTime >= anchor and not na(price)
     int owner = slot
     if ok and slot > 0
         for prior = 0 to slot - 1
@@ -737,9 +812,9 @@ f_level(int slot, float price, string caption, color shade, bool visible, int so
         array.set(renderedEnds, slot, endpoint)
         array.set(renderedPriorities, slot, f_levelPriority(slot))
         line.set_xy1(ln, anchor, price)
-        line.set_xy2(ln, endpoint, price)
+        line.set_xy2(ln, endTime, price)
         label.set_xy(lb, endpoint + 1, price)
-    line.set_color(ln, standalone and stroke ? shade : color.new(shade, 100))
+    line.set_color(ln, standalone ? shade : color.new(shade, 100))
     label.set_text(lb, standalone ? caption : "")
     label.set_textcolor(lb, shade)
     label.set_tooltip(lb, standalone ? caption + " · " + str.tostring(price, format.mintick) : "")
@@ -788,15 +863,12 @@ f_layoutLabels() =>
 f_note(string noteText, bool up, bool qualified = false) =>
     string markerLocation = up ? yloc.belowbar : yloc.abovebar
     color markerColor = up ? color.lime : color.red
-    string captionText = up ? "\n" + noteText : noteText + "\n"
-    string hint = (qualified ? (up ? "Buy entry / " : "Sell entry / ") + signalTag : (up ? "Bullish confirmation / " : "Bearish confirmation / ") + noteText + " (not entry)")
+    string hint = (qualified ? (up ? "Buy signal / " : "Sell signal / ") + signalTag : (up ? "Bullish confirmation / " : "Bearish confirmation / ") + noteText + " (not entry)")
     if historyMarks > 0
-        array.push(eventTexts, label.new(bar_index, na, captionText, xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_label_up : label.style_label_down, color=color.new(chart.bg_color, 100), textalign=text.align_center, textcolor=chart.fg_color, size=chartFont, force_overlay=true, tooltip=hint))
         array.push(eventLabels, label.new(bar_index, na, "", xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_triangleup : label.style_triangledown, color=markerColor, size=size.tiny, force_overlay=true, tooltip=hint))
         array.push(eventBuckets, bucketCounter)
     while array.size(eventLabels) > historyMarks
         label.delete(array.shift(eventLabels))
-        label.delete(array.shift(eventTexts))
         array.shift(eventBuckets)
 
 if entryEvent and showEntryTriangles
@@ -809,7 +881,6 @@ if recentOnly and barstate.islast
     while markIndex >= 0
         if bucketCounter - array.get(eventBuckets, markIndex) > drawHtfBars
             label.delete(array.remove(eventLabels, markIndex))
-            label.delete(array.remove(eventTexts, markIndex))
             array.remove(eventBuckets, markIndex)
         markIndex -= 1
 
@@ -821,38 +892,25 @@ if barstate.islast
     array.fill(renderedPriorities, 0)
     array.fill(renderedAnchors, na)
     array.fill(renderedEnds, na)
-    f_level(0, sHi, "RH", primaryColor, showLevels and drawActive)
-    f_level(1, sLo, "RL", primaryColor, showLevels and drawActive)
+    f_level(0, sHi, "RH", primaryColor, showLevels and drawActive, sHiT)
+    f_level(1, sLo, "RL", primaryColor, showLevels and drawActive, sLoT)
     f_level(2, (sHi + sLo) / 2, "EQ", color.new(chart.fg_color, 35), showLevels and drawActive)
-    f_level(3, sInv, "INV", color.new(color.red, 15), showLevels and drawActive)
-    f_level(4, sCp, "CP", color.aqua, showLevels and drawActive)
-    f_level(5, sErlU, "ERL+", color.new(color.orange, 35), showLevels and drawActive)
-    f_level(6, sErlL, "ERL-", color.new(color.teal, 35), showLevels and drawActive)
+    f_level(3, sInv, "INV", color.new(color.red, 15), showLevels and drawActive, sInvT)
+    f_level(4, sCp, "CP", color.aqua, showLevels and drawActive, sCpT)
+    f_level(5, sErlU, "ERL+", color.new(color.orange, 35), showLevels and drawActive, sErlUT)
+    f_level(6, sErlL, "ERL-", color.new(color.teal, 35), showLevels and drawActive, sErlLT)
     f_level(7, s2Hi, f_tag(s2Flags, s2Kind, s2Phase) + " #2", color.new(color.silver, 75), showSecondary and onHtf and drawActive and not na(s2Id))
     f_level(8, s2Lo, "RL #2", color.new(color.silver, 75), showSecondary and onHtf and drawActive and not na(s2Id))
     f_level(9, s3Hi, f_tag(s3Flags, s3Kind, s3Phase) + " #3", color.new(color.silver, 85), showSecondary and onHtf and drawActive and not na(s3Id))
     f_level(10, s3Lo, "RL #3", color.new(color.silver, 85), showSecondary and onHtf and drawActive and not na(s3Id))
-    f_level(11, manualTarget, "CPe", color.blue, showLevels and drawActive and manualTarget > 0)
-    f_level(12, manualInvalid, "SL", color.new(color.red, 35), showLevels and drawActive and manualInvalid > 0)
     bool cLevelActive = showConfirm and isLtf and not na(confirmedCIndex) and (not egfScenario or (not irlFailed and not localTargetTaken)) and (not recentOnly or bucketCounter - confirmedCBucket <= drawHtfBars)
     bool mLevelActive = showConfirm and isLtf and not na(confirmedMIndex) and (not egfScenario or (not irlFailed and not localTargetTaken)) and (not recentOnly or bucketCounter - confirmedMBucket <= drawHtfBars)
     color confirmationColor = sDir == 1 ? color.lime : color.red
-    f_level(13, confirmedC, "CISD", confirmationColor, cLevelActive, confirmedCIndex)
-    f_level(14, confirmedM, "MSS", confirmationColor, mLevelActive, confirmedMIndex)
-    bool hasIrl = drawActive and not na(sIrlT)
-    if hasIrl
-        box.set_lefttop(irlBox, drawAnchorIndex, sIrlH)
-        box.set_rightbottom(irlBox, drawEndIndex, sIrlL)
-    box.set_bgcolor(irlBox, color.new(primaryColor, hasIrl ? 90 : 100))
-    box.set_border_color(irlBox, color.new(primaryColor, hasIrl ? 45 : 100))
-    box.set_text(irlBox, "")
-    box.set_text_color(irlBox, primaryColor)
-    box.set_text_size(irlBox, chartFont)
-    f_level(15, (sIrlH + sIrlL) / 2, sIrlKind == 1 ? "FVG" : "OB?", primaryColor, hasIrl, drawAnchorIndex, false)
+    bool hasIrl = not na(sIrlT)
     f_layoutLabels()
     if showPanel
         string dirText = biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
-        string stateText = not hasModel ? "WAIT" : sDir == 0 ? "COMP" : localTargetTaken ? "CP?" : alreadyEmitted ? "E" : na(target) ? "CP -" : egfScenario and irlFailed ? "IRL X" : egfScenario and not irlTouched ? "IRL WAIT" : egfScenario and not egfReady ? "IRL" : "LTF"
+        string stateText = not hasModel ? "WAIT" : sDir == 0 ? (sKind == 2 ? "BIAS?" : "COMP") : localTargetTaken ? "CP?" : alreadyEmitted ? "SIGNAL" : na(target) ? "CP -" : egfScenario and irlFailed ? "IRL X" : egfScenario and not irlTouched ? "IRL WAIT" : egfScenario and not egfReady ? "IRL" : "LTF"
         array<string> headings = array.from("TF", "#1", "B", "IRL", "T", "S")
         array<string> values = array.from(htf + " / " + timeframe.period, tag + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? (sIrlKind == 1 ? "FVG" : "OB?") : "-", macroNow + (showQt ? " Q" + str.tostring(dayQuarter) + "/" + str.tostring(sessionQuarter) : ""), not sReady ? "HIST" : stateText + (sDropped > 0 ? " +" : ""))
         for row = 0 to 5

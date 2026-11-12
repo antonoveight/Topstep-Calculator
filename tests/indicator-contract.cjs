@@ -19,7 +19,7 @@ function evaluate(name,ctx){
  return evaluateExpr(expression(name),ctx);
 }
 function evaluateExpr(expr,ctx){
- const js=expr.replace(/\b(open|high|low|close)\[1\]/g,'previous.$1').replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!').replace(/\bmath\./g,'Math.').replace(/\bna\b(?!\s*\()/g,'null');
+ const js=expr.replace(/\b(open|high|low|close|time)\[1\]/g,'previous.$1').replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!').replace(/\bmath\./g,'Math.').replace(/\bna\b(?!\s*\()/g,'null');
  return Function(...Object.keys(ctx),'return ('+js+');')(...Object.values(ctx));
 }
 function patterns(c1,c2,sweepSize=.25,refs={}){
@@ -75,9 +75,9 @@ for(const date of ['2026-07-14T23:00:00Z','2026-12-14T00:00:00Z','2026-03-08T06:
 // Explicit one-shot, closed-bar gates and HTF data contract; live data stays in display code.
 assert.match(source,/f_snapshot\(true\), lookahead=barmerge.lookahead_on/);
 assert.match(source,/f_snapshot\(not barstate.isconfirmed\)/);
-for(let i=0;i<52;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`),'Every HTF snapshot field must be offset');
+for(let i=0;i<58;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`),'Every HTF snapshot field including source timestamps must be offset');
 assert.match(source,/if armed and barstate.isconfirmed and isLtf/);
-assert.match(source,/if selectedEntry and plannedRR and biasAllowed and timeAllowed/);
+assert.match(source,/if selectedEntry and risk > 0 and not na\(target\) and reward > 0 and biasAllowed and timeAllowed/);
 assert.match(source,/not alreadyEmitted/);
 assert.match(source,/array.push\(emitted, modelKey\)/);
 assert.match(source,/"N\*"/);
@@ -134,6 +134,15 @@ const capacity=new RegistrySpec(patterns,{limit:1});for(const b of [first,ts,bar
 assert.equal(capacity.snapshot()[0].id,2);assert.equal(capacity.dropped,1,'Full queue refuses newest, never evicts older valid primary');
 const combo=new RegistrySpec(patterns);combo.step(first);combo.step(bar(2,109,109.5,99,103));
 assert.equal(combo.snapshot().length,1);assert.equal(combo.snapshot()[0].flags,3,'Same-pair CRT+body engulf is one compound');
+const expansionBars=[bar(1,108,110,100,102),bar(2,101,112,99,111)];
+for(const bias of [-1,0,1]){
+ const context=new RegistrySpec(patterns,{bias});for(const b of expansionBars)context.step(b);
+ assert.equal(context.snapshot()[0].kind,2);
+ assert.equal(context.snapshot()[0].dir,bias,'An EGF up-candle does not force a Buy scenario');
+ if(bias===-1){context.bias=1;context.step(bar(3,105,109,101,106));assert.equal(context.snapshot()[0].dir,1,'A changed bias revises the scenario, not the parent candles');assert.deepEqual(context.snapshot()[0].c1,expansionBars[0]);}
+}
+const modelDirection=source.match(/int direction = (crt \?[^\n]+)/)[1];
+for(const contextBias of [-1,0,1])assert.equal(evaluateExpr(modelDirection,{crt:false,kind:2,contextBias,tsBull:true}),contextBias);
 const model={hi:110,lo:100,dir:1};
 const fvg={hi:105,lo:104,dir:1,kind:1},ob={hi:103,lo:101,dir:1,kind:2};
 assert.equal(pickIrl(model,[fvg,ob]),fvg,'Prefer actual internal FVG over OB candidate');
@@ -175,13 +184,16 @@ const isNa=x=>x==null||Number.isNaN(x);
 const egfBase={irlTouched:true,irlFailed:false,target:90,sIrlH:110,sIrlL:105,bullish:false,close:103,na:isNa};
 assert.equal(evaluate('egfPathReady',egfBase),true,'Bearish EGF reacts below supply IRL toward a lower ERL');
 assert.equal(evaluate('egfPathReady',{...egfBase,irlTouched:false}),false,'Never infer IRL visit from price merely being below it');
-assert.equal(evaluate('egfPathReady',{...egfBase,close:108}),false,'Still inside IRL, wait for rejection');
+assert.equal(evaluate('egfPathReady',{...egfBase,close:108}),true,'Local confirmation may occur inside IRL; touching alone is never a signal');
+assert.equal(evaluate('selectedEntry',{rawEntry:false,egfScenario:true,egfPathReady:true}),false,'A valid IRL location without an LTF condition is not a signal');
 assert.equal(evaluate('egfPathReady',{...egfBase,close:112}),false,'Retracement above supply is not a Sell reaction');
 assert.equal(evaluate('egfPathReady',{...egfBase,irlFailed:true}),false,'Broken IRL cannot reuse a previous touch');
 assert.equal(evaluate('egfPathReady',{...egfBase,target:120}),false,'Do not Sell toward an upside target');
 assert.equal(evaluate('egfPathReady',{...egfBase,target:null}),false,'No invented ERL target');
 assert.equal(evaluate('egfPathReady',{...egfBase,bullish:true,close:112,target:130}),true,'Bullish EGF reacts above demand IRL toward higher ERL');
 assert.equal(evaluate('egfPathReady',{...egfBase,bullish:true,close:112,target:90}),false);
+assert.equal(evaluate('egfPathReady',{...egfBase,close:106}),true,'A local Sell confirmation may occur inside the lower half of the HTF zone');
+assert.equal(evaluate('egfPathReady',{...egfBase,bullish:true,close:109,target:130}),true,'A local Buy confirmation may occur inside the upper half of the HTF zone');
 assert.equal(evaluate('selectedEntry',{rawEntry:true,egfScenario:true,egfPathReady:false}),false,'Manual LTF mode cannot bypass EGF IRL reaction');
 assert.equal(evaluate('selectedEntry',{rawEntry:true,egfScenario:false,egfPathReady:false}),true,'Other model entry modes keep their existing behavior');
 const cExpr=source.match(/cMark := (cisd and entryMode[^\n]+)/)[1];
@@ -212,17 +224,30 @@ assert.equal(evaluate('drawActive',drawingBase),true,'Recent HTF reference level
 assert.equal(evaluate('drawActive',{...drawingBase,recentModel:false}),false,'No stale model drawing when neither model nor signal is recent');
 assert.equal(evaluate('drawActive',{...drawingBase,sId:null}),false,'No fabricated levels without a model');
 assert.match(source,/line.set_xy1\(ln, anchor, price\)/);
-assert.match(source,/box.set_lefttop\(irlBox, drawAnchorIndex, sIrlH\)/);
+assert.doesNotMatch(source,/irlBox/,'OB/FVG zones are internal filters, never visual boxes');
 assert.match(source,/liveComplete := time == bucketTime/,'Never invent first incomplete bucket open');
 assert.match(source,/array.indexof\(candleTimes, sourceTime\)/,'Cluster cache must match exact source candle');
 assert.match(source,/confirmedC := cMarkPrice/,'CISD visual level freezes the price known on confirmation');
 assert.match(source,/confirmedM := mMarkPrice/,'MSS visual level freezes the price known on confirmation');
 assert.match(source,/confirmedCIndex := bar_index/);
 assert.match(source,/confirmedMIndex := bar_index/);
-for(const anchor of [100,107,140]){
- const endpoint=evaluate('endpoint',{anchor,drawSpan:60,drawingClipIndex:180,na:x=>x==null});
- assert.equal(endpoint,Math.min(anchor+60,180),'Each confirmation keeps its own start and finite horizon');
-}
+assert.equal(evaluate('endpoint',{drawEndIndex:180}),180,'The right horizon is independent of an old source swing');
+assert.equal(evaluate('anchor',{sourceTime:1000,price:110,drawAnchorTime:5000,na:x=>x==null,f_extremeTime:()=>1234}),1234,'The line starts at its actual source extreme, not the latest signal');
+assert.equal(evaluate('anchor',{sourceTime:null,price:105,drawAnchorTime:5000,na:x=>x==null,f_extremeTime:()=>1234}),5000,'EQ uses the current visual anchor');
+assert.match(source,/f_level\(5, sErlU, "ERL\+",[^\n]+sErlUT\)/);
+assert.match(source,/f_level\(6, sErlL, "ERL-",[^\n]+sErlLT\)/);
+assert.match(source,/array.push\(candleHighTimes, liveHighTime\)/);
+assert.match(source,/array.push\(candleLowTimes, liveLowTime\)/);
+const hiSource=source.match(/fresh.hiT := ([^\n]+)/)[1],loSource=source.match(/fresh.loT := ([^\n]+)/)[1];
+const candleSource={kind:2,high:112,low:99,time:200,previous:{high:110,low:100,time:100}};
+assert.equal(evaluateExpr(hiSource,candleSource),200);
+assert.equal(evaluateExpr(loSource,candleSource),200);
+assert.equal(evaluateExpr(hiSource,{...candleSource,high:110}),100,'Equal extrema retain the earlier genuine source');
+assert.equal(evaluateExpr(loSource,{...candleSource,kind:1}),100,'CRT range keeps C1 as its boundary source despite the C2 sweep');
+assert.match(source,/m.erlUT := upT/);
+assert.match(source,/m.erlLT := dnT/);
+assert.match(source,/upT := q.born/);
+assert.match(source,/dnT := q.born/);
 let previousY=null;
 for(const nextPrice of [100,100,100.01,101,200]){
  const visibleLabelGap=2;
