@@ -64,7 +64,7 @@ Tên dưới đây khớp tên trong Inputs; di chuột vào biểu tượng tr�
 | CP override | 0 dùng CP model; nhập đích cá nhân khi cần. CRTH/CRTL có vai trò tùy bias/kịch bản, không cố định thành TP. |
 | Minimum planned R:R | Tính tại close nến entry với SL/CP tham chiếu. Không phải R nhận thực tế. |
 | Retest tolerance | Dung sai tick cho BL/biên mother, không mở rộng mọi vùng FVG/OB. |
-| C / M confirmation marks | Tham khảo sơ bộ theo hướng model, mặc định tắt. B?·C/M dưới nến = phía Buy chưa đủ gate; S?·C/M trên nến = phía Sell chưa đủ gate. Tam giác Tiny neo trực tiếp theo nến, không theo màu thân. Entry cùng nến được ưu tiên. Chúng cũng chiếm giới hạn latest marks. |
+| C / M confirmation marks | Tham khảo sơ bộ theo hướng model, mặc định tắt. B C/M dưới nến = phía Buy chưa đủ gate; S C/M trên nến = phía Sell chưa đủ gate. Tam giác Tiny neo trực tiếp theo nến, không theo màu thân. Entry cùng nến được ưu tiên. Chúng cũng chiếm giới hạn latest marks. |
 | Time filter for E | Context only không chặn giờ; Web macros/working windows chỉ cho E trong cửa sổ tương ứng web, dùng giờ New York có DST. |
 | Macro background | Chỉ tô nền context. |
 | QT clock context | Đồng hồ quý intraday; không quyết định bias. |
@@ -104,3 +104,5 @@ Nếu chưa có tín hiệu, kiểm tra lần lượt: **HIST và chart TF → m
 5. Khi vừa sửa code: xóa instance cũ/thêm lại, ghim cùng scale với symbol; tạo lại alert nếu đang sử dụng.
 
 Chữ dùng các mức kích thước Pine, không phải số pixel cố định. Dashboard theo cơ chế table tự co theo chữ/nội dung: [TradingView tables](https://www.tradingview.com/pine-script-docs/visuals/tables/). Tooltip là trợ giúp Inputs: [TradingView inputs](https://www.tradingview.com/pine-script-docs/concepts/inputs/).
+
+Nhãn tín hiệu dùng ASCII để giảm phụ thuộc ký tự/font: entry `BUY C`/`SELL M`, xác nhận sơ bộ `B C/M`/`S C/M`. Mọi tam giác cùng quy tắc Buy xanh (lime), Sell đỏ, cỡ Tiny; loại tín hiệu phân biệt qua nội dung chữ và tooltip, không dùng màu cam/teal cho C/M. Nguồn giữ UTF-8 để tooltip tiếng Việt có đầy đủ dấu. Chưa xác nhận lỗi font trên chart thực tế; kiểm tra mã hóa không thấy ký tự thay thế hoặc ký tự zero-width.
