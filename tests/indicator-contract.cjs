@@ -177,10 +177,25 @@ assert.doesNotMatch(source,/extend=extend.right/,'No unbounded level projection'
 assert.match(source,/label.style_triangleup : label.style_triangledown/);
 assert.match(source,/if entryEvent and showEntryTriangles/);
 assert.match(source,/lastVisualIndex := bar_index/,'LTF anchors start at actual condition bar');
-assert.match(source,/line.set_xy1\(ln, drawAnchorIndex, price\)/);
+assert.match(source,/line.set_xy1\(ln, anchor, price\)/);
 assert.match(source,/box.set_lefttop\(irlBox, drawAnchorIndex, sIrlH\)/);
 assert.match(source,/liveComplete := time == bucketTime/,'Never invent first incomplete bucket open');
 assert.match(source,/array.indexof\(candleTimes, sourceTime\)/,'Cluster cache must match exact source candle');
+assert.match(source,/confirmedC := cMarkPrice/,'CISD visual level freezes the price known on confirmation');
+assert.match(source,/confirmedM := mMarkPrice/,'MSS visual level freezes the price known on confirmation');
+assert.match(source,/confirmedCIndex := bar_index/);
+assert.match(source,/confirmedMIndex := bar_index/);
+for(const anchor of [100,107,140]){
+ const endpoint=evaluate('endpoint',{anchor,drawSpan:60,drawingClipIndex:180,na:x=>x==null});
+ assert.equal(endpoint,Math.min(anchor+60,180),'Each confirmation keeps its own start and finite horizon');
+}
+let previousY=null;
+for(const nextPrice of [100,100,100.01,101,200]){
+ const visibleLabelGap=2;
+ const labelPrice=evaluate('labelPrice',{previousY,nextPrice,visibleLabelGap,na:x=>x==null});
+ assert.ok(previousY==null||labelPrice-previousY>=visibleLabelGap,'Nearby annotations are vertically spaced without changing source levels');
+ previousY=labelPrice;
+}
 // Native candle-relative placement must not depend on ATR or price-scale offsets.
 for(const up of [true,false]){
  const yloc={belowbar:'belowbar',abovebar:'abovebar'};

@@ -1,6 +1,6 @@
 // Mozilla Public License 2.0: https://mozilla.org/MPL/2.0/
 // The Funded Angler - automatic, confirmed HTF model registry.
-// Prior version passed editor syntax diagnostics; latest label layout needs editor/chart validation.
+// Editor syntax diagnostics passed; authenticated chart execution / Replay still required.
 // See docs/INDICATOR-AUTO-MODELS.md for exact lifecycle, priority and validation limits.
 //@version=6
 indicator("The Funded Angler v6 - Auto HTF", shorttitle="TFA v6", overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=120, max_boxes_count=30, max_labels_count=300)
@@ -35,7 +35,7 @@ manualInvalid = input.price(0.0, "Execution SL (0 = HTF INV)", group=G_ENTRY, to
 manualTarget = input.price(0.0, "CP override (0 = model CP)", group=G_ENTRY, tooltip="0 dùng CP của model. Nếu chưa có CP đúng theo kế hoạch, có thể nhập đích cụ thể. Không tự coi CRTH luôn là TP hoặc CRTL luôn là TP.")
 minRR = input.float(2.0, "Minimum planned R:R", minval=0.5, maxval=20, step=0.25, group=G_ENTRY, tooltip="Gate R:R dự kiến tại close nến tín hiệu, mặc định 2. Không phải mức chốt một phần và không đảm bảo R thực nhận.")
 retestTicks = input.int(1, "Retest tolerance (ticks)", minval=0, maxval=20, group=G_ENTRY, tooltip="Dung sai cho chạm BL/biên mother, tính theo tick. Không phải độ dày tùy ý cho toàn bộ vùng FVG/OB.")
-showConfirm = input.bool(false, "C / M confirmation marks", group=G_ENTRY, tooltip="Xác nhận sơ bộ theo hướng model HTF: B C/M là phía Buy, S C/M là phía Sell; xanh=Buy, đỏ=Sell. Chưa qua đầy đủ gate entry, kể cả bias/R:R/time. Entry đủ gate ghi BUY hoặc SELL. Bật để kiểm tra logic; mặc định tắt nếu chỉ muốn thấy entry.")
+showConfirm = input.bool(false, "C / M confirmation marks", group=G_ENTRY, tooltip="Bật: thêm tam giác xác nhận và line CISD/MSS từ đúng nến LTF xác nhận, giữ nguyên mức giá và kéo hữu hạn. B/S là xác nhận sơ bộ; BUY/SELL là entry đủ gate. Xanh=Buy, đỏ=Sell. Tắt chỉ ẩn phần C/M, không đổi điều kiện entry, bias, R:R hay alert.")
 timeGate = input.string("Context only", "Time filter for E", options=["Context only", "Web macros", "Web working windows"], group=G_TIME, tooltip="Context only chỉ quan sát giờ. Web macros/working windows chặn E ngoài cửa sổ tương ứng của web theo America/New_York, có DST.")
 showTimeBg = input.bool(false, "Macro background", group=G_TIME, tooltip="Tô nền các macro để quan sát; không tự tạo tín hiệu hay thay bias.")
 showQt = input.bool(true, "QT clock context", group=G_TIME, tooltip="Hiện đồng hồ quý intraday trong panel. QT chỉ là bối cảnh thời gian, không tự suy ra hướng lệnh.")
@@ -481,6 +481,8 @@ bool entryLong = false
 bool entryShort = false
 bool cMark = false
 bool mMark = false
+float cMarkPrice = na
+float mMarkPrice = na
 string signalTag = ""
 float target = manualTarget > 0 ? manualTarget : sCp
 float executionSl = manualInvalid > 0 ? manualInvalid : sInv
@@ -548,6 +550,8 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
     if showConfirm and not alreadyEmitted
         cMark := cisd and not cNoted
         mMark := mss and not mNoted
+        cMarkPrice := cMark ? deliveryLevel : na
+        mMarkPrice := mMark ? mssLevel : na
         cNoted := cNoted or cisd
         mNoted := mNoted or mss
     // Optional clock gate applies to E only.
@@ -567,11 +571,31 @@ var int lastVisualTime = na
 var int lastVisualIndex = na
 var int lastVisualBucket = na
 var string lastVisualKey = ""
+var float confirmedC = na
+var float confirmedM = na
+var int confirmedCIndex = na
+var int confirmedMIndex = na
+var int confirmedCBucket = na
+var int confirmedMBucket = na
 if changedModel
     lastVisualTime := na
     lastVisualIndex := na
     lastVisualBucket := na
     lastVisualKey := ""
+    confirmedC := na
+    confirmedM := na
+    confirmedCIndex := na
+    confirmedMIndex := na
+    confirmedCBucket := na
+    confirmedMBucket := na
+if cMark
+    confirmedC := cMarkPrice
+    confirmedCIndex := bar_index
+    confirmedCBucket := bucketCounter
+if mMark
+    confirmedM := mMarkPrice
+    confirmedMIndex := bar_index
+    confirmedMBucket := bucketCounter
 if entryEvent or cMark or mMark
     lastVisualTime := time
     lastVisualIndex := bar_index
@@ -590,7 +614,7 @@ int modelAnchorIndex = onHtf and barstate.islast and not na(sId) and (not recent
 int drawAnchorIndex = onHtf ? modelAnchorIndex : lastVisualKey == modelKey ? lastVisualIndex : na
 int drawSpan = int(math.ceil(drawHtfBars * htfSeconds / chartSeconds))
 int labelLaneBars = chartTextSize == "Huge" ? 24 : chartTextSize == "Large" ? 18 : chartTextSize == "Small" ? 10 : 14
-int clusterStartIndex = bar_index + (showLevels ? math.max(clusterOffset, labelLaneBars + 5) : clusterOffset)
+int clusterStartIndex = bar_index + (showLevels or showConfirm ? math.max(clusterOffset, labelLaneBars + 5) : clusterOffset)
 int drawingClipIndex = showCluster ? clusterStartIndex - labelLaneBars - 2 : bar_index + 498
 int drawEndIndex = not na(drawAnchorIndex) ? math.min(drawAnchorIndex + drawSpan, drawingClipIndex) : na
 bool recentModel = not na(sId) and not na(sModelAge) and sModelAge <= drawHtfBars
@@ -602,8 +626,11 @@ bool clusterActive = not na(sId) and (not recentOnly or recentModel or drawActiv
 
 var array<line> levelLines = array.new<line>()
 var array<label> levelLabels = array.new<label>()
-var array<float> renderedPrices = array.new<float>(13, na)
-var array<int> renderedPriorities = array.new<int>(13, 0)
+var array<float> renderedPrices = array.new<float>(16, na)
+var array<int> renderedPriorities = array.new<int>(16, 0)
+var array<int> renderedAnchors = array.new<int>(16, na)
+var array<int> renderedEnds = array.new<int>(16, na)
+var array<line> labelLeaders = array.new<line>()
 var array<label> eventLabels = array.new<label>()
 var array<label> eventTexts = array.new<label>()
 var array<int> eventBuckets = array.new<int>()
@@ -611,40 +638,45 @@ var array<box> clusterBodies = array.new<box>()
 var array<line> clusterWicks = array.new<line>()
 var array<label> clusterLabels = array.new<label>()
 var box irlBox = box.new(bar_index, high, bar_index, low, xloc=xloc.bar_index, force_overlay=true, bgcolor=color.new(color.teal, 100), border_color=color.new(color.teal, 100))
-var label clockLabel = label.new(bar_index, high, "", force_overlay=true, style=label.style_none, textcolor=color.silver, size=chartFont)
+var label clockLabel = label.new(bar_index, high, "", force_overlay=true, style=label.style_label_up, color=chart.bg_color, textcolor=chart.fg_color, size=chartFont)
 var table panel = table.new(position.top_right, 2, 6, bgcolor=color.new(#111820, 12), border_width=0)
 if barstate.isfirst
-    for i = 0 to 12
+    for i = 0 to 15
         array.push(levelLines, line.new(bar_index, high, bar_index, high, xloc=xloc.bar_index, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
-        array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_left, textalign=text.align_left, size=chartFont, color=color.new(color.black, 100)))
+        array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_left, textalign=text.align_left, size=chartFont, color=chart.bg_color))
+        array.push(labelLeaders, line.new(bar_index, high, bar_index, high, force_overlay=true, style=line.style_dotted, color=color.new(color.gray, 100)))
     for i = 0 to 3
         array.push(clusterBodies, box.new(bar_index, high, bar_index, low, force_overlay=true, bgcolor=color.new(color.gray, 100), border_color=color.new(color.gray, 100)))
         array.push(clusterWicks, line.new(bar_index, high, bar_index, low, width=1, style=line.style_solid, force_overlay=true, color=color.new(color.gray, 100)))
-        array.push(clusterLabels, label.new(bar_index, low, "", force_overlay=true, style=label.style_none, textcolor=color.silver, size=chartFont))
+        array.push(clusterLabels, label.new(bar_index, low, "", force_overlay=true, style=label.style_label_up, color=chart.bg_color, textcolor=chart.fg_color, size=chartFont))
 f_tag(int flags, int kind, int phase) =>
     string base = kind == 1 ? "CRT" : kind == 3 ? "ISB" : f_has(flags, 2) ? "EGF" : "OUT"
     base + ((kind == 1 or kind == 3) and f_has(flags, 2) ? "/E" : "") + (phase == 1 ? "/TS" : phase == 2 ? "/BR" : "")
 f_levelPriority(int slot) =>
     slot == 12 ? 5 : slot == 3 ? 4 : slot == 11 ? 3 : slot == 4 ? 2 : 1
-f_level(int slot, float price, string caption, color shade, bool visible) =>
+f_level(int slot, float price, string caption, color shade, bool visible, int sourceIndex = na, bool stroke = true) =>
     line ln = array.get(levelLines, slot)
     label lb = array.get(levelLabels, slot)
-    bool ok = visible and drawActive and not na(price)
+    int anchor = na(sourceIndex) ? drawAnchorIndex : sourceIndex
+    int endpoint = not na(anchor) ? math.min(anchor + drawSpan, drawingClipIndex) : na
+    bool ok = visible and not na(anchor) and anchor >= bar_index - 9999 and endpoint >= anchor and not na(price)
     int owner = slot
     if ok and slot > 0
         for prior = 0 to slot - 1
             float priorPrice = array.get(renderedPrices, prior)
-            if not na(priorPrice) and math.abs(price - priorPrice) < syminfo.mintick * 0.5
+            if not na(priorPrice) and math.abs(price - priorPrice) < syminfo.mintick * 0.5 and array.get(renderedAnchors, prior) == anchor
                 owner := prior
                 break
     bool standalone = ok and owner == slot
     if standalone
         array.set(renderedPrices, slot, price)
+        array.set(renderedAnchors, slot, anchor)
+        array.set(renderedEnds, slot, endpoint)
         array.set(renderedPriorities, slot, f_levelPriority(slot))
-        line.set_xy1(ln, drawAnchorIndex, price)
-        line.set_xy2(ln, drawEndIndex, price)
-        label.set_xy(lb, drawEndIndex + 1, price)
-    line.set_color(ln, standalone ? shade : color.new(shade, 100))
+        line.set_xy1(ln, anchor, price)
+        line.set_xy2(ln, endpoint, price)
+        label.set_xy(lb, endpoint + 1, price)
+    line.set_color(ln, standalone and stroke ? shade : color.new(shade, 100))
     label.set_text(lb, standalone ? caption : "")
     label.set_textcolor(lb, shade)
     label.set_tooltip(lb, standalone ? caption + " · " + str.tostring(price, format.mintick) : "")
@@ -657,14 +689,47 @@ f_level(int slot, float price, string caption, color shade, bool visible) =>
             array.set(renderedPriorities, owner, f_levelPriority(slot))
             line.set_color(array.get(levelLines, owner), shade)
             label.set_textcolor(ownerLabel, shade)
+// Only labels move vertically; source price levels and their start bars never move.
+var float viewHigh = na
+var float viewLow = na
+if time >= chart.left_visible_bar_time and time <= chart.right_visible_bar_time
+    viewHigh := na(viewHigh) ? high : math.max(viewHigh, high)
+    viewLow := na(viewLow) ? low : math.min(viewLow, low)
+float fontSpacing = chartTextSize == "Huge" ? 2.0 : chartTextSize == "Large" ? 1.5 : chartTextSize == "Small" ? 0.85 : 1.0
+float visibleLabelGap = math.max(nz(viewHigh - viewLow, high - low) * 0.04 * fontSpacing, nz(ta.atr(14), high - low) * 0.5, syminfo.mintick * 12)
+f_layoutLabels() =>
+    array<bool> placed = array.new<bool>(16, false)
+    float previousY = na
+    for slot = 0 to 15
+        line.set_color(array.get(labelLeaders, slot), color.new(color.gray, 100))
+    for pass = 0 to 15
+        int next = na
+        float nextPrice = na
+        for slot = 0 to 15
+            float candidate = array.get(renderedPrices, slot)
+            if not array.get(placed, slot) and not na(candidate) and (na(nextPrice) or candidate < nextPrice)
+                next := slot
+                nextPrice := candidate
+        if not na(next)
+            array.set(placed, next, true)
+            float labelPrice = na(previousY) ? nextPrice : math.max(nextPrice, previousY + visibleLabelGap)
+            label lb = array.get(levelLabels, next)
+            int endpoint = array.get(renderedEnds, next)
+            label.set_xy(lb, endpoint + 2, labelPrice)
+            if math.abs(labelPrice - nextPrice) > syminfo.mintick * 0.5
+                line leader = array.get(labelLeaders, next)
+                line.set_xy1(leader, endpoint, nextPrice)
+                line.set_xy2(leader, endpoint + 1, labelPrice)
+                line.set_color(leader, color.new(chart.fg_color, 45))
+            previousY := labelPrice
 f_note(string noteText, bool up, bool qualified = false) =>
     string markerLocation = up ? yloc.belowbar : yloc.abovebar
     color markerColor = up ? color.lime : color.red
     string captionText = up ? "\n\n" + noteText : noteText + "\n\n"
     string hint = (qualified ? (up ? "Buy entry / " : "Sell entry / ") + signalTag : (up ? "Bullish confirmation / " : "Bearish confirmation / ") + noteText + " (not entry)")
     if historyMarks > 0
+        array.push(eventTexts, label.new(bar_index, na, captionText, xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_label_up : label.style_label_down, color=chart.bg_color, textalign=text.align_center, textcolor=chart.fg_color, size=chartFont, force_overlay=true, tooltip=hint))
         array.push(eventLabels, label.new(bar_index, na, "", xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_triangleup : label.style_triangledown, color=markerColor, size=size.tiny, force_overlay=true, tooltip=hint))
-        array.push(eventTexts, label.new(bar_index, na, captionText, xloc=xloc.bar_index, yloc=markerLocation, style=label.style_none, textalign=text.align_center, textcolor=chart.fg_color, size=chartFont, force_overlay=true, tooltip=hint))
         array.push(eventBuckets, bucketCounter)
     while array.size(eventLabels) > historyMarks
         label.delete(array.shift(eventLabels))
@@ -691,28 +756,37 @@ if barstate.islast
     string tag = hasModel ? f_tag(sFlags, sKind, sPhase) : "-"
     array.fill(renderedPrices, na)
     array.fill(renderedPriorities, 0)
-    f_level(0, sHi, "RH", primaryColor, showLevels and hasModel)
-    f_level(1, sLo, "RL", primaryColor, showLevels and hasModel)
-    f_level(2, (sHi + sLo) / 2, "EQ", color.new(chart.fg_color, 35), showLevels and hasModel)
-    f_level(3, sInv, "INV", color.new(color.red, 15), showLevels and hasModel)
-    f_level(4, sCp, "CP", color.aqua, showLevels and hasModel)
-    f_level(5, sErlU, "ERL+", color.new(color.orange, 35), showLevels and hasModel)
-    f_level(6, sErlL, "ERL-", color.new(color.teal, 35), showLevels and hasModel)
-    f_level(7, s2Hi, f_tag(s2Flags, s2Kind, s2Phase) + " #2", color.new(color.silver, 75), showSecondary and onHtf and not na(s2Id))
-    f_level(8, s2Lo, "", color.new(color.silver, 75), showSecondary and onHtf and not na(s2Id))
-    f_level(9, s3Hi, f_tag(s3Flags, s3Kind, s3Phase) + " #3", color.new(color.silver, 85), showSecondary and onHtf and not na(s3Id))
-    f_level(10, s3Lo, "", color.new(color.silver, 85), showSecondary and onHtf and not na(s3Id))
-    f_level(11, manualTarget, "CPe", color.blue, showLevels and hasModel and manualTarget > 0)
-    f_level(12, manualInvalid, "SL", color.new(color.red, 35), showLevels and hasModel and manualInvalid > 0)
+    array.fill(renderedAnchors, na)
+    array.fill(renderedEnds, na)
+    f_level(0, sHi, "RH", primaryColor, showLevels and drawActive)
+    f_level(1, sLo, "RL", primaryColor, showLevels and drawActive)
+    f_level(2, (sHi + sLo) / 2, "EQ", color.new(chart.fg_color, 35), showLevels and drawActive)
+    f_level(3, sInv, "INV", color.new(color.red, 15), showLevels and drawActive)
+    f_level(4, sCp, "CP", color.aqua, showLevels and drawActive)
+    f_level(5, sErlU, "ERL+", color.new(color.orange, 35), showLevels and drawActive)
+    f_level(6, sErlL, "ERL-", color.new(color.teal, 35), showLevels and drawActive)
+    f_level(7, s2Hi, f_tag(s2Flags, s2Kind, s2Phase) + " #2", color.new(color.silver, 75), showSecondary and onHtf and drawActive and not na(s2Id))
+    f_level(8, s2Lo, "RL #2", color.new(color.silver, 75), showSecondary and onHtf and drawActive and not na(s2Id))
+    f_level(9, s3Hi, f_tag(s3Flags, s3Kind, s3Phase) + " #3", color.new(color.silver, 85), showSecondary and onHtf and drawActive and not na(s3Id))
+    f_level(10, s3Lo, "RL #3", color.new(color.silver, 85), showSecondary and onHtf and drawActive and not na(s3Id))
+    f_level(11, manualTarget, "CPe", color.blue, showLevels and drawActive and manualTarget > 0)
+    f_level(12, manualInvalid, "SL", color.new(color.red, 35), showLevels and drawActive and manualInvalid > 0)
+    bool cLevelActive = showConfirm and isLtf and not na(confirmedCIndex) and (not recentOnly or bucketCounter - confirmedCBucket <= drawHtfBars)
+    bool mLevelActive = showConfirm and isLtf and not na(confirmedMIndex) and (not recentOnly or bucketCounter - confirmedMBucket <= drawHtfBars)
+    color confirmationColor = sDir == 1 ? color.lime : color.red
+    f_level(13, confirmedC, "CISD", confirmationColor, cLevelActive, confirmedCIndex)
+    f_level(14, confirmedM, "MSS", confirmationColor, mLevelActive, confirmedMIndex)
     bool hasIrl = drawActive and not na(sIrlT)
     if hasIrl
         box.set_lefttop(irlBox, drawAnchorIndex, sIrlH)
         box.set_rightbottom(irlBox, drawEndIndex, sIrlL)
     box.set_bgcolor(irlBox, color.new(primaryColor, hasIrl ? 90 : 100))
     box.set_border_color(irlBox, color.new(primaryColor, hasIrl ? 45 : 100))
-    box.set_text(irlBox, hasIrl ? (sIrlKind == 1 ? "FVG" : "OB?") : "")
+    box.set_text(irlBox, "")
     box.set_text_color(irlBox, primaryColor)
     box.set_text_size(irlBox, chartFont)
+    f_level(15, (sIrlH + sIrlL) / 2, sIrlKind == 1 ? "FVG" : "OB?", primaryColor, hasIrl, drawAnchorIndex, false)
+    f_layoutLabels()
     if showPanel
         string dirText = biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
         string stateText = not hasModel ? "WAIT" : sDir == 0 ? "COMP" : localTargetTaken ? "CP?" : alreadyEmitted ? "E" : na(target) ? "CP -" : "LTF"
@@ -722,7 +796,8 @@ if barstate.islast
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
             table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont)
     float clusterSpan = hasModel ? math.max(sAH, sBH, nz(sCH, sBH)) - math.min(sAL, sBL, nz(sCL, sBL)) : high - low
-    float labelY = hasModel ? math.min(sAL, sBL, nz(sCL, sBL)) - math.max(clusterSpan * 0.08, syminfo.mintick * 4) : low
+    float clusterFloor = hasModel ? math.min(sAL, sBL, nz(sCL, sBL), clusterLive and liveComplete ? liveL : sBL) : low
+    float labelY = clusterFloor - math.max(clusterSpan * 0.08, syminfo.mintick * 4)
     for i = 0 to 3
         bool thirdFrozen = not na(sCT)
         bool pendingThird = na(sCT) and liveComplete and liveT > sBT

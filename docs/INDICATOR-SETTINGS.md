@@ -64,7 +64,7 @@ Tên dưới đây khớp tên trong Inputs; di chuột vào biểu tượng tr�
 | CP override | 0 dùng CP model; nhập đích cá nhân khi cần. CRTH/CRTL có vai trò tùy bias/kịch bản, không cố định thành TP. |
 | Minimum planned R:R | Tính tại close nến entry với SL/CP tham chiếu. Không phải R nhận thực tế. |
 | Retest tolerance | Dung sai tick cho BL/biên mother, không mở rộng mọi vùng FVG/OB. |
-| C / M confirmation marks | Tham khảo sơ bộ theo hướng model, mặc định tắt. B C/M dưới nến = phía Buy chưa đủ gate; S C/M trên nến = phía Sell chưa đủ gate. Tam giác Tiny neo trực tiếp theo nến, không theo màu thân. Entry cùng nến được ưu tiên. Chúng cũng chiếm giới hạn latest marks. |
+| C / M confirmation marks | Bật: thêm tam giác sơ bộ và line CISD/MSS từ đúng nến LTF xác nhận; mỗi mức giữ nguyên giá và mốc đầu riêng, kéo hữu hạn theo horizon. B C/M dưới nến = phía Buy chưa đủ gate; S C/M trên nến = phía Sell chưa đủ gate. Tam giác Tiny, xanh Buy/đỏ Sell; entry cùng nến được ưu tiên. Tắt: ẩn C/M và hai line này; không đổi logic entry/alert. Giới hạn latest marks áp dụng dấu; line giữ mức xác nhận gần nhất của từng loại trong model hiện hành. |
 | Time filter for E | Context only không chặn giờ; Web macros/working windows chỉ cho E trong cửa sổ tương ứng web, dùng giờ New York có DST. |
 | Macro background | Chỉ tô nền context. |
 | QT clock context | Đồng hồ quý intraday; không quyết định bias. |
@@ -104,5 +104,13 @@ Nếu chưa có tín hiệu, kiểm tra lần lượt: **HIST và chart TF → m
 5. Khi vừa sửa code: xóa instance cũ/thêm lại, ghim cùng scale với symbol; tạo lại alert nếu đang sử dụng.
 
 Chữ dùng các mức kích thước Pine, không phải số pixel cố định. Dashboard theo cơ chế table tự co theo chữ/nội dung: [TradingView tables](https://www.tradingview.com/pine-script-docs/visuals/tables/). Tooltip là trợ giúp Inputs: [TradingView inputs](https://www.tradingview.com/pine-script-docs/concepts/inputs/).
+
+## Đường xanh/vàng và bố trí chú thích
+
+- Hai plot bối cảnh chạy từ giá mở: **TDO actual open** màu xanh aqua là giá mở ngày; **Session TO actual open** màu vàng/cam là giá mở phiên theo mốc thời gian của hệ thống. Chúng thuộc `Actual TDO / session TO prices`, không thuộc C/M. Tắt setting này nếu không dùng các mốc đó. Các đường có nhãn CP/ERL/RH/RL là nhóm reference cấu trúc khác, không phân biệt chỉ bằng màu.
+- CISD line dùng delivery level đã bị close vượt qua lúc C được xác nhận. MSS line dùng pivot đã biết khi kích hoạt model. Giá được chụp tại bar xác nhận, không chạy theo delivery/pivot thay đổi sau đó. Mỗi line khởi đầu từ bar xác nhận của chính nó, không kéo ngược về bar nguồn đối nghịch/pivot và không kéo vô hạn.
+- Khi tắt C/M, các mức HTF trên LTF mặc định chờ entry E. Khi bật, chúng có thể xuất hiện từ xác nhận C/M trước khi đủ R:R/bias/time/IRL của entry. Đây là thay đổi phần quan sát, không thay thuật toán phát E hoặc alert.
+- Nhãn line nằm bên phải; mức trùng giá và cùng neo gộp nhãn. Các nhãn gần nhau được xếp cách nhau theo dải giá đang nhìn và cỡ chữ; đường dẫn chấm chỉ lại mức thật nếu chữ bị dịch. **Đường giá không bị dịch để né chữ.** IRL không viết chữ trong box nữa, dùng nhãn bên ngoài cùng hệ thống sắp xếp.
+- Nền nhãn cùng nền chart che nét phía sau; captions HTF được đặt dưới đáy cụm, tính cả live khi bật. Các biện pháp này giảm đè chữ/line trong bố cục thông thường. Pine không cung cấp bounding box chữ hay thang giá pixel của chart, nên chưa thể bảo đảm tuyệt đối ở mọi mức zoom, cỡ cửa sổ, log scale hoặc khi kéo scale bằng tay. Hình thực tế của bản này vẫn cần đối chiếu trên TradingView.
 
 Nhãn tín hiệu dùng ASCII để giảm phụ thuộc ký tự/font: entry `BUY C`/`SELL M`, xác nhận sơ bộ `B C/M`/`S C/M`. Mọi tam giác cùng quy tắc Buy xanh (lime), Sell đỏ, cỡ Tiny; loại tín hiệu phân biệt qua nội dung chữ và tooltip, không dùng màu cam/teal cho C/M. Nguồn giữ UTF-8 để tooltip tiếng Việt có đầy đủ dấu. Chưa xác nhận lỗi font trên chart thực tế; kiểm tra mã hóa không thấy ký tự thay thế hoặc ký tự zero-width.
