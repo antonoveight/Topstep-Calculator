@@ -64,21 +64,21 @@ Tên dưới đây khớp tên trong Inputs; di chuột vào biểu tượng tr�
 | CP override | 0 dùng CP model; nhập đích cá nhân khi cần. CRTH/CRTL có vai trò tùy bias/kịch bản, không cố định thành TP. |
 | Minimum planned R:R | Tính tại close nến entry với SL/CP tham chiếu. Không phải R nhận thực tế. |
 | Retest tolerance | Dung sai tick cho BL/biên mother, không mở rộng mọi vùng FVG/OB. |
-| C / M confirmation marks | Tham khảo sơ bộ; mặc định tắt. Nếu bật, chúng cũng chiếm giới hạn latest marks. |
+| C / M confirmation marks | Tham khảo sơ bộ; mặc định tắt. Khi bật: tam giác dưới nến tăng/trên nến giảm, chữ C/M rời theo màu nền chart; C và M cùng nến gộp C/M, entry cùng nến được ưu tiên. Chúng cũng chiếm giới hạn latest marks. |
 | Time filter for E | Context only không chặn giờ; Web macros/working windows chỉ cho E trong cửa sổ tương ứng web, dùng giờ New York có DST. |
 | Macro background | Chỉ tô nền context. |
 | QT clock context | Đồng hồ quý intraday; không quyết định bias. |
 | Actual TDO / session TO prices | Plot giá mở đúng mốc nếu có dữ liệu; có lịch sử riêng, mặc định tắt. |
 | Model HTF candle cluster | C1/C2/C3 của model ưu tiên, không nhất thiết là ba nến mới nhất. |
 | Additional live HTF candle | N* live bổ sung khi C3 đã cố định; preview thiếu đầu bucket không hiển thị. |
-| Cluster offset / body width | Khoảng cách 15 bar / thân 6 bar mặc định; chỉ đổi hình thức, không đổi giá. Nếu chữ dày có thể tăng offset lên 20–25. |
-| Model range / ERL / CP | Các mức cấu trúc; trên LTF bắt đầu từ nến xác nhận điều kiện. |
+| Cluster offset / body width | Offset yêu cầu 15 bar / thân 6 bar mặc định. Khi có line, cụm tự lùi tối thiểu để dành khoảng cho chú thích bên phải line theo cỡ chữ. Nếu zoom ngang quá nhỏ, tăng offset hoặc giãn chart để đủ chỗ chữ theo pixel. Râu nến rộng 2 px. Không đổi OHLC. |
+| Model range / ERL / CP | Các mức cấu trúc; trên LTF bắt đầu từ nến xác nhận điều kiện. Nhãn bên phải line; các mức trùng giá gộp nhãn thay vì viết chồng. |
 | Two newer active ranges | Hai model phụ trên HTF, mặc định tắt; không đổi thứ tự registry. |
 | Compact panel | Dashboard góc trên phải; kích thước tự theo chữ/nội dung. |
 | Signal history: latest marks | 1 dấu mặc định; 0 không vẽ dấu; tối đa 100. Không thay alert. |
 | Hide drawings without a recent signal | Ẩn hình quá tuổi; cụm HTF có thể hiện trước entry nếu model HTF mới. |
 | Drawing horizon / recency | 3 nến HTF mặc định; vừa hạn chiều dài vừa hạn tuổi hình khi bật recent. Đường còn được cắt trước cụm HTF. |
-| Buy / Sell triangles | B xanh lên/S đỏ xuống tại bar LTF xác nhận đủ gate; không phải lệnh tự động. |
+| Buy / Sell triangles | B xanh lên dưới low/S đỏ xuống trên high nến LTF xác nhận đủ gate, có khoảng hở và chữ rời ghi loại xác nhận; không phải lệnh tự động. |
 | Chart text size | Small/Normal/Large/Huge; Normal mặc định. Áp dụng nhãn, vùng IRL, caption và đồng hồ. |
 | Dashboard text size | Small/Normal/Large; Small mặc định. |
 

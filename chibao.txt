@@ -1,9 +1,9 @@
 // Mozilla Public License 2.0: https://mozilla.org/MPL/2.0/
 // The Funded Angler - automatic, confirmed HTF model registry.
-// Editor syntax diagnostics passed; authenticated chart execution / Replay still required.
+// Prior version passed editor syntax diagnostics; latest label layout needs editor/chart validation.
 // See docs/INDICATOR-AUTO-MODELS.md for exact lifecycle, priority and validation limits.
 //@version=6
-indicator("The Funded Angler v6 - Auto HTF", shorttitle="TFA v6", overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=120, max_boxes_count=30, max_labels_count=150)
+indicator("The Funded Angler v6 - Auto HTF", shorttitle="TFA v6", overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=120, max_boxes_count=30, max_labels_count=300)
 
 const string NY = "America/New_York"
 const string VN = "Asia/Ho_Chi_Minh"
@@ -589,8 +589,9 @@ int modelAnchorTime = not na(sResolved) and sResolved > sConfirmed and not na(sC
 int modelAnchorIndex = onHtf and barstate.islast and not na(sId) and (not recentOnly or sModelAge <= drawHtfBars) ? f_sourceIndex(modelAnchorTime) : na
 int drawAnchorIndex = onHtf ? modelAnchorIndex : lastVisualKey == modelKey ? lastVisualIndex : na
 int drawSpan = int(math.ceil(drawHtfBars * htfSeconds / chartSeconds))
-int clusterStartIndex = bar_index + clusterOffset
-int drawingClipIndex = showCluster ? clusterStartIndex - 3 : bar_index + 499
+int labelLaneBars = chartTextSize == "Huge" ? 24 : chartTextSize == "Large" ? 18 : chartTextSize == "Small" ? 10 : 14
+int clusterStartIndex = bar_index + (showLevels ? math.max(clusterOffset, labelLaneBars + 5) : clusterOffset)
+int drawingClipIndex = showCluster ? clusterStartIndex - labelLaneBars - 2 : bar_index + 498
 int drawEndIndex = not na(drawAnchorIndex) ? math.min(drawAnchorIndex + drawSpan, drawingClipIndex) : na
 bool recentModel = not na(sId) and not na(sModelAge) and sModelAge <= drawHtfBars
 bool recentLtfSignal = lastVisualKey == modelKey and not na(lastVisualBucket) and bucketCounter - lastVisualBucket <= drawHtfBars
@@ -601,8 +602,12 @@ bool clusterActive = not na(sId) and (not recentOnly or recentModel or drawActiv
 
 var array<line> levelLines = array.new<line>()
 var array<label> levelLabels = array.new<label>()
+var array<float> renderedPrices = array.new<float>(13, na)
+var array<int> renderedPriorities = array.new<int>(13, 0)
 var array<label> eventLabels = array.new<label>()
+var array<label> eventTexts = array.new<label>()
 var array<int> eventBuckets = array.new<int>()
+float markerGap = math.max(nz(ta.atr(14), high - low) * 0.18, syminfo.mintick * 5)
 var array<box> clusterBodies = array.new<box>()
 var array<line> clusterWicks = array.new<line>()
 var array<label> clusterLabels = array.new<label>()
@@ -612,45 +617,71 @@ var table panel = table.new(position.top_right, 2, 6, bgcolor=color.new(#111820,
 if barstate.isfirst
     for i = 0 to 12
         array.push(levelLines, line.new(bar_index, high, bar_index, high, xloc=xloc.bar_index, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
-        array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_right, size=chartFont, color=color.new(color.black, 100)))
+        array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_left, textalign=text.align_left, size=chartFont, color=color.new(color.black, 100)))
     for i = 0 to 3
         array.push(clusterBodies, box.new(bar_index, high, bar_index, low, force_overlay=true, bgcolor=color.new(color.gray, 100), border_color=color.new(color.gray, 100)))
-        array.push(clusterWicks, line.new(bar_index, high, bar_index, low, force_overlay=true, color=color.new(color.gray, 100)))
+        array.push(clusterWicks, line.new(bar_index, high, bar_index, low, width=2, force_overlay=true, color=color.new(color.gray, 100)))
         array.push(clusterLabels, label.new(bar_index, low, "", force_overlay=true, style=label.style_none, textcolor=color.silver, size=chartFont))
 f_tag(int flags, int kind, int phase) =>
     string base = kind == 1 ? "CRT" : kind == 3 ? "ISB" : f_has(flags, 2) ? "EGF" : "OUT"
     base + ((kind == 1 or kind == 3) and f_has(flags, 2) ? "/E" : "") + (phase == 1 ? "/TS" : phase == 2 ? "/BR" : "")
+f_levelPriority(int slot) =>
+    slot == 12 ? 5 : slot == 3 ? 4 : slot == 11 ? 3 : slot == 4 ? 2 : 1
 f_level(int slot, float price, string caption, color shade, bool visible) =>
     line ln = array.get(levelLines, slot)
     label lb = array.get(levelLabels, slot)
     bool ok = visible and drawActive and not na(price)
-    if ok
+    int owner = slot
+    if ok and slot > 0
+        for prior = 0 to slot - 1
+            float priorPrice = array.get(renderedPrices, prior)
+            if not na(priorPrice) and math.abs(price - priorPrice) < syminfo.mintick * 0.5
+                owner := prior
+                break
+    bool standalone = ok and owner == slot
+    if standalone
+        array.set(renderedPrices, slot, price)
+        array.set(renderedPriorities, slot, f_levelPriority(slot))
         line.set_xy1(ln, drawAnchorIndex, price)
         line.set_xy2(ln, drawEndIndex, price)
-        label.set_xy(lb, drawEndIndex, price)
-    line.set_color(ln, ok ? shade : color.new(shade, 100))
-    label.set_text(lb, ok ? caption : "")
+        label.set_xy(lb, drawEndIndex + 1, price)
+    line.set_color(ln, standalone ? shade : color.new(shade, 100))
+    label.set_text(lb, standalone ? caption : "")
     label.set_textcolor(lb, shade)
-f_note(string noteText, float price, color shade, bool up, bool triangle = false) =>
+    label.set_tooltip(lb, standalone ? caption + " · " + str.tostring(price, format.mintick) : "")
+    if ok and owner != slot
+        label ownerLabel = array.get(levelLabels, owner)
+        string combinedCaption = label.get_text(ownerLabel) + (caption != "" ? " / " + caption : "")
+        label.set_text(ownerLabel, combinedCaption)
+        label.set_tooltip(ownerLabel, combinedCaption + " · " + str.tostring(price, format.mintick))
+        if f_levelPriority(slot) > array.get(renderedPriorities, owner)
+            array.set(renderedPriorities, owner, f_levelPriority(slot))
+            line.set_color(array.get(levelLines, owner), shade)
+            label.set_textcolor(ownerLabel, shade)
+f_note(string noteText, float price, color shade, bool up, bool qualified = false) =>
+    float markerY = up ? price - markerGap : price + markerGap
+    float captionY = up ? markerY - markerGap * 2 : markerY + markerGap * 2
+    string hint = (qualified ? (up ? "Buy entry / " : "Sell entry / ") + signalTag : (up ? "Bullish confirmation / " : "Bearish confirmation / ") + noteText + " (not entry)")
     if historyMarks > 0
-        array.push(eventLabels, label.new(bar_index, price, noteText, xloc=xloc.bar_index, style=triangle ? (up ? label.style_triangleup : label.style_triangledown) : (up ? label.style_label_up : label.style_label_down), color=shade, textcolor=shade, size=triangle ? size.small : chartFont, force_overlay=true, tooltip=triangle ? (up ? "Buy / " : "Sell / ") + signalTag : noteText))
+        array.push(eventLabels, label.new(bar_index, markerY, "", xloc=xloc.bar_index, yloc=yloc.price, style=up ? label.style_triangleup : label.style_triangledown, color=shade, size=size.small, force_overlay=true, tooltip=hint))
+        array.push(eventTexts, label.new(bar_index, captionY, noteText, xloc=xloc.bar_index, yloc=yloc.price, style=up ? label.style_label_up : label.style_label_down, color=color.new(color.black, 100), textcolor=chart.fg_color, size=chartFont, force_overlay=true, tooltip=hint))
         array.push(eventBuckets, bucketCounter)
     while array.size(eventLabels) > historyMarks
         label.delete(array.shift(eventLabels))
+        label.delete(array.shift(eventTexts))
         array.shift(eventBuckets)
 
-if cMark
-    f_note("C", sDir == 1 ? low : high, color.aqua, sDir == 1)
-if mMark
-    f_note("M", sDir == 1 ? low : high, color.yellow, sDir == 1)
 if entryEvent and showEntryTriangles
-    f_note(entryLong ? "B" : "S", entryLong ? low : high, entryLong ? color.lime : color.red, entryLong, true)
+    f_note((entryLong ? "B" : "S") + "·" + signalTag, entryLong ? low : high, entryLong ? color.lime : color.red, entryLong, true)
+else if cMark or mMark
+    f_note(cMark and mMark ? "C/M" : cMark ? "C" : "M", sDir == 1 ? low : high, cMark ? color.teal : color.orange, sDir == 1)
 
 if recentOnly and barstate.islast
     int markIndex = array.size(eventLabels) - 1
     while markIndex >= 0
         if bucketCounter - array.get(eventBuckets, markIndex) > drawHtfBars
             label.delete(array.remove(eventLabels, markIndex))
+            label.delete(array.remove(eventTexts, markIndex))
             array.remove(eventBuckets, markIndex)
         markIndex -= 1
 
@@ -658,9 +689,11 @@ if barstate.islast
     bool hasModel = not na(sId)
     color primaryColor = sDir == 1 ? color.teal : sDir == -1 ? color.orange : color.silver
     string tag = hasModel ? f_tag(sFlags, sKind, sPhase) : "-"
-    f_level(0, sHi, tag + " RH", primaryColor, showLevels and hasModel)
+    array.fill(renderedPrices, na)
+    array.fill(renderedPriorities, 0)
+    f_level(0, sHi, "RH", primaryColor, showLevels and hasModel)
     f_level(1, sLo, "RL", primaryColor, showLevels and hasModel)
-    f_level(2, (sHi + sLo) / 2, "EQ", color.new(color.gray, 45), showLevels and hasModel)
+    f_level(2, (sHi + sLo) / 2, "EQ", color.new(chart.fg_color, 35), showLevels and hasModel)
     f_level(3, sInv, "INV", color.new(color.red, 15), showLevels and hasModel)
     f_level(4, sCp, "CP", color.aqua, showLevels and hasModel)
     f_level(5, sErlU, "ERL+", color.new(color.orange, 35), showLevels and hasModel)
@@ -724,7 +757,7 @@ if barstate.islast
         label.set_text(caption, visible ? (i == 0 ? "C1" : i == 1 ? "C2" : i == 2 and thirdFrozen ? (sKind == 3 and sPhase == 1 ? "TS" : sPhase == 2 ? "BR" : "C3") : "N*") : "")
         label.set_tooltip(caption, visible ? str.format_time(sourceTime, "dd/MM HH:mm", NY) + " | O " + str.tostring(o, format.mintick) + " H " + str.tostring(h, format.mintick) + " L " + str.tostring(l, format.mintick) + " C " + str.tostring(c, format.mintick) + (cached >= 0 or sourceTime == liveT ? " / chart OHLC" : " / confirmed HTF") : "")
     int remaining = not na(liveEnd) ? math.max(0, int((liveEnd - timenow) / 1000)) : 0
-    label.set_xy(clockLabel, bar_index + clusterOffset, labelY - math.max(clusterSpan * 0.1, syminfo.mintick * 6))
+    label.set_xy(clockLabel, clusterStartIndex, labelY - math.max(clusterSpan * 0.1, syminfo.mintick * 6))
     label.set_text(clockLabel, showCluster and clusterActive ? tag + (barstate.isrealtime ? " · " + str.tostring(int(math.floor(remaining / 60))) + ":" + str.tostring(remaining % 60, "00") : "") : "")
 
 bool modelEvent = changedModel and not na(sId) and barstate.isconfirmed

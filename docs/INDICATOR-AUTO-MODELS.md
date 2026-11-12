@@ -8,7 +8,8 @@ Nguồn hiện hành: `indicators/funded-angler-v6.pine`, đồng bộ sang `chi
 
 - `overlay=true, scale=scale.none`: dùng thang giá chart hiện có, không tạo một trục giá mới.
 - Range, ERL, CP và vùng IRL dùng **chỉ số nến thực + giá OHLC thực**, `xloc.bar_index`, `extend.none` và `force_overlay=true`. Trên HTF, tìm đúng nến nguồn bằng timestamp; trên LTF, bắt đầu tại nến xác nhận điều kiện, không kéo ngược về trước tín hiệu. Không quy đổi giá sang pixel/phần trăm màn hình.
-- Đường/vùng chỉ kéo tối đa số nến HTF đã chọn (mặc định 3), đồng thời kết thúc trước cụm HTF bên phải ít nhất 3 bar chart. Nhãn nằm về bên trái điểm kết thúc. Neo quá giới hạn lịch sử tọa độ của Pine được ẩn thay vì dịch sai sang nến khác.
+- Đường/vùng chỉ kéo tối đa số nến HTF đã chọn (mặc định 3), đồng thời kết thúc trước cụm HTF bên phải. Nhãn nằm bên phải điểm kết thúc, cách 1 bar, trong khoảng dành riêng trước cụm HTF. Khoảng này tăng theo cỡ chữ, tính theo bar chart; khi zoom ngang quá nhỏ vẫn có thể cần tăng offset/giãn chart để đủ chỗ theo pixel. Neo quá giới hạn lịch sử tọa độ của Pine được ẩn thay vì dịch sai sang nến khác.
+- Các reference trùng giá (chênh dưới nửa tick) gộp một line và nhãn, ví dụ `RH / INV` hoặc `CP / ERL-`; không dịch mức giá để né chữ. Khi trùng mức, màu ưu tiên SL → INV → CPe → CP → các mức context. Tên model nằm ở panel/cụm HTF thay vì lặp trước RH.
 - Cụm HTF bên phải là hình chiếu có chủ đích: X theo `bar_index + offset` (độ rộng tính bằng số bar), Y là OHLC thực của model được chọn. Zoom ngang thay đổi độ rộng giống nến chart, zoom dọc thay đổi theo thang giá chung.
 - Sau khi thay code, **xóa instance cũ rồi thêm lại**. Pine không ghi đè toàn bộ cấu hình scale mà người dùng đã lưu. Nếu vẫn tách thang giá, dùng menu của chỉ báo → **Pin to scale → cùng scale với symbol**, không tạo scale mới. Kiểm tra cả trục giá và tùy chọn autoscale của chart.
 
@@ -94,7 +95,9 @@ Cụm nến dùng **C1/C2 của model #1**, không phải luôn hai nến HTF g�
 
 OHLC live được gom từ nến chart đang mở theo `time(HTF)`: open của bar đầu, high lớn nhất, low nhỏ nhất và close mới nhất. Chỉ hiển thị preview nếu có dữ liệu từ đúng đầu bucket HTF, tránh vẽ một nến thiếu đầu lịch sử như nến đầy đủ. Cache các bucket đã hoàn tất được đối chiếu theo timestamp để vẽ C1/C2/C3; khi không có cache đầy đủ, dùng OHLC HTF đã xác nhận. Tooltip caption ghi timestamp, O/H/L/C và nguồn dữ liệu để đối chiếu trực tiếp.
 
-Nhãn chart: `CRT`, `TS`, `EGF`, `OUT`, `ISB`, `BR`, `RH/RL`, `EQ`, `ERL+/−`, `CP`, `INV`, `FVG`, `OB?`. LTF: tam giác xanh hướng lên `B` / đỏ hướng xuống `S` là điều kiện Buy/Sell đã qua gate entry; tooltip ghi loại xác nhận C/M/F/O/BL/P. `C`, `M` là dấu xác nhận tham khảo, mặc định tắt. Dấu tín hiệu đặt tại nến LTF đã đóng xác nhận điều kiện. Nhãn ngắn không có nghĩa đã vào lệnh thật.
+Nhãn chart: `CRT`, `TS`, `EGF`, `OUT`, `ISB`, `BR`, `RH/RL`, `EQ`, `ERL+/−`, `CP`, `INV`, `FVG`, `OB?`. LTF: tam giác xanh hướng lên nằm dưới low nến Buy, đỏ hướng xuống nằm trên high nến Sell, chữ rời `B·C`, `S·M`… ghi cả hướng entry và xác nhận C/M/F/O/BL/P. `C`, `M` là xác nhận tham khảo, mặc định tắt; khi bật, tam giác và chữ cũng nằm dưới nến hướng tăng/trên nến hướng giảm. C và M cùng nến gộp `C/M`; nếu cùng nến đủ entry, chỉ vẽ entry. Tooltip phân biệt confirmation với entry. Khoảng cách theo ATR LTF/tick, tọa độ vẫn bám giá và nến thực; chữ theo màu foreground chart để đọc được trên nền sáng/tối. Dấu và chữ được xóa cùng nhau theo giới hạn lịch sử. Nhãn ngắn không có nghĩa đã vào lệnh thật.
+
+Râu nến HTF dùng line rộng 2 px; thân và râu vẫn giữ nguyên OHLC, không thay đổi phép tổng hợp nến.
 
 Trong **5. Display → Signal history: latest marks (0 = hide)**, chọn số dấu gần nhất cần giữ: mặc định **1**, tối đa 100; 0 ẩn toàn bộ dấu tín hiệu lịch sử. Dấu cũ nhất được xóa trước. `Buy / Sell triangles` mặc định bật, dấu C/M và model phụ mặc định tắt.
 
@@ -111,6 +114,8 @@ Registry được khôi phục trong cửa sổ thời gian xác định bởi `
 Tối đa 12 model mặc định, 16 nếu tăng; 80 swing và 60 zone. Khi hàng đợi đầy, **bỏ model mới**, không xóa model cũ còn hiệu lực; panel có dấu `+` để báo đã có bỏ qua. Model thứ 4 trở đi chưa được vẽ riêng, vẫn được xét khi model trước kết thúc.
 
 Kiểm tra Node thực thi các công thức lấy từ Pine và một acceptance specification độc lập cho hàng đợi, hiệu lực, nested mother, merge, IRL/ERL, projection HTF/LTF. **Đây không phải Pine interpreter hoặc kiểm thử tương tác TradingView.**
+
+Bản chỉnh bố cục nhãn bên phải, tam giác/chữ tách rời và râu HTF 2 px đã qua kiểm tra Node, gồm tọa độ marker/caption ở hai phía nến. Thử lại Pine Editor tạm cho bản này không thành công ở bước dán mã (editor vẫn giữ script mẫu), nên chưa có chẩn đoán cú pháp mới và chưa kiểm chứng hình thực tế của bản bố cục này. Kết quả editor phía dưới là của phiên bản trước.
 
 Đã mở Pine Editor công khai trong phiên trình duyệt tạm, dán đúng source TFA v6 và nhận chẩn đoán editor `success: true` từ `translate_light` (dữ liệu variables/functions/types/scopes). Đây là kết quả chẩn đoán cú pháp/editor, **không phải xác nhận script đã chạy trên chart**. `Add to chart` yêu cầu đăng nhập; không đăng nhập, lưu/phát hành hoặc đặt lệnh. Cần tiếp tục Add to chart và Bar Replay trong tài khoản của người dùng, kiểm tra trực tiếp zoom/pan/scale sau khi thêm lại indicator. Chưa xác nhận lợi thế thống kê.
 
