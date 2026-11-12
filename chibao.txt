@@ -382,7 +382,7 @@ if barstate.isfirst
 if barstate.islast
     if showPanel
         string quarterText = showQt ? "D Q" + str.tostring(dayQuarter) + " / 90 Q" + str.tostring(sessionQuarter) + " / micro Q" + str.tostring(microQuarter) : "Off"
-        array<string> headings = array.from("HTF / LTF", "Structure", "HTF closed", "Scenario", "Entry condition", "Macro / working", "QT - clock only", "NY / VN")
+        array<string> headings = array.from("HTF / LTF", "Structure", "HTF closed", "Scenario", "Entry condition", "Macro at bar close", "QT at bar close", "NY / VN bar close")
         array<string> values = array.from(htf + " / " + timeframe.period + (isLtf ? " entry chart" : " observe only"), structure, htfSummary, state, entryMode + " / " + bias, macro + " / " + (working ? "in window" : "off window"), quarterText, str.format_time(stamp, "HH:mm", NY) + " / " + str.format_time(stamp, "HH:mm", VN))
         for row = 0 to 7
             table.cell(panel, 0, row, array.get(headings, row), text_color=color.silver, text_size=size.tiny)

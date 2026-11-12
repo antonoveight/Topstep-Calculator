@@ -71,6 +71,7 @@ Chạm cả target và invalidation trong cùng bar: ghi không xác định th�
 - Dùng `America/New_York` và `Asia/Ho_Chi_Minh`, không dùng UTC−5 cố định hoặc gọi mọi thời điểm là EST.
 - 10 macros theo cấu hình web: AS1 18:50–19:10, AS2 19:50–20:10, LM1 02:33–03:00, LM2 04:03–04:30, AM1 08:50–09:10, AM2 09:50–10:10, AM3 10:50–11:10, LNC 11:50–12:10, PM 13:10–13:40, CLS 15:15–15:45, đều giờ NY. Đồng bộ cấu hình hiện có, không tuyên bố đây là danh sách chính thức đầy đủ.
 - Mặc định **Context only**: không lọc entry theo giờ. Nếu chọn Web macros, kiểm tra thời điểm **bar entry đóng**, khoảng đầu bao gồm/cuối loại trừ. Bar đóng đúng cuối cửa sổ nằm ngoài filter. Không phải đợi hết macro mới tìm entry.
+- Các dòng thời gian trong panel chỉ báo ghi rõ **bar close**: dùng timestamp đóng của bar đang xét để review điều kiện. Khi bar còn chạy, đó là giờ đóng dự kiến, không phải đồng hồ hiện tại của web và không phải tín hiệu đã xác nhận. Countdown cụm HTF dùng thời gian thực khi có tick.
 - Web working windows: 07:45–10:00, 14:00–16:00 VN; Mỹ 20:15–22:30 mùa hè hoặc 21:15–23:30 mùa đông. Không coi đây là giờ sở giao dịch; không tích hợp lịch nghỉ lễ hoặc tin tức.
 - QT theo quy ước intraday Daye: neo 18:00 NY, bốn quý 6h, mỗi phiên bốn quý 90m, mỗi 90m bốn micro 22,5m. Không suy ra AMD/bias từ số quý.
 - TDO là 00:00 NY của chu kỳ; sau 18:00 thì là midnight sắp tới. Session True Open: 19:30 / 01:30 / 07:30 / 13:30 NY. Giá TO chỉ lấy khi chart có bar mở đúng timestamp; nếu thiếu thì để trống, không lấy một bar sau để bù. Không dùng giá forming hoặc True Open để ép bias.
