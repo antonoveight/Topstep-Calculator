@@ -89,6 +89,8 @@ Cụm nến dùng **C1/C2 của model #1**, không phải luôn hai nến HTF g�
 
 Nhãn chart: `CRT`, `TS`, `EGF`, `OUT`, `ISB`, `BR`, `RH/RL`, `EQ`, `ERL+/−`, `CP`, `INV`, `FVG`, `OB?`. LTF: `C`, `M` là xác nhận tham khảo; `E+/C`, `E−/M`… mới là điều kiện entry đã qua gate. Nhãn ngắn không có nghĩa đã vào lệnh thật.
 
+Trong **5. Display → Signal history: latest marks (0 = hide)**, chọn số dấu C/M/E gần nhất cần giữ: mặc định 20, tối đa 100; 0 ẩn toàn bộ dấu tín hiệu lịch sử. Dấu cũ nhất được xóa trước. Setting chỉ giới hạn hình vẽ, không thay đổi tính toán, cảnh báo hoặc thứ tự model còn hiệu lực; range/IRL/ERL và cụm nến của model hiện hành vẫn giữ nguyên.
+
 Thời gian giữ cùng 10 macro và các quý Daye intraday của web. Panel dùng giờ hiện tại khi realtime; gate E dùng đúng timestamp bar entry đóng, khoảng cuối loại trừ. QT/TO không tự tạo bias hoặc model. Giá TO chỉ lấy nếu có bar mở đúng mốc, không tự bù dữ liệu.
 
 ## 8. Giới hạn phục hồi và kiểm tra

@@ -47,6 +47,7 @@ clusterWidth = input.int(6, "Cluster body width (bars)", minval=2, maxval=16, gr
 showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW)
 showSecondary = input.bool(true, "Two newer active ranges (faint)", group=G_VIEW)
 showPanel = input.bool(true, "Compact panel", group=G_VIEW)
+historyMarks = input.int(20, "Signal history: latest marks (0 = hide)", minval=0, maxval=100, group=G_VIEW, tooltip="Maximum C/M/E marks kept on the chart. Oldest marks are removed first. This does not change model detection, active model priority or alerts.")
 
 float chartSeconds = timeframe.in_seconds()
 float htfSeconds = timeframe.in_seconds(htf)
@@ -547,8 +548,9 @@ f_level(int slot, int anchor, float price, string caption, color shade, bool vis
     label.set_text(lb, ok ? caption : "")
     label.set_textcolor(lb, shade)
 f_note(string noteText, float price, color shade, bool up) =>
-    array.push(eventLabels, label.new(time, price, noteText, xloc=xloc.bar_time, style=up ? label.style_label_up : label.style_label_down, color=color.new(shade, 75), textcolor=shade, size=size.tiny))
-    if array.size(eventLabels) > 70
+    if historyMarks > 0
+        array.push(eventLabels, label.new(time, price, noteText, xloc=xloc.bar_time, style=up ? label.style_label_up : label.style_label_down, color=color.new(shade, 75), textcolor=shade, size=size.tiny))
+    while array.size(eventLabels) > historyMarks
         label.delete(array.shift(eventLabels))
 if cMark
     f_note("C", sDir == 1 ? low : high, color.aqua, sDir == 1)
