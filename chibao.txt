@@ -127,8 +127,8 @@ plot(showTrueOpens ? sessionOpenPrice : na, "Session TO actual open", color=colo
 
 var array<line> levels = array.new<line>()
 var array<label> notes = array.new<label>()
-f_note(string text, float price, bool up) =>
-    array.push(notes, label.new(bar_index, price, text, style=up ? label.style_label_up : label.style_label_down, color=color.new(up ? color.teal : color.orange, 15), textcolor=color.white, size=size.tiny))
+f_note(string noteText, float price, bool up) =>
+    array.push(notes, label.new(bar_index, price, noteText, style=up ? label.style_label_up : label.style_label_down, color=color.new(up ? color.teal : color.orange, 15), textcolor=color.white, size=size.tiny))
     if array.size(notes) > 70
         label.delete(array.shift(notes))
 f_clearLevels() =>
