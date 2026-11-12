@@ -75,11 +75,12 @@ for(const date of ['2026-07-14T23:00:00Z','2026-12-14T00:00:00Z','2026-03-08T06:
 // Explicit one-shot, closed-bar gates and HTF data contract; live data stays in display code.
 assert.match(source,/f_snapshot\(true\), lookahead=barmerge.lookahead_on/);
 assert.match(source,/f_snapshot\(not barstate.isconfirmed\)/);
-for(let i=0;i<58;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`),'Every HTF snapshot field including source timestamps must be offset');
+for(let i=0;i<97;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`),'Every HTF snapshot field including 3 signal contexts must be offset');
 assert.match(source,/if armed and barstate.isconfirmed and isLtf/);
 assert.match(source,/if selectedEntry and risk > 0 and not na\(target\) and reward > 0 and biasAllowed and timeAllowed/);
 assert.match(source,/not alreadyEmitted/);
-assert.match(source,/array.push\(emitted, modelKey\)/);
+assert.match(source,/state.sent := true/);
+assert.match(source,/state.everSent := true/);
 assert.match(source,/"N\*"/);
 assert.match(source,/hour\(time, NY\) >= 18 \? 1 : 0/,'TDO rolls at the theoretical 18:00 boundary');
 const engine=source.slice(source.indexOf('f_engine() =>'),source.indexOf('// f_snapshot'));
@@ -186,7 +187,7 @@ const egfBase={irlTouched:true,irlFailed:false,target:90,sIrlH:110,sIrlL:105,bul
 assert.equal(evaluate('egfPathReady',egfBase),true,'Bearish EGF reacts below supply IRL toward a lower ERL');
 assert.equal(evaluate('egfPathReady',{...egfBase,irlTouched:false}),false,'Never infer IRL visit from price merely being below it');
 assert.equal(evaluate('egfPathReady',{...egfBase,close:108}),true,'Local confirmation may occur inside IRL; touching alone is never a signal');
-assert.equal(evaluate('selectedEntry',{rawEntry:false,egfScenario:true,egfPathReady:true}),false,'A valid IRL location without an LTF condition is not a signal');
+assert.equal(evaluate('selectedEntry',{rawEntry:false,confirmationContext:true}),false,'A valid IRL location without an LTF condition is not a signal');
 assert.equal(evaluate('egfPathReady',{...egfBase,close:112}),false,'Retracement above supply is not a Sell reaction');
 assert.equal(evaluate('egfPathReady',{...egfBase,irlFailed:true}),false,'Broken IRL cannot reuse a previous touch');
 assert.equal(evaluate('egfPathReady',{...egfBase,target:120}),false,'Do not Sell toward an upside target');
@@ -195,19 +196,10 @@ assert.equal(evaluate('egfPathReady',{...egfBase,bullish:true,close:112,target:1
 assert.equal(evaluate('egfPathReady',{...egfBase,bullish:true,close:112,target:90}),false);
 assert.equal(evaluate('egfPathReady',{...egfBase,close:106}),true,'A local Sell confirmation may occur inside the lower half of the HTF zone');
 assert.equal(evaluate('egfPathReady',{...egfBase,bullish:true,close:109,target:130}),true,'A local Buy confirmation may occur inside the upper half of the HTF zone');
-assert.equal(evaluate('selectedEntry',{rawEntry:true,egfScenario:true,egfPathReady:false}),false,'Manual LTF mode cannot bypass EGF IRL reaction');
-assert.equal(evaluate('selectedEntry',{rawEntry:true,egfScenario:false,egfPathReady:false}),true,'Other model entry modes keep their existing behavior');
-const cExpr=source.match(/cMark := (cisd and entryMode[^\n]+)/)[1];
-const mExpr=source.match(/mMark := (mss and not cMark[^\n]+)/)[1];
-for(const entryMode of ['Auto','CISD','MSS']){
- const cMark=evaluateExpr(cExpr,{cisd:true,entryMode});
- const mMark=evaluateExpr(mExpr,{mss:true,cMark,entryMode});
- assert.notEqual(cMark,mMark,'A simultaneous C/M chooses exactly one confirmation');
- assert.equal(mMark,entryMode==='MSS');
-}
-assert.match(source,/not cNoted and not mNoted/,'One preliminary confirmation per active reaction');
-for(const entryMode of ['MSS','CISD','FVG retest','OB retest','POC close','Line retest']){
- const expected={'MSS':'M','CISD':'C','FVG retest':'F','OB retest':'O','POC close':'P','Line retest':'BL'}[entryMode];
+assert.equal(evaluate('selectedEntry',{rawEntry:true,confirmationContext:false}),false,'Explicit mode cannot bypass model reaction context');
+assert.equal(evaluate('selectedEntry',{rawEntry:true,confirmationContext:true}),true);
+for(const entryMode of ['MSS','CISD','FVG retest','OB retest']){
+ const expected={'MSS':'M','CISD':'C','FVG retest':'F','OB retest':'O'}[entryMode];
  assert.equal(evaluate('detectedTag',{entryMode,cisd:true,mss:true,fvgRetest:true}),expected,'Entry tag matches chosen mode, even if C/M overlap');
 }
 assert.match(source,/historyMarks = input.int\(100,/);
@@ -232,10 +224,78 @@ for(const [field,value] of [['biasAllowed',false],['timeAllowed',false],['invali
 assert.equal(evaluate('freshMssPivot',{phaseAt:100,time:{2:110},pivotLength:2,bullish:true,pivotHigh:120,pivotLow:null,na:isNa}),true);
 assert.equal(evaluate('freshMssPivot',{phaseAt:100,time:{2:90},pivotLength:2,bullish:true,pivotHigh:120,pivotLow:null,na:isNa}),false,'Pivot must belong to the active phase, not a pre-setup swing');
 assert.equal(evaluate('freshMssPivot',{phaseAt:100,time:{2:110},pivotLength:2,bullish:true,pivotHigh:null,pivotLow:null,na:isNa}),false,'No unconfirmed pivot can refresh MSS');
+const channelCode=source.slice(source.indexOf('f_stepChannel('),source.indexOf('var float lastPivotHigh'));
+assert.doesNotMatch(channelCode,/\bsId\b|\bselectedKey\b|\bprimaryIndex\b/,'Signal channel cannot be gated by the displayed model');
+assert.match(source,/array.push\(channelStates, ReactionState.new\(\)\)/,'Each channel allocates a distinct persistent state');
+for(const family of ['crt','egf','isb'])assert.match(source,new RegExp(family+'Context = Model.new\\(\\)'));
+assert.match(source,/crtSignals \+= crtResult.hit/);
+assert.match(source,/egfSignals \+= egfResult.hit/);
+assert.match(source,/isbSignals \+= isbResult.hit/);
+const freshBase={signalCadence:'Fresh reaction',state:{sent:true,lastSignalBar:10,leftZone:true},bar_index:11,egfScenario:false,touchesIrl:false,newPullback:true};
+assert.equal(evaluate('freshReaction',freshBase),true,'A new pullback can rearm CRT/ISB without resetting other channels');
+assert.equal(evaluate('freshReaction',{...freshBase,bar_index:10}),false,'Never rearm on the same signal candle');
+assert.equal(evaluate('freshReaction',{...freshBase,newPullback:false}),false,'No repeated signal from the same pulse');
+assert.equal(evaluate('freshReaction',{...freshBase,signalCadence:'One per model'}),false);
+assert.equal(evaluate('freshReaction',{...freshBase,egfScenario:true}),false,'EGF requires an actual new IRL visit');
+assert.equal(evaluate('freshReaction',{...freshBase,egfScenario:true,touchesIrl:true}),true);
+assert.equal(evaluate('freshReaction',{...freshBase,egfScenario:true,touchesIrl:true,state:{...freshBase.state,leftZone:false}}),false,'EGF must first leave its previous IRL visit');
+assert.equal(evaluate('alreadyEmitted',{signalCadence:'One per model',state:{sent:false,everSent:true}}),true);
+assert.equal(evaluate('alreadyEmitted',{signalCadence:'Fresh reaction',state:{sent:false,everSent:true}}),false);
+assert.equal(evaluate('cisd',{deliveryLevel:102,bullish:true,close:101,previous:{close:102},na:isNa}),false,'The pullback itself is not confirmation');
+assert.equal(evaluate('cisd',{deliveryLevel:102,bullish:true,close:103,previous:{close:101},na:isNa}),true,'A later reclaim can confirm a fresh reaction');
+assert.equal(evaluate('invalidBar',{bullish:true,close:101,executionSl:100,low:98,high:104}),false,'A wick sweep and close reclaim is not treated as an executed stop');
+assert.equal(evaluate('invalidBar',{bullish:false,close:99,executionSl:100,low:96,high:102}),false);
+assert.equal(evaluate('invalidBar',{bullish:true,close:99,executionSl:100}),true);
+const htfZoneInvalid=source.match(/if not na\(m.irlT\) and time > m.irlT and \(([^\n]+)\)/)[1];
+assert.equal(evaluateExpr(htfZoneInvalid,{m:{irlDir:1,irlL:100,irlH:105},low:98,high:106,close:101}),false,'An already-selected HTF IRL survives wick mitigation/reclaim');
+assert.equal(evaluateExpr(htfZoneInvalid,{m:{irlDir:1,irlL:100,irlH:105},low:98,high:106,close:99}),true);
+const ltfZoneInvalid=source.match(/state.irlFailed := (egfScenario[^\n]+)/)[1];
+assert.equal(evaluateExpr(ltfZoneInvalid,{egfScenario:true,state:{irlTouched:true},bullish:true,close:99,sIrlL:100,sIrlH:105}),true);
+assert.equal(evaluateExpr(ltfZoneInvalid,{egfScenario:true,state:{irlTouched:true,irlFailed:true},bullish:true,close:101,sIrlL:100,sIrlH:105}),false,'Pending LTF excursion can reclaim while the confirmed HTF context remains valid');
+assert.match(source,/color=markerColor, size=size.tiny/,'Triangle size is fixed, independent of chart text size');
+// Sequential OHLC fixtures execute the actual channel body through a restricted harness.
+const channelHarness=require('./helpers/pine-channel-harness.cjs').createHarness(source);
+const channelContexts=[1,2,3].map(kind=>({id:kind,kind,flags:kind===1?1:kind===2?2:4,phase:kind===1?1:kind===3?2:0,dir:1,confirmed:100,resolved:100,hi:104,lo:90,inv:90,cp:120,irlH:104,irlL:102,irlT:90}));
+const reactionTape=[bar(98,100,103,99,102),bar(99,102,104,101,103),bar(100,105,106,102,103),bar(101,103,107,102,106),bar(102,106,108,105,107),bar(103,107,108,102,103),bar(104,103,109,102,108)];
+function runChannels(options={}){
+ const states=channelContexts.map(ctx=>channelHarness.state(ctx)),counts=[0,0,0],hits=[];
+ for(let j=2;j<reactionTape.length;j++){
+  const current=channelContexts.map((ctx,i)=>channelHarness.step(ctx,states[i],reactionTape.slice(0,j+1),options));
+  current.forEach((result,i)=>{counts[i]+=Number(result.hit);});hits.push(current);
+ }return {states,counts,hits};
+}
+assert.deepEqual(runChannels().counts,[2,2,2],'Three independent channels can confirm two distinct real pullback/reclaim cycles');
+assert.deepEqual(runChannels({cadence:'One per model'}).counts,[1,1,1],'Legacy cadence is an explicit comparison option');
+assert.ok(runChannels().hits[2].every(hit=>!hit.hit),'A continuation candle does not duplicate the previous pulse');
+assert.ok(runChannels({confirmed:false}).counts.every(n=>n===0),'No historical-looking unclosed-bar signal');
+assert.ok(runChannels({bias:-1}).counts.every(n=>n===0),'Parallel execution does not bypass bias');
+assert.ok(runChannels({timeAllowed:false}).counts.every(n=>n===0),'Parallel execution does not bypass time');
+const consumedTape=[...reactionTape,bar(105,108,121,106,119),bar(106,119,120,103,104),bar(107,104,119,103,118)];
+for(const ctx of channelContexts){const state=channelHarness.state(ctx);let afterTarget=0;for(let j=2;j<consumedTape.length;j++){const hit=channelHarness.step(ctx,state,consumedTape.slice(0,j+1));if(j>=reactionTape.length)afterTarget+=Number(hit.hit);}assert.equal(afterTarget,0,'Fresh cycles cannot chase a target already taken');}
+const pendingSweep=[...reactionTape.slice(0,2),bar(100,105,106,89,101),bar(101,101,107,100,106)];
+const egfSweepState=channelHarness.state(channelContexts[1]);
+assert.equal(channelHarness.step(channelContexts[1],egfSweepState,pendingSweep.slice(0,3)).hit,false);
+assert.equal(channelHarness.step(channelContexts[1],egfSweepState,pendingSweep).hit,true,'LTF excursion then reclaim can confirm within a still-valid HTF context');
+const oneBarCtx={...channelContexts[1],confirmed:98,resolved:98};
+const oneBarState=channelHarness.state(oneBarCtx);
+const approachTape=[bar(98,109,112,108,111),bar(99,111,112,105,106),bar(100,106,113,101,112)];
+assert.equal(channelHarness.step(oneBarCtx,oneBarState,approachTape.slice(0,2)).hit,false,'Approaching IRL does not emit');
+const oneBarReaction=channelHarness.step(oneBarCtx,oneBarState,approachTape);
+assert.equal(oneBarReaction.hit,true,'First-touch rejection can reclaim the immediately preceding opposing run');
+assert.equal(oneBarReaction.tag,'C','Do not wipe the real CISD run just as price first touches IRL');
+const sellContexts=channelContexts.map(ctx=>({...ctx,dir:-1,hi:200-ctx.lo,lo:200-ctx.hi,inv:200-ctx.inv,cp:200-ctx.cp,irlH:200-ctx.irlL,irlL:200-ctx.irlH}));
+const sellTape=reactionTape.map(b=>bar(b.t,200-b.o,200-b.l,200-b.h,200-b.c));
+for(const ctx of sellContexts){const state=channelHarness.state(ctx);let count=0;for(let j=2;j<sellTape.length;j++)count+=Number(channelHarness.step(ctx,state,sellTape.slice(0,j+1)).hit);assert.equal(count,2,'Fresh reaction logic is symmetric for Sell');}
+const isolatedStates=channelContexts.map(ctx=>channelHarness.state(ctx));isolatedStates[0].everSent=true;
+for(let j=2;j<=3;j++){
+ const hits=channelContexts.map((ctx,i)=>channelHarness.step(ctx,isolatedStates[i],reactionTape.slice(0,j+1),{cadence:'One per model'}));
+ if(j===3)assert.deepEqual(hits.map(hit=>hit.hit),[false,true,true],'A used CRT cannot starve EGF and ISB channels');
+}
 assert.match(source,/recentOnly = input.bool\(true,/);
 assert.doesNotMatch(source,/extend=extend.right/,'No unbounded level projection');
 assert.match(source,/label.style_triangleup : label.style_triangledown/);
-assert.match(source,/if entryEvent and showEntryTriangles/);
+assert.match(source,/if entryLong and showEntryTriangles/);
+assert.match(source,/if entryShort and showEntryTriangles/);
 assert.match(source,/lastVisualIndex := bar_index/,'LTF anchors start at actual condition bar');
 const anchorBase={onHtf:false,modelAnchorIndex:50,lastVisualKey:'',modelKey:'model-1',lastVisualIndex:null,modelObservedIndex:100,na:x=>x==null};
 assert.equal(evaluate('drawAnchorIndex',anchorBase),100,'HTF references have a valid LTF anchor before C/M or E');
@@ -249,10 +309,6 @@ assert.match(source,/line.set_xy1\(ln, anchor, price\)/);
 assert.doesNotMatch(source,/irlBox/,'OB/FVG zones are internal filters, never visual boxes');
 assert.match(source,/liveComplete := time == bucketTime/,'Never invent first incomplete bucket open');
 assert.match(source,/array.indexof\(candleTimes, sourceTime\)/,'Cluster cache must match exact source candle');
-assert.match(source,/confirmedC := cMarkPrice/,'CISD visual level freezes the price known on confirmation');
-assert.match(source,/confirmedM := mMarkPrice/,'MSS visual level freezes the price known on confirmation');
-assert.match(source,/confirmedCIndex := bar_index/);
-assert.match(source,/confirmedMIndex := bar_index/);
 assert.equal(evaluate('endpoint',{drawEndIndex:180}),180,'The right horizon is independent of an old source swing');
 assert.equal(evaluate('anchor',{sourceTime:1000,price:110,drawAnchorTime:5000,na:x=>x==null,f_extremeTime:()=>1234}),1234,'The line starts at its actual source extreme, not the latest signal');
 assert.equal(evaluate('anchor',{sourceTime:null,price:105,drawAnchorTime:5000,na:x=>x==null,f_extremeTime:()=>1234}),5000,'EQ uses the current visual anchor');
@@ -304,4 +360,4 @@ for(const b of [{h:105,l:100,c:104},{h:104,l:98,c:99}]){
  live.h=evaluateExpr(updateHigh,{liveH:live.h,high:b.h});live.l=evaluateExpr(updateLow,{liveL:live.l,low:b.l});live.c=b.c;
 }
 assert.deepEqual(live,{o:100,h:105,l:98,c:99},'Aggregated live candle matches LTF OHLC');
-console.log('PASS auto-registry specification: FIFO validity/promotion, nested mother/resolution candles, compound overlap, limits/expiry, IRL/ERL, HTF/LTF projection; extracted Pine formulas, 3000 TS symmetry cases, 1440 macro minutes and DST/QT. Full chart compilation/runtime remains unverified.');
+console.log('PASS registry/97-field HTF contracts; 3 independent LTF channels; sequential Buy/Sell source-body fixtures, fresh/legacy cadence, first-touch CISD, wick/reclaim and target guards; 3000 TS symmetry cases, 1440 macro minutes and DST/QT. Full chart execution/Replay remains unverified.');

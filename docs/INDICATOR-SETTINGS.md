@@ -6,15 +6,16 @@ Bản hiện hành tập trung dựng bối cảnh HTF và phát tam giác xác 
 
 HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; LTF condition Auto; time filter Context only. Để quan sát tần suất: Signal display = History, giữ 100 tam giác. Cửa sổ 3 nến HTF chỉ giới hạn line/cụm, không xóa dấu ở chế độ History. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
 
-## 19 setting
+## 20 setting
 
 | Setting | Vai trò |
 | --- | --- |
 | HTF | H1/H2/H4/D1 dựng range/model từ nến đã đóng. |
-| Models to observe | All hoặc riêng CRT/EGF/ISB để rà nhánh độc lập. All giữ ưu tiên FIFO của model cũ còn hiệu lực; không chạy ba engine phát dấu đồng thời. |
+| Models to observe | All chạy ba kênh LTF độc lập CRT/EGF/ISB; mỗi nhóm dùng model cũ nhất còn hiệu lực. Cụm HTF vẫn chỉ vẽ model ưu tiên chung. Chọn riêng một nhóm để đối chiếu. |
 | Bias TF | Khung bias >= HTF; mặc định D1. Auto chỉ là quy tắc sweep/close-through của script, không có dữ liệu FRVP cá nhân. |
 | Bias | Auto / Long / Short / Neutral. EGF lấy hướng kịch bản từ bias, không lấy từ màu nến. CRT/ISB phải thuận bias để phát dấu. |
 | LTF condition | Auto / CISD / MSS / FVG retest / OB retest. Đây là điều kiện phát tín hiệu, không phải lựa chọn giá khớp lệnh. |
+| Signal cadence | Fresh reaction (mặc định) cho phép dấu mới sau phản ứng mới hợp lệ trong cùng model. One per model giữ một dấu mỗi model/revision để so sánh. Không lặp theo từng bar. |
 | Time filter | Context only không chặn giờ; Web macros/working windows giới hạn giờ tín hiệu theo New York có DST. |
 | Macro background | Bật/tắt nền macro. Không tạo bias. |
 | QT clock context | Hiện đồng hồ quý trong dashboard, không quyết định hướng. |
@@ -52,7 +53,7 @@ Các vùng hợp lệ ở cả hai hướng có thể cùng tồn tại trong po
 
 C/M chung vai trò xác nhận nhưng không chung phép đo: CISD close qua run-open đối hướng; MSS close qua pivot đã biết. MSS được cập nhật khi có pivot mới đã xác nhận và nguồn pivot nằm trong pha kích hoạt hiện hành; không giữ mãi một pivot cũ đã bị phá. Auto chọn loại đang thỏa, cùng bar ưu tiên C; mode MSS ghi M đúng kể cả C cũng thỏa. Không thêm ngưỡng displacement chưa kiểm chứng.
 
-Với EGF, MSS lấy pivot đã biết lúc chạm IRL; FVG/OB LTF cũ bị bỏ khi bắt đầu pha phản ứng. Không bắt buộc close ra ngoài toàn bộ vùng HTF: phải có điều kiện xác nhận LTF ở phía hợp lệ, mục tiêu đúng hướng và IRL chưa bị đóng xuyên biên xa. Mọi mode chọn riêng vẫn qua gate IRL của EGF. Một tín hiệu cho mỗi model/revision.
+Với EGF, MSS lấy pivot đã biết lúc chạm IRL; FVG/OB LTF cũ bị bỏ khi bắt đầu pha phản ứng. Không bắt buộc close ra ngoài toàn bộ vùng HTF: phải có điều kiện xác nhận LTF ở phía hợp lệ và mục tiêu đúng hướng. Râu xuyên vùng rồi reclaim không tự xóa IRL đang chọn. LTF đóng ngoài vùng tạm chặn dấu, có thể được xét lại sau reclaim khi context HTF còn hiệu lực; HTF close xuyên biên xa mới xóa vùng. Mọi mode chọn riêng vẫn qua gate IRL của EGF. Fresh reaction: một dấu cho mỗi phản ứng hợp lệ. CRT cần nhịp nến đối hướng mới rồi xác nhận; ISB breakout cần retest mother mới; EGF phải rời vùng rồi trở lại chạm IRL, hoặc có vùng IRL mới. CP đã bị lấy vẫn chặn mọi lượt sau. One per model khóa sau dấu đầu của revision.
 
 ## Nguồn các line
 
@@ -74,11 +75,11 @@ Sau khi cập nhật code, kiểm tra Signal display = History và Historical si
 
 1. Dùng chart M5 và cùng HTF, bias, time filter, dữ liệu lịch sử cho mọi lần so sánh. Giữ Auto bias khi so toàn bộ lịch sử; Long/Short nhập tay áp dụng cho toàn bộ lịch sử đã tải, không phải nhật ký bias từng ngày.
 2. Bật History, chọn 100–200 dấu, kéo chart về quá khứ để tải thêm dữ liệu. Giới hạn lịch sử của TradingView và recovery window vẫn áp dụng; không tạo tín hiệu từ dữ liệu chưa tải.
-3. Rê chuột lên tam giác để xem model, C/M/F/O, thời gian New York, close/CP/INV tại thời điểm đó. Data Window cũng có mã model (1 CRT, 2 EGF, 3 ISB) và các giá tham chiếu. Không dùng close tham chiếu như giá fill thực tế.
-4. Dòng N của dashboard: C/E/I là số tín hiệu của từng nhóm trên tập chart/recovery đã tính, có thể lớn hơn số tam giác còn giữ. DATA cho biết khoảng ngày của tập xem xét. Đổi dữ liệu chart có thể đổi số đếm.
-5. WHY là lý do ở nến đã đóng gần nhất; dấu * nghĩa là bar hiện tại còn chạy. NO MODEL = chưa có model phù hợp bộ lọc; NO DIR = chưa có hướng; NO ERL = thiếu đích; BIAS/TIME = không qua bộ lọc; CP TAKEN/INV/PATH = không còn đường đi hợp lệ; IRL WAIT/IRL X/CONTEXT = thiếu phản ứng phù hợp; LTF WAIT = chưa có điều kiện LTF; USED = revision đã có một tín hiệu; SIGNAL = vừa phát.
-6. Models to observe cho phép rà riêng từng nhóm. Mỗi nhánh dùng điều kiện riêng, không đòi cả CRT+EGF+ISB cùng xuất hiện. Mẫu chồng lấp được phân loại theo cấu trúc chính CRT/TS → ISB → EGF/OUT. All chỉ xét model ưu tiên, nên tổng All không nhất thiết bằng tổng ba lần chạy riêng.
+3. Rê chuột lên tam giác để xem model, C/M/F/O, thời gian New York, close/CP/INV tại thời điểm đó. Data Window có direction +1/-1, CP và INV riêng cho từng nhóm, cùng close tham chiếu của bar. Không dùng close tham chiếu như giá fill thực tế.
+4. Dòng N của dashboard: C/E/I đếm các xác nhận theo từng nhóm trên tập chart/recovery đã tính, có thể lớn hơn số tam giác còn giữ. Nhiều nhóm cùng hướng/cùng bar được gộp một tam giác, tooltip ghi đủ nhóm, nên tổng C+E+I có thể lớn hơn số tam giác. DATA cho biết khoảng ngày của tập xem xét. Đổi dữ liệu chart có thể đổi số đếm.
+5. WHY là lý do ở nến đã đóng gần nhất; dấu * nghĩa là bar hiện tại còn chạy. NO MODEL = chưa có model phù hợp bộ lọc; NO DIR = chưa có hướng; NO ERL = thiếu đích; BIAS/TIME = không qua bộ lọc; CP TAKEN/INV/PATH = không còn đường đi hợp lệ; IRL WAIT/IRL X/CONTEXT = thiếu phản ứng phù hợp; LTF WAIT = chưa có điều kiện LTF; USED = One per model đã có dấu; PULLBACK = đang chờ nhịp hồi mới; IRL RETEST = chờ lượt chạm IRL mới; SIGNAL = vừa phát. Rê chuột vào ô WHY để xem trạng thái cả ba kênh; chữ đang hiện thuộc model ưu tiên chung hoặc SIGNAL nếu bất kỳ kênh nào vừa phát.
+6. Models to observe cho phép rà riêng từng nhóm. All dùng ba trạng thái tách biệt, không đòi cả CRT+EGF+ISB cùng xuất hiện và không để model một nhóm khóa nhóm khác. Mẫu chồng lấp được phân loại theo cấu trúc chính CRT/TS → ISB → EGF/OUT. Với cùng dữ liệu/bias/time/cadence, bộ đếm mỗi nhóm trong All phải tương ứng lần chạy riêng nhóm đó; tam giác hợp nhất cùng bar không cộng cơ học. Vẫn chưa xét mọi model cùng nhóm song song: mỗi nhóm giữ FIFO.
 
-Độ chính xác cần đối chiếu bằng Replay với kế hoạch entry/SL/Full TP cụ thể. Chỉ báo chưa tính win rate hoặc PnL; một tam giác đúng điều kiện không tự chứng minh một giao dịch thắng. History không nới gate bias, time, IRL, target/INV hoặc quy tắc một tín hiệu mỗi revision.
+Độ chính xác cần đối chiếu bằng Replay với kế hoạch entry/SL/Full TP cụ thể. Chỉ báo chưa tính win rate hoặc PnL; một tam giác đúng điều kiện không tự chứng minh một giao dịch thắng. History không nới gate bias, time, IRL hoặc target/INV. Cadence là quy tắc phản ứng riêng, không phải thay đổi do bật History. INV của chỉ báo là mức vô hiệu cấu trúc theo close, không giả định râu chạm là SL của lệnh thực tế.
 
 Xem [đặc tả và giới hạn kiểm tra](INDICATOR-AUTO-MODELS.md). Ảnh minh họa cũ trong lịch sử Git không phải ảnh runtime hoặc bố cục hiện hành.

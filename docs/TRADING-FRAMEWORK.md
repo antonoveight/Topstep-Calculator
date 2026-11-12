@@ -32,6 +32,8 @@ Trong chỉ báo cá nhân, CISD/MSS chung vai trò xác nhận đổi hướng 
 
 Xem [chỉ báo Auto HTF và đặc tả hiệu lực/bias/entry](INDICATOR-AUTO-MODELS.md), nguồn `indicators/funded-angler-v6.pine`. Chỉ báo tự nhận diện từ giá; checklist web vẫn là ghi nhận thủ công, không tự nhận feed hoặc tín hiệu từ TradingView.
 
+Chỉ báo hiện tách ba kênh tín hiệu CRT/EGF/ISB, mỗi nhóm giữ model cũ nhất còn hiệu lực; cụm nến trên màn hình vẫn dùng focus FIFO chung. Fresh reaction cho phép xác nhận mới sau nhịp hồi/IRL retest mới, One per model giữ quy tắc cũ để đối chiếu. Râu sweep/reclaim không tự là SL thực tế; vùng HTF đang giữ chỉ bị xóa bởi HTF close-through, còn excursion LTF có thể reclaim khi context vẫn hợp lệ. Mọi tín hiệu vẫn cần nến LTF đóng và gate bias/target/time. Xem [audit workflow](SIGNAL-WORKFLOW-AUDIT.md).
+
 Đây là ghi nhận của người dùng. Web không có feed OHLC/volume để tự kiểm chứng; tick sai thứ tự không tự hoàn thành bước còn thiếu. “Đã ghi nhận vào lệnh” không có nghĩa web gửi lệnh.
 
 ## 4. Entry và quản trị
