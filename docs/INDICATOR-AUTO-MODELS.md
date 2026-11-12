@@ -2,6 +2,8 @@
 
 Nguồn hiện hành: `indicators/funded-angler-v6.pine`, đồng bộ sang `chibao.txt` bằng `node tools/sync-indicator.cjs`. Bản v5 giữ nguyên để đối chiếu; đây là thay đổi chỉ báo, không tự tick checklist web hoặc ghi PnL.
 
+[Hướng dẫn toàn bộ setting và cấu hình khởi đầu](INDICATOR-SETTINGS.md). Chữ chart mặc định Normal (trước đây Tiny), dashboard Small (trước đây Tiny), có tùy chọn kích thước riêng trong Display. Inputs có tooltip tiếng Việt để tra trực tiếp.
+
 ## 1. Neo hình vẽ vào biểu đồ
 
 - `overlay=true, scale=scale.none`: dùng thang giá chart hiện có, không tạo một trục giá mới.
