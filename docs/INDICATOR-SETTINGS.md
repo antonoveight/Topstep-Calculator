@@ -4,13 +4,14 @@ Bản hiện hành tập trung dựng bối cảnh HTF và phát tam giác xác 
 
 ## Cấu hình khởi đầu
 
-HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; Signal confirmation Auto; time filter Context only. Giữ 1 dấu gần nhất, cửa sổ 3 nến HTF. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
+HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; LTF condition Auto; time filter Context only. Để quan sát tần suất: Signal display = History, giữ 100 tam giác. Cửa sổ 3 nến HTF chỉ giới hạn line/cụm, không xóa dấu ở chế độ History. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
 
-## 17 setting còn lại
+## 19 setting
 
 | Setting | Vai trò |
 | --- | --- |
 | HTF | H1/H2/H4/D1 dựng range/model từ nến đã đóng. |
+| Models to observe | All hoặc riêng CRT/EGF/ISB để rà nhánh độc lập. All giữ ưu tiên FIFO của model cũ còn hiệu lực; không chạy ba engine phát dấu đồng thời. |
 | Bias TF | Khung bias >= HTF; mặc định D1. Auto chỉ là quy tắc sweep/close-through của script, không có dữ liệu FRVP cá nhân. |
 | Bias | Auto / Long / Short / Neutral. EGF lấy hướng kịch bản từ bias, không lấy từ màu nến. CRT/ISB phải thuận bias để phát dấu. |
 | LTF condition | Auto / CISD / MSS / FVG retest / OB retest. Đây là điều kiện phát tín hiệu, không phải lựa chọn giá khớp lệnh. |
@@ -22,7 +23,8 @@ HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Lo
 | Cluster body width | Mặc định 4 bar; số lẻ làm tròn xuống chẵn để râu đúng tâm. |
 | Model range / ERL / CP | Các line cấu trúc và mục tiêu có điều kiện. Không ảnh hưởng logic tam giác khi tắt. |
 | Compact panel | Bảng tổng quan model, bias, IRL nội bộ, thời gian và trạng thái. |
-| Signal history | Mặc định 1 tam giác gần nhất, 0 ẩn, tối đa 100. Không sửa alert hay logic nhận diện. |
+| Signal display | History (mặc định) giữ dấu quá khứ, Latest chỉ giữ dấu gần nhất. Không thay điều kiện nhận diện/alert. |
+| Historical signals to keep | Mặc định 100, tối đa 200; 0 ẩn dấu. Ở Latest chỉ giữ 1 nếu số này >0. |
 | Hide drawings without a recent signal | Ẩn hình khi model/tín hiệu quá cửa sổ gần nhất. Model HTF gần đây vẫn được xem là tín hiệu cấu trúc để hiện tổng quan trước tín hiệu LTF. |
 | Drawing horizon / recency | Mặc định 3 nến HTF. Giới hạn phần chiếu về trước và tuổi hiển thị; không cắt bỏ điểm nguồn cũ của ERL. |
 | Chart text size | Small/Normal/Large/Huge; mặc định Normal. Chữ nền trong suốt. |
@@ -48,7 +50,7 @@ OB/FVG vẫn được tính làm bộ lọc nội bộ nhưng **không vẽ box/
 
 Các vùng hợp lệ ở cả hai hướng có thể cùng tồn tại trong pool; script chọn vùng theo kịch bản bias hiện tại, không ép mỗi EGF có hai vùng. Không mặc định EGF sinh FVG. FVG là cấu trúc ba nến riêng; OB chỉ là candidate cơ học.
 
-C/M chung vai trò xác nhận nhưng không chung phép đo: CISD close qua run-open đối hướng; MSS close qua pivot đã biết. Auto chọn loại đang thỏa, cùng bar ưu tiên C; mode MSS ghi M đúng kể cả C cũng thỏa. Không thêm ngưỡng displacement chưa kiểm chứng.
+C/M chung vai trò xác nhận nhưng không chung phép đo: CISD close qua run-open đối hướng; MSS close qua pivot đã biết. MSS được cập nhật khi có pivot mới đã xác nhận và nguồn pivot nằm trong pha kích hoạt hiện hành; không giữ mãi một pivot cũ đã bị phá. Auto chọn loại đang thỏa, cùng bar ưu tiên C; mode MSS ghi M đúng kể cả C cũng thỏa. Không thêm ngưỡng displacement chưa kiểm chứng.
 
 Với EGF, MSS lấy pivot đã biết lúc chạm IRL; FVG/OB LTF cũ bị bỏ khi bắt đầu pha phản ứng. Không bắt buộc close ra ngoài toàn bộ vùng HTF: phải có điều kiện xác nhận LTF ở phía hợp lệ, mục tiêu đúng hướng và IRL chưa bị đóng xuyên biên xa. Mọi mode chọn riêng vẫn qua gate IRL của EGF. Một tín hiệu cho mỗi model/revision.
 
@@ -66,6 +68,17 @@ Kiểm tra HIST → chart M1/M3/M5 → bias rõ → model còn hiệu lực → 
 
 Dashboard: BIAS? = EGF chưa có bias; COMP = ISB chưa resolve; IRL WAIT = chưa chạm; IRL = đang chờ điều kiện phản ứng; IRL X = đóng xuyên vùng trên LTF; CP − = thiếu đích; CP? = LTF đã thấy đích bị lấy; SIGNAL = đã phát dấu. HIST báo chưa tải đủ recovery window.
 
-Sau khi cập nhật code, setting đã lưu của instance cũ có thể vẫn giữ offset 15/width 6: đặt lại 30/4 hoặc reset Inputs. Ghim cùng scale với symbol; tạo lại alert sau khi đổi source/input.
+Sau khi cập nhật code, kiểm tra Signal display = History và Historical signals to keep = 100; instance cũ có thể còn lưu giới hạn cũ. Nếu còn offset 15/width 6, đặt lại 30/4 hoặc reset Inputs. Ghim cùng scale với symbol; tạo lại alert sau khi đổi source/input.
+
+## Rà tần suất và lý do không có dấu
+
+1. Dùng chart M5 và cùng HTF, bias, time filter, dữ liệu lịch sử cho mọi lần so sánh. Giữ Auto bias khi so toàn bộ lịch sử; Long/Short nhập tay áp dụng cho toàn bộ lịch sử đã tải, không phải nhật ký bias từng ngày.
+2. Bật History, chọn 100–200 dấu, kéo chart về quá khứ để tải thêm dữ liệu. Giới hạn lịch sử của TradingView và recovery window vẫn áp dụng; không tạo tín hiệu từ dữ liệu chưa tải.
+3. Rê chuột lên tam giác để xem model, C/M/F/O, thời gian New York, close/CP/INV tại thời điểm đó. Data Window cũng có mã model (1 CRT, 2 EGF, 3 ISB) và các giá tham chiếu. Không dùng close tham chiếu như giá fill thực tế.
+4. Dòng N của dashboard: C/E/I là số tín hiệu của từng nhóm trên tập chart/recovery đã tính, có thể lớn hơn số tam giác còn giữ. DATA cho biết khoảng ngày của tập xem xét. Đổi dữ liệu chart có thể đổi số đếm.
+5. WHY là lý do ở nến đã đóng gần nhất; dấu * nghĩa là bar hiện tại còn chạy. NO MODEL = chưa có model phù hợp bộ lọc; NO DIR = chưa có hướng; NO ERL = thiếu đích; BIAS/TIME = không qua bộ lọc; CP TAKEN/INV/PATH = không còn đường đi hợp lệ; IRL WAIT/IRL X/CONTEXT = thiếu phản ứng phù hợp; LTF WAIT = chưa có điều kiện LTF; USED = revision đã có một tín hiệu; SIGNAL = vừa phát.
+6. Models to observe cho phép rà riêng từng nhóm. Mỗi nhánh dùng điều kiện riêng, không đòi cả CRT+EGF+ISB cùng xuất hiện. Mẫu chồng lấp được phân loại theo cấu trúc chính CRT/TS → ISB → EGF/OUT. All chỉ xét model ưu tiên, nên tổng All không nhất thiết bằng tổng ba lần chạy riêng.
+
+Độ chính xác cần đối chiếu bằng Replay với kế hoạch entry/SL/Full TP cụ thể. Chỉ báo chưa tính win rate hoặc PnL; một tam giác đúng điều kiện không tự chứng minh một giao dịch thắng. History không nới gate bias, time, IRL, target/INV hoặc quy tắc một tín hiệu mỗi revision.
 
 Xem [đặc tả và giới hạn kiểm tra](INDICATOR-AUTO-MODELS.md). Ảnh minh họa cũ trong lịch sử Git không phải ảnh runtime hoặc bố cục hiện hành.

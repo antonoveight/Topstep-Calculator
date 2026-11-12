@@ -1,6 +1,6 @@
 # TFA v6 — context HTF và direction signals
 
-Nguồn: indicators/funded-angler-v6.pine; đồng bộ sang chibao.txt bằng node tools/sync-indicator.cjs. [Hướng dẫn 17 setting](INDICATOR-SETTINGS.md). Bản này thay thế các mô tả trước về EGF ép hướng theo màu nến, box OB/FVG, C/M sơ bộ và R:R tại close tín hiệu.
+Nguồn: indicators/funded-angler-v6.pine; đồng bộ sang chibao.txt bằng node tools/sync-indicator.cjs. [Hướng dẫn 19 setting và kiểm tra lịch sử](INDICATOR-SETTINGS.md). Bản này thay thế các mô tả trước về EGF ép hướng theo màu nến, box OB/FVG, C/M sơ bộ và R:R tại close tín hiệu.
 
 ## 1. Những điều được giữ và được sửa
 
@@ -12,7 +12,7 @@ TS trong code là quy ước cá nhân sweep/reclaim C1, không phải toàn b�
 
 ## 2. Registry và bias
 
-Registry chạy hoàn toàn trong HTF. Mỗi cặp chỉ một model compound: CRT/TS → ISB → EGF/OUT. Model cũ còn hiệu lực được ưu tiên FIFO; đầy 12 thì bỏ model mới, không đẩy model cũ ra. Reference pool 80 swing, 60 zone. Recovery 1000 khoảng lịch HTF, không hứa phục hồi lịch sử chart chưa tải; HIST báo thiếu.
+Registry chạy hoàn toàn trong HTF. Mỗi cặp chỉ một model compound: CRT/TS → ISB → EGF/OUT. Model cũ còn hiệu lực được ưu tiên FIFO; đầy 12 thì bỏ model mới, không đẩy model cũ ra. Models to observe = All dùng model đầu tiên; bộ lọc CRT/EGF/ISB dùng model cũ nhất khớp nhóm. Không cần ba nhóm cùng xuất hiện, nhưng All không phát đồng thời từ toàn bộ queue. Reference pool 80 swing, 60 zone. Recovery 1000 khoảng lịch HTF, không hứa phục hồi lịch sử chart chưa tải; HIST báo thiếu.
 
 CRT có hướng theo sweep. ISB neutral tới HTF resolve: sweep/reclaim một phía hoặc close vượt mother; loại quét cả hai rồi back-in. EGF/OUT có hướng **kịch bản theo bias**, không theo close màu xanh/đỏ; bias neutral thì quan sát, không phát dấu. Hình thái EGF gốc và OHLC C1/C2 vẫn giữ nguyên.
 
@@ -28,7 +28,9 @@ IRL ưu tiên FVG chưa full fill trong range, đúng phía kịch bản; OB là
 
 EGF: nhận bias → chọn IRL/ERL → chờ bar LTF thực sự chạm IRL → xác nhận LTF về phía ERL. Nhịp hồi vào IRL không tự tạo tín hiệu ngược bias. Không ép close ra khỏi toàn bộ vùng để được xét; vẫn phải có C/M hoặc retest hợp lệ. Nếu đã chạm rồi LTF close qua biên xa (Buy dưới đáy vùng, Sell trên đỉnh vùng), khóa lượt vùng đó; không tự hủy model HTF trước khi HTF đóng. Nếu CP đã bị lấy thì không đuổi giá. Thiếu bias/vùng/đích thì chờ.
 
-ISB breakout cần retest mother rồi xác nhận LTF. CRT/TS cần xác nhận sau HTF close. C/M là hai hình thái chung vai trò, không hai điều kiện bắt buộc đồng thời. CISD dùng run-open; MSS dùng pivot đã biết khi kích hoạt, riêng EGF lấy lại pivot đã biết lúc chạm IRL. FVG/OB retest vẫn tính nội bộ; FVG mới phải hình thành sau pha kích hoạt/chạm và retest ở bar sau. Giữ một E cho mỗi model/revision. Người dùng tự chọn entry, không min R:R theo close tam giác và không có partial/BE tự động.
+ISB breakout cần retest mother rồi xác nhận LTF. CRT/TS cần xác nhận sau HTF close. C/M là hai hình thái chung vai trò, không hai điều kiện bắt buộc đồng thời. CISD dùng run-open; MSS seed từ pivot đã biết khi kích hoạt, riêng EGF seed lại lúc chạm IRL. Sau đó MSS cập nhật theo pivot mới đã xác nhận có timestamp nguồn từ pha hiện hành trở đi; pivot không tồn tại trước xác nhận và không backdate tín hiệu. Điều này tránh mức cũ đã bị phá làm nhánh MSS bị đứng. FVG/OB retest vẫn tính nội bộ; FVG mới phải hình thành sau pha kích hoạt/chạm và retest ở bar sau. Giữ một E cho mỗi model/revision. Người dùng tự chọn entry, không min R:R theo close tam giác và không có partial/BE tự động.
+
+History mặc định giữ 100 tam giác, tối đa 200, tách hoàn toàn việc xóa theo tuổi của line. Latest vẫn chỉ giữ 1 và áp recency nếu bật. Hiding/retaining marks không sửa gate tín hiệu. Dashboard N đếm theo root CRT/EGF/ISB trên dữ liệu được tính; WHY giữ lý do nến đã đóng (* nếu bar hiện tại còn chạy); DATA là khoảng ngày. Tooltip/Data Window ghi các reference tại bar phát tín hiệu, không suy ra fill hoặc win rate.
 
 ## 4. Drawing và source timestamps
 
@@ -45,6 +47,8 @@ Không thể hứa không chồng chữ ở mọi zoom/scale/cửa sổ vì Pine
 ## 5. Kiểm tra và giới hạn
 
 Node kiểm tra các công thức lấy từ source và acceptance specification độc lập: 3000 TS symmetry, nested mother, sweep/break/false-break, compound/FIFO/expiry/capacity, EGF theo bias kể cả ngược màu nến, thay bias giữ parent, hai phía IRL/ERL, 58 offset, neo nguồn, layout, live OHLC, 1440 macro phút và DST/QT. Đây không phải Pine interpreter hay thống kê lợi thế giao dịch.
+
+Đợt History/diagnostics bổ sung fixture History/Latest/0/200 marks, bộ lọc root model, nhánh tín hiệu CRT/EGF/ISB/ISB-TS độc lập, các gate chặn, MSS mới đủ/chưa đủ xác nhận và timestamp nguồn trước/sau kích hoạt. Các fixture đều đạt. Một lần Pine Editor tạm trả success cho payload có tên TFA nhưng chưa đối chiếu nguyên vẹn source, nên không dùng kết quả đó để tuyên bố biên dịch đầy đủ; lần thử đối chiếu tiếp theo không nhận thao tác dán. Chưa xác nhận hoạt động chart/Replay của bản này.
 
 Đã thử Pine Editor tạm bằng paste và nhập từng khối bàn phím. Paste không được editor nhận ổn định; lần nhập từng khối không hoàn tất vòng kiểm tra đúng toàn bộ source nên đã dừng. **Chưa có chẩn đoán cú pháp hoặc kiểm chứng chart/Replay cho bản refactor này.** Không dùng kết quả success của phiên bản cũ để khẳng định bản hiện hành đã chạy trên chart. Phiên tạm không đăng nhập/lưu/publish/đặt lệnh; Add to chart yêu cầu đăng nhập ở các lần trước.
 

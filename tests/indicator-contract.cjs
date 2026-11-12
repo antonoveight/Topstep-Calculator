@@ -158,7 +158,8 @@ for(const resolution of [60,180,300])for(let delta=0;delta<3600;delta+=resolutio
  assert.equal(projected[0].id,2);assert.deepEqual(projected[0].c1,first);assert.deepEqual(projected[0].c2,ts);
 }
 assert.doesNotMatch(engine,/barstate\.isconfirmed|\bchartSeconds\b|\bisLtf\b/,'Registry lifecycle must not depend on chart/LTF confirmation');
-assert.match(source,/Model selected = array.size\(models\) > 0 \? array.get\(models, 0\)/);
+assert.match(source,/Model selected = primaryIndex >= 0 \? array.get\(models, primaryIndex\)/);
+assert.match(source,/if modelAllowed and primaryIndex == -1/,'Oldest matching model stays primary');
 assert.match(source,/if array.size\(models\) < queueLimit/);
 assert.match(source,/last_bar_time - int\(timeframe.in_seconds\(\) \* 1000\) \* scanDepth/);
 assert.match(source,/f_biasSnapshot\(true\)/);
@@ -209,7 +210,28 @@ for(const entryMode of ['MSS','CISD','FVG retest','OB retest','POC close','Line 
  const expected={'MSS':'M','CISD':'C','FVG retest':'F','OB retest':'O','POC close':'P','Line retest':'BL'}[entryMode];
  assert.equal(evaluate('detectedTag',{entryMode,cisd:true,mss:true,fvgRetest:true}),expected,'Entry tag matches chosen mode, even if C/M overlap');
 }
-assert.match(source,/historyMarks = input.int\(1,/);
+assert.match(source,/historyMarks = input.int\(100,/);
+assert.match(source,/historyMode = input.string\("History",/);
+for(const retainHistory of [false,true])for(const historyMarks of [0,1,20,100,200]){
+ assert.equal(evaluate('markLimit',{retainHistory,historyMarks}),historyMarks===0?0:retainHistory?historyMarks:1);
+}
+assert.match(source,/if not retainHistory and recentOnly and barstate.islast/,'History markers are independent of line recency');
+for(const signalModels of ['All','CRT','EGF','ISB'])for(const kind of [1,2,3]){
+ assert.equal(evaluate('modelAllowed',{signalModels,candidate:{kind}}),signalModels==='All'||({CRT:1,EGF:2,ISB:3}[signalModels]===kind));
+}
+const finalGate=source.match(/if (selectedEntry and risk[^\n]+)/)[1];
+const gateBase={selectedEntry:true,risk:1,target:110,reward:2,biasAllowed:true,timeAllowed:true,invalidBar:false,localTargetTaken:false,alreadyEmitted:false,na:isNa};
+for(const branch of [{sKind:1,sPhase:1},{sKind:2,sPhase:0,egfPathReady:true},{sKind:3,sPhase:2,boundaryTouched:true},{sKind:3,sPhase:1}]){
+ const auto=evaluate('autoEntry',{...autoCtx,...branch});
+ assert.equal(auto,true,'Each HTF model has its own viable Auto path');
+ assert.equal(evaluateExpr(finalGate,{...gateBase,selectedEntry:auto}),true,'A viable model can independently pass the final signal gate');
+}
+for(const [field,value] of [['biasAllowed',false],['timeAllowed',false],['invalidBar',true],['localTargetTaken',true],['alreadyEmitted',true],['selectedEntry',false]]){
+ assert.equal(evaluateExpr(finalGate,{...gateBase,[field]:value}),false,'History review never bypasses '+field);
+}
+assert.equal(evaluate('freshMssPivot',{phaseAt:100,time:{2:110},pivotLength:2,bullish:true,pivotHigh:120,pivotLow:null,na:isNa}),true);
+assert.equal(evaluate('freshMssPivot',{phaseAt:100,time:{2:90},pivotLength:2,bullish:true,pivotHigh:120,pivotLow:null,na:isNa}),false,'Pivot must belong to the active phase, not a pre-setup swing');
+assert.equal(evaluate('freshMssPivot',{phaseAt:100,time:{2:110},pivotLength:2,bullish:true,pivotHigh:null,pivotLow:null,na:isNa}),false,'No unconfirmed pivot can refresh MSS');
 assert.match(source,/recentOnly = input.bool\(true,/);
 assert.doesNotMatch(source,/extend=extend.right/,'No unbounded level projection');
 assert.match(source,/label.style_triangleup : label.style_triangledown/);

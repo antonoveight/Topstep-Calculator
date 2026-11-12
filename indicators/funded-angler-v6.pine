@@ -1,6 +1,6 @@
 // Mozilla Public License 2.0: https://mozilla.org/MPL/2.0/
 // The Funded Angler - automatic, confirmed HTF model registry.
-// Latest context/source-anchor refactor still requires Pine Editor and chart validation.
+// History and model-branch formulas tested in Node; chart / Replay validation still required.
 // See docs/INDICATOR-AUTO-MODELS.md for exact lifecycle, priority and validation limits.
 //@version=6
 indicator("The Funded Angler v6 - Auto HTF", shorttitle="TFA v6", overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=120, max_boxes_count=30, max_labels_count=300)
@@ -13,6 +13,7 @@ const string G_ENTRY = "3. LTF"
 const string G_TIME = "4. Time"
 const string G_VIEW = "5. Display"
 htf = input.timeframe("60", "HTF", options=["60", "120", "240", "1D"], group=G_HTF, tooltip="Khung xác định CRT/TS, Engulfing/Outside hoặc Inside Bar. Bắt đầu H1 (60), dùng H2 nếu đó là khung bạn đọc cấu trúc. Chart LTF chỉ tìm entry.")
+signalModels = input.string("All", "Models to observe", options=["All", "CRT", "EGF", "ISB"], group=G_HTF, tooltip="All tự nhận diện và giữ model cũ còn hiệu lực làm ưu tiên. Chọn riêng CRT/EGF/ISB để kiểm tra nhánh đó độc lập trên cùng chart lịch sử; không cần cả ba xuất hiện đồng thời. Đây không phải ba engine phát đồng thời.")
 minSweepTicks = 1
 scanDepth = 1000
 queueLimit = 12
@@ -47,7 +48,10 @@ clusterWidth = input.int(4, "Cluster body width (bars)", minval=2, maxval=16, gr
 showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW, tooltip="Các mức nối từ nến tạo cực trị/swing tương ứng, không từ nến tín hiệu. EQ 50% dùng neo tổng quan. Nếu nguồn không có trong dữ liệu chart hoặc chưa có ERL hợp lệ thì không ghim giả. Tắt chỉ ẩn line, không đổi tín hiệu.")
 showSecondary = false
 showPanel = input.bool(true, "Compact panel", group=G_VIEW, tooltip="Bảng tổng quan cố định góc trên phải. TF=khung, #1=model ưu tiên, B=bias, IRL=vùng, T=thời gian, S=trạng thái.")
-historyMarks = input.int(1, "Signal history: latest marks (0 = hide)", minval=0, maxval=100, group=G_VIEW, tooltip="Mặc định giữ 1 tam giác hướng đi gần nhất. 0 ẩn dấu, tối đa 100; dấu cũ xóa trước. Không đổi nhận diện hoặc alert.")
+historyMode = input.string("History", "Signal display", options=["History", "Latest"], group=G_VIEW, tooltip="History giữ dấu quá khứ theo giới hạn bên dưới, không xóa vì cửa sổ 3 HTF của các line. Latest chỉ giữ dấu gần nhất. Không đổi điều kiện tính toán hoặc alert.")
+historyMarks = input.int(100, "Historical signals to keep (0 = hide)", minval=0, maxval=200, group=G_VIEW, tooltip="Mặc định 100, tối đa 200 tam giác lịch sử. 0 ẩn dấu. Các bộ đếm dashboard tính toàn bộ dữ liệu chart đã tải, có thể lớn hơn số dấu được giữ.")
+bool retainHistory = historyMode == "History"
+int markLimit = historyMarks == 0 ? 0 : retainHistory ? historyMarks : 1
 recentOnly = input.bool(true, "Hide drawings without a recent signal", group=G_VIEW, tooltip="Ẩn phần vẽ quá cửa sổ gần nhất. Cụm HTF gần đây có thể hiện trước entry LTF để xem tổng quan; không có nghĩa đã có lệnh.")
 drawHtfBars = input.int(3, "Drawing horizon / recency (HTF bars)", minval=1, maxval=12, group=G_VIEW, tooltip="Giới hạn phần chiếu về trước và tuổi hình, mặc định 3 HTF. Đầu line vẫn nối về swing nguồn cũ. Không hủy hiệu lực model.")
 showEntryTriangles = true
@@ -339,7 +343,14 @@ f_engine() =>
                                 m.irlKind := z.kind
                                 m.irlDir := z.dir
                             j -= 1
-    Model selected = array.size(models) > 0 ? array.get(models, 0) : Model.new()
+    int primaryIndex = -1
+    if array.size(models) > 0
+        for i = 0 to array.size(models) - 1
+            Model candidate = array.get(models, i)
+            bool modelAllowed = signalModels == "All" or (signalModels == "CRT" and candidate.kind == 1) or (signalModels == "EGF" and candidate.kind == 2) or (signalModels == "ISB" and candidate.kind == 3)
+            if modelAllowed and primaryIndex == -1
+                primaryIndex := i
+    Model selected = primaryIndex >= 0 ? array.get(models, primaryIndex) : Model.new()
     Model secondModel = array.size(models) > 1 ? array.get(models, 1) : Model.new()
     Model thirdModel = array.size(models) > 2 ? array.get(models, 2) : Model.new()
     bool historyReady = firstSeen <= scanStart
@@ -561,6 +572,7 @@ bool alreadyEmitted = array.includes(emitted, modelKey)
 bool egfScenario = sKind == 2 and sPhase != 1
 bool reactionStarted = false
 bool egfReady = false
+string signalStatus = not isLtf ? "VIEW TF" : not armed ? (na(sId) ? "NO MODEL" : "NO DIR") : "LTF WAIT"
 if armed and barstate.isconfirmed and isLtf and time >= activatedAt
     bool bullish = sDir == 1
     bool invalidBar = bullish ? low <= executionSl : high >= executionSl
@@ -584,6 +596,10 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
     if egfScenario and irlTouched and (bullish ? close < sIrlL : close > sIrlH)
         irlFailed := true
     int phaseAt = egfScenario ? irlTouchTime : activatedAt
+    // Refresh only from pivots whose source is in this active reaction and is already confirmed.
+    bool freshMssPivot = not na(phaseAt) and time[pivotLength] >= phaseAt and (bullish ? not na(pivotHigh) : not na(pivotLow))
+    if freshMssPivot
+        mssLevel := bullish ? pivotHigh : pivotLow
     bool opposing = bullish ? close < open : close > open
     bool priorOpposing = bullish ? close[1] < open[1] : close[1] > open[1]
     if opposing
@@ -640,6 +656,7 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
     float reward = not na(target) ? (bullish ? target - close : close - target) : na
     bool plannedRR = risk > 0 and not na(reward) and reward > 0 and reward / risk >= minRR
     bool biasAllowed = not filterBias or biasDir == sDir
+    signalStatus := alreadyEmitted ? "USED" : na(target) ? "NO ERL" : not biasAllowed ? "BIAS" : not timeAllowed ? "TIME" : localTargetTaken ? "CP TAKEN" : invalidBar or risk <= 0 ? "INV" : reward <= 0 ? "PATH" : egfScenario and irlFailed ? "IRL X" : egfScenario and not irlTouched ? "IRL WAIT" : not confirmationContext ? "CONTEXT" : not selectedEntry ? "LTF WAIT" : "READY"
     if showConfirm and confirmationContext and not invalidBar and not localTargetTaken and not alreadyEmitted and not cNoted and not mNoted
         cMark := cisd and entryMode != "MSS"
         mMark := mss and not cMark and entryMode != "CISD"
@@ -651,6 +668,7 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
     // Optional clock gate applies to E only.
     if selectedEntry and risk > 0 and not na(target) and reward > 0 and biasAllowed and timeAllowed and not invalidBar and not localTargetTaken and not alreadyEmitted
         entryEvent := true
+        signalStatus := "SIGNAL"
         entryLong := bullish
         entryShort := not bullish
         signalTag := detectedTag
@@ -754,7 +772,7 @@ var array<box> clusterBodies = array.new<box>()
 var array<line> clusterWicks = array.new<line>()
 var array<label> clusterLabels = array.new<label>()
 var label clockLabel = label.new(bar_index, high, "", force_overlay=true, style=label.style_label_up, color=color.new(chart.bg_color, 100), textcolor=chart.fg_color, size=chartFont)
-var table panel = table.new(position.top_right, 2, 6, bgcolor=color.new(#111820, 12), border_width=0)
+var table panel = table.new(position.top_right, 2, 9, bgcolor=color.new(#111820, 12), border_width=0)
 if barstate.isfirst
     for i = 0 to 15
         array.push(levelLines, line.new(time, high, time, high, xloc=xloc.bar_time, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
@@ -863,11 +881,11 @@ f_layoutLabels() =>
 f_note(string noteText, bool up, bool qualified = false) =>
     string markerLocation = up ? yloc.belowbar : yloc.abovebar
     color markerColor = up ? color.lime : color.red
-    string hint = (qualified ? (up ? "Buy signal / " : "Sell signal / ") + signalTag : (up ? "Bullish confirmation / " : "Bearish confirmation / ") + noteText + " (not entry)")
-    if historyMarks > 0
+    string hint = (up ? "BUY" : "SELL") + " | " + f_tag(sFlags, sKind, sPhase) + " | " + signalTag + " | " + str.format_time(time, "dd/MM HH:mm", NY) + " NY\nClose " + str.tostring(close, format.mintick) + " | CP " + str.tostring(target, format.mintick) + " | INV " + str.tostring(executionSl, format.mintick) + "\nReference prices, not executed entry / PnL."
+    if markLimit > 0
         array.push(eventLabels, label.new(bar_index, na, "", xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_triangleup : label.style_triangledown, color=markerColor, size=size.tiny, force_overlay=true, tooltip=hint))
         array.push(eventBuckets, bucketCounter)
-    while array.size(eventLabels) > historyMarks
+    while array.size(eventLabels) > markLimit
         label.delete(array.shift(eventLabels))
         array.shift(eventBuckets)
 
@@ -876,13 +894,30 @@ if entryEvent and showEntryTriangles
 else if cMark or mMark
     f_note((sDir == 1 ? "B " : "S ") + (cMark ? "C" : "M"), sDir == 1)
 
-if recentOnly and barstate.islast
+if not retainHistory and recentOnly and barstate.islast
     int markIndex = array.size(eventLabels) - 1
     while markIndex >= 0
         if bucketCounter - array.get(eventBuckets, markIndex) > drawHtfBars
             label.delete(array.remove(eventLabels, markIndex))
             array.remove(eventBuckets, markIndex)
         markIndex -= 1
+
+// Counts use closed chart bars across the loaded dataset, independent of display pruning.
+var int dataStart = math.max(time, last_bar_time - int(htfSeconds * 1000) * scanDepth)
+var string lastClosedStatus = "WAIT"
+var int crtSignals = 0
+var int egfSignals = 0
+var int isbSignals = 0
+if barstate.isconfirmed
+    lastClosedStatus := signalStatus
+if barstate.isconfirmed and entryEvent
+    crtSignals += sKind == 1 ? 1 : 0
+    egfSignals += sKind == 2 ? 1 : 0
+    isbSignals += sKind == 3 ? 1 : 0
+plot(entryEvent ? sKind : na, "Signal model: 1 CRT, 2 EGF, 3 ISB", display=display.data_window)
+plot(entryEvent ? close : na, "Signal reference close (not fill)", display=display.data_window)
+plot(entryEvent ? target : na, "Target reference at signal", display=display.data_window)
+plot(entryEvent ? executionSl : na, "Invalidation reference at signal", display=display.data_window)
 
 if barstate.islast
     bool hasModel = not na(sId)
@@ -911,9 +946,9 @@ if barstate.islast
     if showPanel
         string dirText = biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
         string stateText = not hasModel ? "WAIT" : sDir == 0 ? (sKind == 2 ? "BIAS?" : "COMP") : localTargetTaken ? "CP?" : alreadyEmitted ? "SIGNAL" : na(target) ? "CP -" : egfScenario and irlFailed ? "IRL X" : egfScenario and not irlTouched ? "IRL WAIT" : egfScenario and not egfReady ? "IRL" : "LTF"
-        array<string> headings = array.from("TF", "#1", "B", "IRL", "T", "S")
-        array<string> values = array.from(htf + " / " + timeframe.period, tag + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? (sIrlKind == 1 ? "FVG" : "OB?") : "-", macroNow + (showQt ? " Q" + str.tostring(dayQuarter) + "/" + str.tostring(sessionQuarter) : ""), not sReady ? "HIST" : stateText + (sDropped > 0 ? " +" : ""))
-        for row = 0 to 5
+        array<string> headings = array.from("TF", "#1", "B", "IRL", "T", "S", "N", "WHY", "DATA")
+        array<string> values = array.from(htf + " / " + timeframe.period, tag + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? (sIrlKind == 1 ? "FVG" : "OB?") : "-", macroNow + (showQt ? " Q" + str.tostring(dayQuarter) + "/" + str.tostring(sessionQuarter) : ""), not sReady ? "HIST" : stateText + (sDropped > 0 ? " +" : ""), "C " + str.tostring(crtSignals) + " E " + str.tostring(egfSignals) + " I " + str.tostring(isbSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY))
+        for row = 0 to 8
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
             table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont)
     float clusterSpan = hasModel ? math.max(sAH, sBH, nz(sCH, sBH)) - math.min(sAL, sBL, nz(sCL, sBL)) : high - low
