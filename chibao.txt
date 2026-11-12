@@ -35,7 +35,7 @@ manualInvalid = input.price(0.0, "Execution SL (0 = HTF INV)", group=G_ENTRY)
 manualTarget = input.price(0.0, "CP override (0 = model CP)", group=G_ENTRY)
 minRR = input.float(2.0, "Minimum planned R:R", minval=0.5, maxval=20, step=0.25, group=G_ENTRY)
 retestTicks = input.int(1, "Retest tolerance (ticks)", minval=0, maxval=20, group=G_ENTRY)
-showConfirm = input.bool(true, "C / M confirmation marks", group=G_ENTRY)
+showConfirm = input.bool(false, "C / M confirmation marks", group=G_ENTRY)
 timeGate = input.string("Context only", "Time filter for E", options=["Context only", "Web macros", "Web working windows"], group=G_TIME)
 showTimeBg = input.bool(false, "Macro background", group=G_TIME)
 showQt = input.bool(true, "QT clock context", group=G_TIME)
@@ -45,9 +45,12 @@ clusterLive = input.bool(true, "Additional live HTF candle", group=G_VIEW)
 clusterOffset = input.int(15, "Cluster offset (bars)", minval=3, maxval=80, group=G_VIEW)
 clusterWidth = input.int(6, "Cluster body width (bars)", minval=2, maxval=16, group=G_VIEW)
 showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW)
-showSecondary = input.bool(true, "Two newer active ranges (faint)", group=G_VIEW)
+showSecondary = input.bool(false, "Two newer active ranges (faint)", group=G_VIEW)
 showPanel = input.bool(true, "Compact panel", group=G_VIEW)
-historyMarks = input.int(20, "Signal history: latest marks (0 = hide)", minval=0, maxval=100, group=G_VIEW, tooltip="Maximum C/M/E marks kept on the chart. Oldest marks are removed first. This does not change model detection, active model priority or alerts.")
+historyMarks = input.int(1, "Signal history: latest marks (0 = hide)", minval=0, maxval=100, group=G_VIEW, tooltip="Default: the latest signal only. Oldest marks are removed first; this does not change detection or alerts.")
+recentOnly = input.bool(true, "Hide drawings without a recent signal", group=G_VIEW)
+drawHtfBars = input.int(3, "Drawing horizon / recency (HTF bars)", minval=1, maxval=12, group=G_VIEW)
+showEntryTriangles = input.bool(true, "Buy / Sell triangles", group=G_VIEW)
 
 float chartSeconds = timeframe.in_seconds()
 float htfSeconds = timeframe.in_seconds(htf)
@@ -55,8 +58,8 @@ bool onHtf = chartSeconds == htfSeconds
 bool isLtf = chartSeconds < htfSeconds and (chartSeconds == 60 or chartSeconds == 180 or chartSeconds == 300)
 float sweepSize = syminfo.mintick * minSweepTicks
 float tolerance = syminfo.mintick * retestTicks
-if barstate.isfirst and (not chart.is_standard or na(chartSeconds) or chartSeconds > htfSeconds or timeframe.in_seconds(biasTf) < htfSeconds)
-    runtime.error("Standard chart <= HTF required; Bias TF must be >= HTF.")
+if barstate.isfirst and (not chart.is_standard or na(chartSeconds) or chartSeconds > htfSeconds or htfSeconds % chartSeconds != 0 or timeframe.in_seconds(biasTf) < htfSeconds)
+    runtime.error("Use a standard chart TF dividing HTF; chart <= HTF and Bias TF >= HTF.")
 
 f_has(int flags, int bit) =>
     int(math.floor(flags / bit)) % 2 == 1
@@ -91,6 +94,7 @@ type Model
     int bornIndex = na
     int confirmedAt = na
     int resolvedAt = na
+    int resolvedIndex = na
     float hi = na
     float lo = na
     float inv = na
@@ -204,6 +208,7 @@ f_engine() =>
                     m.dir := resolveDir
                     m.phase := backIn ? 1 : 2
                     m.resolvedAt := time_close
+                    m.resolvedIndex := bar_index
                     m.inv := resolveDir == 1 ? math.min(low, m.lo) : math.max(high, m.hi)
                     m.cp := backIn ? (resolveDir == 1 ? m.hi : m.lo) : na
                     m.cO := open
@@ -280,16 +285,16 @@ f_engine() =>
     Model secondModel = array.size(models) > 1 ? array.get(models, 1) : Model.new()
     Model thirdModel = array.size(models) > 2 ? array.get(models, 2) : Model.new()
     bool historyReady = firstSeen <= scanStart
-    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, secondModel.uid, secondModel.flags, secondModel.kind, secondModel.phase, secondModel.hi, secondModel.lo, secondModel.aT, thirdModel.uid, thirdModel.flags, thirdModel.kind, thirdModel.phase, thirdModel.hi, thirdModel.lo, thirdModel.aT, lastRetired, retiredReason, dropped, historyReady]
+    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, secondModel.uid, secondModel.flags, secondModel.kind, secondModel.phase, secondModel.hi, secondModel.lo, secondModel.aT, thirdModel.uid, thirdModel.flags, thirdModel.kind, thirdModel.phase, thirdModel.hi, thirdModel.lo, thirdModel.aT, lastRetired, retiredReason, dropped, historyReady, bar_index - nz(selected.resolvedIndex, selected.bornIndex)]
 
 // f_snapshot uses per-field scalar offsets, not an object/collection request.
 // On the HTF chart: previous output while forming, current output once the bar closes.
 // On lower charts: always previous CONFIRMED HTF output + lookahead_on.
 f_snapshot(bool previous) =>
-    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50] = f_engine()
-    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50]
+    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51] = f_engine()
+    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51]
 
-[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, s2Id, s2Flags, s2Kind, s2Phase, s2Hi, s2Lo, s2AT, s3Id, s3Flags, s3Kind, s3Phase, s3Hi, s3Lo, s3AT, sRetired, sReason, sDropped, sReady] = if onHtf
+[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, s2Id, s2Flags, s2Kind, s2Phase, s2Hi, s2Lo, s2AT, s3Id, s3Flags, s3Kind, s3Phase, s3Hi, s3Lo, s3AT, sRetired, sReason, sDropped, sReady, sModelAge] = if onHtf
     f_snapshot(not barstate.isconfirmed)
 else
     request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
@@ -318,11 +323,49 @@ else
     request.security(syminfo.tickerid, biasTf, f_biasSnapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
 int biasDir = biasMode == "Auto" ? nz(autoBias) : biasMode == "Long" ? 1 : biasMode == "Short" ? -1 : 0
 
-// Current HTF candle is PREVIEW ONLY. Never consumed by f_engine or LTF confirmations.
-[liveO, liveH, liveL, liveC, liveT, liveEnd] = if onHtf
-    [open, high, low, close, time, time_close]
+// Preview is aggregated from THIS chart's actual bars, including the live bar.
+// Incomplete first buckets are not presented as complete OHLC candles.
+int bucketTime = time(htf)
+int bucketEnd = time_close(htf)
+var float liveO = na
+var float liveH = na
+var float liveL = na
+var float liveC = na
+var int liveT = na
+var int liveEnd = na
+var bool liveComplete = false
+var int bucketCounter = 0
+var array<int> candleTimes = array.new<int>()
+var array<float> candleOpens = array.new<float>()
+var array<float> candleHighs = array.new<float>()
+var array<float> candleLows = array.new<float>()
+var array<float> candleCloses = array.new<float>()
+bool newBucket = na(liveT) or bucketTime != liveT
+if newBucket
+    if not na(liveT) and liveComplete
+        array.push(candleTimes, liveT)
+        array.push(candleOpens, liveO)
+        array.push(candleHighs, liveH)
+        array.push(candleLows, liveL)
+        array.push(candleCloses, liveC)
+        if array.size(candleTimes) > 1000
+            array.shift(candleTimes)
+            array.shift(candleOpens)
+            array.shift(candleHighs)
+            array.shift(candleLows)
+            array.shift(candleCloses)
+    bucketCounter += 1
+    liveT := bucketTime
+    liveEnd := bucketEnd
+    liveO := open
+    liveH := high
+    liveL := low
+    liveC := close
+    liveComplete := time == bucketTime
 else
-    request.security(syminfo.tickerid, htf, [open, high, low, close, time, time_close], lookahead=barmerge.lookahead_off)
+    liveH := math.max(liveH, high)
+    liveL := math.min(liveL, low)
+    liveC := close
 
 // Entry gates use exact bar-close time. The panel uses actual wall time on realtime bars.
 int stamp = na(time_close) ? time : time_close
@@ -364,8 +407,8 @@ if time == dayOpenStamp
     dayOpenPrice := open
 if time == sessionOpenStamp
     sessionOpenPrice := open
-plot(showTrueOpens ? dayOpenPrice : na, "TDO actual open", color=color.new(color.aqua, 35), style=plot.style_linebr)
-plot(showTrueOpens ? sessionOpenPrice : na, "Session TO actual open", color=color.new(color.orange, 35), style=plot.style_linebr)
+plot(showTrueOpens ? dayOpenPrice : na, "TDO actual open", color=color.new(color.aqua, 35), style=plot.style_linebr, force_overlay=true)
+plot(showTrueOpens ? sessionOpenPrice : na, "Session TO actual open", color=color.new(color.orange, 35), style=plot.style_linebr, force_overlay=true)
 
 // LTF conditions belong to the selected model ID + its HTF resolution revision.
 var string selectedKey = ""
@@ -515,71 +558,119 @@ if armed and barstate.isconfirmed and isLtf and time >= activatedAt
 
 
 
-// Drawings use chart price coordinates and actual source timestamps. No normalized screen Y.
+// Visual anchors are independent of the registry and never create a trade signal.
+var int lastVisualTime = na
+var int lastVisualIndex = na
+var int lastVisualBucket = na
+var string lastVisualKey = ""
+if changedModel
+    lastVisualTime := na
+    lastVisualIndex := na
+    lastVisualBucket := na
+    lastVisualKey := ""
+if entryEvent or cMark or mMark
+    lastVisualTime := time
+    lastVisualIndex := bar_index
+    lastVisualBucket := bucketCounter
+    lastVisualKey := modelKey
+f_sourceIndex(int sourceTime) =>
+    int found = na
+    if not na(sourceTime)
+        for offset = 0 to math.min(bar_index, 4999)
+            if time[offset] == sourceTime
+                found := bar_index - offset
+                break
+    found
+int modelAnchorTime = not na(sResolved) and sResolved > sConfirmed and not na(sCT) ? sCT : sBT
+int modelAnchorIndex = onHtf and barstate.islast and not na(sId) and (not recentOnly or sModelAge <= drawHtfBars) ? f_sourceIndex(modelAnchorTime) : na
+int drawAnchorIndex = onHtf ? modelAnchorIndex : lastVisualKey == modelKey ? lastVisualIndex : na
+int drawSpan = int(math.ceil(drawHtfBars * htfSeconds / chartSeconds))
+int clusterStartIndex = bar_index + clusterOffset
+int drawingClipIndex = showCluster ? clusterStartIndex - 3 : bar_index + 499
+int drawEndIndex = not na(drawAnchorIndex) ? math.min(drawAnchorIndex + drawSpan, drawingClipIndex) : na
+bool recentModel = not na(sId) and not na(sModelAge) and sModelAge <= drawHtfBars
+bool recentLtfSignal = lastVisualKey == modelKey and not na(lastVisualBucket) and bucketCounter - lastVisualBucket <= drawHtfBars
+bool drawActive = not na(sId) and not na(drawAnchorIndex) and drawAnchorIndex >= bar_index - 9999 and drawEndIndex >= drawAnchorIndex and (not recentOnly or (onHtf ? recentModel : recentLtfSignal))
+bool clusterActive = not na(sId) and (not recentOnly or recentModel or drawActive)
+
+// Finite drawings use real chart bar indices and real prices, on the main price pane.
+
 var array<line> levelLines = array.new<line>()
 var array<label> levelLabels = array.new<label>()
 var array<label> eventLabels = array.new<label>()
+var array<int> eventBuckets = array.new<int>()
 var array<box> clusterBodies = array.new<box>()
 var array<line> clusterWicks = array.new<line>()
 var array<label> clusterLabels = array.new<label>()
-var box irlBox = box.new(time, high, time_close, low, xloc=xloc.bar_time, bgcolor=color.new(color.teal, 100), border_color=color.new(color.teal, 100))
-var label clockLabel = label.new(bar_index, high, "", style=label.style_none, textcolor=color.silver, size=size.tiny)
+var box irlBox = box.new(bar_index, high, bar_index, low, xloc=xloc.bar_index, force_overlay=true, bgcolor=color.new(color.teal, 100), border_color=color.new(color.teal, 100))
+var label clockLabel = label.new(bar_index, high, "", force_overlay=true, style=label.style_none, textcolor=color.silver, size=size.tiny)
 var table panel = table.new(position.top_right, 2, 6, bgcolor=color.new(#111820, 12), border_width=0)
 if barstate.isfirst
     for i = 0 to 12
-        array.push(levelLines, line.new(time, high, time_close, high, xloc=xloc.bar_time, extend=extend.right, color=color.new(color.gray, 100)))
-        array.push(levelLabels, label.new(time, high, "", xloc=xloc.bar_time, style=label.style_label_left, size=size.tiny, color=color.new(color.black, 100)))
+        array.push(levelLines, line.new(bar_index, high, bar_index, high, xloc=xloc.bar_index, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
+        array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_right, size=size.tiny, color=color.new(color.black, 100)))
     for i = 0 to 3
-        array.push(clusterBodies, box.new(bar_index, high, bar_index, low, bgcolor=color.new(color.gray, 100), border_color=color.new(color.gray, 100)))
-        array.push(clusterWicks, line.new(bar_index, high, bar_index, low, color=color.new(color.gray, 100)))
-        array.push(clusterLabels, label.new(bar_index, low, "", style=label.style_none, textcolor=color.silver, size=size.tiny))
+        array.push(clusterBodies, box.new(bar_index, high, bar_index, low, force_overlay=true, bgcolor=color.new(color.gray, 100), border_color=color.new(color.gray, 100)))
+        array.push(clusterWicks, line.new(bar_index, high, bar_index, low, force_overlay=true, color=color.new(color.gray, 100)))
+        array.push(clusterLabels, label.new(bar_index, low, "", force_overlay=true, style=label.style_none, textcolor=color.silver, size=size.tiny))
 f_tag(int flags, int kind, int phase) =>
     string base = kind == 1 ? "CRT" : kind == 3 ? "ISB" : f_has(flags, 2) ? "EGF" : "OUT"
     base + ((kind == 1 or kind == 3) and f_has(flags, 2) ? "/E" : "") + (phase == 1 ? "/TS" : phase == 2 ? "/BR" : "")
-f_level(int slot, int anchor, float price, string caption, color shade, bool visible) =>
+f_level(int slot, float price, string caption, color shade, bool visible) =>
     line ln = array.get(levelLines, slot)
     label lb = array.get(levelLabels, slot)
-    bool ok = visible and not na(anchor) and not na(price)
+    bool ok = visible and drawActive and not na(price)
     if ok
-        line.set_xy1(ln, anchor, price)
-        line.set_xy2(ln, time_close, price)
-        label.set_xy(lb, time_close, price)
+        line.set_xy1(ln, drawAnchorIndex, price)
+        line.set_xy2(ln, drawEndIndex, price)
+        label.set_xy(lb, drawEndIndex, price)
     line.set_color(ln, ok ? shade : color.new(shade, 100))
     label.set_text(lb, ok ? caption : "")
     label.set_textcolor(lb, shade)
-f_note(string noteText, float price, color shade, bool up) =>
+f_note(string noteText, float price, color shade, bool up, bool triangle = false) =>
     if historyMarks > 0
-        array.push(eventLabels, label.new(time, price, noteText, xloc=xloc.bar_time, style=up ? label.style_label_up : label.style_label_down, color=color.new(shade, 75), textcolor=shade, size=size.tiny))
+        array.push(eventLabels, label.new(bar_index, price, noteText, xloc=xloc.bar_index, style=triangle ? (up ? label.style_triangleup : label.style_triangledown) : (up ? label.style_label_up : label.style_label_down), color=shade, textcolor=shade, size=triangle ? size.small : size.tiny, force_overlay=true, tooltip=triangle ? (up ? "Buy / " : "Sell / ") + signalTag : noteText))
+        array.push(eventBuckets, bucketCounter)
     while array.size(eventLabels) > historyMarks
         label.delete(array.shift(eventLabels))
+        array.shift(eventBuckets)
+
 if cMark
     f_note("C", sDir == 1 ? low : high, color.aqua, sDir == 1)
 if mMark
     f_note("M", sDir == 1 ? low : high, color.yellow, sDir == 1)
-if entryEvent
-    f_note("E" + (entryLong ? "+" : "-") + "/" + signalTag, entryLong ? low : high, entryLong ? color.lime : color.orange, entryLong)
+if entryEvent and showEntryTriangles
+    f_note(entryLong ? "B" : "S", entryLong ? low : high, entryLong ? color.lime : color.red, entryLong, true)
+
+if recentOnly and barstate.islast
+    int markIndex = array.size(eventLabels) - 1
+    while markIndex >= 0
+        if bucketCounter - array.get(eventBuckets, markIndex) > drawHtfBars
+            label.delete(array.remove(eventLabels, markIndex))
+            array.remove(eventBuckets, markIndex)
+        markIndex -= 1
 
 if barstate.islast
     bool hasModel = not na(sId)
     color primaryColor = sDir == 1 ? color.teal : sDir == -1 ? color.orange : color.silver
     string tag = hasModel ? f_tag(sFlags, sKind, sPhase) : "-"
-    f_level(0, sAT, sHi, tag + " RH", primaryColor, showLevels and hasModel)
-    f_level(1, sAT, sLo, "RL", primaryColor, showLevels and hasModel)
-    f_level(2, sAT, (sHi + sLo) / 2, "EQ", color.new(color.gray, 45), showLevels and hasModel)
-    f_level(3, sConfirmed, sInv, "INV", color.new(color.red, 15), showLevels and hasModel)
-    f_level(4, sConfirmed, sCp, "CP", color.aqua, showLevels and hasModel)
-    f_level(5, sConfirmed, sErlU, "ERL+", color.new(color.orange, 35), showLevels and hasModel)
-    f_level(6, sConfirmed, sErlL, "ERL-", color.new(color.teal, 35), showLevels and hasModel)
-    f_level(7, s2AT, s2Hi, f_tag(s2Flags, s2Kind, s2Phase) + " #2", color.new(color.silver, 75), showSecondary and not na(s2Id))
-    f_level(8, s2AT, s2Lo, "", color.new(color.silver, 75), showSecondary and not na(s2Id))
-    f_level(9, s3AT, s3Hi, f_tag(s3Flags, s3Kind, s3Phase) + " #3", color.new(color.silver, 85), showSecondary and not na(s3Id))
-    f_level(10, s3AT, s3Lo, "", color.new(color.silver, 85), showSecondary and not na(s3Id))
-    f_level(11, sConfirmed, manualTarget, "CPe", color.blue, showLevels and hasModel and manualTarget > 0)
-    f_level(12, sConfirmed, manualInvalid, "SL", color.new(color.red, 35), showLevels and hasModel and manualInvalid > 0)
-    bool hasIrl = hasModel and not na(sIrlT)
+    f_level(0, sHi, tag + " RH", primaryColor, showLevels and hasModel)
+    f_level(1, sLo, "RL", primaryColor, showLevels and hasModel)
+    f_level(2, (sHi + sLo) / 2, "EQ", color.new(color.gray, 45), showLevels and hasModel)
+    f_level(3, sInv, "INV", color.new(color.red, 15), showLevels and hasModel)
+    f_level(4, sCp, "CP", color.aqua, showLevels and hasModel)
+    f_level(5, sErlU, "ERL+", color.new(color.orange, 35), showLevels and hasModel)
+    f_level(6, sErlL, "ERL-", color.new(color.teal, 35), showLevels and hasModel)
+    f_level(7, s2Hi, f_tag(s2Flags, s2Kind, s2Phase) + " #2", color.new(color.silver, 75), showSecondary and onHtf and not na(s2Id))
+    f_level(8, s2Lo, "", color.new(color.silver, 75), showSecondary and onHtf and not na(s2Id))
+    f_level(9, s3Hi, f_tag(s3Flags, s3Kind, s3Phase) + " #3", color.new(color.silver, 85), showSecondary and onHtf and not na(s3Id))
+    f_level(10, s3Lo, "", color.new(color.silver, 85), showSecondary and onHtf and not na(s3Id))
+    f_level(11, manualTarget, "CPe", color.blue, showLevels and hasModel and manualTarget > 0)
+    f_level(12, manualInvalid, "SL", color.new(color.red, 35), showLevels and hasModel and manualInvalid > 0)
+    bool hasIrl = drawActive and not na(sIrlT)
     if hasIrl
-        box.set_lefttop(irlBox, sIrlT, sIrlH)
-        box.set_rightbottom(irlBox, time_close, sIrlL)
+        box.set_lefttop(irlBox, drawAnchorIndex, sIrlH)
+        box.set_rightbottom(irlBox, drawEndIndex, sIrlL)
     box.set_bgcolor(irlBox, color.new(primaryColor, hasIrl ? 90 : 100))
     box.set_border_color(irlBox, color.new(primaryColor, hasIrl ? 45 : 100))
     box.set_text(irlBox, hasIrl ? (sIrlKind == 1 ? "FVG" : "OB?") : "")
@@ -597,14 +688,21 @@ if barstate.islast
     float labelY = hasModel ? math.min(sAL, sBL, nz(sCL, sBL)) - math.max(clusterSpan * 0.08, syminfo.mintick * 4) : low
     for i = 0 to 3
         bool thirdFrozen = not na(sCT)
-        bool pendingThird = na(sCT) and liveT > sBT
-        bool extraLive = clusterLive and thirdFrozen and liveT > sCT
-        bool visible = showCluster and hasModel and (i < 2 or (i == 2 ? thirdFrozen or pendingThird : extraLive))
+        bool pendingThird = na(sCT) and liveComplete and liveT > sBT
+        bool extraLive = clusterLive and liveComplete and thirdFrozen and liveT > sCT
+        bool visible = showCluster and clusterActive and (i < 2 or (i == 2 ? thirdFrozen or pendingThird : extraLive))
         float o = i == 0 ? sAO : i == 1 ? sBO : i == 2 and thirdFrozen ? sCO : liveO
         float h = i == 0 ? sAH : i == 1 ? sBH : i == 2 and thirdFrozen ? sCH : liveH
         float l = i == 0 ? sAL : i == 1 ? sBL : i == 2 and thirdFrozen ? sCL : liveL
         float c = i == 0 ? sAC : i == 1 ? sBC : i == 2 and thirdFrozen ? sCC : liveC
-        int left = bar_index + clusterOffset + i * (clusterWidth + 2)
+        int sourceTime = i == 0 ? sAT : i == 1 ? sBT : i == 2 and thirdFrozen ? sCT : liveT
+        int cached = array.indexof(candleTimes, sourceTime)
+        if cached >= 0
+            o := array.get(candleOpens, cached)
+            h := array.get(candleHighs, cached)
+            l := array.get(candleLows, cached)
+            c := array.get(candleCloses, cached)
+        int left = clusterStartIndex + i * (clusterWidth + 2)
         int middle = left + int(math.floor(clusterWidth / 2))
         color shade = c >= o ? color.teal : color.new(#161b22, 0)
         box body = array.get(clusterBodies, i)
@@ -620,11 +718,10 @@ if barstate.islast
         box.set_border_color(body, visible ? (c >= o ? color.teal : color.silver) : color.new(color.gray, 100))
         line.set_color(wick, visible ? (c >= o ? color.teal : color.silver) : color.new(color.gray, 100))
         label.set_text(caption, visible ? (i == 0 ? "C1" : i == 1 ? "C2" : i == 2 and thirdFrozen ? (sKind == 3 and sPhase == 1 ? "TS" : sPhase == 2 ? "BR" : "C3") : "N*") : "")
-        int sourceTime = i == 0 ? sAT : i == 1 ? sBT : i == 2 and thirdFrozen ? sCT : liveT
-        label.set_tooltip(caption, visible ? str.format_time(sourceTime, "dd/MM HH:mm", NY) : "")
+        label.set_tooltip(caption, visible ? str.format_time(sourceTime, "dd/MM HH:mm", NY) + " | O " + str.tostring(o, format.mintick) + " H " + str.tostring(h, format.mintick) + " L " + str.tostring(l, format.mintick) + " C " + str.tostring(c, format.mintick) + (cached >= 0 or sourceTime == liveT ? " / chart OHLC" : " / confirmed HTF") : "")
     int remaining = not na(liveEnd) ? math.max(0, int((liveEnd - timenow) / 1000)) : 0
     label.set_xy(clockLabel, bar_index + clusterOffset, labelY - math.max(clusterSpan * 0.1, syminfo.mintick * 6))
-    label.set_text(clockLabel, showCluster and hasModel ? tag + (barstate.isrealtime ? " · " + str.tostring(int(math.floor(remaining / 60))) + ":" + str.tostring(remaining % 60, "00") : "") : "")
+    label.set_text(clockLabel, showCluster and clusterActive ? tag + (barstate.isrealtime ? " · " + str.tostring(int(math.floor(remaining / 60))) + ":" + str.tostring(remaining % 60, "00") : "") : "")
 
 bool modelEvent = changedModel and not na(sId) and barstate.isconfirmed
 alertcondition(modelEvent, "HTF", "TFA HTF model priority changed.")

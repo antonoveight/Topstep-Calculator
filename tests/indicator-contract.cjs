@@ -16,7 +16,10 @@ function expression(name){
  assert.ok(m,'Missing source expression '+name);return m[1];
 }
 function evaluate(name,ctx){
- const js=expression(name).replace(/\b(open|high|low|close)\[1\]/g,'previous.$1').replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!').replace(/\bmath\./g,'Math.').replace(/\bna\b(?!\s*\()/g,'null');
+ return evaluateExpr(expression(name),ctx);
+}
+function evaluateExpr(expr,ctx){
+ const js=expr.replace(/\b(open|high|low|close)\[1\]/g,'previous.$1').replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!').replace(/\bmath\./g,'Math.').replace(/\bna\b(?!\s*\()/g,'null');
  return Function(...Object.keys(ctx),'return ('+js+');')(...Object.values(ctx));
 }
 function patterns(c1,c2,sweepSize=.25,refs={}){
@@ -72,7 +75,7 @@ for(const date of ['2026-07-14T23:00:00Z','2026-12-14T00:00:00Z','2026-03-08T06:
 // Explicit one-shot, closed-bar gates and HTF data contract; live data stays in display code.
 assert.match(source,/f_snapshot\(true\), lookahead=barmerge.lookahead_on/);
 assert.match(source,/f_snapshot\(not barstate.isconfirmed\)/);
-for(let i=0;i<51;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`),'Every HTF snapshot field must be offset');
+for(let i=0;i<52;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`),'Every HTF snapshot field must be offset');
 assert.match(source,/if armed and barstate.isconfirmed and isLtf/);
 assert.match(source,/if selectedEntry and plannedRR and biasAllowed and timeAllowed/);
 assert.match(source,/not alreadyEmitted/);
@@ -168,4 +171,31 @@ assert.equal(evaluate('autoEntry',{...autoCtx,sKind:2,sPhase:3}),false,'EGF need
 assert.equal(evaluate('autoEntry',{...autoCtx,sKind:2,sPhase:3,irlTouched:true}),true);
 assert.equal(evaluate('autoEntry',{...autoCtx,sKind:3,sPhase:2}),false,'ISB breakout needs mother-boundary retest');
 assert.equal(evaluate('autoEntry',{...autoCtx,sKind:3,sPhase:2,boundaryTouched:true}),true);
+assert.match(source,/historyMarks = input.int\(1,/);
+assert.match(source,/recentOnly = input.bool\(true,/);
+assert.doesNotMatch(source,/extend=extend.right/,'No unbounded level projection');
+assert.match(source,/label.style_triangleup : label.style_triangledown/);
+assert.match(source,/if entryEvent and showEntryTriangles/);
+assert.match(source,/lastVisualIndex := bar_index/,'LTF anchors start at actual condition bar');
+assert.match(source,/line.set_xy1\(ln, drawAnchorIndex, price\)/);
+assert.match(source,/box.set_lefttop\(irlBox, drawAnchorIndex, sIrlH\)/);
+assert.match(source,/liveComplete := time == bucketTime/,'Never invent first incomplete bucket open');
+assert.match(source,/array.indexof\(candleTimes, sourceTime\)/,'Cluster cache must match exact source candle');
+const na=x=>x==null||Number.isNaN(x),int=Math.trunc;
+for(const htfSeconds of [3600,7200,14400,86400])for(const chartSeconds of [60,180,300,htfSeconds])for(const drawHtfBars of [2,3])for(const offset of [3,15,80]){
+ const drawAnchorIndex=100,bar_index=102,clusterStartIndex=bar_index+offset;
+ const drawSpan=evaluate('drawSpan',{drawHtfBars,htfSeconds,chartSeconds,int});
+ const drawingClipIndex=evaluate('drawingClipIndex',{showCluster:true,clusterStartIndex,bar_index});
+ const end=evaluate('drawEndIndex',{drawAnchorIndex,drawSpan,drawingClipIndex,na});
+ assert.ok(end<=clusterStartIndex-3,'Projection ends before mini candles');
+ assert.ok(end<=drawAnchorIndex+drawSpan,'Projection is finite in HTF-equivalent bars');
+ assert.ok(end<=bar_index+499,'Never exceed Pine future-index constraint');
+}
+const updateHigh=source.match(/liveH := (math.max\([^\n]+\))/)[1];
+const updateLow=source.match(/liveL := (math.min\([^\n]+\))/)[1];
+let live={o:100,h:102,l:99,c:101};
+for(const b of [{h:105,l:100,c:104},{h:104,l:98,c:99}]){
+ live.h=evaluateExpr(updateHigh,{liveH:live.h,high:b.h});live.l=evaluateExpr(updateLow,{liveL:live.l,low:b.l});live.c=b.c;
+}
+assert.deepEqual(live,{o:100,h:105,l:98,c:99},'Aggregated live candle matches LTF OHLC');
 console.log('PASS auto-registry specification: FIFO validity/promotion, nested mother/resolution candles, compound overlap, limits/expiry, IRL/ERL, HTF/LTF projection; extracted Pine formulas, 3000 TS symmetry cases, 1440 macro minutes and DST/QT. Full chart compilation/runtime remains unverified.');

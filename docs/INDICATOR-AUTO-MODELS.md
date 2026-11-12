@@ -5,15 +5,18 @@ Nguồn hiện hành: `indicators/funded-angler-v6.pine`, đồng bộ sang `chi
 ## 1. Neo hình vẽ vào biểu đồ
 
 - `overlay=true, scale=scale.none`: dùng thang giá chart hiện có, không tạo một trục giá mới.
-- Range, ERL, CP và vùng IRL dùng **timestamp nguồn + giá OHLC thực**, `xloc.bar_time`. Chúng giữ thời gian/giá khi chart zoom hoặc kéo; không quy đổi giá sang pixel/phần trăm màn hình.
+- Range, ERL, CP và vùng IRL dùng **chỉ số nến thực + giá OHLC thực**, `xloc.bar_index`, `extend.none` và `force_overlay=true`. Trên HTF, tìm đúng nến nguồn bằng timestamp; trên LTF, bắt đầu tại nến xác nhận điều kiện, không kéo ngược về trước tín hiệu. Không quy đổi giá sang pixel/phần trăm màn hình.
+- Đường/vùng chỉ kéo tối đa số nến HTF đã chọn (mặc định 3), đồng thời kết thúc trước cụm HTF bên phải ít nhất 3 bar chart. Nhãn nằm về bên trái điểm kết thúc. Neo quá giới hạn lịch sử tọa độ của Pine được ẩn thay vì dịch sai sang nến khác.
 - Cụm HTF bên phải là hình chiếu có chủ đích: X theo `bar_index + offset` (độ rộng tính bằng số bar), Y là OHLC thực của model được chọn. Zoom ngang thay đổi độ rộng giống nến chart, zoom dọc thay đổi theo thang giá chung.
 - Sau khi thay code, **xóa instance cũ rồi thêm lại**. Pine không ghi đè toàn bộ cấu hình scale mà người dùng đã lưu. Nếu vẫn tách thang giá, dùng menu của chỉ báo → **Pin to scale → cùng scale với symbol**, không tạo scale mới. Kiểm tra cả trục giá và tùy chọn autoscale của chart.
 
 TradingView mô tả `scale.none` với overlay là dùng scale chart hiện có; `scale.left/right` tạo scale riêng. Các thuộc tính khai báo có thể cần thêm lại script mới có hiệu lực: [visual scale](https://www.tradingview.com/pine-script-docs/visuals/overview/), [declaration settings](https://www.tradingview.com/pine-script-docs/language/declaration-statements/).
 
+Nếu indicator đang được ghim vào **No Scale** trong giao diện TradingView, code không tự thay được lựa chọn đó. Chọn cùng scale với symbol theo [hướng dẫn indicator di chuyển tách khỏi giá](https://www.tradingview.com/support/solutions/43000775579-indicator-moves-separately-or-is-not-attached-to-the-price/).
+
 ## 2. Cùng engine trên HTF và LTF
 
-Chỉ chọn **HTF H1/H2/H4/D1**, không chọn phương pháp. Chart nến tiêu chuẩn được phép bằng HTF hoặc nhỏ hơn; M1/M3/M5 nhỏ hơn HTF mới phát tín hiệu entry.
+Chỉ chọn **HTF H1/H2/H4/D1**, không chọn phương pháp. Chart nến tiêu chuẩn được phép bằng HTF hoặc nhỏ hơn và độ dài chart TF phải chia hết HTF; M1/M3/M5 nhỏ hơn HTF mới phát tín hiệu entry.
 
 Engine registry chạy **trong chính HTF đã chọn**. Nó không dùng pivot, high/low hoặc số bar của chart LTF để tạo/hủy model HTF. Trên chart HTF dùng kết quả hiện tại khi nến đã đóng, kết quả trước khi nến còn chạy. Trên LTF dùng snapshot scalar của HTF đã đóng, offset từng trường một bar và `lookahead_on`. Không dùng `barstate.isconfirmed` bên trong request để giả lập xác nhận HTF.
 
@@ -85,11 +88,17 @@ Các lựa chọn entry riêng CISD/MSS/FVG/OB/POC/BL vẫn có thể ghi đè A
 
 ## 7. Cụm nến và nhãn
 
-Cụm nến dùng **C1/C2 của model #1**, không phải luôn hai nến HTF gần nhất. CRT/EGF giữ C3 đầu tiên sau khi model hình thành. Model đang nén/neutral để C3 trống tới khi resolve; khi resolve thì dùng chính nến TS/BR làm nến thứ ba. `N*` là nến HTF hiện tại còn chạy, có thể hiện thêm ở bên phải; màu/thân/râu đều dùng giá thật. Tooltip của caption cho biết timestamp nến nguồn. Countdown đổi khi có tick.
+Cụm nến dùng **C1/C2 của model #1**, không phải luôn hai nến HTF gần nhất. CRT/EGF giữ C3 đầu tiên sau khi model hình thành. Model đang nén/neutral để C3 trống tới khi resolve; khi resolve thì dùng chính nến TS/BR làm nến thứ ba. `N*` là nến HTF hiện tại còn chạy, có thể hiện thêm ở bên phải; màu/thân/râu đều dùng giá thật. Countdown đổi khi có tick.
 
-Nhãn chart: `CRT`, `TS`, `EGF`, `OUT`, `ISB`, `BR`, `RH/RL`, `EQ`, `ERL+/−`, `CP`, `INV`, `FVG`, `OB?`. LTF: `C`, `M` là xác nhận tham khảo; `E+/C`, `E−/M`… mới là điều kiện entry đã qua gate. Nhãn ngắn không có nghĩa đã vào lệnh thật.
+OHLC live được gom từ nến chart đang mở theo `time(HTF)`: open của bar đầu, high lớn nhất, low nhỏ nhất và close mới nhất. Chỉ hiển thị preview nếu có dữ liệu từ đúng đầu bucket HTF, tránh vẽ một nến thiếu đầu lịch sử như nến đầy đủ. Cache các bucket đã hoàn tất được đối chiếu theo timestamp để vẽ C1/C2/C3; khi không có cache đầy đủ, dùng OHLC HTF đã xác nhận. Tooltip caption ghi timestamp, O/H/L/C và nguồn dữ liệu để đối chiếu trực tiếp.
 
-Trong **5. Display → Signal history: latest marks (0 = hide)**, chọn số dấu C/M/E gần nhất cần giữ: mặc định 20, tối đa 100; 0 ẩn toàn bộ dấu tín hiệu lịch sử. Dấu cũ nhất được xóa trước. Setting chỉ giới hạn hình vẽ, không thay đổi tính toán, cảnh báo hoặc thứ tự model còn hiệu lực; range/IRL/ERL và cụm nến của model hiện hành vẫn giữ nguyên.
+Nhãn chart: `CRT`, `TS`, `EGF`, `OUT`, `ISB`, `BR`, `RH/RL`, `EQ`, `ERL+/−`, `CP`, `INV`, `FVG`, `OB?`. LTF: tam giác xanh hướng lên `B` / đỏ hướng xuống `S` là điều kiện Buy/Sell đã qua gate entry; tooltip ghi loại xác nhận C/M/F/O/BL/P. `C`, `M` là dấu xác nhận tham khảo, mặc định tắt. Dấu tín hiệu đặt tại nến LTF đã đóng xác nhận điều kiện. Nhãn ngắn không có nghĩa đã vào lệnh thật.
+
+Trong **5. Display → Signal history: latest marks (0 = hide)**, chọn số dấu gần nhất cần giữ: mặc định **1**, tối đa 100; 0 ẩn toàn bộ dấu tín hiệu lịch sử. Dấu cũ nhất được xóa trước. `Buy / Sell triangles` mặc định bật, dấu C/M và model phụ mặc định tắt.
+
+`Hide drawings without a recent signal` mặc định bật. `Drawing horizon / recency (HTF bars)` mặc định **3**, có thể chọn 2 hoặc giá trị khác từ 1–12. Dấu LTF quá tuổi này bị xóa; đường/vùng LTF chỉ hiện sau điều kiện xác nhận của model đang xét. Trên HTF, model mới xác nhận hoặc mới resolve trong cửa sổ này được coi là tín hiệu cấu trúc gần nhất. Cụm HTF là phần tổng quan nên vẫn có thể hiện model HTF gần đây trước khi có entry LTF. Không có model/tín hiệu tương ứng còn gần thì không vẽ phần đó. Tuổi LTF tính theo bucket HTF thực đã đi qua, không theo số giờ nghỉ cuối tuần.
+
+Các setting này chỉ giới hạn hiển thị, không đổi tính toán, cảnh báo hoặc thứ tự model còn hiệu lực. Model cũ còn hiệu lực vẫn được ưu tiên trong registry, nhưng hình có thể bị ẩn do quá cửa sổ gần nhất. `Model expiry` là setting riêng về hiệu lực; mặc định vẫn không tự hết hạn. Tắt chế độ gần nhất để xem lại hình cũ, tăng số dấu lịch sử nếu cần.
 
 Thời gian giữ cùng 10 macro và các quý Daye intraday của web. Panel dùng giờ hiện tại khi realtime; gate E dùng đúng timestamp bar entry đóng, khoảng cuối loại trừ. QT/TO không tự tạo bias hoặc model. Giá TO chỉ lấy nếu có bar mở đúng mốc, không tự bù dữ liệu.
 
