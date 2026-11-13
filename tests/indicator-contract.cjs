@@ -376,9 +376,40 @@ for(const up of [true,false]){
 }
 for(const clusterWidth of [2,3,6,7,15,16]){
  const candleWidth=evaluate('candleWidth',{clusterWidth});
- const left=100,middle=evaluate('middle',{left,candleWidth,int:Math.trunc});
- assert.equal(middle,(left+left+candleWidth)/2,'Wick is centered on body, including odd requested widths');
+ const left=100,right=100+candleWidth,middle=evaluate('middle',{left,right,int:Math.trunc});
+ assert.equal(middle,(left+right)/2,'Wick is centered on body, including odd requested widths');
 }
+for(const renderCount of [2,4,8,30,100,450]){
+ const candleWidth=4,math={min:Math.min,max:Math.max};
+ const clusterStep=evaluate('clusterStep',{candleWidth,renderCount,math});
+ const bodyWidth=evaluate('bodyWidth',{clusterStep,candleWidth});
+ assert.ok(bodyWidth>0&&bodyWidth<clusterStep,'Compression preserves separate bodies and centered wicks');
+ assert.ok(clusterStep*renderCount<=420.00001,'Full sequence stays within the reserved future width');
+}
+assert.match(source,/bool clusterActive = not na\(sId\)\s*\n/,'An active model cluster must not expire with line recency');
+assert.doesNotMatch(source,/thirdFrozen|pendingThird|extraLive/,'Remove the frozen four-slot rendering path');
+for(const clusterCount of [0,4,40,450,451,1000]){
+ const clusterOverflow=evaluate('clusterOverflow',{clusterCount});
+ assert.equal(evaluate('renderCount',{clusterOverflow,clusterCount}),clusterCount<=450?clusterCount:0,'Render the entire sequence or explicitly report overflow, never silently clip its start');
+}
+const clusterHarness=require('./helpers/pine-cluster-harness.cjs').createClusterHarness(source);
+function clusterFixture(count){
+ const times=Array.from({length:count},(_,i)=>i+10);
+ return {showCluster:true,clusterActive:true,candleTimes:times,candleOpens:times.map(t=>t+1),candleHighs:times.map(t=>t+4),candleLows:times.map(t=>t-1),candleCloses:times.map(t=>t+2),sAT:10,sAO:999,sAH:999,sAL:999,sAC:999,sBT:12,sBO:20,sBH:25,sBL:18,sBC:21,sCT:15,sCO:30,sCH:35,sCL:28,sCC:31,liveComplete:true,liveT:count+10,liveO:40,liveH:45,liveL:38,liveC:44};
+}
+for(const count of [8,40,200,449]){
+ const fixture=clusterFixture(count),candles=clusterHarness.assemble(fixture);
+ assert.deepEqual(candles.map(c=>c.t),[...fixture.candleTimes,fixture.liveT],'Every intervening HTF candle appears exactly once, including nested mother gaps');
+ assert.equal(candles[0].o,11,'Chart-derived OHLC takes priority over frozen source fallback');
+ assert.equal(candles.at(-1).c,44,'Final candle uses current live OHLC');
+ assert.equal(clusterHarness.assemble({...fixture,liveC:43}).at(-1).c,43,'Live update changes close without accumulating duplicates');
+ assert.equal(clusterHarness.assemble({...fixture,liveComplete:false}).length,count,'Do not fabricate an incomplete first bucket');
+ assert.equal(clusterHarness.assemble({...fixture,clusterActive:false}).length,0,'Inactive model clears its entire sequence');
+}
+const missing=clusterFixture(8);missing.candleTimes=missing.candleTimes.slice(1);for(const n of ['candleOpens','candleHighs','candleLows','candleCloses'])missing[n]=missing[n].slice(1);
+assert.equal(clusterHarness.assemble(missing)[0].o,999,'Frozen model source fills a missing chart candle in chronological order');
+const changed=clusterHarness.assemble({...clusterFixture(20),sAT:16,sBT:17,sCT:18});
+assert.deepEqual(changed.map(c=>c.t),Array.from({length:15},(_,i)=>16+i),'Switching model removes all earlier candles');
 const na=x=>x==null||Number.isNaN(x),int=Math.trunc;
 for(const htfSeconds of [3600,7200,14400,86400])for(const chartSeconds of [60,180,300,htfSeconds])for(const drawHtfBars of [2,3])for(const offset of [3,15,80]){
  const drawAnchorIndex=100,bar_index=102,clusterStartIndex=bar_index+offset,labelLaneBars=14;

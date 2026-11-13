@@ -4,7 +4,7 @@ Bản hiện hành tập trung dựng bối cảnh HTF và phát tam giác xác 
 
 ## Cấu hình khởi đầu
 
-HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; LTF condition Auto; time filter Context only. Để quan sát tần suất: Signal display = History, giữ 100 tam giác. Cửa sổ 3 nến HTF chỉ giới hạn line/cụm, không xóa dấu ở chế độ History. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
+HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; LTF condition Auto; time filter Context only. Để quan sát tần suất: Signal display = History, giữ 100 tam giác. Cửa sổ 3 nến HTF chỉ giới hạn line, không xóa dấu ở chế độ History. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
 
 ## 21 setting
 
@@ -20,7 +20,7 @@ HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Lo
 | Time filter | Context only không chặn giờ; Web macros/working windows giới hạn giờ tín hiệu theo New York có DST. |
 | Macro background | Bật/tắt nền macro. Không tạo bias. |
 | QT clock context | Hiện đồng hồ quý trong dashboard, không quyết định hướng. |
-| Model HTF candle cluster | Bật/tắt cụm nến model bên phải. |
+| Model HTF candle cluster | Toàn bộ dãy HTF từ C1 model còn hiệu lực đến N* hiện tại, gồm các nến trung gian; không còn giới hạn bốn nến. |
 | Cluster offset | Mặc định 30 bar; tăng nếu muốn thêm khoảng trống bên phải chữ. |
 | Cluster body width | Mặc định 4 bar; số lẻ làm tròn xuống chẵn để râu đúng tâm. |
 | Model range / ERL / CP | Các line cấu trúc và mục tiêu có điều kiện. Không ảnh hưởng logic tam giác khi tắt. |
@@ -43,6 +43,8 @@ Bỏ nhập tay SSL/BSL/POC/BL/SL/CP và các mode POC/Line, gate R:R tại clos
 OB/FVG vẫn được tính làm bộ lọc nội bộ nhưng **không vẽ box/zone/nhãn**. Không vẽ line CISD/MSS hoặc chữ cạnh tam giác. Tam giác Tiny: xanh Buy dưới nến, đỏ Sell trên nến; xem loại xác nhận trong tooltip.
 
 ## Đọc theo từng model
+
+Cụm HTF không bị ẩn theo tuổi line khi model còn hiệu lực. Dãy lấy OHLC từ các bucket chart đã tải, ưu tiên dữ liệu chart khi trùng nến nguồn; chỉ dùng OHLC nguồn HTF làm fallback khi thiếu bucket tương ứng. N* cập nhật theo nến hiện tại, không nhân đôi nến. C1/C2/TS/BR/C3 đánh dấu nguồn; nến trung gian không thêm chữ. Dãy dài tự thu khoảng cách và thân trong vùng 420 bar chart. Script dành tối đa 450 cặp thân/râu để không vượt ngân sách đối tượng; vượt mức sẽ báo rõ và không vẽ một dãy bị cắt đầu. Không thể khôi phục nến trung gian chưa có trong dữ liệu chart đã tải; cần tải đủ lịch sử tới C1 để đối chiếu toàn bộ dãy.
 
 | Model | Hướng và điều kiện |
 | --- | --- |

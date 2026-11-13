@@ -3,7 +3,7 @@
 // History and model-branch formulas tested in Node; chart / Replay validation still required.
 // See docs/INDICATOR-AUTO-MODELS.md for exact lifecycle, priority and validation limits.
 //@version=6
-indicator("The Funded Angler v6 - Auto HTF", shorttitle="TFA v6", overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=120, max_boxes_count=30, max_labels_count=300)
+indicator("The Funded Angler v6 - Auto HTF", shorttitle="TFA v6", overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=500, max_boxes_count=500, max_labels_count=300)
 
 const string NY = "America/New_York"
 const string VN = "Asia/Ho_Chi_Minh"
@@ -43,8 +43,7 @@ timeGate = input.string("Context only", "Time filter for E", options=["Context o
 showTimeBg = input.bool(false, "Macro background", group=G_TIME, tooltip="Tô nền các macro để quan sát; không tự tạo tín hiệu hay thay bias.")
 showQt = input.bool(true, "QT clock context", group=G_TIME, tooltip="Hiện đồng hồ quý intraday trong panel. QT chỉ là bối cảnh thời gian, không tự suy ra hướng lệnh.")
 showTrueOpens = false
-showCluster = input.bool(true, "Model HTF candle cluster", group=G_VIEW, tooltip="Cụm HTF của model ưu tiên, không nhất thiết là các nến mới nhất. C1/C2/C3 là nến nguồn, N* là live.")
-clusterLive = true
+showCluster = input.bool(true, "Model HTF candle cluster", group=G_VIEW, tooltip="Toàn bộ nến HTF liên tục từ C1 của model ưu tiên còn hiệu lực đến N* hiện tại, kể cả nến giữa model và hiện tại. Tự thu khoảng cách khi nhiều nến; tối đa 450 nến do giới hạn đối tượng TradingView, vượt mức sẽ báo thay vì vẽ thiếu.")
 clusterOffset = input.int(30, "Cluster offset (bars)", minval=3, maxval=80, group=G_VIEW, tooltip="Khoảng cách từ bar chart cuối đến cụm HTF, theo số bar chart. Mặc định 30 bar để cách xa cột chú thích.")
 clusterWidth = input.int(4, "Cluster body width (bars)", minval=2, maxval=16, group=G_VIEW, tooltip="Độ rộng thân nến HTF, mặc định 4 bar. Số lẻ được làm tròn xuống số chẵn để râu luôn đúng tâm thân. Không ảnh hưởng OHLC; râu đồng bộ line mảnh 1 px.")
 showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW, tooltip="Các mức nối từ nến tạo cực trị/swing tương ứng, không từ nến tín hiệu. EQ 50% dùng neo tổng quan. Nếu nguồn không có trong dữ liệu chart hoặc chưa có ERL hợp lệ thì không ghim giả. Tắt chỉ ẩn line, không đổi tín hiệu.")
@@ -800,7 +799,7 @@ int drawEndIndex = not na(drawAnchorIndex) ? math.min(drawAnchorIndex + drawSpan
 bool recentModel = not na(sId) and not na(sModelAge) and sModelAge <= drawHtfBars
 bool recentLtfSignal = lastVisualKey == modelKey and not na(lastVisualBucket) and bucketCounter - lastVisualBucket <= drawHtfBars
 bool drawActive = not na(sId) and not na(drawAnchorIndex) and drawAnchorIndex >= bar_index - 9999 and drawEndIndex >= drawAnchorIndex and (not recentOnly or (onHtf ? recentModel : recentModel or recentLtfSignal))
-bool clusterActive = not na(sId) and (not recentOnly or recentModel or drawActive)
+bool clusterActive = not na(sId)
 
 // Finite drawings use real chart bar indices and real prices, on the main price pane.
 
@@ -824,9 +823,30 @@ if barstate.isfirst
         array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_left, textalign=text.align_left, size=chartFont, color=color.new(chart.bg_color, 100)))
         array.push(labelLeaders, line.new(bar_index, high, bar_index, high, force_overlay=true, style=line.style_dotted, color=color.new(color.gray, 100)))
     for i = 0 to 3
-        array.push(clusterBodies, box.new(bar_index, high, bar_index, low, force_overlay=true, bgcolor=color.new(color.gray, 100), border_color=color.new(color.gray, 100)))
-        array.push(clusterWicks, line.new(bar_index, high, bar_index, low, width=1, style=line.style_solid, force_overlay=true, color=color.new(color.gray, 100)))
         array.push(clusterLabels, label.new(bar_index, low, "", force_overlay=true, style=label.style_label_up, color=color.new(chart.bg_color, 100), textcolor=chart.fg_color, size=chartFont))
+type ClusterCandle
+    int t
+    float o
+    float h
+    float l
+    float c
+// Merge frozen source candles only where chart-derived OHLC is unavailable.
+// Keep chronological order, including all intervening candles of nested ISB models.
+f_insertCluster(array<ClusterCandle> candles, int t, float o, float h, float l, float c) =>
+    if not na(t) and not na(o)
+        int insertion = array.size(candles)
+        bool exists = false
+        if array.size(candles) > 0
+            for j = 0 to array.size(candles) - 1
+                int itemTime = array.get(candles, j).t
+                if itemTime == t
+                    exists := true
+                    break
+                if itemTime > t
+                    insertion := j
+                    break
+        if not exists
+            array.insert(candles, insertion, ClusterCandle.new(t, o, h, l, c))
 f_tag(int flags, int kind, int phase) =>
     string base = kind == 1 ? "CRT" : kind == 3 ? "ISB" : f_has(flags, 2) ? "EGF" : "OUT"
     base + ((kind == 1 or kind == 3) and f_has(flags, 2) ? "/E" : "") + (phase == 1 ? "/TS" : phase == 2 ? "/BR" : "")
@@ -1009,47 +1029,73 @@ if barstate.islast
         for row = 0 to 8
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
             table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 7 ? lastClosedAudit : row == 6 ? "Independent channel hits; same-bar, same-side hits merge into one triangle." : "")
-    float clusterSpan = hasModel ? math.max(sAH, sBH, nz(sCH, sBH)) - math.min(sAL, sBL, nz(sCL, sBL)) : high - low
-    float clusterFloor = hasModel ? math.min(sAL, sBL, nz(sCL, sBL), clusterLive and liveComplete ? liveL : sBL) : low
-    float labelY = clusterFloor - math.max(clusterSpan * 0.08, syminfo.mintick * 4)
-    for i = 0 to 3
-        bool thirdFrozen = not na(sCT)
-        bool pendingThird = na(sCT) and liveComplete and liveT > sBT
-        bool extraLive = clusterLive and liveComplete and thirdFrozen and liveT > sCT
-        bool visible = showCluster and clusterActive and (i < 2 or (i == 2 ? thirdFrozen or pendingThird : extraLive))
-        float o = i == 0 ? sAO : i == 1 ? sBO : i == 2 and thirdFrozen ? sCO : liveO
-        float h = i == 0 ? sAH : i == 1 ? sBH : i == 2 and thirdFrozen ? sCH : liveH
-        float l = i == 0 ? sAL : i == 1 ? sBL : i == 2 and thirdFrozen ? sCL : liveL
-        float c = i == 0 ? sAC : i == 1 ? sBC : i == 2 and thirdFrozen ? sCC : liveC
-        int sourceTime = i == 0 ? sAT : i == 1 ? sBT : i == 2 and thirdFrozen ? sCT : liveT
-        int cached = array.indexof(candleTimes, sourceTime)
-        if cached >= 0
-            o := array.get(candleOpens, cached)
-            h := array.get(candleHighs, cached)
-            l := array.get(candleLows, cached)
-            c := array.get(candleCloses, cached)
-        int candleWidth = clusterWidth - clusterWidth % 2
-        int left = clusterStartIndex + i * (candleWidth + 2)
-        int middle = left + int(candleWidth / 2)
-        color shade = c >= o ? color.teal : color.new(#161b22, 0)
-        box body = array.get(clusterBodies, i)
-        line wick = array.get(clusterWicks, i)
-        label caption = array.get(clusterLabels, i)
-        if visible
-            box.set_lefttop(body, left, math.max(o, c))
-            box.set_rightbottom(body, left + candleWidth, math.min(o, c))
-            line.set_xy1(wick, middle, h)
-            line.set_xy2(wick, middle, l)
-            label.set_xy(caption, middle, labelY)
-        box.set_bgcolor(body, color.new(shade, visible ? 0 : 100))
-        box.set_border_color(body, visible ? (c >= o ? color.teal : color.silver) : color.new(color.gray, 100))
-        line.set_width(wick, 1)
-        line.set_color(wick, color.new(chart.fg_color, visible ? 25 : 100))
-        label.set_text(caption, visible ? (i == 0 ? "C1" : i == 1 ? "C2" : i == 2 and thirdFrozen ? (sKind == 3 and sPhase == 1 ? "TS" : sPhase == 2 ? "BR" : "C3") : "N*") : "")
-        label.set_tooltip(caption, visible ? str.format_time(sourceTime, "dd/MM HH:mm", NY) + " | O " + str.tostring(o, format.mintick) + " H " + str.tostring(h, format.mintick) + " L " + str.tostring(l, format.mintick) + " C " + str.tostring(c, format.mintick) + (cached >= 0 or sourceTime == liveT ? " / chart OHLC" : " / confirmed HTF") : "")
+    array<ClusterCandle> clusterCandles = array.new<ClusterCandle>()
+    if showCluster and clusterActive
+        if array.size(candleTimes) > 0
+            for j = 0 to array.size(candleTimes) - 1
+                int t = array.get(candleTimes, j)
+                if t >= sAT
+                    array.push(clusterCandles, ClusterCandle.new(t, array.get(candleOpens, j), array.get(candleHighs, j), array.get(candleLows, j), array.get(candleCloses, j)))
+        f_insertCluster(clusterCandles, sAT, sAO, sAH, sAL, sAC)
+        f_insertCluster(clusterCandles, sBT, sBO, sBH, sBL, sBC)
+        f_insertCluster(clusterCandles, sCT, sCO, sCH, sCL, sCC)
+        if liveComplete and liveT >= sAT
+            f_insertCluster(clusterCandles, liveT, liveO, liveH, liveL, liveC)
+    int clusterCount = array.size(clusterCandles)
+    // Reserve 32 lines for levels/leaders, and keep the entire cluster or report overflow.
+    // Never let automatic object garbage collection silently remove the first candles.
+    bool clusterOverflow = clusterCount > 450
+    int renderCount = clusterOverflow ? 0 : clusterCount
+    while array.size(clusterBodies) > renderCount
+        box.delete(array.pop(clusterBodies))
+        line.delete(array.pop(clusterWicks))
+    while array.size(clusterBodies) < renderCount
+        array.push(clusterBodies, box.new(time, high, time, low, xloc=xloc.bar_time, force_overlay=true))
+        array.push(clusterWicks, line.new(time, high, time, low, xloc=xloc.bar_time, width=1, force_overlay=true))
+    float clusterCeiling = na
+    float clusterFloor = na
+    if clusterCount > 0
+        for j = 0 to clusterCount - 1
+            ClusterCandle item = array.get(clusterCandles, j)
+            clusterCeiling := na(clusterCeiling) ? item.h : math.max(clusterCeiling, item.h)
+            clusterFloor := na(clusterFloor) ? item.l : math.min(clusterFloor, item.l)
+    float clusterSpan = clusterCount > 0 ? clusterCeiling - clusterFloor : high - low
+    float labelY = (clusterCount > 0 ? clusterFloor : low) - math.max(clusterSpan * 0.08, syminfo.mintick * 4)
+    int candleWidth = clusterWidth - clusterWidth % 2
+    // Time coordinates allow fractional chart-bar widths when a long sequence is compressed.
+    float clusterStep = math.min(candleWidth + 2.0, 420.0 / math.max(renderCount, 1))
+    float bodyWidth = clusterStep * candleWidth / (candleWidth + 2.0)
+    int clusterStartTime = time + int((clusterStartIndex - bar_index) * chartSeconds * 1000)
+    for j = 0 to 3
+        label.set_text(array.get(clusterLabels, j), "")
+    if renderCount > 0
+        for i = 0 to renderCount - 1
+            ClusterCandle item = array.get(clusterCandles, i)
+            int left = clusterStartTime + int(i * clusterStep * chartSeconds * 1000)
+            int right = left + int(bodyWidth * chartSeconds * 1000)
+            int middle = left + int((right - left) / 2)
+            color shade = item.c >= item.o ? color.teal : color.new(#161b22, 0)
+            box body = array.get(clusterBodies, i)
+            line wick = array.get(clusterWicks, i)
+            box.set_lefttop(body, left, math.max(item.o, item.c))
+            box.set_rightbottom(body, right, math.min(item.o, item.c))
+            box.set_bgcolor(body, shade)
+            box.set_border_color(body, item.c >= item.o ? color.teal : color.silver)
+            line.set_xy1(wick, middle, item.h)
+            line.set_xy2(wick, middle, item.l)
+            line.set_width(wick, 1)
+            line.set_color(wick, color.new(chart.fg_color, 25))
+            // Only source/live captions: intermediate candles remain uncluttered.
+            int captionSlot = item.t == liveT ? 3 : item.t == sAT ? 0 : item.t == sBT ? 1 : item.t == sCT ? 2 : -1
+            if captionSlot >= 0
+                label caption = array.get(clusterLabels, captionSlot)
+                label.set_xloc(caption, middle, xloc.bar_time)
+                label.set_y(caption, labelY)
+                label.set_text(caption, captionSlot == 3 ? "N*" : captionSlot == 0 ? "C1" : captionSlot == 1 ? "C2" : sKind == 3 and sPhase == 1 ? "TS" : sPhase == 2 ? "BR" : "C3")
+                label.set_tooltip(caption, str.format_time(item.t, "dd/MM HH:mm", NY) + " | O " + str.tostring(item.o, format.mintick) + " H " + str.tostring(item.h, format.mintick) + " L " + str.tostring(item.l, format.mintick) + " C " + str.tostring(item.c, format.mintick))
     int remaining = not na(liveEnd) ? math.max(0, int((liveEnd - timenow) / 1000)) : 0
     label.set_xy(clockLabel, clusterStartIndex, labelY - math.max(clusterSpan * 0.1, syminfo.mintick * 6))
-    label.set_text(clockLabel, showCluster and clusterActive ? tag + (barstate.isrealtime ? " | " + str.tostring(int(math.floor(remaining / 60))) + ":" + str.tostring(remaining % 60, "00") : "") : "")
+    label.set_text(clockLabel, showCluster and clusterActive ? (clusterOverflow ? "HTF cluster >450 candles: object limit" : tag + " | " + str.tostring(clusterCount) + (barstate.isrealtime ? " | " + str.tostring(int(math.floor(remaining / 60))) + ":" + str.tostring(remaining % 60, "00") : "")) : "")
 
 bool modelEvent = changedModel and not na(sId) and barstate.isconfirmed
 alertcondition(modelEvent, "HTF", "TFA HTF model priority changed.")

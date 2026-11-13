@@ -48,6 +48,12 @@ Signal timing mặc định Pullback tách xác nhận khỏi điều kiện h�
 
 ## 5. Kiểm tra và giới hạn
 
+Cụm bên phải đã bỏ bốn slot cố định. Dãy được ghép theo timestamp từ C1 tới hiện tại, gồm toàn bộ bucket HTF đã tải và fallback ba nến nguồn nếu thiếu; không lặp nguồn/live. Model đang hiệu lực giữ cụm dù recency line hết hạn. Các đối tượng thân/râu được cấp phát theo số nến và xóa khi đổi model/tắt cụm; OHLC/râu vẫn theo giá thật. Bố cục dùng tọa độ thời gian, tự nén dãy dài trong 420 bar chart. Dành 450 cặp thân/râu, chừa ngân sách cho line khác; nếu vượt báo lỗi giới hạn thay vì âm thầm cắt nến. Xem [giới hạn drawing của Pine](https://www.tradingview.com/pine-script-docs/writing/limitations/#line-box-polyline-and-label-limits). Dữ liệu chart chưa tải không thể dựng lại đầy đủ nến trung gian.
+
+Harness riêng thực thi thân đoạn ghép dãy từ source (không mô phỏng Pine runtime/drawing): 8/40/200/449 nến lịch sử và live; khoảng cách mẹ–ISB; loại trùng timestamp, ưu tiên OHLC chart, cập nhật live, bỏ bucket chưa đủ, đổi model và tắt cụm. Kiểm tra công thức nén/midpoint râu, số nến tăng không rơi lại vào đường vẽ bốn slot.
+
+Ngày 13/11/2026, toàn bộ source sau sửa cụm liên tục cũng đã qua Pine Editor tạm: exactSource=true, success=true, errors=null. Chưa chạy chart/Replay vì Add to chart yêu cầu đăng nhập.
+
 Node kiểm tra các công thức lấy từ source và acceptance specification độc lập: 3000 TS symmetry, nested mother, sweep/break/false-break, compound/FIFO/expiry/capacity, EGF theo bias kể cả ngược màu nến, thay bias giữ parent, hai phía IRL/ERL, 97 offset, neo nguồn, layout, live OHLC, 1440 macro phút và DST/QT. Đây không phải Pine interpreter hay thống kê lợi thế giao dịch.
 
 History/diagnostics có fixture History/Latest/0/200 marks, lọc root model, ba nhánh độc lập và các gate chặn. Harness giới hạn thực thi thân hàm channel từ source trên chuỗi OHLC giả lập: Buy/Sell, hai chu kỳ mới so với One per model, CRT bị khóa không chặn hai nhánh còn lại, first-touch CISD, excursion/reclaim, không lặp continuation, không phát sau CP taken hoặc khi bar chưa đóng/ngược bias/ngoài giờ. Các fixture đều đạt. Harness không mô phỏng request.security, cách tính pivot của TradingView, rollback hoặc drawing APIs.
