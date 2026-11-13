@@ -24,7 +24,7 @@ Khi bias đổi, EGF giữ range/C1/C2, reset hướng kịch bản, CP/IRL và 
 
 ERL là pivot HTF đã xác nhận, chưa bị lấy, ngoài range; chọn mức gần nhất mỗi phía. CP của EGF/ISB breakout lấy ERL thật, không measured move tự tạo. CP của CRT/TS là biên đối diện của range quét. CP được giữ cho revision; context ERL có thể đổi khi swing bị lấy hoặc có swing mới.
 
-IRL trong hệ thống này **chỉ là FVG trên HTF**: Bull khi Low C3 > High C1, Bear khi High C3 < Low C1. Phải có gap thực và nằm trong range model; không dùng OB, swing H/L, EQ hay POC thay thế. Vùng chỉ được biết khi C3 đóng. Lưu riêng timestamp phát hiện C3 và timestamp neo hình C1; box/CE line bắt đầu tại C1, kéo hữu hạn về trước, không tràn sang cụm. Hiện hai hướng nếu có; dấu * chỉ FVG đang chọn theo bias. Không ép mọi EGF có đủ hai FVG. FVG chưa chọn bị loại khi full-fill; FVG đã chọn giữ qua wick mitigation đến HTF close xuyên biên xa, như quy tắc hiện hành. Không render box entry OB/FVG LTF.
+IRL giữ đủ FVG, OB fallback và swing H/L HTF như logic đã có; không loại OB hoặc thanh khoản điểm. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG là một loại IRL, không thay thế mọi thành phần IRL khác. Box entry LTF vẫn được ẩn như trước.
 
 EGF: nhận bias → chọn IRL/ERL → chờ bar LTF thực sự chạm IRL → xác nhận LTF về phía ERL. Nhịp hồi vào IRL không tự tạo tín hiệu ngược bias. Không ép close ra khỏi toàn bộ vùng để được xét; vẫn phải có C/M hoặc retest hợp lệ. Nếu đã chạm rồi LTF close qua biên xa (Buy dưới đáy vùng, Sell trên đỉnh vùng), tạm chặn phản ứng. LTF reclaim có thể hợp lệ trở lại nếu snapshot HTF vẫn giữ vùng; không nhìn trước kết quả HTF close và không tự xác nhận TS HTF khi HTF còn chạy. Nếu CP đã bị lấy thì không đuổi giá. Thiếu bias/vùng/đích thì chờ.
 
@@ -34,7 +34,7 @@ History mặc định giữ 100 tam giác, tối đa 200, tách hoàn toàn vi�
 
 ## 4. Drawing và source timestamps
 
-Snapshot trả 107 scalar; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
+Snapshot trả 111 scalar; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
 
 Line xloc.bar_time bắt đầu từ nến nguồn; trên LTF map HTF high/low về timestamp nến con tạo cực trị trong cache 1000 bucket đầy đủ. Nếu cache không có, tìm trong tối đa 5000 bar chart đã tải. Không tìm được nguồn thì ẩn line tương ứng, không gắn giả vào nến tín hiệu. EQ dùng neo tổng quan vì không có nến cực trị riêng. Line được vẽ hiện tại nối lại nguồn cũ không có nghĩa tín hiệu đã biết ở thời điểm swing; pivot vẫn phải chờ xác nhận.
 
@@ -46,7 +46,7 @@ Không thể hứa không chồng chữ ở mọi zoom/scale/cửa sổ vì Pine
 
 Signal timing mặc định Pullback tách xác nhận khỏi điều kiện hồi: đóng phá C/M cố định mức chờ, nến sau phải hồi chạm và đóng đúng phía hoặc retest vùng hợp lệ của nhánh. Auto CRT/TS cần C/M trước retest. Confirmation close cho cách market vẫn là lựa chọn riêng. FVG/OB không bao giờ phát retest tại chính nến tạo vùng. Tooltip ghi Confirm bar/Trigger bar; tam giác đặt tại trigger thực sự, không backdate. Fixture tuần tự kiểm tra cả ba nhóm, Buy/Sell, mức MSS cố định dù scanner nhận pivot mới, FVG/OB hình thành rồi retest, cùng các gate bias/time/CP.
 
-Snapshot hiện có 107 scalar: phần bản đồ IRL thêm 10 trường cho hai FVG và neo C1; mọi scalar offset riêng. Harness kiểm tra loại OB/swing fallback, giữ hai hướng FVG, neo C1 tách biệt phát hiện C3 và lifetime của vùng.
+Snapshot hiện có 111 scalar, gồm 14 trường bản đồ FVG/OB, swing nội bộ và neo nguồn. Mọi trường offset riêng. Harness kiểm tra FVG ưu tiên, OB/swing fallback được giữ, neo C1 HTF tách biệt thời điểm xác nhận C3.
 
 Ngày 13/11/2026, toàn bộ bản source có timeout và bản đồ IRL đã qua Pine Editor tạm: exactSource=true, success=true, errors=null. Đây là chẩn đoán editor; chưa kiểm tra runtime/Replay trên chart.
 

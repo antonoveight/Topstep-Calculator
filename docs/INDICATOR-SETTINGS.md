@@ -25,7 +25,7 @@ HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Lo
 | Cluster offset | Mặc định 30 bar; tăng nếu muốn thêm khoảng trống bên phải chữ. |
 | Cluster body width | Mặc định 4 bar; số lẻ làm tròn xuống chẵn để râu đúng tâm. |
 | Model range / ERL / CP | Các line cấu trúc và mục tiêu có điều kiện. Không ảnh hưởng logic tam giác khi tắt. |
-| HTF FVG / IRL | Hiện FVG HTF hai hướng nếu có. Box neo C1, chỉ xuất hiện sau close C3; * là vùng theo bias. Không lấy OB/swing làm IRL. |
+| HTF internal liquidity / FVG | Hiện FVG, OB fallback và swing H/L HTF. Riêng box FVG neo C1 HTF khi mở LTF, chỉ xuất hiện sau close C3. |
 | Compact panel | Bảng tổng quan model, bias, IRL nội bộ, thời gian và trạng thái. |
 | Signal display | History (mặc định) giữ dấu quá khứ, Latest chỉ giữ dấu gần nhất. Không thay điều kiện nhận diện/alert. |
 | Historical signals to keep | Mặc định 100, tối đa 200; 0 ẩn dấu. Ở Latest chỉ giữ 1 nếu số này >0. |
@@ -48,7 +48,7 @@ OB/FVG **LTF** vẫn chỉ lọc nội bộ, không vẽ box/zone/nhãn entry. I
 
 Model timeout = 8 đếm nến HTF từ C2, không từ C1 hay số phút thực. Đây là quy tắc chờ cá nhân, không phải thời hạn cố định của ICT. Ví dụ H1: hết hạn tại close nến thứ 8 sau nến xác nhận; không gia hạn khi đổi bias, IRL, hoặc ISB mới resolve. Nhãn dưới cụm hiển thị tuổi/giới hạn; hết hạn thì FIFO chọn model còn hiệu lực tiếp theo, hoặc không vẽ nếu không còn model. Không xóa tam giác lịch sử đã phát.
 
-IRL trong hệ thống này **chỉ là FVG trên HTF**: Bull khi Low C3 > High C1, Bear khi High C3 < Low C1. Phải có gap thực và nằm trong range model; không dùng OB, swing H/L, EQ hay POC thay thế. Vùng chỉ được biết khi C3 đóng. Lưu riêng timestamp phát hiện C3 và timestamp neo hình C1; box/CE line bắt đầu tại C1, kéo hữu hạn về trước, không tràn sang cụm. Hiện hai hướng nếu có; dấu * chỉ FVG đang chọn theo bias. Không ép mọi EGF có đủ hai FVG. FVG chưa chọn bị loại khi full-fill; FVG đã chọn giữ qua wick mitigation đến HTF close xuyên biên xa, như quy tắc hiện hành. Không render box entry OB/FVG LTF.
+IRL giữ đủ FVG, OB fallback và swing H/L HTF như logic đã có; không loại OB hoặc thanh khoản điểm. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG là một loại IRL, không thay thế mọi thành phần IRL khác. Box entry LTF vẫn được ẩn như trước.
 
 ## Đọc theo từng model
 

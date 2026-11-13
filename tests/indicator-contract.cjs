@@ -76,7 +76,7 @@ for(const date of ['2026-07-14T23:00:00Z','2026-12-14T00:00:00Z','2026-03-08T06:
 // Explicit one-shot, closed-bar gates and HTF data contract; live data stays in display code.
 assert.match(source,/f_snapshot\(true\), lookahead=barmerge.lookahead_on/);
 assert.match(source,/f_snapshot\(not barstate.isconfirmed\)/);
-for(let i=0;i<107;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`),'Every HTF snapshot field including both IRL maps must be offset');
+for(let i=0;i<111;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`),'Every HTF snapshot field including both IRL maps must be offset');
 assert.match(source,/if armed and barstate.isconfirmed and isLtf/);
 assert.match(source,/if selectedEntry and risk > 0 and not na\(target\) and reward > 0 and biasAllowed and timeAllowed/);
 assert.match(source,/not alreadyEmitted/);
@@ -148,7 +148,7 @@ for(const contextBias of [-1,0,1])assert.equal(evaluateExpr(modelDirection,{crt:
 const model={hi:110,lo:100,dir:1};
 const fvg={hi:105,lo:104,dir:1,kind:1},ob={hi:103,lo:101,dir:1,kind:2};
 assert.equal(pickIrl(model,[fvg,ob]),fvg,'Prefer actual internal FVG over OB candidate');
-assert.equal(pickIrl(model,[{...fvg,filled:true},ob]),null,'OB does not substitute for a missing HTF FVG');
+assert.equal(pickIrl(model,[{...fvg,filled:true},ob]),ob,'Preserve the existing OB fallback');
 assert.equal(pickIrl(model,[{...fvg,hi:111},{...fvg,dir:-1}]),null,'No fabricated IRL when no eligible zone exists');
 assert.deepEqual(pickErl(model,[{price:115,side:1},{price:112,side:1},{price:111,side:1,consumed:true},{price:98,side:-1}]),{up:112,down:98});
 assert.deepEqual(pickErl(model,[]),{up:null,down:null});
@@ -408,8 +408,12 @@ assert.equal(sellMap.irlT,11);assert.equal(sellMap.bullIrlT,10);
 const neutralMap=clusterHarness.refreshIrl({...irlModel,dir:0},irlZones,irlSwings);
 assert.equal(neutralMap.irlT,null,'Two-sided context never fabricates an active direction in neutral bias');
 for(const dir of [1,-1]){
- const absent=clusterHarness.refreshIrl({...irlModel,dir},[{hi:94,lo:90,dir,born:12,kind:2}],irlSwings);
- assert.equal(absent.irlT,null,'Neither OB nor swing liquidity substitutes for a missing HTF FVG');
+ const obMap=clusterHarness.refreshIrl({...irlModel,dir},[{hi:94,lo:90,dir,born:12,leftTime:12,kind:2}],irlSwings);
+ assert.equal(obMap.irlT,12,'Retain OB candidate fallback when no FVG exists');
+ assert.equal(obMap.irlKind,2);assert.equal(obMap.irlLeft,12,'OB remains anchored at its own source candle');
+ const swingMap=clusterHarness.refreshIrl({...irlModel,dir},[],irlSwings);
+ assert.equal(swingMap.irlKind,3,'Retain internal swing liquidity as before');
+ assert.equal(swingMap.irlH,dir===1?84:116);
 }
 assert.match(source,/Zone.new\(leftTime=time\[2\], hi=low, lo=high\[2\], dir=1, born=time/);
 assert.match(source,/int zoneTime = side == 0 \? sBullIrlLeft : sBearIrlLeft/);
@@ -456,4 +460,4 @@ for(const b of [{h:105,l:100,c:104},{h:104,l:98,c:99}]){
  live.h=evaluateExpr(updateHigh,{liveH:live.h,high:b.h});live.l=evaluateExpr(updateLow,{liveL:live.l,low:b.l});live.c=b.c;
 }
 assert.deepEqual(live,{o:100,h:105,l:98,c:99},'Aggregated live candle matches LTF OHLC');
-console.log('PASS registry/107-field HTF contracts, timeout and two-sided IRL source-body fixtures; 3 independent LTF channels; sequential Buy/Sell source-body fixtures, fresh/legacy cadence, first-touch CISD, wick/reclaim and target guards; 3000 TS symmetry cases, 1440 macro minutes and DST/QT. Full chart execution/Replay remains unverified.');
+console.log('PASS registry/111-field HTF contracts, timeout and two-sided IRL source-body fixtures; 3 independent LTF channels; sequential Buy/Sell source-body fixtures, fresh/legacy cadence, first-touch CISD, wick/reclaim and target guards; 3000 TS symmetry cases, 1440 macro minutes and DST/QT. Full chart execution/Replay remains unverified.');

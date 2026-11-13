@@ -46,7 +46,7 @@ showCluster = input.bool(true, "Model HTF candle cluster", group=G_VIEW, tooltip
 clusterOffset = input.int(30, "Cluster offset (bars)", minval=3, maxval=80, group=G_VIEW, tooltip="Khoảng cách từ bar chart cuối đến cụm HTF, theo số bar chart. Mặc định 30 bar để cách xa cột chú thích.")
 clusterWidth = input.int(4, "Cluster body width (bars)", minval=2, maxval=16, group=G_VIEW, tooltip="Độ rộng thân nến HTF, mặc định 4 bar. Số lẻ được làm tròn xuống số chẵn để râu luôn đúng tâm thân. Không ảnh hưởng OHLC; râu đồng bộ line mảnh 1 px.")
 showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW, tooltip="Các mức nối từ nến tạo cực trị/swing tương ứng, không từ nến tín hiệu. EQ 50% dùng neo tổng quan. Nếu nguồn không có trong dữ liệu chart hoặc chưa có ERL hợp lệ thì không ghim giả. Tắt chỉ ẩn line, không đổi tín hiệu.")
-showIrl = input.bool(true, "HTF FVG / IRL", group=G_VIEW, tooltip="IRL chỉ là khoảng trống giá FVG trên HTF. Bull: Low C3 > High C1; Bear: High C3 < Low C1. Vùng chỉ được biết sau close C3, box bắt đầu tại C1 như FVG thông thường. Hiện cả hai hướng nếu có, * là vùng chọn theo bias. Không dùng OB hoặc swing H/L thay IRL.")
+showIrl = input.bool(true, "HTF internal liquidity / FVG", group=G_VIEW, tooltip="Giữ IRL HTF gồm FVG, OB fallback và swing H/L nội bộ. Hiện hai hướng nếu có; * là reference theo bias. Riêng FVG hiển thị trên LTF: box neo C1 HTF, chỉ xuất hiện sau close C3; không neo vào nến LTF hiện tại. OB neo nến nguồn, swing neo cực trị thật. Không đổi logic entry LTF.")
 showSecondary = false
 showPanel = input.bool(true, "Compact panel", group=G_VIEW, tooltip="Bảng tổng quan cố định góc trên phải. TF=khung, #1=model ưu tiên, B=bias, IRL=vùng, T=thời gian, S=trạng thái.")
 historyMode = input.string("History", "Signal display", options=["History", "Latest"], group=G_VIEW, tooltip="History giữ dấu quá khứ theo giới hạn bên dưới, không xóa vì cửa sổ 3 HTF của các line. Latest chỉ giữ dấu gần nhất. Không đổi điều kiện tính toán hoặc alert.")
@@ -142,6 +142,10 @@ type Model
     int irlLeft = na
     int bullIrlLeft = na
     int bearIrlLeft = na
+    float innerHi = na
+    float innerLo = na
+    int innerHiT = na
+    int innerLoT = na
     float bullIrlH = na
     float bullIrlL = na
     int bullIrlT = na
@@ -177,55 +181,85 @@ type Liquidity
     int side = 0
     int born = na
 
-f_refreshIrl(Model m, array<Zone> zones) =>
+f_refreshIrl(Model m, array<Zone> zones, array<Liquidity> swings) =>
+    m.bullIrlLeft := na
+    m.bearIrlLeft := na
     m.bullIrlH := na
     m.bullIrlL := na
     m.bullIrlT := na
     m.bullIrlKind := 0
-    m.bullIrlLeft := na
     m.bearIrlH := na
     m.bearIrlL := na
     m.bearIrlT := na
     m.bearIrlKind := 0
-    m.bearIrlLeft := na
-    if array.size(zones) > 0
-        for offset = 0 to array.size(zones) - 1
-            Zone z = array.get(zones, array.size(zones) - 1 - offset)
-            bool internalZone = z.kind == 1 and z.hi <= m.hi and z.lo >= m.lo
-            if internalZone and z.dir == 1 and na(m.bullIrlT)
-                m.bullIrlH := z.hi
-                m.bullIrlL := z.lo
-                m.bullIrlT := z.born
-                m.bullIrlKind := 1
-                m.bullIrlLeft := z.leftTime
-            if internalZone and z.dir == -1 and na(m.bearIrlT)
-                m.bearIrlH := z.hi
-                m.bearIrlL := z.lo
-                m.bearIrlT := z.born
-                m.bearIrlKind := 1
-                m.bearIrlLeft := z.leftTime
+    m.innerHi := na
+    m.innerLo := na
+    m.innerHiT := na
+    m.innerLoT := na
+    // Separate candidate maps: do not discard the other direction just because bias is set.
+    for pass = 1 to 2
+        if array.size(zones) > 0
+            for offset = 0 to array.size(zones) - 1
+                Zone z = array.get(zones, array.size(zones) - 1 - offset)
+                bool internalZone = z.kind == pass and z.hi <= m.hi and z.lo >= m.lo
+                if internalZone and z.dir == 1 and na(m.bullIrlT)
+                    m.bullIrlH := z.hi
+                    m.bullIrlL := z.lo
+                    m.bullIrlT := z.born
+                    m.bullIrlKind := z.kind
+                    m.bullIrlLeft := z.leftTime
+                if internalZone and z.dir == -1 and na(m.bearIrlT)
+                    m.bearIrlH := z.hi
+                    m.bearIrlL := z.lo
+                    m.bearIrlT := z.born
+                    m.bearIrlKind := z.kind
+                    m.bearIrlLeft := z.leftTime
+    if array.size(swings) > 0
+        for j = 0 to array.size(swings) - 1
+            Liquidity q = array.get(swings, j)
+            bool internalSwing = q.price < m.hi and q.price > m.lo
+            if internalSwing and q.side == 1 and (na(m.innerHi) or q.price > m.innerHi)
+                m.innerHi := q.price
+                m.innerHiT := q.born
+            if internalSwing and q.side == -1 and (na(m.innerLo) or q.price < m.innerLo)
+                m.innerLo := q.price
+                m.innerLoT := q.born
     if na(m.irlT) and m.dir != 0
         bool bull = m.dir == 1
         m.irlH := bull ? m.bullIrlH : m.bearIrlH
         m.irlL := bull ? m.bullIrlL : m.bearIrlL
         m.irlT := bull ? m.bullIrlT : m.bearIrlT
         m.irlLeft := bull ? m.bullIrlLeft : m.bearIrlLeft
-        m.irlKind := not na(m.irlT) ? 1 : 0
+        m.irlKind := bull ? m.bullIrlKind : m.bearIrlKind
         m.irlDir := m.dir
-    // A chosen FVG survives wick mitigation until HTF close-through, as before.
-    if not na(m.irlT) and m.irlKind == 1
+        // EGF can react at a genuine internal SSL/BSL point when no zone exists.
+        if m.kind == 2 and na(m.irlT)
+            m.irlH := bull ? m.innerLo : m.innerHi
+            m.irlL := m.irlH
+            m.irlT := bull ? m.innerLoT : m.innerHiT
+            m.irlLeft := m.irlT
+            m.irlKind := not na(m.irlT) ? 3 : 0
+    // Preserve the selected reaction zone through wick mitigation until HTF close-through.
+    if not na(m.irlT) and m.irlKind != 3
         if m.irlDir == 1
             m.bullIrlH := m.irlH
             m.bullIrlL := m.irlL
             m.bullIrlT := m.irlT
-            m.bullIrlKind := 1
+            m.bullIrlKind := m.irlKind
             m.bullIrlLeft := m.irlLeft
         else
             m.bearIrlH := m.irlH
             m.bearIrlL := m.irlL
             m.bearIrlT := m.irlT
-            m.bearIrlKind := 1
+            m.bearIrlKind := m.irlKind
             m.bearIrlLeft := m.irlLeft
+    if not na(m.irlT) and m.irlKind == 3
+        if m.irlDir == 1
+            m.innerLo := m.irlL
+            m.innerLoT := m.irlT
+        else
+            m.innerHi := m.irlH
+            m.innerHiT := m.irlT
 
 f_engine() =>
     [localBias, localBiasAge] = f_biasCore()
@@ -267,6 +301,10 @@ f_engine() =>
             array.push(zones, Zone.new(leftTime=time[2], hi=low, lo=high[2], dir=1, born=time, kind=1))
         if high < low[2]
             array.push(zones, Zone.new(leftTime=time[2], hi=low[2], lo=high, dir=-1, born=time, kind=1))
+        if close[1] < open[1] and close > high[1]
+            array.push(zones, Zone.new(leftTime=time[1], hi=open[1], lo=low[1], dir=1, born=time[1], kind=2))
+        if close[1] > open[1] and close < low[1]
+            array.push(zones, Zone.new(leftTime=time[1], hi=high[1], lo=open[1], dir=-1, born=time[1], kind=2))
     while array.size(zones) > 60
         array.shift(zones)
 
@@ -388,7 +426,7 @@ f_engine() =>
                 m.irlH := na
                 m.irlL := na
                 m.irlKind := 0
-            f_refreshIrl(m, zones)
+            f_refreshIrl(m, zones, swings)
     Model crtContext = Model.new()
     Model egfContext = Model.new()
     Model isbContext = Model.new()
@@ -410,16 +448,16 @@ f_engine() =>
     Model secondModel = array.size(models) > 1 ? array.get(models, 1) : Model.new()
     Model thirdModel = array.size(models) > 2 ? array.get(models, 2) : Model.new()
     bool historyReady = firstSeen <= scanStart
-    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, secondModel.uid, secondModel.flags, secondModel.kind, secondModel.phase, secondModel.hi, secondModel.lo, secondModel.aT, thirdModel.uid, thirdModel.flags, thirdModel.kind, thirdModel.phase, thirdModel.hi, thirdModel.lo, thirdModel.aT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, crtContext.uid, crtContext.flags, crtContext.phase, crtContext.dir, crtContext.confirmedAt, crtContext.resolvedAt, crtContext.hi, crtContext.lo, crtContext.inv, crtContext.cp, crtContext.irlH, crtContext.irlL, crtContext.irlT, egfContext.uid, egfContext.flags, egfContext.phase, egfContext.dir, egfContext.confirmedAt, egfContext.resolvedAt, egfContext.hi, egfContext.lo, egfContext.inv, egfContext.cp, egfContext.irlH, egfContext.irlL, egfContext.irlT, isbContext.uid, isbContext.flags, isbContext.phase, isbContext.dir, isbContext.confirmedAt, isbContext.resolvedAt, isbContext.hi, isbContext.lo, isbContext.inv, isbContext.cp, isbContext.irlH, isbContext.irlL, isbContext.irlT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft]
+    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, secondModel.uid, secondModel.flags, secondModel.kind, secondModel.phase, secondModel.hi, secondModel.lo, secondModel.aT, thirdModel.uid, thirdModel.flags, thirdModel.kind, thirdModel.phase, thirdModel.hi, thirdModel.lo, thirdModel.aT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, crtContext.uid, crtContext.flags, crtContext.phase, crtContext.dir, crtContext.confirmedAt, crtContext.resolvedAt, crtContext.hi, crtContext.lo, crtContext.inv, crtContext.cp, crtContext.irlH, crtContext.irlL, crtContext.irlT, egfContext.uid, egfContext.flags, egfContext.phase, egfContext.dir, egfContext.confirmedAt, egfContext.resolvedAt, egfContext.hi, egfContext.lo, egfContext.inv, egfContext.cp, egfContext.irlH, egfContext.irlL, egfContext.irlT, isbContext.uid, isbContext.flags, isbContext.phase, isbContext.dir, isbContext.confirmedAt, isbContext.resolvedAt, isbContext.hi, isbContext.lo, isbContext.inv, isbContext.cp, isbContext.irlH, isbContext.irlL, isbContext.irlT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft, selected.innerHi, selected.innerLo, selected.innerHiT, selected.innerLoT]
 
 // f_snapshot uses per-field scalar offsets, not an object/collection request.
 // On the HTF chart: previous output while forming, current output once the bar closes.
 // On lower charts: always previous CONFIRMED HTF output + lookahead_on.
 f_snapshot(bool previous) =>
-    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60, v61, v62, v63, v64, v65, v66, v67, v68, v69, v70, v71, v72, v73, v74, v75, v76, v77, v78, v79, v80, v81, v82, v83, v84, v85, v86, v87, v88, v89, v90, v91, v92, v93, v94, v95, v96, v97, v98, v99, v100, v101, v102, v103, v104, v105, v106] = f_engine()
-    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57, previous ? v58[1] : v58, previous ? v59[1] : v59, previous ? v60[1] : v60, previous ? v61[1] : v61, previous ? v62[1] : v62, previous ? v63[1] : v63, previous ? v64[1] : v64, previous ? v65[1] : v65, previous ? v66[1] : v66, previous ? v67[1] : v67, previous ? v68[1] : v68, previous ? v69[1] : v69, previous ? v70[1] : v70, previous ? v71[1] : v71, previous ? v72[1] : v72, previous ? v73[1] : v73, previous ? v74[1] : v74, previous ? v75[1] : v75, previous ? v76[1] : v76, previous ? v77[1] : v77, previous ? v78[1] : v78, previous ? v79[1] : v79, previous ? v80[1] : v80, previous ? v81[1] : v81, previous ? v82[1] : v82, previous ? v83[1] : v83, previous ? v84[1] : v84, previous ? v85[1] : v85, previous ? v86[1] : v86, previous ? v87[1] : v87, previous ? v88[1] : v88, previous ? v89[1] : v89, previous ? v90[1] : v90, previous ? v91[1] : v91, previous ? v92[1] : v92, previous ? v93[1] : v93, previous ? v94[1] : v94, previous ? v95[1] : v95, previous ? v96[1] : v96, previous ? v97[1] : v97, previous ? v98[1] : v98, previous ? v99[1] : v99, previous ? v100[1] : v100, previous ? v101[1] : v101, previous ? v102[1] : v102, previous ? v103[1] : v103, previous ? v104[1] : v104, previous ? v105[1] : v105, previous ? v106[1] : v106]
+    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60, v61, v62, v63, v64, v65, v66, v67, v68, v69, v70, v71, v72, v73, v74, v75, v76, v77, v78, v79, v80, v81, v82, v83, v84, v85, v86, v87, v88, v89, v90, v91, v92, v93, v94, v95, v96, v97, v98, v99, v100, v101, v102, v103, v104, v105, v106, v107, v108, v109, v110] = f_engine()
+    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57, previous ? v58[1] : v58, previous ? v59[1] : v59, previous ? v60[1] : v60, previous ? v61[1] : v61, previous ? v62[1] : v62, previous ? v63[1] : v63, previous ? v64[1] : v64, previous ? v65[1] : v65, previous ? v66[1] : v66, previous ? v67[1] : v67, previous ? v68[1] : v68, previous ? v69[1] : v69, previous ? v70[1] : v70, previous ? v71[1] : v71, previous ? v72[1] : v72, previous ? v73[1] : v73, previous ? v74[1] : v74, previous ? v75[1] : v75, previous ? v76[1] : v76, previous ? v77[1] : v77, previous ? v78[1] : v78, previous ? v79[1] : v79, previous ? v80[1] : v80, previous ? v81[1] : v81, previous ? v82[1] : v82, previous ? v83[1] : v83, previous ? v84[1] : v84, previous ? v85[1] : v85, previous ? v86[1] : v86, previous ? v87[1] : v87, previous ? v88[1] : v88, previous ? v89[1] : v89, previous ? v90[1] : v90, previous ? v91[1] : v91, previous ? v92[1] : v92, previous ? v93[1] : v93, previous ? v94[1] : v94, previous ? v95[1] : v95, previous ? v96[1] : v96, previous ? v97[1] : v97, previous ? v98[1] : v98, previous ? v99[1] : v99, previous ? v100[1] : v100, previous ? v101[1] : v101, previous ? v102[1] : v102, previous ? v103[1] : v103, previous ? v104[1] : v104, previous ? v105[1] : v105, previous ? v106[1] : v106, previous ? v107[1] : v107, previous ? v108[1] : v108, previous ? v109[1] : v109, previous ? v110[1] : v110]
 
-[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, s2Id, s2Flags, s2Kind, s2Phase, s2Hi, s2Lo, s2AT, s3Id, s3Flags, s3Kind, s3Phase, s3Hi, s3Lo, s3AT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, kCId, kCFlags, kCPhase, kCDir, kCConfirmed, kCResolved, kCHi, kCLo, kCInv, kCCp, kCIrlH, kCIrlL, kCIrlT, kEId, kEFlags, kEPhase, kEDir, kEConfirmed, kEResolved, kEHi, kELo, kEInv, kECp, kEIrlH, kEIrlL, kEIrlT, kIId, kIFlags, kIPhase, kIDir, kIConfirmed, kIResolved, kIHi, kILo, kIInv, kICp, kIIrlH, kIIrlL, kIIrlT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft] = if onHtf
+[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, s2Id, s2Flags, s2Kind, s2Phase, s2Hi, s2Lo, s2AT, s3Id, s3Flags, s3Kind, s3Phase, s3Hi, s3Lo, s3AT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, kCId, kCFlags, kCPhase, kCDir, kCConfirmed, kCResolved, kCHi, kCLo, kCInv, kCCp, kCIrlH, kCIrlL, kCIrlT, kEId, kEFlags, kEPhase, kEDir, kEConfirmed, kEResolved, kEHi, kELo, kEInv, kECp, kEIrlH, kEIrlL, kEIrlT, kIId, kIFlags, kIPhase, kIDir, kIConfirmed, kIResolved, kIHi, kILo, kIInv, kICp, kIIrlH, kIIrlL, kIIrlT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft, sInnerHi, sInnerLo, sInnerHiT, sInnerLoT] = if onHtf
     f_snapshot(not barstate.isconfirmed)
 else
     request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
@@ -1110,8 +1148,10 @@ if barstate.islast
     bool irlVisible = showIrl and hasModel and sKind == 2
     bool bullSelected = not na(sIrlT) and sDir == 1 and sIrlKind != 3
     bool bearSelected = not na(sIrlT) and sDir == -1 and sIrlKind != 3
-    f_level(11, (sBullIrlH + sBullIrlL) / 2, "IRL B/F" + (bullSelected ? "*" : ""), color.teal, irlVisible and not na(sBullIrlT), sBullIrlLeft, true, true)
-    f_level(12, (sBearIrlH + sBearIrlL) / 2, "IRL S/F" + (bearSelected ? "*" : ""), color.orange, irlVisible and not na(sBearIrlT), sBearIrlLeft, true, true)
+    f_level(11, (sBullIrlH + sBullIrlL) / 2, "IRL B/" + (sBullIrlKind == 1 ? "F" : "O") + (bullSelected ? "*" : ""), color.teal, irlVisible and not na(sBullIrlT), sBullIrlLeft, true, true)
+    f_level(12, (sBearIrlH + sBearIrlL) / 2, "IRL S/" + (sBearIrlKind == 1 ? "F" : "O") + (bearSelected ? "*" : ""), color.orange, irlVisible and not na(sBearIrlT), sBearIrlLeft, true, true)
+    f_level(13, sInnerHi, "IRL H" + (sIrlKind == 3 and sDir == -1 ? "*" : ""), color.orange, irlVisible and not na(sInnerHiT), sInnerHiT, false, true)
+    f_level(14, sInnerLo, "IRL L" + (sIrlKind == 3 and sDir == 1 ? "*" : ""), color.teal, irlVisible and not na(sInnerLoT), sInnerLoT, false, true)
     for side = 0 to 1
         float top = side == 0 ? sBullIrlH : sBearIrlH
         float bottom = side == 0 ? sBullIrlL : sBearIrlL
@@ -1131,7 +1171,7 @@ if barstate.islast
         string dirText = biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
         string stateText = not hasModel ? "WAIT" : sDir == 0 ? (sKind == 2 ? "BIAS?" : "COMP") : localTargetTaken ? "CP?" : alreadyEmitted ? "SIGNAL" : na(target) ? "CP -" : egfScenario and irlFailed ? "IRL X" : egfScenario and not irlTouched ? "IRL WAIT" : egfScenario and not egfReady ? "IRL" : "LTF"
         array<string> headings = array.from("TF", "#1", "B", "IRL", "T", "S", "N", "WHY", "DATA")
-        array<string> values = array.from(htf + " / " + timeframe.period, tag + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? "FVG" : "-", macroNow + (showQt ? " Q" + str.tostring(dayQuarter) + "/" + str.tostring(sessionQuarter) : ""), not sReady ? "HIST" : stateText + (sDropped > 0 ? " +" : ""), "C " + str.tostring(crtSignals) + " E " + str.tostring(egfSignals) + " I " + str.tostring(isbSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY))
+        array<string> values = array.from(htf + " / " + timeframe.period, tag + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? (sIrlKind == 1 ? "FVG" : sIrlKind == 2 ? "OB?" : "LIQ") : "-", macroNow + (showQt ? " Q" + str.tostring(dayQuarter) + "/" + str.tostring(sessionQuarter) : ""), not sReady ? "HIST" : stateText + (sDropped > 0 ? " +" : ""), "C " + str.tostring(crtSignals) + " E " + str.tostring(egfSignals) + " I " + str.tostring(isbSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY))
         for row = 0 to 8
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
             table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 7 ? lastClosedAudit : row == 6 ? "Independent channel hits; same-bar, same-side hits merge into one triangle." : "")
