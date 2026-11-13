@@ -4,6 +4,8 @@ Bản hiện hành tập trung dựng bối cảnh HTF và phát tam giác xác 
 
 ## Cấu hình khởi đầu
 
+Preset nền đã qua kiểm tra **tương thích workflow**, không phải tối ưu lợi nhuận thị trường: xem [kết quả 20 tổ hợp và phạm vi kiểm tra](DAY-TRADING-DEFAULTS.md). Các mặc định LTF được khai báo tập trung trong code; chúng khớp cấu hình đang dùng nên không thay đổi hành vi so với bản trước.
+
 HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; LTF condition Auto; time filter Context only. Để quan sát tần suất: Signal display = History, giữ 100 tam giác. Cửa sổ 3 nến HTF chỉ giới hạn line, không xóa dấu ở chế độ History. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
 
 ## 23 setting

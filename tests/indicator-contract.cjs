@@ -326,7 +326,7 @@ assert.deepEqual(mssHits.map(h=>h.hit),[false,false,true]);
 assert.equal(mssState.mssLevel,110,'New confirmed pivot may refresh the scanner');
 assert.equal(mssState.confirmLevel,105,'It cannot move the pending retest level');
 assert.equal(mssHits[2].tag,'M');
-assert.match(source,/signalTiming = input.string\("Pullback"/);
+assert.match(source,/signalTiming = input.string\(DEFAULT_SIGNAL_TIMING/);
 assert.match(source,/recentOnly = input.bool\(true,/);
 assert.doesNotMatch(source,/extend=extend.right/,'No unbounded level projection');
 assert.match(source,/label.style_triangleup : label.style_triangledown/);

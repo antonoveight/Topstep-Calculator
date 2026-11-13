@@ -12,6 +12,11 @@ const string G_BIAS = "2. Bias"
 const string G_ENTRY = "3. LTF"
 const string G_TIME = "4. Time"
 const string G_VIEW = "5. Display"
+// Day-trading workflow baseline: verified by tests/day-trading-settings.cjs.
+// Compatibility fixtures, NOT an XAUUSD profit/drawdown optimization.
+const string DEFAULT_ENTRY_MODE = "Auto"
+const string DEFAULT_SIGNAL_TIMING = "Pullback"
+const string DEFAULT_SIGNAL_CADENCE = "Fresh reaction"
 htf = input.timeframe("60", "HTF", options=["60", "120", "240", "1D"], group=G_HTF, tooltip="Khung xác định CRT/TS, Engulfing/Outside hoặc Inside Bar. Bắt đầu H1 (60), dùng H2 nếu đó là khung bạn đọc cấu trúc. Chart LTF chỉ tìm entry.")
 signalModels = input.string("All", "Models to observe", options=["All", "CRT", "EGF", "ISB"], group=G_HTF, tooltip="All xét CRT/EGF/ISB qua ba kênh LTF độc lập; mỗi nhóm giữ model cũ nhất còn hiệu lực. Cụm HTF chỉ vẽ model ưu tiên để gọn. Chọn một nhóm để đối chiếu với cùng nhóm trong All.")
 minSweepTicks = 1
@@ -27,9 +32,9 @@ biasTf = input.timeframe("1D", "Bias TF (>= HTF)", options=["60", "120", "240", 
 biasLife = 3
 biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutral"], group=G_BIAS, tooltip="Auto dùng quy tắc cấu trúc của script. Long/Short/Neutral là ý kiến chủ động của bạn; reset khi bối cảnh thay đổi.")
 filterBias = true
-signalCadence = input.string("Fresh reaction", "Signal cadence", options=["Fresh reaction", "One per model"], group=G_ENTRY, tooltip="Sau dấu đầu cần pivot hồi mới đã xác nhận, tiến triển theo hướng giao dịch và xác nhận lại. Một nến đổi màu không đủ. EGF còn phải rời rồi trở lại IRL. Các kênh cùng nhịp chỉ gộp cùng bar, không phát nối đuôi khi chưa có pivot mới. One per model giữ một dấu/model.")
-signalTiming = input.string("Pullback", "Signal timing", options=["Pullback", "Confirmation close"], group=G_ENTRY, tooltip="Pullback: tam giác tại nến SAU xác nhận, khi giá hồi chạm mức/vùng và đóng đúng phía. Confirmation close: cho phép dấu tại nến đóng phá MSS/CISD cho cách vào market. FVG/OB retest luôn đợi nến sau khi vùng hình thành; không vẽ lùi hay dịch dấu hình thức.")
-entryMode = input.string("Auto", "LTF condition", options=["Auto", "CISD", "MSS", "FVG retest", "OB retest"], group=G_ENTRY, tooltip="Điều kiện phát tam giác hướng đi, không phải giá entry cố định. EGF chờ chạm IRL rồi xác nhận LTF về phía ERL theo bias; mọi mode đều qua gate này. FVG/OB LTF chỉ lọc nội bộ; vùng IRL HTF hiển thị qua setting riêng. Không áp min R:R tại close tín hiệu vì bạn tự chọn entry thực tế.")
+signalCadence = input.string(DEFAULT_SIGNAL_CADENCE, "Signal cadence", options=["Fresh reaction", "One per model"], group=G_ENTRY, tooltip="Sau dấu đầu cần pivot hồi mới đã xác nhận, tiến triển theo hướng giao dịch và xác nhận lại. Một nến đổi màu không đủ. EGF còn phải rời rồi trở lại IRL. Các kênh cùng nhịp chỉ gộp cùng bar, không phát nối đuôi khi chưa có pivot mới. One per model giữ một dấu/model.")
+signalTiming = input.string(DEFAULT_SIGNAL_TIMING, "Signal timing", options=["Pullback", "Confirmation close"], group=G_ENTRY, tooltip="Pullback: tam giác tại nến SAU xác nhận, khi giá hồi chạm mức/vùng và đóng đúng phía. Confirmation close: cho phép dấu tại nến đóng phá MSS/CISD cho cách vào market. FVG/OB retest luôn đợi nến sau khi vùng hình thành; không vẽ lùi hay dịch dấu hình thức.")
+entryMode = input.string(DEFAULT_ENTRY_MODE, "LTF condition", options=["Auto", "CISD", "MSS", "FVG retest", "OB retest"], group=G_ENTRY, tooltip="Điều kiện phát tam giác hướng đi, không phải giá entry cố định. EGF chờ chạm IRL rồi xác nhận LTF về phía ERL theo bias; mọi mode đều qua gate này. FVG/OB LTF chỉ lọc nội bộ; vùng IRL HTF hiển thị qua setting riêng. Không áp min R:R tại close tín hiệu vì bạn tự chọn entry thực tế.")
 pivotLength = 2
 manualPoc = 0.0
 manualLine = 0.0
