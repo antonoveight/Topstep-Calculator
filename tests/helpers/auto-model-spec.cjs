@@ -34,11 +34,8 @@ class RegistrySpec {
  snapshot(){return structuredClone(this.models);}
 }
 function pickIrl(model,zones){
- for(const kind of [1,2]){
-  const found=[...zones].reverse().find(z=>z.kind===kind&&z.hi<=model.hi&&z.lo>=model.lo&&(!model.dir||z.dir===model.dir)&&!z.filled);
-  if(found)return found;
- }
- return null;
+ if(!model.dir)return null;
+ return [...zones].reverse().find(z=>z.kind===1&&z.hi<=model.hi&&z.lo>=model.lo&&z.dir===model.dir&&!z.filled)||null;
 }
 function pickErl(model,swings){
  const up=swings.filter(q=>q.side===1&&q.price>model.hi&&!q.consumed).map(q=>q.price);

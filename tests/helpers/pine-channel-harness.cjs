@@ -29,14 +29,14 @@ function createHarness(source){
  }
  const clear=Function('state','phaseAt','seedPivot','keepRun',translate('f_clearReaction'));
  const environment=['barstate','isLtf','time','bar_index','open','high','low','close','history','na','signalCadence','pivotLength','tolerance','entryMode','signalTiming','filterBias','biasDir','timeAllowed','f_clearReaction','makeResult'];
- const step=Function(...environment,'ctx','state','knownHigh','knownLow','pivotHigh','pivotLow',translate('f_stepChannel'));
+ const step=Function(...environment,'ctx','state','knownHigh','knownLow','pivotHigh','pivotLow','waveAllowed',translate('f_stepChannel'));
  return {
   state(ctx){return {...defaults('ReactionState'),key:String(ctx.id),activatedAt:ctx.confirmed,phaseAt:ctx.kind===2?null:ctx.confirmed,mssLevel:null};},
   step(ctx,state,tape,options={}){
    const b=tape.at(-1),keys={open:'o',high:'h',low:'l',close:'c',time:'t'};
    const history=(field,n)=>{const prior=tape.at(-1-n);return prior?prior[keys[field]]:null;};
    const env=[{isconfirmed:options.confirmed!==false},options.isLtf!==false,b.t,tape.length-1,b.o,b.h,b.l,b.c,history,x=>x==null||Number.isNaN(x),options.cadence||'Fresh reaction',2,.01,options.entryMode||'Auto',options.timing||'Pullback',true,options.bias??ctx.dir,options.timeAllowed!==false,clear,args=>({...defaults('ChannelResult'),...args})];
-   return step(...env,ctx,state,options.knownHigh??null,options.knownLow??null,options.pivotHigh??null,options.pivotLow??null);
+   return step(...env,ctx,state,options.knownHigh??null,options.knownLow??null,options.pivotHigh??null,options.pivotLow??null,options.waveAllowed!==false);
   }
  };
 }

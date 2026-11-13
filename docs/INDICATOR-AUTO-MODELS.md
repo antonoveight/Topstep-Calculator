@@ -24,7 +24,7 @@ Khi bias đổi, EGF giữ range/C1/C2, reset hướng kịch bản, CP/IRL và 
 
 ERL là pivot HTF đã xác nhận, chưa bị lấy, ngoài range; chọn mức gần nhất mỗi phía. CP của EGF/ISB breakout lấy ERL thật, không measured move tự tạo. CP của CRT/TS là biên đối diện của range quét. CP được giữ cho revision; context ERL có thể đổi khi swing bị lấy hoặc có swing mới.
 
-IRL ưu tiên FVG chưa full fill trong pool khi chọn lần đầu, đúng phía kịch bản; OB là fallback candidate hẹp. Sau khi một model đã chọn vùng, wick mitigation/reclaim không tự xóa vùng đang giữ; HTF close-through biên xa mới xóa vùng đó. Pool candidate và vùng đã chọn có vòng đời khác nhau. Không thay IRL thiếu bằng EQ/POC. FVG, OB, EQ/CE và FRVP POC không phải các khái niệm đồng nghĩa. Bản đồ hiển thị riêng cho EGF giữ hai hướng FVG/OB nếu tồn tại, không ép đủ hai vùng. Có thêm swing nội bộ thực, chưa bị lấy: H/L phải nằm chặt trong range. Nếu thiếu zone cùng hướng, EGF có thể chọn SSL nội bộ cho Buy hoặc BSL nội bộ cho Sell; mức điểm dùng kind=3, không nới thành vùng giả. Vùng/mức đã chọn được giữ qua wick mitigation cho tới HTF close sai phía. Vẽ HTF IRL bằng hai box mờ, CE line và H/L; dấu * chỉ reference theo bias. Không render box/nhãn entry LTF. Tắt showIrl không đổi tín hiệu.
+IRL trong hệ thống này **chỉ là FVG trên HTF**: Bull khi Low C3 > High C1, Bear khi High C3 < Low C1. Phải có gap thực và nằm trong range model; không dùng OB, swing H/L, EQ hay POC thay thế. Vùng chỉ được biết khi C3 đóng. Lưu riêng timestamp phát hiện C3 và timestamp neo hình C1; box/CE line bắt đầu tại C1, kéo hữu hạn về trước, không tràn sang cụm. Hiện hai hướng nếu có; dấu * chỉ FVG đang chọn theo bias. Không ép mọi EGF có đủ hai FVG. FVG chưa chọn bị loại khi full-fill; FVG đã chọn giữ qua wick mitigation đến HTF close xuyên biên xa, như quy tắc hiện hành. Không render box entry OB/FVG LTF.
 
 EGF: nhận bias → chọn IRL/ERL → chờ bar LTF thực sự chạm IRL → xác nhận LTF về phía ERL. Nhịp hồi vào IRL không tự tạo tín hiệu ngược bias. Không ép close ra khỏi toàn bộ vùng để được xét; vẫn phải có C/M hoặc retest hợp lệ. Nếu đã chạm rồi LTF close qua biên xa (Buy dưới đáy vùng, Sell trên đỉnh vùng), tạm chặn phản ứng. LTF reclaim có thể hợp lệ trở lại nếu snapshot HTF vẫn giữ vùng; không nhìn trước kết quả HTF close và không tự xác nhận TS HTF khi HTF còn chạy. Nếu CP đã bị lấy thì không đuổi giá. Thiếu bias/vùng/đích thì chờ.
 
@@ -34,7 +34,7 @@ History mặc định giữ 100 tam giác, tối đa 200, tách hoàn toàn vi�
 
 ## 4. Drawing và source timestamps
 
-Snapshot trả 109 scalar; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
+Snapshot trả 107 scalar; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
 
 Line xloc.bar_time bắt đầu từ nến nguồn; trên LTF map HTF high/low về timestamp nến con tạo cực trị trong cache 1000 bucket đầy đủ. Nếu cache không có, tìm trong tối đa 5000 bar chart đã tải. Không tìm được nguồn thì ẩn line tương ứng, không gắn giả vào nến tín hiệu. EQ dùng neo tổng quan vì không có nến cực trị riêng. Line được vẽ hiện tại nối lại nguồn cũ không có nghĩa tín hiệu đã biết ở thời điểm swing; pivot vẫn phải chờ xác nhận.
 
@@ -46,11 +46,17 @@ Không thể hứa không chồng chữ ở mọi zoom/scale/cửa sổ vì Pine
 
 Signal timing mặc định Pullback tách xác nhận khỏi điều kiện hồi: đóng phá C/M cố định mức chờ, nến sau phải hồi chạm và đóng đúng phía hoặc retest vùng hợp lệ của nhánh. Auto CRT/TS cần C/M trước retest. Confirmation close cho cách market vẫn là lựa chọn riêng. FVG/OB không bao giờ phát retest tại chính nến tạo vùng. Tooltip ghi Confirm bar/Trigger bar; tam giác đặt tại trigger thực sự, không backdate. Fixture tuần tự kiểm tra cả ba nhóm, Buy/Sell, mức MSS cố định dù scanner nhận pivot mới, FVG/OB hình thành rồi retest, cùng các gate bias/time/CP.
 
-Snapshot hiện có 109 scalar, gồm 12 trường bản đồ IRL hai hướng/swing nội bộ; mọi trường tiếp tục offset riêng. Tổng request tuple nằm dưới giới hạn 127. Harness trích thân f_refreshIrl kiểm tra ưu tiên FVG trước OB, cả hai hướng khi bias cố định/neutral, loại vùng ngoài range, fallback swing đúng hướng, không dựng IRL thiếu, giữ vùng đang chọn qua wick mitigation. Timeout kiểm tra trước/đúng mốc, 0 tắt và recovery vẫn áp dụng.
+Snapshot hiện có 107 scalar: phần bản đồ IRL thêm 10 trường cho hai FVG và neo C1; mọi scalar offset riêng. Harness kiểm tra loại OB/swing fallback, giữ hai hướng FVG, neo C1 tách biệt phát hiện C3 và lifetime của vùng.
 
 Ngày 13/11/2026, toàn bộ bản source có timeout và bản đồ IRL đã qua Pine Editor tạm: exactSource=true, success=true, errors=null. Đây là chẩn đoán editor; chưa kiểm tra runtime/Replay trên chart.
 
-## 5. Kiểm tra và giới hạn
+## 5. Lượt phản ứng và bộ lọc sóng
+
+Fresh reaction: sau một hit phải có pivot hồi đã xác nhận với nguồn sau nến tín hiệu (Buy pivot Low, Sell pivot High), Low cao hơn đáy nến hit và close vượt đỉnh nến hit đối với Buy; đối xứng với Sell. EGF còn phải rời rồi chạm lại IRL. Không mở lượt chỉ do một nến đổi màu. Lượt chờ chưa phát có thể được thay khi pivot hồi mới thuộc sau xác nhận cũ và run đối hướng mới xuất hiện sau xác nhận đó. Trong lượt mới, bỏ FVG/OB/C-M cũ, giữ run mới nếu hợp lệ; xác nhận tại nến hiện tại đã đóng, không backdate về nến pivot. Pullback tiếp tục đợi nến sau retest. One per model vẫn giữ everSent.
+
+Bộ lọc sóng dùng chung giữa CRT/EGF/ISB: sau một Buy, Buy ở nến sau cần một pivot Low đã xác nhận có timestamp nguồn sau nến Buy trước; Sell dùng pivot High tương ứng. Đổi model/revision hoặc đổi IRL không vượt qua gate này. Các hit cùng hướng cùng bar vẫn gộp một tam giác và giữ provenance; hit nối đuôi chưa có pivot mới nhận WAVE WAIT, không tiêu thụ state.sent. Lượt mới có thể được model/kênh khác phát trước, khi đó kênh theo sau trong cùng nhịp cũng bị chặn. Không dùng cooldown số nến cố định và không nhìn trước pivot.
+
+## 6. Kiểm tra và giới hạn
 
 Cụm bên phải đã bỏ bốn slot cố định. Dãy được ghép theo timestamp từ C1 tới hiện tại, gồm toàn bộ bucket HTF đã tải và fallback ba nến nguồn nếu thiếu; không lặp nguồn/live. Model đang hiệu lực giữ cụm dù recency line hết hạn. Các đối tượng thân/râu được cấp phát theo số nến và xóa khi đổi model/tắt cụm; OHLC/râu vẫn theo giá thật. Bố cục dùng tọa độ thời gian, tự nén dãy dài trong 420 bar chart. Dành 450 cặp thân/râu, chừa ngân sách cho line khác; nếu vượt báo lỗi giới hạn thay vì âm thầm cắt nến. Xem [giới hạn drawing của Pine](https://www.tradingview.com/pine-script-docs/writing/limitations/#line-box-polyline-and-label-limits). Dữ liệu chart chưa tải không thể dựng lại đầy đủ nến trung gian.
 

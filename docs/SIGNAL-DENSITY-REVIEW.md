@@ -1,5 +1,7 @@
 # Rà soát tín hiệu dồn và nhịp sóng thiếu tín hiệu
 
+Báo cáo dưới đây ghi nhận **trước khi sửa**. Bản sửa tiếp theo đã được thực hiện; xem [lượt phản ứng và IRL hiện hành](SIGNAL-REACTION-UPDATE.md). Bộ fixture hiện tại kiểm tra kết quả sau sửa, không còn mong đợi các lỗi cũ.
+
 Ngày rà soát: 13/11/2026. Cấu hình người dùng xác nhận: XAUUSD, HTF H1, chart M5, Pullback, Fresh reaction; giai đoạn quan tâm 01/11/2026 đến nay.
 
 Đã kiểm tra source và thực thi thân evaluator LTF trên OHLC giả lập. Chưa chạy source trên dữ liệu XAUUSD/Replay của giai đoạn trên; các con số dưới đây là ca tái hiện cơ chế, không phải thống kê thị trường hay đánh giá độ chính xác.

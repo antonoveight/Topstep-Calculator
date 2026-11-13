@@ -17,7 +17,7 @@ HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Lo
 | Bias | Auto / Long / Short / Neutral. EGF lấy hướng kịch bản từ bias, không lấy từ màu nến. CRT/ISB phải thuận bias để phát dấu. |
 | LTF condition | Auto / CISD / MSS / FVG retest / OB retest. Đây là điều kiện phát tín hiệu, không phải lựa chọn giá khớp lệnh. |
 | Signal timing | Mặc định Pullback: đợi hồi kiểm tra sau xác nhận. Confirmation close: cho phép dấu ở nến đóng phá C/M cho cách vào market. FVG/OB retest luôn đợi nến sau hình thành. |
-| Signal cadence | Fresh reaction (mặc định) cho phép dấu mới sau phản ứng mới hợp lệ trong cùng model. One per model giữ một dấu mỗi model/revision để so sánh. Không lặp theo từng bar. |
+| Signal cadence | Fresh reaction: cần pivot hồi mới và tiến triển cấu trúc để phát lại; One per model giữ một dấu/model. WAVE WAIT là gate chung giữa các kênh. |
 | Time filter | Context only không chặn giờ; Web macros/working windows giới hạn giờ tín hiệu theo New York có DST. |
 | Macro background | Bật/tắt nền macro. Không tạo bias. |
 | QT clock context | Hiện đồng hồ quý trong dashboard, không quyết định hướng. |
@@ -25,7 +25,7 @@ HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Lo
 | Cluster offset | Mặc định 30 bar; tăng nếu muốn thêm khoảng trống bên phải chữ. |
 | Cluster body width | Mặc định 4 bar; số lẻ làm tròn xuống chẵn để râu đúng tâm. |
 | Model range / ERL / CP | Các line cấu trúc và mục tiêu có điều kiện. Không ảnh hưởng logic tam giác khi tắt. |
-| HTF internal liquidity / FVG | Mặc định bật. Vẽ IRL hai hướng EGF nếu có dữ liệu hợp lệ, độc lập recency line. * chỉ vùng đang chọn theo bias; không bật box entry LTF. |
+| HTF FVG / IRL | Hiện FVG HTF hai hướng nếu có. Box neo C1, chỉ xuất hiện sau close C3; * là vùng theo bias. Không lấy OB/swing làm IRL. |
 | Compact panel | Bảng tổng quan model, bias, IRL nội bộ, thời gian và trạng thái. |
 | Signal display | History (mặc định) giữ dấu quá khứ, Latest chỉ giữ dấu gần nhất. Không thay điều kiện nhận diện/alert. |
 | Historical signals to keep | Mặc định 100, tối đa 200; 0 ẩn dấu. Ở Latest chỉ giữ 1 nếu số này >0. |
@@ -42,13 +42,13 @@ Giới hạn pool/queue, pivot, độ xuyên tick, recovery và invalidation cơ
 
 Bỏ nhập tay SSL/BSL/POC/BL/SL/CP và các mode POC/Line, gate R:R tại close tín hiệu, model phụ, C/M sơ bộ và plot TDO/TO khỏi giao diện. CRT tự dùng C1 range. Không ép min R:R từ close của tam giác vì bạn sẽ chọn giá entry thực tế; vẫn kiểm tra hướng mục tiêu và không phát dấu khi bar chạm INV tham chiếu hoặc CP đã bị lấy. Chỉ báo không biết SL thực tế của bạn.
 
-OB/FVG **LTF** vẫn chỉ lọc nội bộ, không vẽ box/zone/nhãn entry. IRL HTF của EGF hiển thị riêng: hai vùng FVG (OB fallback) và swing nội bộ nếu tồn tại. Không vẽ line CISD/MSS hoặc chữ cạnh tam giác. Tam giác Tiny: xanh Buy dưới nến, đỏ Sell trên nến; xem loại xác nhận trong tooltip.
+OB/FVG **LTF** vẫn chỉ lọc nội bộ, không vẽ box/zone/nhãn entry. IRL HTF của EGF hiển thị riêng: FVG HTF hai hướng nếu tồn tại. Không vẽ line CISD/MSS hoặc chữ cạnh tam giác. Tam giác Tiny: xanh Buy dưới nến, đỏ Sell trên nến; xem loại xác nhận trong tooltip.
 
 ## Timeout và đọc IRL
 
 Model timeout = 8 đếm nến HTF từ C2, không từ C1 hay số phút thực. Đây là quy tắc chờ cá nhân, không phải thời hạn cố định của ICT. Ví dụ H1: hết hạn tại close nến thứ 8 sau nến xác nhận; không gia hạn khi đổi bias, IRL, hoặc ISB mới resolve. Nhãn dưới cụm hiển thị tuổi/giới hạn; hết hạn thì FIFO chọn model còn hiệu lực tiếp theo, hoặc không vẽ nếu không còn model. Không xóa tam giác lịch sử đã phát.
 
-IRL B/F và S/F là vùng FVG HTF cho phản ứng Buy/Sell; O là OB candidate fallback cơ học. Khung mờ cho biết đầy đủ biên vùng; line giữa là CE của chính vùng FVG/OB, không phải EQ 50% range và không phải FRVP POC. IRL H/L là swing High/Low xác nhận, chưa bị lấy và nằm **bên trong** range của EGF; ERL nằm ngoài range. Không gán sẵn hai FVG cho mọi EGF. Dấu * là vùng/mức dùng xét tín hiệu theo bias, không phải lệnh vào. Khi thiếu FVG/OB cùng hướng, EGF có thể theo dõi SSL nội bộ cho Buy hoặc BSL nội bộ cho Sell rồi vẫn đợi xác nhận LTF. Tắt hiển thị IRL chỉ ẩn hình, không đổi gate tín hiệu.
+IRL trong hệ thống này **chỉ là FVG trên HTF**: Bull khi Low C3 > High C1, Bear khi High C3 < Low C1. Phải có gap thực và nằm trong range model; không dùng OB, swing H/L, EQ hay POC thay thế. Vùng chỉ được biết khi C3 đóng. Lưu riêng timestamp phát hiện C3 và timestamp neo hình C1; box/CE line bắt đầu tại C1, kéo hữu hạn về trước, không tràn sang cụm. Hiện hai hướng nếu có; dấu * chỉ FVG đang chọn theo bias. Không ép mọi EGF có đủ hai FVG. FVG chưa chọn bị loại khi full-fill; FVG đã chọn giữ qua wick mitigation đến HTF close xuyên biên xa, như quy tắc hiện hành. Không render box entry OB/FVG LTF.
 
 ## Đọc theo từng model
 
@@ -66,7 +66,7 @@ C/M chung vai trò xác nhận nhưng không chung phép đo: CISD close qua run
 
 Signal timing mặc định **Pullback**: nến đóng phá C/M chỉ ghi nhận xác nhận; cần một nến sau hồi chạm mức đã phá và đóng lại đúng phía (Buy trên mức, Sell dưới mức), hoặc retest FVG/OB hợp lệ theo nhánh. Auto CRT/TS yêu cầu có C/M trước rồi mới xét retest; FVG/OB phải hình thành từ nến xác nhận trở đi. EGF vẫn cần IRL và ISB breakout vẫn cần mother retest. Không có hồi hợp lệ thì không có tam giác. Chế độ **Confirmation close** giữ cách dùng market tại nến đóng xác nhận C/M; mode FVG/OB vẫn đợi retest. Tam giác luôn trên nến hoàn tất điều kiện, không vẽ lùi về nến nguồn hay cố tình đẩy sang nến kế tiếp. Tooltip phân biệt Confirm bar và Trigger bar (giờ mở nến NY). WAIT CONFIRM/WAIT RETEST cho biết giai đoạn chờ; đây chưa phải lệnh đã khớp.
 
-Với EGF, MSS lấy pivot đã biết lúc chạm IRL; FVG/OB LTF cũ bị bỏ khi bắt đầu pha phản ứng. Không bắt buộc close ra ngoài toàn bộ vùng HTF: phải có điều kiện xác nhận LTF ở phía hợp lệ và mục tiêu đúng hướng. Râu xuyên vùng rồi reclaim không tự xóa IRL đang chọn. LTF đóng ngoài vùng tạm chặn dấu, có thể được xét lại sau reclaim khi context HTF còn hiệu lực; HTF close xuyên biên xa mới xóa vùng. Mọi mode chọn riêng vẫn qua gate IRL của EGF. Fresh reaction: một dấu cho mỗi phản ứng hợp lệ. CRT cần nhịp nến đối hướng mới rồi xác nhận; ISB breakout cần retest mother mới; EGF phải rời vùng rồi trở lại chạm IRL, hoặc có vùng IRL mới. CP đã bị lấy vẫn chặn mọi lượt sau. One per model khóa sau dấu đầu của revision.
+Với EGF, MSS lấy pivot đã biết lúc chạm IRL; FVG/OB LTF cũ bị bỏ khi bắt đầu pha phản ứng. Không bắt buộc close ra ngoài toàn bộ vùng HTF: phải có điều kiện xác nhận LTF ở phía hợp lệ và mục tiêu đúng hướng. Râu xuyên vùng rồi reclaim không tự xóa IRL đang chọn. LTF đóng ngoài vùng tạm chặn dấu, có thể được xét lại sau reclaim khi context HTF còn hiệu lực; HTF close xuyên biên xa mới xóa vùng. Mọi mode chọn riêng vẫn qua gate IRL của EGF. Fresh reaction: sau một hit phải có pivot hồi đã xác nhận với nguồn sau nến tín hiệu (Buy pivot Low, Sell pivot High), Low cao hơn đáy nến hit và close vượt đỉnh nến hit đối với Buy; đối xứng với Sell. EGF còn phải rời rồi chạm lại IRL. Không mở lượt chỉ do một nến đổi màu. Lượt chờ chưa phát có thể được thay khi pivot hồi mới thuộc sau xác nhận cũ và run đối hướng mới xuất hiện sau xác nhận đó. Trong lượt mới, bỏ FVG/OB/C-M cũ, giữ run mới nếu hợp lệ; xác nhận tại nến hiện tại đã đóng, không backdate về nến pivot. Pullback tiếp tục đợi nến sau retest. One per model vẫn giữ everSent. Bộ lọc sóng dùng chung giữa CRT/EGF/ISB: sau một Buy, Buy ở nến sau cần một pivot Low đã xác nhận có timestamp nguồn sau nến Buy trước; Sell dùng pivot High tương ứng. Đổi model/revision hoặc đổi IRL không vượt qua gate này. Các hit cùng hướng cùng bar vẫn gộp một tam giác và giữ provenance; hit nối đuôi chưa có pivot mới nhận WAVE WAIT, không tiêu thụ state.sent. Lượt mới có thể được model/kênh khác phát trước, khi đó kênh theo sau trong cùng nhịp cũng bị chặn. Không dùng cooldown số nến cố định và không nhìn trước pivot.
 
 ## Nguồn các line
 
@@ -96,3 +96,9 @@ Sau khi cập nhật code, kiểm tra Signal display = History và Historical si
 Độ chính xác cần đối chiếu bằng Replay với kế hoạch entry/SL/Full TP cụ thể. Chỉ báo chưa tính win rate hoặc PnL; một tam giác đúng điều kiện không tự chứng minh một giao dịch thắng. History không nới gate bias, time, IRL hoặc target/INV. Cadence là quy tắc phản ứng riêng, không phải thay đổi do bật History. INV của chỉ báo là mức vô hiệu cấu trúc theo close, không giả định râu chạm là SL của lệnh thực tế.
 
 Xem [đặc tả và giới hạn kiểm tra](INDICATOR-AUTO-MODELS.md). Ảnh minh họa cũ trong lịch sử Git không phải ảnh runtime hoặc bố cục hiện hành.
+
+## Sửa lượt chờ và tín hiệu cùng nhịp
+
+Fresh reaction: sau một hit phải có pivot hồi đã xác nhận với nguồn sau nến tín hiệu (Buy pivot Low, Sell pivot High), Low cao hơn đáy nến hit và close vượt đỉnh nến hit đối với Buy; đối xứng với Sell. EGF còn phải rời rồi chạm lại IRL. Không mở lượt chỉ do một nến đổi màu. Lượt chờ chưa phát có thể được thay khi pivot hồi mới thuộc sau xác nhận cũ và run đối hướng mới xuất hiện sau xác nhận đó. Trong lượt mới, bỏ FVG/OB/C-M cũ, giữ run mới nếu hợp lệ; xác nhận tại nến hiện tại đã đóng, không backdate về nến pivot. Pullback tiếp tục đợi nến sau retest. One per model vẫn giữ everSent.
+
+Bộ lọc sóng dùng chung giữa CRT/EGF/ISB: sau một Buy, Buy ở nến sau cần một pivot Low đã xác nhận có timestamp nguồn sau nến Buy trước; Sell dùng pivot High tương ứng. Đổi model/revision hoặc đổi IRL không vượt qua gate này. Các hit cùng hướng cùng bar vẫn gộp một tam giác và giữ provenance; hit nối đuôi chưa có pivot mới nhận WAVE WAIT, không tiêu thụ state.sent. Lượt mới có thể được model/kênh khác phát trước, khi đó kênh theo sau trong cùng nhịp cũng bị chặn. Không dùng cooldown số nến cố định và không nhìn trước pivot.
