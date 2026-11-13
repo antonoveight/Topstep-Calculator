@@ -1,6 +1,6 @@
 # TFA v6 — context HTF và direction signals
 
-Nguồn: indicators/funded-angler-v6.pine; đồng bộ sang chibao.txt bằng node tools/sync-indicator.cjs. [Hướng dẫn 20 setting và kiểm tra lịch sử](INDICATOR-SETTINGS.md). Bản này thay thế các mô tả trước về EGF ép hướng theo màu nến, box OB/FVG, C/M sơ bộ và R:R tại close tín hiệu.
+Nguồn: indicators/funded-angler-v6.pine; đồng bộ sang chibao.txt bằng node tools/sync-indicator.cjs. [Hướng dẫn 21 setting và kiểm tra lịch sử](INDICATOR-SETTINGS.md). Bản này thay thế các mô tả trước về EGF ép hướng theo màu nến, box OB/FVG, C/M sơ bộ và R:R tại close tín hiệu.
 
 ## 1. Những điều được giữ và được sửa
 
@@ -43,6 +43,8 @@ Line xloc.bar_time bắt đầu từ nến nguồn; trên LTF map HTF high/low v
 Nhãn chữ trong suốt, gộp đúng mức/cùng nguồn và giãn theo dải giá nhìn thấy. Không dịch giá thật để né chữ; có leader khi nhãn dời. Cụm bên phải offset 30, thân 4, râu solid 1 px và đúng tâm; dùng OHLC nguồn thực. Chỉ tam giác cố định size.tiny, Buy xanh dưới nến/Sell đỏ trên nến, không chữ hoặc line C/M cạnh bar. Các hit cùng hướng/cùng bar gộp một hình với tooltip chứa từng context; counter tăng theo hit của từng kênh. Dashboard vẫn hiển thị trạng thái nội bộ.
 
 Không thể hứa không chồng chữ ở mọi zoom/scale/cửa sổ vì Pine không cung cấp bounding box pixel. overlay + scale.none + force_overlay giữ cùng pane giá; instance phải ghim cùng scale symbol: [TradingView scale](https://www.tradingview.com/support/solutions/43000775579-indicator-moves-separately-or-is-not-attached-to-the-price/).
+
+Signal timing mặc định Pullback tách xác nhận khỏi điều kiện hồi: đóng phá C/M cố định mức chờ, nến sau phải hồi chạm và đóng đúng phía hoặc retest vùng hợp lệ của nhánh. Auto CRT/TS cần C/M trước retest. Confirmation close cho cách market vẫn là lựa chọn riêng. FVG/OB không bao giờ phát retest tại chính nến tạo vùng. Tooltip ghi Confirm bar/Trigger bar; tam giác đặt tại trigger thực sự, không backdate. Fixture tuần tự kiểm tra cả ba nhóm, Buy/Sell, mức MSS cố định dù scanner nhận pivot mới, FVG/OB hình thành rồi retest, cùng các gate bias/time/CP.
 
 ## 5. Kiểm tra và giới hạn
 

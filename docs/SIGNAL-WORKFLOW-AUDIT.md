@@ -11,6 +11,14 @@ Mục tiêu: loại các chỗ nghẽn làm bỏ sót xác nhận hợp lệ, kh
 5. Mỗi nhánh áp điều kiện riêng, sau đó gate chung: nến LTF đã đóng, hướng/mục tiêu hợp lệ, bias, time nếu bật, context chưa bị vô hiệu và CP chưa bị lấy.
 6. Các hit cùng bar/cùng hướng được gộp một tam giác cố định size.tiny. Tooltip chứa đầy đủ model/xác nhận/CP/INV của từng hit. Counter C/E/I đếm hit từng nhóm, không phải số hình hợp nhất.
 
+## Thời điểm xác nhận và tín hiệu
+
+Trước đây Auto cho phép phát ngay tại close phá C/M: phù hợp quy ước market nhưng quá sớm nếu đang đợi hồi. Signal timing mặc định mới là Pullback. Ghi nhận C/M và cố định mức đã phá; chỉ phát trên nến sau hồi chạm mức, đóng đúng phía, hoặc retest FVG/OB hợp lệ. Auto CRT/TS yêu cầu C/M trước và vùng từ nến xác nhận trở đi; EGF/ISB giữ gate riêng. Không cộng thêm một bar hình thức. Confirmation close giữ quy ước market tại close xác nhận; FVG/OB luôn cần bar sau hình thành.
+
+Harness kiểm tra confirmation → continuation → retest trên ba nhóm Buy/Sell: chỉ retest phát dấu. Kiểm tra riêng MSS giữ mức chờ khi pivot scanner thay đổi, FVG/OB không tự retest, CP bị lấy trước khi hồi thì không phát. Các fixture cũ về cadence dùng Confirmation close để tách biệt thay đổi thời điểm với cơ chế rearm. Chưa xác minh chart/Replay; không suy ra tần suất hoặc hiệu quả thị trường từ fixture.
+
+Ngày 13/11/2026, bản source có Signal timing đã được gửi đầy đủ sang Pine Editor tạm: exactSource=true, success=true, errors=null. Đây là chẩn đoán biên dịch; Add to chart vẫn yêu cầu đăng nhập nên chưa kiểm tra runtime/Replay.
+
 ## Các điểm nghẽn đã xử lý
 
 | Điểm nghẽn | Hành vi sau sửa |

@@ -6,7 +6,7 @@ Bản hiện hành tập trung dựng bối cảnh HTF và phát tam giác xác 
 
 HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; LTF condition Auto; time filter Context only. Để quan sát tần suất: Signal display = History, giữ 100 tam giác. Cửa sổ 3 nến HTF chỉ giới hạn line/cụm, không xóa dấu ở chế độ History. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
 
-## 20 setting
+## 21 setting
 
 | Setting | Vai trò |
 | --- | --- |
@@ -15,6 +15,7 @@ HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Lo
 | Bias TF | Khung bias >= HTF; mặc định D1. Auto chỉ là quy tắc sweep/close-through của script, không có dữ liệu FRVP cá nhân. |
 | Bias | Auto / Long / Short / Neutral. EGF lấy hướng kịch bản từ bias, không lấy từ màu nến. CRT/ISB phải thuận bias để phát dấu. |
 | LTF condition | Auto / CISD / MSS / FVG retest / OB retest. Đây là điều kiện phát tín hiệu, không phải lựa chọn giá khớp lệnh. |
+| Signal timing | Mặc định Pullback: đợi hồi kiểm tra sau xác nhận. Confirmation close: cho phép dấu ở nến đóng phá C/M cho cách vào market. FVG/OB retest luôn đợi nến sau hình thành. |
 | Signal cadence | Fresh reaction (mặc định) cho phép dấu mới sau phản ứng mới hợp lệ trong cùng model. One per model giữ một dấu mỗi model/revision để so sánh. Không lặp theo từng bar. |
 | Time filter | Context only không chặn giờ; Web macros/working windows giới hạn giờ tín hiệu theo New York có DST. |
 | Macro background | Bật/tắt nền macro. Không tạo bias. |
@@ -51,7 +52,9 @@ OB/FVG vẫn được tính làm bộ lọc nội bộ nhưng **không vẽ box/
 
 Các vùng hợp lệ ở cả hai hướng có thể cùng tồn tại trong pool; script chọn vùng theo kịch bản bias hiện tại, không ép mỗi EGF có hai vùng. Không mặc định EGF sinh FVG. FVG là cấu trúc ba nến riêng; OB chỉ là candidate cơ học.
 
-C/M chung vai trò xác nhận nhưng không chung phép đo: CISD close qua run-open đối hướng; MSS close qua pivot đã biết. MSS được cập nhật khi có pivot mới đã xác nhận và nguồn pivot nằm trong pha kích hoạt hiện hành; không giữ mãi một pivot cũ đã bị phá. Auto chọn loại đang thỏa, cùng bar ưu tiên C; mode MSS ghi M đúng kể cả C cũng thỏa. Không thêm ngưỡng displacement chưa kiểm chứng.
+C/M chung vai trò xác nhận nhưng không chung phép đo: CISD close qua run-open đối hướng; MSS close qua pivot đã biết. MSS được cập nhật khi có pivot mới đã xác nhận và nguồn pivot nằm trong pha kích hoạt hiện hành. Khi đã xác nhận, mức chờ hồi được cố định cho lượt phản ứng đó, không chạy theo pivot/run mới. Auto cùng bar ưu tiên C; mode MSS ghi M đúng kể cả C cũng thỏa. Không thêm ngưỡng displacement chưa kiểm chứng.
+
+Signal timing mặc định **Pullback**: nến đóng phá C/M chỉ ghi nhận xác nhận; cần một nến sau hồi chạm mức đã phá và đóng lại đúng phía (Buy trên mức, Sell dưới mức), hoặc retest FVG/OB hợp lệ theo nhánh. Auto CRT/TS yêu cầu có C/M trước rồi mới xét retest; FVG/OB phải hình thành từ nến xác nhận trở đi. EGF vẫn cần IRL và ISB breakout vẫn cần mother retest. Không có hồi hợp lệ thì không có tam giác. Chế độ **Confirmation close** giữ cách dùng market tại nến đóng xác nhận C/M; mode FVG/OB vẫn đợi retest. Tam giác luôn trên nến hoàn tất điều kiện, không vẽ lùi về nến nguồn hay cố tình đẩy sang nến kế tiếp. Tooltip phân biệt Confirm bar và Trigger bar (giờ mở nến NY). WAIT CONFIRM/WAIT RETEST cho biết giai đoạn chờ; đây chưa phải lệnh đã khớp.
 
 Với EGF, MSS lấy pivot đã biết lúc chạm IRL; FVG/OB LTF cũ bị bỏ khi bắt đầu pha phản ứng. Không bắt buộc close ra ngoài toàn bộ vùng HTF: phải có điều kiện xác nhận LTF ở phía hợp lệ và mục tiêu đúng hướng. Râu xuyên vùng rồi reclaim không tự xóa IRL đang chọn. LTF đóng ngoài vùng tạm chặn dấu, có thể được xét lại sau reclaim khi context HTF còn hiệu lực; HTF close xuyên biên xa mới xóa vùng. Mọi mode chọn riêng vẫn qua gate IRL của EGF. Fresh reaction: một dấu cho mỗi phản ứng hợp lệ. CRT cần nhịp nến đối hướng mới rồi xác nhận; ISB breakout cần retest mother mới; EGF phải rời vùng rồi trở lại chạm IRL, hoặc có vùng IRL mới. CP đã bị lấy vẫn chặn mọi lượt sau. One per model khóa sau dấu đầu của revision.
 

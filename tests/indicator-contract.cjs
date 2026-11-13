@@ -255,12 +255,13 @@ assert.equal(evaluateExpr(ltfZoneInvalid,{egfScenario:true,state:{irlTouched:tru
 assert.match(source,/color=markerColor, size=size.tiny/,'Triangle size is fixed, independent of chart text size');
 // Sequential OHLC fixtures execute the actual channel body through a restricted harness.
 const channelHarness=require('./helpers/pine-channel-harness.cjs').createHarness(source);
+const marketStep=(ctx,state,tape,options={})=>channelHarness.step(ctx,state,tape,{timing:'Confirmation close',...options});
 const channelContexts=[1,2,3].map(kind=>({id:kind,kind,flags:kind===1?1:kind===2?2:4,phase:kind===1?1:kind===3?2:0,dir:1,confirmed:100,resolved:100,hi:104,lo:90,inv:90,cp:120,irlH:104,irlL:102,irlT:90}));
 const reactionTape=[bar(98,100,103,99,102),bar(99,102,104,101,103),bar(100,105,106,102,103),bar(101,103,107,102,106),bar(102,106,108,105,107),bar(103,107,108,102,103),bar(104,103,109,102,108)];
 function runChannels(options={}){
  const states=channelContexts.map(ctx=>channelHarness.state(ctx)),counts=[0,0,0],hits=[];
  for(let j=2;j<reactionTape.length;j++){
-  const current=channelContexts.map((ctx,i)=>channelHarness.step(ctx,states[i],reactionTape.slice(0,j+1),options));
+  const current=channelContexts.map((ctx,i)=>marketStep(ctx,states[i],reactionTape.slice(0,j+1),options));
   current.forEach((result,i)=>{counts[i]+=Number(result.hit);});hits.push(current);
  }return {states,counts,hits};
 }
@@ -271,26 +272,61 @@ assert.ok(runChannels({confirmed:false}).counts.every(n=>n===0),'No historical-l
 assert.ok(runChannels({bias:-1}).counts.every(n=>n===0),'Parallel execution does not bypass bias');
 assert.ok(runChannels({timeAllowed:false}).counts.every(n=>n===0),'Parallel execution does not bypass time');
 const consumedTape=[...reactionTape,bar(105,108,121,106,119),bar(106,119,120,103,104),bar(107,104,119,103,118)];
-for(const ctx of channelContexts){const state=channelHarness.state(ctx);let afterTarget=0;for(let j=2;j<consumedTape.length;j++){const hit=channelHarness.step(ctx,state,consumedTape.slice(0,j+1));if(j>=reactionTape.length)afterTarget+=Number(hit.hit);}assert.equal(afterTarget,0,'Fresh cycles cannot chase a target already taken');}
+for(const ctx of channelContexts){const state=channelHarness.state(ctx);let afterTarget=0;for(let j=2;j<consumedTape.length;j++){const hit=marketStep(ctx,state,consumedTape.slice(0,j+1));if(j>=reactionTape.length)afterTarget+=Number(hit.hit);}assert.equal(afterTarget,0,'Fresh cycles cannot chase a target already taken');}
 const pendingSweep=[...reactionTape.slice(0,2),bar(100,105,106,89,101),bar(101,101,107,100,106)];
 const egfSweepState=channelHarness.state(channelContexts[1]);
-assert.equal(channelHarness.step(channelContexts[1],egfSweepState,pendingSweep.slice(0,3)).hit,false);
-assert.equal(channelHarness.step(channelContexts[1],egfSweepState,pendingSweep).hit,true,'LTF excursion then reclaim can confirm within a still-valid HTF context');
+assert.equal(marketStep(channelContexts[1],egfSweepState,pendingSweep.slice(0,3)).hit,false);
+assert.equal(marketStep(channelContexts[1],egfSweepState,pendingSweep).hit,true,'LTF excursion then reclaim can confirm within a still-valid HTF context');
 const oneBarCtx={...channelContexts[1],confirmed:98,resolved:98};
 const oneBarState=channelHarness.state(oneBarCtx);
 const approachTape=[bar(98,109,112,108,111),bar(99,111,112,105,106),bar(100,106,113,101,112)];
-assert.equal(channelHarness.step(oneBarCtx,oneBarState,approachTape.slice(0,2)).hit,false,'Approaching IRL does not emit');
-const oneBarReaction=channelHarness.step(oneBarCtx,oneBarState,approachTape);
+assert.equal(marketStep(oneBarCtx,oneBarState,approachTape.slice(0,2)).hit,false,'Approaching IRL does not emit');
+const oneBarReaction=marketStep(oneBarCtx,oneBarState,approachTape);
 assert.equal(oneBarReaction.hit,true,'First-touch rejection can reclaim the immediately preceding opposing run');
 assert.equal(oneBarReaction.tag,'C','Do not wipe the real CISD run just as price first touches IRL');
 const sellContexts=channelContexts.map(ctx=>({...ctx,dir:-1,hi:200-ctx.lo,lo:200-ctx.hi,inv:200-ctx.inv,cp:200-ctx.cp,irlH:200-ctx.irlL,irlL:200-ctx.irlH}));
 const sellTape=reactionTape.map(b=>bar(b.t,200-b.o,200-b.l,200-b.h,200-b.c));
-for(const ctx of sellContexts){const state=channelHarness.state(ctx);let count=0;for(let j=2;j<sellTape.length;j++)count+=Number(channelHarness.step(ctx,state,sellTape.slice(0,j+1)).hit);assert.equal(count,2,'Fresh reaction logic is symmetric for Sell');}
+for(const ctx of sellContexts){const state=channelHarness.state(ctx);let count=0;for(let j=2;j<sellTape.length;j++)count+=Number(marketStep(ctx,state,sellTape.slice(0,j+1)).hit);assert.equal(count,2,'Fresh reaction logic is symmetric for Sell');}
 const isolatedStates=channelContexts.map(ctx=>channelHarness.state(ctx));isolatedStates[0].everSent=true;
 for(let j=2;j<=3;j++){
- const hits=channelContexts.map((ctx,i)=>channelHarness.step(ctx,isolatedStates[i],reactionTape.slice(0,j+1),{cadence:'One per model'}));
+ const hits=channelContexts.map((ctx,i)=>marketStep(ctx,isolatedStates[i],reactionTape.slice(0,j+1),{cadence:'One per model'}));
  if(j===3)assert.deepEqual(hits.map(hit=>hit.hit),[false,true,true],'A used CRT cannot starve EGF and ISB channels');
 }
+// Pullback timing: a confirmation is not yet a retest entry condition.
+const pullbackTape=[...reactionTape.slice(0,4),bar(102,106,109,106,108),bar(103,108,109,104,106)];
+function traceTiming(ctx,tape,options={},seed={}){
+ const state=Object.assign(channelHarness.state(ctx),seed),hits=[];
+ for(let j=2;j<tape.length;j++)hits.push(channelHarness.step(ctx,state,tape.slice(0,j+1),options));
+ return {state,hits};
+}
+for(const ctx of channelContexts){
+ const {state,hits}=traceTiming(ctx,pullbackTape);
+ assert.deepEqual(hits.map(h=>h.hit),[false,false,false,true],'All families wait past confirmation and continuation until a real later retest');
+ assert.equal(state.confirmLevel,105,'Freeze broken level even when a later opposing run changes deliveryLevel');
+ assert.equal(hits[3].confirmTime,101,'Retest tooltip preserves actual confirmation time');
+ assert.equal(state.lastSignalBar,5,'Marker event belongs to the trigger candle, not the confirmation candle');
+ for(const options of [{confirmed:false},{bias:-1},{timeAllowed:false}])assert.ok(traceTiming(ctx,pullbackTape,options).hits.every(h=>!h.hit));
+ const taken=[...pullbackTape.slice(0,4),bar(102,106,121,106,119),pullbackTape[5]];
+ assert.ok(traceTiming(ctx,taken).hits.every(h=>!h.hit),'Target consumed while waiting prevents a late retest signal');
+}
+const mirrorTape=t=>t.map(b=>bar(b.t,200-b.o,200-b.l,200-b.h,200-b.c));
+for(const ctx of sellContexts)assert.deepEqual(traceTiming(ctx,mirrorTape(pullbackTape)).hits.map(h=>h.hit),[false,false,false,true],'Sell timing is symmetric');
+const fvgTape=[...reactionTape.slice(0,4),bar(102,109,112,108,111),bar(103,111,112,107,110)];
+const fvgTrace=traceTiming(channelContexts[0],fvgTape,{entryMode:'FVG retest'});
+assert.deepEqual(fvgTrace.hits.map(h=>h.hit),[false,false,false,true],'FVG formation candle cannot count as its own retest');
+assert.equal(fvgTrace.hits[3].confirmTime,102);
+const obTrace=traceTiming(channelContexts[0],pullbackTape,{entryMode:'OB retest'});
+assert.deepEqual(obTrace.hits.map(h=>h.hit),[false,false,false,true],'OB creation candle cannot count as its own retest');
+assert.equal(obTrace.hits[3].tag,'O');
+const mssTape=[...reactionTape.slice(0,2),bar(100,103,110,102,106),bar(101,106,109,106,108),bar(102,108,109,104,106)];
+const mssState=Object.assign(channelHarness.state(channelContexts[0]),{mssLevel:105});
+const mssHits=[];
+for(let j=2;j<mssTape.length;j++)mssHits.push(channelHarness.step(channelContexts[0],mssState,mssTape.slice(0,j+1),{entryMode:'MSS',pivotHigh:j===4?110:null}));
+assert.deepEqual(mssHits.map(h=>h.hit),[false,false,true]);
+assert.equal(mssState.mssLevel,110,'New confirmed pivot may refresh the scanner');
+assert.equal(mssState.confirmLevel,105,'It cannot move the pending retest level');
+assert.equal(mssHits[2].tag,'M');
+assert.match(source,/signalTiming = input.string\("Pullback"/);
 assert.match(source,/recentOnly = input.bool\(true,/);
 assert.doesNotMatch(source,/extend=extend.right/,'No unbounded level projection');
 assert.match(source,/label.style_triangleup : label.style_triangledown/);

@@ -29,6 +29,7 @@ biasLife = 3
 biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutral"], group=G_BIAS, tooltip="Auto dùng quy tắc cấu trúc của script. Long/Short/Neutral là ý kiến chủ động của bạn; reset khi bối cảnh thay đổi.")
 filterBias = true
 signalCadence = input.string("Fresh reaction", "Signal cadence", options=["Fresh reaction", "One per model"], group=G_ENTRY, tooltip="Fresh reaction cho phép tín hiệu mới sau một nhịp hồi/xác nhận mới trong model còn hiệu lực; không lặp mỗi nến. EGF phải rời vùng rồi chạm IRL lại, ISB break cần retest mother lại. One per model giữ quy tắc một dấu mỗi revision để so sánh.")
+signalTiming = input.string("Pullback", "Signal timing", options=["Pullback", "Confirmation close"], group=G_ENTRY, tooltip="Pullback: tam giác tại nến SAU xác nhận, khi giá hồi chạm mức/vùng và đóng đúng phía. Confirmation close: cho phép dấu tại nến đóng phá MSS/CISD cho cách vào market. FVG/OB retest luôn đợi nến sau khi vùng hình thành; không vẽ lùi hay dịch dấu hình thức.")
 entryMode = input.string("Auto", "LTF condition", options=["Auto", "CISD", "MSS", "FVG retest", "OB retest"], group=G_ENTRY, tooltip="Điều kiện phát tam giác hướng đi, không phải giá entry cố định. EGF chờ chạm IRL rồi xác nhận LTF về phía ERL theo bias; mọi mode đều qua gate này. FVG/OB chỉ lọc nội bộ, không vẽ vùng. Không áp min R:R tại close tín hiệu vì bạn tự chọn entry thực tế.")
 pivotLength = 2
 manualPoc = 0.0
@@ -514,9 +515,15 @@ type ReactionState
     float fvgTop = na
     float fvgBottom = na
     int fvgIndex = na
+    int fvgTime = na
     float obTop = na
     float obBottom = na
     int obIndex = na
+    int obTime = na
+    int confirmIndex = na
+    int confirmTime = na
+    float confirmLevel = na
+    string confirmTag = ""
     bool irlTouched = false
     int irlTouchTime = na
     bool irlFailed = false
@@ -539,6 +546,7 @@ type ChannelResult
     string status = "WAIT"
     float cp = na
     float inv = na
+    int confirmTime = na
 
 f_contextKey(int id, int resolved, int direction) =>
     na(id) ? "" : str.tostring(id) + ":" + str.tostring(resolved) + ":" + str.tostring(direction)
@@ -553,9 +561,15 @@ f_clearReaction(ReactionState state, int phaseAt, float seedPivot, bool keepRun 
     state.fvgTop := na
     state.fvgBottom := na
     state.fvgIndex := na
+    state.fvgTime := na
     state.obTop := na
     state.obBottom := na
     state.obIndex := na
+    state.obTime := na
+    state.confirmIndex := na
+    state.confirmTime := na
+    state.confirmLevel := na
+    state.confirmTag := ""
     state.boundaryTouched := false
     state.sent := false
     state.leftZone := false
@@ -625,16 +639,20 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             state.fvgTop := bullish ? low : low[2]
             state.fvgBottom := bullish ? high[2] : high
             state.fvgIndex := bar_index
+            state.fvgTime := time
         if not na(state.fvgIndex) and (bullish ? close < state.fvgBottom : close > state.fvgTop)
             state.fvgIndex := na
+            state.fvgTime := na
             state.fvgTop := na
             state.fvgBottom := na
         if cisd and not na(state.opposingOpen) and na(state.obIndex) and (not egfScenario or state.irlTouched)
             state.obTop := bullish ? state.opposingOpen : state.opposingHigh
             state.obBottom := bullish ? state.opposingLow : state.opposingOpen
             state.obIndex := bar_index
+            state.obTime := time
         if not na(state.obIndex) and (bullish ? close < state.obBottom : close > state.obTop)
             state.obIndex := na
+            state.obTime := na
             state.obTop := na
             state.obBottom := na
         bool fvgRetest = not na(state.fvgIndex) and bar_index > state.fvgIndex and low <= state.fvgTop and high >= state.fvgBottom and (bullish ? close > state.fvgTop : close < state.fvgBottom)
@@ -652,10 +670,24 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         bool egfPathReady = irlTouched and not irlFailed and not na(target) and not na(sIrlH) and not na(sIrlL) and (bullish ? close > sIrlL and target > close and target > sIrlH : close < sIrlH and target < close and target < sIrlL)
         bool confirmationContext = sKind == 1 or sPhase == 1 ? true : sKind == 3 and sPhase == 2 ? boundaryTouched : egfPathReady
         bool autoEntry = sKind == 1 or sPhase == 1 ? (cisd or mss) : sKind == 3 and sPhase == 2 ? boundaryTouched and (cisd or mss or fvgRetest) : egfPathReady and (cisd or mss or fvgRetest or obRetest)
+        bool pickC = cisd and entryMode != "MSS"
+        bool pickM = mss and not pickC and entryMode != "CISD"
+        if na(state.confirmIndex) and confirmationContext and not invalidBar and not localTargetTaken and (pickC or pickM)
+            state.confirmIndex := bar_index
+            state.confirmTime := time
+            state.confirmLevel := pickC ? deliveryLevel : mssLevel
+            state.confirmTag := pickC ? "C" : "M"
+        bool hasConfirmation = not na(state.confirmIndex)
+        bool levelRetest = hasConfirmation and bar_index > state.confirmIndex and low <= state.confirmLevel + tolerance and high >= state.confirmLevel - tolerance and (bullish ? close > state.confirmLevel : close < state.confirmLevel)
+        bool cmPullback = levelRetest
+        bool crtPath = sKind == 1 or sPhase == 1
+        bool fvgPullback = fvgRetest and (not crtPath or (hasConfirmation and bar_index > state.confirmIndex and state.fvgIndex >= state.confirmIndex))
+        bool obPullback = obRetest and (not crtPath or (hasConfirmation and bar_index > state.confirmIndex and state.obIndex >= state.confirmIndex))
+        bool autoPullback = crtPath ? (cmPullback or fvgPullback or obPullback) : sKind == 3 and sPhase == 2 ? boundaryTouched and (cmPullback or fvgPullback) : egfPathReady and (cmPullback or fvgPullback or obPullback)
         bool rawEntry = switch entryMode
-            "Auto" => autoEntry
-            "CISD" => cisd
-            "MSS" => mss
+            "Auto" => signalTiming == "Pullback" ? autoPullback : autoEntry
+            "CISD" => signalTiming == "Pullback" ? cmPullback and state.confirmTag == "C" : cisd
+            "MSS" => signalTiming == "Pullback" ? cmPullback and state.confirmTag == "M" : mss
             "FVG retest" => fvgRetest
             => obRetest
         bool selectedEntry = rawEntry and confirmationContext
@@ -663,11 +695,13 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         float reward = not na(target) ? (bullish ? target - close : close - target) : na
         bool biasAllowed = not filterBias or biasDir == ctx.dir
         bool alreadyEmitted = signalCadence == "One per model" ? state.everSent : state.sent
-        result.status := alreadyEmitted ? (signalCadence == "One per model" ? "USED" : egfScenario ? "IRL RETEST" : "PULLBACK") : na(target) ? "NO ERL" : not biasAllowed ? "BIAS" : not timeAllowed ? "TIME" : localTargetTaken ? "CP TAKEN" : invalidBar or risk <= 0 ? "INV" : reward <= 0 ? "PATH" : egfScenario and irlFailed ? "IRL X" : egfScenario and not irlTouched ? "IRL WAIT" : not confirmationContext ? "CONTEXT" : not selectedEntry ? "LTF WAIT" : "READY"
-        string detectedTag = entryMode == "MSS" ? "M" : entryMode == "CISD" ? "C" : entryMode == "FVG retest" ? "F" : entryMode == "OB retest" ? "O" : cisd ? "C" : mss ? "M" : fvgRetest ? "F" : "O"
+        string pendingStatus = signalTiming == "Pullback" and (entryMode == "Auto" or entryMode == "CISD" or entryMode == "MSS") ? (hasConfirmation or (not crtPath and (not na(state.fvgIndex) or not na(state.obIndex))) ? "WAIT RETEST" : "WAIT CONFIRM") : "LTF WAIT"
+        result.status := alreadyEmitted ? (signalCadence == "One per model" ? "USED" : egfScenario ? "IRL RETEST" : "PULLBACK") : na(target) ? "NO ERL" : not biasAllowed ? "BIAS" : not timeAllowed ? "TIME" : localTargetTaken ? "CP TAKEN" : invalidBar or risk <= 0 ? "INV" : reward <= 0 ? "PATH" : egfScenario and irlFailed ? "IRL X" : egfScenario and not irlTouched ? "IRL WAIT" : not confirmationContext ? "CONTEXT" : not selectedEntry ? pendingStatus : "READY"
+        string detectedTag = entryMode == "MSS" ? "M" : entryMode == "CISD" ? "C" : entryMode == "FVG retest" ? "F" : entryMode == "OB retest" ? "O" : signalTiming == "Pullback" ? (fvgPullback ? "F" : obPullback ? "O" : state.confirmTag) : cisd ? "C" : mss ? "M" : fvgRetest ? "F" : "O"
         if selectedEntry and risk > 0 and not na(target) and reward > 0 and biasAllowed and timeAllowed and not invalidBar and not localTargetTaken and not alreadyEmitted
             result.hit := true
             result.tag := detectedTag
+            result.confirmTime := detectedTag == "F" ? state.fvgTime : detectedTag == "O" ? state.obTime : signalTiming == "Pullback" ? state.confirmTime : time
             result.status := "SIGNAL"
             state.sent := true
             state.everSent := true
@@ -903,7 +937,7 @@ string sellHint = ""
 for i = 0 to 2
     ChannelResult hit = array.get(channelResults, i)
     if hit.hit
-        string hint = f_tag(hit.flags, hit.kind, hit.phase) + " / " + hit.tag + " / " + str.format_time(time, "dd/MM HH:mm", NY) + " NY | Close " + str.tostring(close, format.mintick) + " | CP " + str.tostring(hit.cp, format.mintick) + " | INV " + str.tostring(hit.inv, format.mintick)
+        string hint = f_tag(hit.flags, hit.kind, hit.phase) + " / " + hit.tag + " / " + signalTiming + "\nConfirm bar " + str.format_time(hit.confirmTime, "dd/MM HH:mm", NY) + " NY | Trigger bar " + str.format_time(time, "dd/MM HH:mm", NY) + " NY | Close " + str.tostring(close, format.mintick) + " | CP " + str.tostring(hit.cp, format.mintick) + " | INV " + str.tostring(hit.inv, format.mintick)
         if hit.dir == 1
             buyHint += (buyHint == "" ? "BUY\n" : "\n") + hint
         else
