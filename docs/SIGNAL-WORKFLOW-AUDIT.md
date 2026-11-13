@@ -6,7 +6,7 @@ Mục tiêu: loại các chỗ nghẽn làm bỏ sót xác nhận hợp lệ, kh
 
 1. Nhận diện CRT/TS, EGF/OUT và ISB trên HTF đã đóng; cùng cặp có thể gộp flag, root ưu tiên CRT/TS → ISB → EGF/OUT.
 2. Registry giữ các model còn hiệu lực. Cụm/line chỉ dùng một focus FIFO chung để không chồng hình.
-3. Xuất thêm ba context cũ nhất còn hiệu lực của từng nhóm, độc lập focus. Snapshot có 97 scalar, tất cả offset riêng trên LTF; không dùng nến HTF tương lai.
+3. Xuất thêm ba context cũ nhất còn hiệu lực của từng nhóm, độc lập focus. Snapshot có 109 scalar, tất cả offset riêng trên LTF; không dùng nến HTF tương lai.
 4. Ba ReactionState riêng theo dõi IRL, run-open, MSS, FVG/OB, mother retest, CP taken và cadence của CRT/EGF/ISB. Không chia sẻ trạng thái sent giữa ba nhóm.
 5. Mỗi nhánh áp điều kiện riêng, sau đó gate chung: nến LTF đã đóng, hướng/mục tiêu hợp lệ, bias, time nếu bật, context chưa bị vô hiệu và CP chưa bị lấy.
 6. Các hit cùng bar/cùng hướng được gộp một tam giác cố định size.tiny. Tooltip chứa đầy đủ model/xác nhận/CP/INV của từng hit. Counter C/E/I đếm hit từng nhóm, không phải số hình hợp nhất.
@@ -42,13 +42,15 @@ Ngày 13/11/2026, bản source có Signal timing đã được gửi đầy đ�
 
 ## Giới hạn còn giữ có chủ đích
 
+Timeout model mặc định 8 HTF từ C2/bornIndex, có thể đổi hoặc tắt bằng 0; hết hạn thì bỏ cả context, không chỉ cắt số nến cụm. Bias/IRL/resolve không gia hạn. Bản đồ IRL EGF hiện hai hướng FVG/OB và swing H/L nội bộ chưa bị lấy, độc lập việc chọn một reference theo bias cho tín hiệu. Khi không có zone cùng hướng, có thể dùng swing SSL cho Buy/BSL cho Sell; không dựng một vùng giả từ mức điểm. 109 scalar đều có offset, bao gồm 12 trường hiển thị bổ sung. Timeout/IRL này có fixture thân source riêng và Pine Editor nhận đầy đủ source ngày 13/11/2026 (exactSource=true, success=true, errors=null); vẫn chưa kiểm tra chart/Replay.
+
 Không xét tất cả 12 model cùng nhóm song song; mỗi nhóm dùng FIFO. Queue đầy vẫn bỏ model mới thay vì đẩy model cũ còn hiệu lực. Bias neutral/counter-bias, thiếu ERL/IRL, thiếu mother retest, ngoài time gate, CP đã lấy và nến LTF chưa đóng vẫn không phát dấu. Chart chỉ hỗ trợ tín hiệu M1/M3/M5 dưới HTF.
 
 Vì vậy ba nhóm không đồng nghĩa tần suất chắc chắn gấp ba. Các mẫu có thể trùng nhau, cùng bar hoặc không qua các gate trên. Không tự nới target/bias/time để đạt một con số mong muốn.
 
 ## Kiểm tra đã thực hiện
 
-- Contract nguồn: 97 trường snapshot có offset, ba context và ba state riêng, bộ đếm dựa từng kết quả, tam giác Tiny và không phụ thuộc cỡ chữ.
+- Contract nguồn: 109 trường snapshot có offset, ba context và ba state riêng, bộ đếm dựa từng kết quả, tam giác Tiny và không phụ thuộc cỡ chữ.
 - Công thức lấy từ Pine: từng nhánh có đường hợp lệ; các gate vẫn chặn; rearm cùng bar/cùng pulse bị từ chối; EGF cần rời rồi chạm lại; One per model vẫn khóa dấu thứ hai.
 - Harness test-only thực thi thân f_stepChannel/f_clearReaction trích từ source qua một tập cú pháp JS giới hạn: hai chu kỳ pullback/reclaim Buy và Sell, ba kênh cùng có thể hit; CRT bị khóa không chặn hai kênh còn lại; first-touch CISD; excursion/reclaim; không signal khi chưa đóng bar, ngược bias, ngoài giờ hoặc sau CP taken.
 - Harness không phải Pine compiler/runtime: không mô phỏng request.security, cách TradingView tính pivot, rollback hoặc API vẽ. Context HTF và pivot xác nhận là đầu vào fixture, không phải backtest NQ/XAUUSD thật.

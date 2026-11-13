@@ -75,7 +75,7 @@ for(const date of ['2026-07-14T23:00:00Z','2026-12-14T00:00:00Z','2026-03-08T06:
 // Explicit one-shot, closed-bar gates and HTF data contract; live data stays in display code.
 assert.match(source,/f_snapshot\(true\), lookahead=barmerge.lookahead_on/);
 assert.match(source,/f_snapshot\(not barstate.isconfirmed\)/);
-for(let i=0;i<97;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`),'Every HTF snapshot field including 3 signal contexts must be offset');
+for(let i=0;i<109;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`),'Every HTF snapshot field including both IRL maps must be offset');
 assert.match(source,/if armed and barstate.isconfirmed and isLtf/);
 assert.match(source,/if selectedEntry and risk > 0 and not na\(target\) and reward > 0 and biasAllowed and timeAllowed/);
 assert.match(source,/not alreadyEmitted/);
@@ -345,8 +345,10 @@ assert.match(source,/line.set_xy1\(ln, anchor, price\)/);
 assert.doesNotMatch(source,/irlBox/,'OB/FVG zones are internal filters, never visual boxes');
 assert.match(source,/liveComplete := time == bucketTime/,'Never invent first incomplete bucket open');
 assert.match(source,/array.indexof\(candleTimes, sourceTime\)/,'Cluster cache must match exact source candle');
-assert.equal(evaluate('endpoint',{drawEndIndex:180}),180,'The right horizon is independent of an old source swing');
-assert.equal(evaluate('anchor',{sourceTime:1000,price:110,drawAnchorTime:5000,na:x=>x==null,f_extremeTime:()=>1234}),1234,'The line starts at its actual source extreme, not the latest signal');
+assert.equal(evaluate('endpoint',{drawEndIndex:180,currentProjection:false}),180,'The right horizon is independent of an old source swing');
+assert.equal(evaluate('endpoint',{drawEndIndex:80,currentProjection:true,bar_index:100,drawSpan:30,drawingClipIndex:120}),120,'IRL of a still-active model projects to the present, clipped before cluster');
+assert.equal(evaluate('anchor',{sourceTime:1000,price:110,drawAnchorTime:5000,exactTime:false,na:x=>x==null,f_extremeTime:()=>1234}),1234,'The line starts at its actual source extreme, not the latest signal');
+assert.equal(evaluate('anchor',{sourceTime:1000,price:105,drawAnchorTime:5000,exactTime:true,na:x=>x==null,f_extremeTime:()=>null}),1000,'FVG midpoint anchors to the formation candle, never an invented extreme');
 assert.equal(evaluate('anchor',{sourceTime:null,price:105,drawAnchorTime:5000,na:x=>x==null,f_extremeTime:()=>1234}),5000,'EQ uses the current visual anchor');
 assert.match(source,/f_level\(5, sErlU, "ERL\+",[^\n]+sErlUT\)/);
 assert.match(source,/f_level\(6, sErlL, "ERL-",[^\n]+sErlLT\)/);
@@ -393,6 +395,32 @@ for(const clusterCount of [0,4,40,450,451,1000]){
  assert.equal(evaluate('renderCount',{clusterOverflow,clusterCount}),clusterCount<=450?clusterCount:0,'Render the entire sequence or explicitly report overflow, never silently clip its start');
 }
 const clusterHarness=require('./helpers/pine-cluster-harness.cjs').createClusterHarness(source);
+const irlModel={kind:2,hi:120,lo:80,dir:1,irlT:null};
+const irlZones=[{hi:94,lo:90,dir:1,born:10,kind:1},{hi:110,lo:106,dir:-1,born:11,kind:1},{hi:96,lo:92,dir:1,born:12,kind:2},{hi:130,lo:125,dir:-1,born:13,kind:1}];
+const irlSwings=[{price:116,side:1,born:4},{price:84,side:-1,born:5},{price:125,side:1,born:6},{price:80,side:-1,born:7}];
+const buyMap=clusterHarness.refreshIrl({...irlModel},irlZones,irlSwings);
+assert.equal(buyMap.bullIrlT,10,'FVG has priority over a newer OB');
+assert.equal(buyMap.bearIrlT,11,'Opposing FVG is visible even with Buy bias');
+assert.equal(buyMap.irlT,10,'Active signal zone follows bias');
+assert.equal(buyMap.innerHi,116);assert.equal(buyMap.innerLo,84,'Only strictly internal, unconsumed swings are eligible');
+const sellMap=clusterHarness.refreshIrl({...irlModel,dir:-1},irlZones,irlSwings);
+assert.equal(sellMap.irlT,11);assert.equal(sellMap.bullIrlT,10);
+const neutralMap=clusterHarness.refreshIrl({...irlModel,dir:0},irlZones,irlSwings);
+assert.equal(neutralMap.irlT,null,'Two-sided context never fabricates an active direction in neutral bias');
+for(const dir of [1,-1]){
+ const liqMap=clusterHarness.refreshIrl({...irlModel,dir},[],irlSwings);
+ assert.equal(liqMap.irlKind,3);assert.equal(liqMap.irlH,dir===1?84:116,'Buy reacts at internal SSL; Sell at internal BSL');
+ assert.equal(liqMap.irlH,liqMap.irlL,'A liquidity point is not padded into an invented zone');
+}
+const emptyMap=clusterHarness.refreshIrl({...irlModel},[],[]);assert.equal(emptyMap.irlT,null,'No data means no IRL');
+const retainedMap=clusterHarness.refreshIrl({...buyMap},[],irlSwings);
+assert.equal(retainedMap.bullIrlT,10,'Chosen zone remains visible when wick-mitigated but not HTF-invalidated');
+const expiryBase={lifeHtf:8,bar_index:17,m:{bornIndex:10,uid:100,resolvedIndex:16},scanStart:0};
+assert.equal(evaluate('expired',expiryBase),false);
+assert.equal(evaluate('expired',{...expiryBase,bar_index:18}),true,'Timeout occurs at the eighth completed HTF bar, not after a bias/IRL reset');
+assert.equal(evaluate('expired',{...expiryBase,lifeHtf:0,bar_index:40}),false,'Zero explicitly disables the optional age limit');
+assert.equal(evaluate('expired',{...expiryBase,lifeHtf:0,scanStart:101}),true,'Recovery limit remains independent of age timeout');
+assert.match(source,/lifeHtf = input.int\(8,/);
 function clusterFixture(count){
  const times=Array.from({length:count},(_,i)=>i+10);
  return {showCluster:true,clusterActive:true,candleTimes:times,candleOpens:times.map(t=>t+1),candleHighs:times.map(t=>t+4),candleLows:times.map(t=>t-1),candleCloses:times.map(t=>t+2),sAT:10,sAO:999,sAH:999,sAL:999,sAC:999,sBT:12,sBO:20,sBH:25,sBL:18,sBC:21,sCT:15,sCO:30,sCH:35,sCL:28,sCC:31,liveComplete:true,liveT:count+10,liveO:40,liveH:45,liveL:38,liveC:44};
@@ -427,4 +455,4 @@ for(const b of [{h:105,l:100,c:104},{h:104,l:98,c:99}]){
  live.h=evaluateExpr(updateHigh,{liveH:live.h,high:b.h});live.l=evaluateExpr(updateLow,{liveL:live.l,low:b.l});live.c=b.c;
 }
 assert.deepEqual(live,{o:100,h:105,l:98,c:99},'Aggregated live candle matches LTF OHLC');
-console.log('PASS registry/97-field HTF contracts; 3 independent LTF channels; sequential Buy/Sell source-body fixtures, fresh/legacy cadence, first-touch CISD, wick/reclaim and target guards; 3000 TS symmetry cases, 1440 macro minutes and DST/QT. Full chart execution/Replay remains unverified.');
+console.log('PASS registry/109-field HTF contracts, timeout and two-sided IRL source-body fixtures; 3 independent LTF channels; sequential Buy/Sell source-body fixtures, fresh/legacy cadence, first-touch CISD, wick/reclaim and target guards; 3000 TS symmetry cases, 1440 macro minutes and DST/QT. Full chart execution/Replay remains unverified.');

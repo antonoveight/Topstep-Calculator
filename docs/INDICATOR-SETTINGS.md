@@ -6,12 +6,13 @@ Bản hiện hành tập trung dựng bối cảnh HTF và phát tam giác xác 
 
 HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; LTF condition Auto; time filter Context only. Để quan sát tần suất: Signal display = History, giữ 100 tam giác. Cửa sổ 3 nến HTF chỉ giới hạn line, không xóa dấu ở chế độ History. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
 
-## 21 setting
+## 23 setting
 
 | Setting | Vai trò |
 | --- | --- |
 | HTF | H1/H2/H4/D1 dựng range/model từ nến đã đóng. |
 | Models to observe | All chạy ba kênh LTF độc lập CRT/EGF/ISB; mỗi nhóm dùng model cũ nhất còn hiệu lực. Cụm HTF vẫn chỉ vẽ model ưu tiên chung. Chọn riêng một nhóm để đối chiếu. |
+| Model timeout | Mặc định 8 nến HTF sau C2; 0 tắt, tối đa 48. Không reset tuổi do đổi bias/IRL hoặc resolve ISB. Hết hạn bỏ model khỏi cụm và kênh tín hiệu. |
 | Bias TF | Khung bias >= HTF; mặc định D1. Auto chỉ là quy tắc sweep/close-through của script, không có dữ liệu FRVP cá nhân. |
 | Bias | Auto / Long / Short / Neutral. EGF lấy hướng kịch bản từ bias, không lấy từ màu nến. CRT/ISB phải thuận bias để phát dấu. |
 | LTF condition | Auto / CISD / MSS / FVG retest / OB retest. Đây là điều kiện phát tín hiệu, không phải lựa chọn giá khớp lệnh. |
@@ -24,6 +25,7 @@ HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Lo
 | Cluster offset | Mặc định 30 bar; tăng nếu muốn thêm khoảng trống bên phải chữ. |
 | Cluster body width | Mặc định 4 bar; số lẻ làm tròn xuống chẵn để râu đúng tâm. |
 | Model range / ERL / CP | Các line cấu trúc và mục tiêu có điều kiện. Không ảnh hưởng logic tam giác khi tắt. |
+| HTF internal liquidity / FVG | Mặc định bật. Vẽ IRL hai hướng EGF nếu có dữ liệu hợp lệ, độc lập recency line. * chỉ vùng đang chọn theo bias; không bật box entry LTF. |
 | Compact panel | Bảng tổng quan model, bias, IRL nội bộ, thời gian và trạng thái. |
 | Signal display | History (mặc định) giữ dấu quá khứ, Latest chỉ giữ dấu gần nhất. Không thay điều kiện nhận diện/alert. |
 | Historical signals to keep | Mặc định 100, tối đa 200; 0 ẩn dấu. Ở Latest chỉ giữ 1 nếu số này >0. |
@@ -36,11 +38,17 @@ Chart tiêu chuẩn phải <= HTF, độ dài chart TF chia hết HTF. Chỉ M1/
 
 ## Những mục đã bỏ khỏi Inputs
 
-Giới hạn pool/queue, pivot, độ xuyên tick, recovery, expiry và invalidation cơ học cố định trong code để tránh quá nhiều nút: pivot 2 trái/2 phải, sweep tối thiểu 1 tick, queue 12, recovery 1000 khoảng lịch HTF, close vượt INV để vô hiệu, không tự hết hạn do tuổi. Window gần nhất là hiển thị, không phải tuổi hết hiệu lực model.
+Giới hạn pool/queue, pivot, độ xuyên tick, recovery và invalidation cơ học cố định trong code để tránh quá nhiều nút: pivot 2 trái/2 phải, sweep tối thiểu 1 tick, queue 12, recovery 1000 khoảng lịch HTF, close vượt INV để vô hiệu, timeout theo tuổi có setting riêng, mặc định 8 HTF. Window gần nhất là hiển thị, không phải tuổi hết hiệu lực model.
 
 Bỏ nhập tay SSL/BSL/POC/BL/SL/CP và các mode POC/Line, gate R:R tại close tín hiệu, model phụ, C/M sơ bộ và plot TDO/TO khỏi giao diện. CRT tự dùng C1 range. Không ép min R:R từ close của tam giác vì bạn sẽ chọn giá entry thực tế; vẫn kiểm tra hướng mục tiêu và không phát dấu khi bar chạm INV tham chiếu hoặc CP đã bị lấy. Chỉ báo không biết SL thực tế của bạn.
 
-OB/FVG vẫn được tính làm bộ lọc nội bộ nhưng **không vẽ box/zone/nhãn**. Không vẽ line CISD/MSS hoặc chữ cạnh tam giác. Tam giác Tiny: xanh Buy dưới nến, đỏ Sell trên nến; xem loại xác nhận trong tooltip.
+OB/FVG **LTF** vẫn chỉ lọc nội bộ, không vẽ box/zone/nhãn entry. IRL HTF của EGF hiển thị riêng: hai vùng FVG (OB fallback) và swing nội bộ nếu tồn tại. Không vẽ line CISD/MSS hoặc chữ cạnh tam giác. Tam giác Tiny: xanh Buy dưới nến, đỏ Sell trên nến; xem loại xác nhận trong tooltip.
+
+## Timeout và đọc IRL
+
+Model timeout = 8 đếm nến HTF từ C2, không từ C1 hay số phút thực. Đây là quy tắc chờ cá nhân, không phải thời hạn cố định của ICT. Ví dụ H1: hết hạn tại close nến thứ 8 sau nến xác nhận; không gia hạn khi đổi bias, IRL, hoặc ISB mới resolve. Nhãn dưới cụm hiển thị tuổi/giới hạn; hết hạn thì FIFO chọn model còn hiệu lực tiếp theo, hoặc không vẽ nếu không còn model. Không xóa tam giác lịch sử đã phát.
+
+IRL B/F và S/F là vùng FVG HTF cho phản ứng Buy/Sell; O là OB candidate fallback cơ học. Khung mờ cho biết đầy đủ biên vùng; line giữa là CE của chính vùng FVG/OB, không phải EQ 50% range và không phải FRVP POC. IRL H/L là swing High/Low xác nhận, chưa bị lấy và nằm **bên trong** range của EGF; ERL nằm ngoài range. Không gán sẵn hai FVG cho mọi EGF. Dấu * là vùng/mức dùng xét tín hiệu theo bias, không phải lệnh vào. Khi thiếu FVG/OB cùng hướng, EGF có thể theo dõi SSL nội bộ cho Buy hoặc BSL nội bộ cho Sell rồi vẫn đợi xác nhận LTF. Tắt hiển thị IRL chỉ ẩn hình, không đổi gate tín hiệu.
 
 ## Đọc theo từng model
 

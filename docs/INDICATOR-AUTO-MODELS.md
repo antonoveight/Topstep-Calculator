@@ -1,6 +1,6 @@
 # TFA v6 — context HTF và direction signals
 
-Nguồn: indicators/funded-angler-v6.pine; đồng bộ sang chibao.txt bằng node tools/sync-indicator.cjs. [Hướng dẫn 21 setting và kiểm tra lịch sử](INDICATOR-SETTINGS.md). Bản này thay thế các mô tả trước về EGF ép hướng theo màu nến, box OB/FVG, C/M sơ bộ và R:R tại close tín hiệu.
+Nguồn: indicators/funded-angler-v6.pine; đồng bộ sang chibao.txt bằng node tools/sync-indicator.cjs. [Hướng dẫn 23 setting và kiểm tra lịch sử](INDICATOR-SETTINGS.md). Bản này thay thế các mô tả trước về EGF ép hướng theo màu nến, box OB/FVG, C/M sơ bộ và R:R tại close tín hiệu.
 
 ## 1. Những điều được giữ và được sửa
 
@@ -18,13 +18,13 @@ CRT có hướng theo sweep. ISB neutral tới HTF resolve: sweep/reclaim một 
 
 Auto bias dùng sweep/reclaim hoặc close-through trên khung tham chiếu; giữ tối đa 3 bar tham chiếu rồi neutral nếu chưa có sự kiện mới. Override Long/Short/Neutral là bối cảnh do người dùng chọn. Khung bias phải >= HTF. Trong engine, nếu bằng HTF dùng bias ở bar HTF đã đóng; nếu lớn hơn, lấy snapshot bias đã đóng bằng offset + lookahead_on. LTF cũng chỉ đọc snapshot model HTF đã đóng. Tại biên đóng khung bias lớn, cập nhật kịch bản có thể chậm tới lần snapshot HTF tiếp theo; bộ lọc không phát tín hiệu ngược bias mới trong lúc chờ.
 
-Khi bias đổi, EGF giữ range/C1/C2, reset hướng kịch bản, CP/IRL và revision; không tái dùng trạng thái chạm vùng cũ. Pool có thể chứa IRL hai hướng, nhưng chỉ chọn vùng phù hợp với kịch bản hiện hành; không tạo vùng còn thiếu. Default invalidation là HTF close vượt INV, kết thúc khi bar sau chạm CP hoặc ra ngoài recovery. Đây là vòng đời model, không mô phỏng SL/TP của giao dịch thật.
+Khi bias đổi, EGF giữ range/C1/C2, reset hướng kịch bản, CP/IRL và revision; không tái dùng trạng thái chạm vùng cũ. Pool có thể chứa IRL hai hướng, nhưng chỉ chọn vùng phù hợp với kịch bản hiện hành; không tạo vùng còn thiếu. Default invalidation là HTF close vượt INV, kết thúc khi bar sau chạm CP, hết timeout hoặc ra ngoài recovery. Timeout mặc định 8 HTF từ bornIndex/C2, 0 tắt; không reset do bias/IRL/resolve. Đây là vòng đời model, không mô phỏng SL/TP của giao dịch thật.
 
 ## 3. IRL/ERL và phản ứng
 
 ERL là pivot HTF đã xác nhận, chưa bị lấy, ngoài range; chọn mức gần nhất mỗi phía. CP của EGF/ISB breakout lấy ERL thật, không measured move tự tạo. CP của CRT/TS là biên đối diện của range quét. CP được giữ cho revision; context ERL có thể đổi khi swing bị lấy hoặc có swing mới.
 
-IRL ưu tiên FVG chưa full fill trong pool khi chọn lần đầu, đúng phía kịch bản; OB là fallback candidate hẹp. Sau khi một model đã chọn vùng, wick mitigation/reclaim không tự xóa vùng đang giữ; HTF close-through biên xa mới xóa vùng đó. Pool candidate và vùng đã chọn có vòng đời khác nhau. Không thay IRL thiếu bằng EQ/POC. FVG, OB, EQ/CE và FRVP POC không phải các khái niệm đồng nghĩa. Không render bất kỳ box hay nhãn OB/FVG nào.
+IRL ưu tiên FVG chưa full fill trong pool khi chọn lần đầu, đúng phía kịch bản; OB là fallback candidate hẹp. Sau khi một model đã chọn vùng, wick mitigation/reclaim không tự xóa vùng đang giữ; HTF close-through biên xa mới xóa vùng đó. Pool candidate và vùng đã chọn có vòng đời khác nhau. Không thay IRL thiếu bằng EQ/POC. FVG, OB, EQ/CE và FRVP POC không phải các khái niệm đồng nghĩa. Bản đồ hiển thị riêng cho EGF giữ hai hướng FVG/OB nếu tồn tại, không ép đủ hai vùng. Có thêm swing nội bộ thực, chưa bị lấy: H/L phải nằm chặt trong range. Nếu thiếu zone cùng hướng, EGF có thể chọn SSL nội bộ cho Buy hoặc BSL nội bộ cho Sell; mức điểm dùng kind=3, không nới thành vùng giả. Vùng/mức đã chọn được giữ qua wick mitigation cho tới HTF close sai phía. Vẽ HTF IRL bằng hai box mờ, CE line và H/L; dấu * chỉ reference theo bias. Không render box/nhãn entry LTF. Tắt showIrl không đổi tín hiệu.
 
 EGF: nhận bias → chọn IRL/ERL → chờ bar LTF thực sự chạm IRL → xác nhận LTF về phía ERL. Nhịp hồi vào IRL không tự tạo tín hiệu ngược bias. Không ép close ra khỏi toàn bộ vùng để được xét; vẫn phải có C/M hoặc retest hợp lệ. Nếu đã chạm rồi LTF close qua biên xa (Buy dưới đáy vùng, Sell trên đỉnh vùng), tạm chặn phản ứng. LTF reclaim có thể hợp lệ trở lại nếu snapshot HTF vẫn giữ vùng; không nhìn trước kết quả HTF close và không tự xác nhận TS HTF khi HTF còn chạy. Nếu CP đã bị lấy thì không đuổi giá. Thiếu bias/vùng/đích thì chờ.
 
@@ -34,7 +34,7 @@ History mặc định giữ 100 tam giác, tối đa 200, tách hoàn toàn vi�
 
 ## 4. Drawing và source timestamps
 
-Snapshot trả 97 scalar; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
+Snapshot trả 109 scalar; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
 
 Line xloc.bar_time bắt đầu từ nến nguồn; trên LTF map HTF high/low về timestamp nến con tạo cực trị trong cache 1000 bucket đầy đủ. Nếu cache không có, tìm trong tối đa 5000 bar chart đã tải. Không tìm được nguồn thì ẩn line tương ứng, không gắn giả vào nến tín hiệu. EQ dùng neo tổng quan vì không có nến cực trị riêng. Line được vẽ hiện tại nối lại nguồn cũ không có nghĩa tín hiệu đã biết ở thời điểm swing; pivot vẫn phải chờ xác nhận.
 
@@ -45,6 +45,10 @@ Nhãn chữ trong suốt, gộp đúng mức/cùng nguồn và giãn theo dải 
 Không thể hứa không chồng chữ ở mọi zoom/scale/cửa sổ vì Pine không cung cấp bounding box pixel. overlay + scale.none + force_overlay giữ cùng pane giá; instance phải ghim cùng scale symbol: [TradingView scale](https://www.tradingview.com/support/solutions/43000775579-indicator-moves-separately-or-is-not-attached-to-the-price/).
 
 Signal timing mặc định Pullback tách xác nhận khỏi điều kiện hồi: đóng phá C/M cố định mức chờ, nến sau phải hồi chạm và đóng đúng phía hoặc retest vùng hợp lệ của nhánh. Auto CRT/TS cần C/M trước retest. Confirmation close cho cách market vẫn là lựa chọn riêng. FVG/OB không bao giờ phát retest tại chính nến tạo vùng. Tooltip ghi Confirm bar/Trigger bar; tam giác đặt tại trigger thực sự, không backdate. Fixture tuần tự kiểm tra cả ba nhóm, Buy/Sell, mức MSS cố định dù scanner nhận pivot mới, FVG/OB hình thành rồi retest, cùng các gate bias/time/CP.
+
+Snapshot hiện có 109 scalar, gồm 12 trường bản đồ IRL hai hướng/swing nội bộ; mọi trường tiếp tục offset riêng. Tổng request tuple nằm dưới giới hạn 127. Harness trích thân f_refreshIrl kiểm tra ưu tiên FVG trước OB, cả hai hướng khi bias cố định/neutral, loại vùng ngoài range, fallback swing đúng hướng, không dựng IRL thiếu, giữ vùng đang chọn qua wick mitigation. Timeout kiểm tra trước/đúng mốc, 0 tắt và recovery vẫn áp dụng.
+
+Ngày 13/11/2026, toàn bộ bản source có timeout và bản đồ IRL đã qua Pine Editor tạm: exactSource=true, success=true, errors=null. Đây là chẩn đoán editor; chưa kiểm tra runtime/Replay trên chart.
 
 ## 5. Kiểm tra và giới hạn
 
