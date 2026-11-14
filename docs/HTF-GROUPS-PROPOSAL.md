@@ -1,10 +1,10 @@
-# H1/D1, vòng đời model và đề xuất tách cụm
+# HTF tùy chọn, vòng đời model và tách cụm
 
-Cập nhật 14/11/2026. Hai khung H1/D1 theo lựa chọn người dùng để đối chiếu Topstep/TradingView; không tự khẳng định mọi feed có OHLC/session giống hệt nhau. Chỉ báo là công cụ tham khảo cấu trúc, không thay quyết định trên Topstep.
+Cập nhật 14/11/2026. HTF/Bias TF mở tự chọn, mặc định H1/D1 để đối chiếu ban đầu; không tự khẳng định mọi feed có OHLC/session giống hệt nhau. Chỉ báo là công cụ tham khảo cấu trúc, không thay quyết định trên Topstep.
 
 ## Đã sửa trong code
 
-- Inputs HTF và Bias TF chỉ còn H1/D1. D1 chart mở từ H1 input vẫn có VIEW D1; không sinh model H2/H4/W. Các khung LTF M1/M3/M5 vẫn dùng tìm tín hiệu theo HTF đã chọn.
+- Inputs HTF và Bias TF đã mở tự chọn timeframe, không giới hạn H1/D1. Mặc định vẫn H1/D1. Khi chart cao hơn HTF input sẽ dùng chart timeframe làm VIEW; Bias TF phải >= timeframe hiệu lực. LTF M1/M3/M5 vẫn dùng tìm tín hiệu.
 - Dấu Buy/Sell dùng tam giác native size=4, xấp xỉ nửa Tiny; Buy xanh dưới nến, Sell đỏ trên nến. Kích thước cố định theo lựa chọn mới, không dùng linefill theo chiều rộng nến.
 - Kiểm tra giá chạm CP/close xuyên INV của model **trước** khi EGF đổi bias và reset target. Đổi bias cùng nến không làm mất sự kiện chạm target cũ.
 - Nếu CRT chạm luôn biên đối diện ở nến hình thành, hoặc ISB chạm CP ngay nến resolve, không mở model cho một đường đi giá đã đi qua. Gắn **AMB**, không gán TG/TP vì OHLC không biết thứ tự nội nến.
@@ -44,6 +44,6 @@ Bản tách nhóm ngày 14/11/2026 đã qua `htf-cluster-groups`, `indicator-con
 
 Pine Editor tạm ngày 14/11/2026 nhận đúng toàn bộ source cuối: exactSource=true, success=true, errors=null. Chưa kiểm tra runtime/Replay hoặc kích thước glyph trên chart thật.
 
-Contract kiểm tra 6 mã trạng thái (kể cả 0=WAIT), target-before-bias-revision, chạm target cùng lúc bias đổi ở cả Buy/Sell, Inputs H1/D1, glyph 6pt và anchor nến hiện tại. Các bộ bias, signal density và 20 tổ hợp workflow tiếp tục được chạy. Chưa xác minh kích thước thực trên chart/Replay.
+Contract kiểm tra 6 mã trạng thái (kể cả 0=WAIT), target-before-bias-revision, chạm target cùng lúc bias đổi ở cả Buy/Sell, Inputs HTF/Bias TF tùy chọn, tam giác native xấp xỉ nửa Tiny và anchor nến hiện tại. Các bộ bias, signal density và 20 tổ hợp workflow tiếp tục được chạy. Chưa xác minh kích thước thực trên chart/Replay.
 
 Tham khảo kích thước label nguyên và Tiny: [TradingView — Text formatting](https://www.tradingview.com/pine-script-docs/visuals/text-and-shapes/#text-formatting).

@@ -12,10 +12,10 @@ HTF H1 hoặc D1 theo hai khung đối chiếu đang dùng; chart M5; Bias Auto 
 
 | Setting | Vai trò |
 | --- | --- |
-| HTF | Chỉ H1/D1 dựng range/model từ nến đã đóng. |
+| HTF | Tự chọn timeframe để dựng range/model từ nến đã đóng; mặc định H1. |
 | Models to observe | All chạy ba kênh LTF độc lập CRT/EGF/ISB; mỗi nhóm dùng model cũ nhất còn hiệu lực. Cụm HTF vẫn chỉ vẽ model ưu tiên chung. Chọn riêng một nhóm để đối chiếu. |
 | Model timeout | Mặc định 8 nến HTF sau C2; 0 tắt, tối đa 48. Không reset tuổi do đổi bias/IRL hoặc resolve ISB. Hết hạn bỏ model khỏi cụm và kênh tín hiệu. |
-| Bias TF | Chỉ H1/D1, khung bias >= HTF; mặc định D1. Auto dùng cấu trúc swing và close đã xác nhận, có guard intraday; xem B0!, không có dữ liệu FRVP cá nhân. |
+| Bias TF | Tự chọn khung bias >= HTF hiệu lực; mặc định D1. Auto dùng cấu trúc swing và close đã xác nhận, có guard intraday; xem B0!, không có dữ liệu FRVP cá nhân. |
 | Bias | Auto / Long / Short / Neutral. EGF lấy hướng kịch bản từ bias, không lấy từ màu nến. CRT/ISB phải thuận bias để phát dấu. |
 | LTF condition | Auto / CISD / MSS / FVG retest / OB retest. Đây là điều kiện phát tín hiệu, không phải lựa chọn giá khớp lệnh. |
 | Signal timing | Mặc định Pullback: đợi hồi kiểm tra sau xác nhận. Confirmation close: cho phép dấu ở nến đóng phá C/M cho cách vào market. FVG/OB retest luôn đợi nến sau hình thành. |
@@ -38,7 +38,7 @@ HTF H1 hoặc D1 theo hai khung đối chiếu đang dùng; chart M5; Bias Auto 
 | Chart text size | Small/Normal/Large/Huge; mặc định Normal. Chữ nền trong suốt. |
 | Dashboard text size | Small/Normal/Large; mặc định Small. |
 
-Chart tiêu chuẩn: nếu chart D1 > HTF H1 input, chỉ báo dùng D1 làm bối cảnh VIEW, không phát entry; về LTF dùng lại HTF đã chọn. Bias TF phải >= timeframe hiệu lực. Chỉ M1/M3/M5 nhỏ hơn HTF phát tín hiệu; xem [quy tắc D overview](BIAS-AND-SIGNAL-TIMING.md).
+Chart tiêu chuẩn: nếu chart > HTF input, chỉ báo dùng chart timeframe làm bối cảnh VIEW, không phát entry; về LTF dùng lại HTF đã chọn. Bias TF phải >= timeframe hiệu lực. Chỉ M1/M3/M5 nhỏ hơn HTF phát tín hiệu; xem [quy tắc D overview](BIAS-AND-SIGNAL-TIMING.md).
 
 ## Những mục đã bỏ khỏi Inputs
 
