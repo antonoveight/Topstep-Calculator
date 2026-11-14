@@ -30,6 +30,9 @@ function createClusterHarness(source){
  const irlStart=lines.findIndex(l=>l.startsWith('f_refreshIrl('));let irlEnd=irlStart+1;
  while(irlEnd<lines.length&&(!lines[irlEnd].trim()||/^\s/.test(lines[irlEnd])))irlEnd++;
  const refresh=Function('array','na','m','zones','swings',translate(lines.slice(irlStart+1,irlEnd))+'return m;');
- return {assemble:ctx=>run(array,ClusterCandle,put,...names.map(n=>ctx[n])),insert:put,refreshIrl:(m,zones,swings)=>refresh(array,x=>x==null,m,zones,swings)};
+ const biasStart=lines.findIndex(l=>l.startsWith('f_biasStep('));let biasEnd=biasStart+1;
+ while(biasEnd<lines.length&&(!lines[biasEnd].trim()||/^\s/.test(lines[biasEnd])))biasEnd++;
+ const bias=Function('na','math','state','ph','pl','closing','priorClose',translate(lines.slice(biasStart+1,biasEnd))+'return state;');
+ return {assemble:ctx=>run(array,ClusterCandle,put,...names.map(n=>ctx[n])),insert:put,refreshIrl:(m,zones,swings)=>refresh(array,x=>x==null,m,zones,swings),biasStep:(state,ph,pl,closing,priorClose)=>bias(x=>x==null,{min:Math.min,max:Math.max},state,ph,pl,closing,priorClose)};
 }
 module.exports={createClusterHarness};

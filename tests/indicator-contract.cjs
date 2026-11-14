@@ -168,15 +168,7 @@ assert.match(source,/f_biasSnapshot\(true\)/);
 assert.match(source,/sKind == 3 and sPhase == 2 \? boundaryTouched/);
 assert.match(source,/egfPathReady and \(cisd or mss or fvgRetest or obRetest\)/);
 assert.match(source,/label.set_tooltip\(caption/);
-function biasEvent(before,now){
- const ctx={low:now.l,high:now.h,close:now.c,previous:{low:before.l,high:before.h,close:before.c,open:before.o}};
- for(const name of ['lowTaken','highTaken','inPrior','nextDir'])ctx[name]=evaluate(name,ctx);
- return ctx.nextDir;
-}
-assert.equal(biasEvent(first,ts),1);
-assert.equal(biasEvent(first,bar(3,105,111,101,108)),-1);
-assert.equal(biasEvent(first,bar(3,106,112,102,111)),1);
-assert.equal(biasEvent(first,bar(3,104,111,99,105)),0,'Ambiguous outside is not an automatic directional bias');
+require('./bias-context.cjs');
 const autoCtx={sKind:1,sPhase:1,cisd:true,mss:false,fvgRetest:false,obRetest:false,egfPathReady:false,boundaryTouched:false};
 assert.equal(evaluate('autoEntry',autoCtx),true);
 assert.equal(evaluate('autoEntry',{...autoCtx,sKind:2,sPhase:3}),false,'EGF needs its own IRL touch');

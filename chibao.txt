@@ -17,8 +17,11 @@ const string G_VIEW = "5. Display"
 const string DEFAULT_ENTRY_MODE = "Auto"
 const string DEFAULT_SIGNAL_TIMING = "Pullback"
 const string DEFAULT_SIGNAL_CADENCE = "Fresh reaction"
-htf = input.timeframe("60", "HTF", options=["60", "120", "240", "1D"], group=G_HTF, tooltip="Khung xác định CRT/TS, Engulfing/Outside hoặc Inside Bar. Bắt đầu H1 (60), dùng H2 nếu đó là khung bạn đọc cấu trúc. Chart LTF chỉ tìm entry.")
+htfInput = input.timeframe("60", "HTF", options=["60", "120", "240", "1D"], group=G_HTF, tooltip="Khung xác định CRT/TS, Engulfing/Outside hoặc Inside Bar. Bắt đầu H1 (60), dùng H2 nếu đó là khung bạn đọc cấu trúc. Chart LTF chỉ tìm entry.")
 signalModels = input.string("All", "Models to observe", options=["All", "CRT", "EGF", "ISB"], group=G_HTF, tooltip="All xét CRT/EGF/ISB qua ba kênh LTF độc lập; mỗi nhóm giữ model cũ nhất còn hiệu lực. Cụm HTF chỉ vẽ model ưu tiên để gọn. Chọn một nhóm để đối chiếu với cùng nhóm trong All.")
+// Opening a higher chart (e.g. D with H4 selected) is a context-only overview.
+bool overviewMode = timeframe.in_seconds() > timeframe.in_seconds(htfInput)
+string htf = overviewMode ? timeframe.period : htfInput
 minSweepTicks = 1
 scanDepth = 1000
 queueLimit = 12
@@ -29,8 +32,7 @@ tsReference = "C1 range"
 manualSsl = 0.0
 manualBsl = 0.0
 biasTf = input.timeframe("1D", "Bias TF (>= HTF)", options=["60", "120", "240", "1D", "1W"], group=G_BIAS, tooltip="Khung tham chiếu bias riêng, phải >= HTF. D1 là cấu hình khởi đầu; không đồng nghĩa bias cá nhân đọc từ FRVP/day high-low.")
-biasLife = 3
-biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutral"], group=G_BIAS, tooltip="Auto dùng quy tắc cấu trúc của script. Long/Short/Neutral là ý kiến chủ động của bạn; reset khi bối cảnh thay đổi.")
+biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutral"], group=G_BIAS, tooltip="Auto dùng close phá swing xác nhận trên Bias TF; giữ hướng đến khi cấu trúc đổi. B0! tạm chặn theo close chart xuyên guard ngược hướng, không tự coi là bias đối diện. Long/Short/Neutral là ý kiến chủ động của bạn; reset khi bối cảnh thay đổi.")
 filterBias = true
 signalCadence = input.string(DEFAULT_SIGNAL_CADENCE, "Signal cadence", options=["Fresh reaction", "One per model"], group=G_ENTRY, tooltip="Sau dấu đầu cần pivot hồi mới đã xác nhận, tiến triển theo hướng giao dịch và xác nhận lại. Một nến đổi màu không đủ. EGF còn phải rời rồi trở lại IRL. Các kênh cùng nhịp chỉ gộp cùng bar, không phát nối đuôi khi chưa có pivot mới. One per model giữ một dấu/model.")
 signalTiming = input.string(DEFAULT_SIGNAL_TIMING, "Signal timing", options=["Pullback", "Confirmation close"], group=G_ENTRY, tooltip="Pullback: tam giác tại nến SAU xác nhận, khi giá hồi chạm mức/vùng và đóng đúng phía. Confirmation close: cho phép dấu tại nến đóng phá MSS/CISD cho cách vào market. FVG/OB retest luôn đợi nến sau khi vùng hình thành; không vẽ lùi hay dịch dấu hình thức.")
@@ -73,7 +75,7 @@ bool isLtf = chartSeconds < htfSeconds and (chartSeconds == 60 or chartSeconds =
 float sweepSize = syminfo.mintick * minSweepTicks
 float tolerance = syminfo.mintick * retestTicks
 if barstate.isfirst and (not chart.is_standard or na(chartSeconds) or chartSeconds > htfSeconds or htfSeconds % chartSeconds != 0 or timeframe.in_seconds(biasTf) < htfSeconds)
-    runtime.error("Use a standard chart TF dividing HTF; chart <= HTF and Bias TF >= HTF.")
+    runtime.error("Use a standard chart TF dividing HTF; effective HTF <= Bias TF. Higher charts use their own TF as VIEW.")
 
 f_has(int flags, int bit) =>
     int(math.floor(flags / bit)) % 2 == 1
@@ -98,23 +100,49 @@ f_patterns(float c1o, float c1h, float c1l, float c1c, float c2o, float c2h, flo
     bool engulfBear = c2c < c2o and c1c > c1o and bodyCovers
     [tsBull, tsBear, outsideBar, insideBar, engulfBull, engulfBear]
 
+type BiasState
+    int direction = 0
+    int age = 0
+    float swingHigh = na
+    float swingLow = na
+    float protectedHigh = na
+    float protectedLow = na
+
+// Only confirmed pivots and closes in the bias timeframe reach this state machine.
+f_biasStep(BiasState state, float ph, float pl, float closing, float priorClose) =>
+    state.age += 1
+    if not na(ph)
+        state.swingHigh := ph
+    if not na(pl)
+        state.swingLow := pl
+    bool brokeHigh = not na(state.swingHigh) and closing > state.swingHigh and priorClose <= state.swingHigh
+    bool brokeLow = not na(state.swingLow) and closing < state.swingLow and priorClose >= state.swingLow
+    bool lostBull = state.direction == 1 and not na(state.protectedLow) and closing < state.protectedLow
+    bool lostBear = state.direction == -1 and not na(state.protectedHigh) and closing > state.protectedHigh
+    int nextDirection = brokeHigh or lostBear ? 1 : brokeLow or lostBull ? -1 : 0
+    if nextDirection != 0 and not (brokeHigh and brokeLow)
+        if state.direction != nextDirection
+            state.age := 0
+        state.direction := nextDirection
+        state.protectedLow := nextDirection == 1 ? state.swingLow : na
+        state.protectedHigh := nextDirection == -1 ? state.swingHigh : na
+    // Trail only with confirmed structural swings; a single opposing candle is insufficient.
+    if state.direction == 1 and not na(pl)
+        state.protectedLow := na(state.protectedLow) ? pl : math.max(state.protectedLow, pl)
+    if state.direction == -1 and not na(ph)
+        state.protectedHigh := na(state.protectedHigh) ? ph : math.min(state.protectedHigh, ph)
+
 f_biasCore() =>
-    var int direction = 0
-    var int age = 0
-    bool lowTaken = low < low[1]
-    bool highTaken = high > high[1]
-    bool inPrior = close > low[1] and close < high[1]
-    int nextDir = lowTaken and not highTaken and inPrior ? 1 : highTaken and not lowTaken and inPrior ? -1 : close > high[1] ? 1 : close < low[1] ? -1 : 0
-    age += 1
-    if nextDir != 0
-        direction := nextDir
-        age := 0
-    else if (lowTaken and highTaken and inPrior) or age >= biasLife
-        direction := 0
-    [direction, age]
+    var BiasState state = BiasState.new()
+    float ph = ta.pivothigh(high, htfPivotLength, htfPivotLength)
+    float pl = ta.pivotlow(low, htfPivotLength, htfPivotLength)
+    f_biasStep(state, ph, pl, close, close[1])
+    float guardHigh = state.direction == -1 and not na(state.protectedHigh) ? math.min(high, state.protectedHigh) : high
+    float guardLow = state.direction == 1 and not na(state.protectedLow) ? math.max(low, state.protectedLow) : low
+    [state.direction, state.age, state.swingHigh, state.swingLow, guardHigh, guardLow]
 f_biasSnapshot(bool previous) =>
-    [direction, age] = f_biasCore()
-    [previous ? direction[1] : direction, previous ? age[1] : age]
+    [direction, age, swingHigh, swingLow, guardHigh, guardLow] = f_biasCore()
+    [previous ? direction[1] : direction, previous ? age[1] : age, previous ? swingHigh[1] : swingHigh, previous ? swingLow[1] : swingLow, previous ? guardHigh[1] : guardHigh, previous ? guardLow[1] : guardLow]
 
 // All registry decisions execute IN the selected HTF, never from chart/LTF bars.
 type Model
@@ -267,8 +295,8 @@ f_refreshIrl(Model m, array<Zone> zones, array<Liquidity> swings) =>
             m.innerHiT := m.irlT
 
 f_engine() =>
-    [localBias, localBiasAge] = f_biasCore()
-    [higherBias, higherBiasAge] = request.security(syminfo.tickerid, biasTf, f_biasSnapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+    [localBias, localBiasAge, localBiasHigh, localBiasLow, localGuardHigh, localGuardLow] = f_biasCore()
+    [higherBias, higherBiasAge, higherBiasHigh, higherBiasLow, higherGuardHigh, higherGuardLow] = request.security(syminfo.tickerid, biasTf, f_biasSnapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
     int contextBias = biasMode == "Auto" ? (biasTf == htf ? localBias : nz(higherBias)) : biasMode == "Long" ? 1 : biasMode == "Short" ? -1 : 0
     var array<Model> models = array.new<Model>()
     var array<Zone> zones = array.new<Zone>()
@@ -468,11 +496,14 @@ else
     request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
 
 // Independent bias from the chosen reference TF: confirmed reclaim or range close-through.
-[autoBias, autoBiasAge] = if chartSeconds == timeframe.in_seconds(biasTf)
+[autoBias, autoBiasAge, autoBiasHigh, autoBiasLow, autoGuardHigh, autoGuardLow] = if chartSeconds == timeframe.in_seconds(biasTf)
     f_biasSnapshot(not barstate.isconfirmed)
 else
     request.security(syminfo.tickerid, biasTf, f_biasSnapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
-int biasDir = biasMode == "Auto" ? nz(autoBias) : biasMode == "Long" ? 1 : biasMode == "Short" ? -1 : 0
+int structureBias = biasMode == "Auto" ? nz(autoBias) : biasMode == "Long" ? 1 : biasMode == "Short" ? -1 : 0
+float biasCheckClose = barstate.isconfirmed ? close : close[1]
+bool biasPaused = biasMode == "Auto" and chartSeconds < timeframe.in_seconds(biasTf) and (structureBias == 1 ? not na(autoGuardLow) and biasCheckClose < autoGuardLow : structureBias == -1 ? not na(autoGuardHigh) and biasCheckClose > autoGuardHigh : false)
+int biasDir = biasPaused ? 0 : structureBias
 
 // Preview is aggregated from THIS chart's actual bars, including the live bar.
 // Incomplete first buckets are not presented as complete OHLC candles.
@@ -1088,7 +1119,7 @@ string sellHint = ""
 for i = 0 to 2
     ChannelResult hit = array.get(channelResults, i)
     if hit.hit
-        string hint = f_tag(hit.flags, hit.kind, hit.phase) + " / " + hit.tag + " / " + signalTiming + "\nConfirm bar " + str.format_time(hit.confirmTime, "dd/MM HH:mm", NY) + " NY | Trigger bar " + str.format_time(time, "dd/MM HH:mm", NY) + " NY | Close " + str.tostring(close, format.mintick) + " | CP " + str.tostring(hit.cp, format.mintick) + " | INV " + str.tostring(hit.inv, format.mintick)
+        string hint = f_tag(hit.flags, hit.kind, hit.phase) + " / " + hit.tag + " / " + signalTiming + "\nConfirm bar " + str.format_time(hit.confirmTime, "dd/MM HH:mm", NY) + " NY | Trigger bar " + str.format_time(time, "dd/MM HH:mm", NY) + " NY | Signal CLOSE " + str.format_time(time_close, "dd/MM HH:mm:ss", NY) + " NY | Bias " + str.tostring(biasDir) + " | Close " + str.tostring(close, format.mintick) + " | CP " + str.tostring(hit.cp, format.mintick) + " | INV " + str.tostring(hit.inv, format.mintick)
         if hit.dir == 1
             buyHint += (buyHint == "" ? "BUY\n" : "\n") + hint
         else
@@ -1130,6 +1161,10 @@ plot(crtResult.hit ? crtResult.inv : na, "CRT invalidation at signal", display=d
 plot(egfResult.hit ? egfResult.inv : na, "EGF invalidation at signal", display=display.data_window)
 plot(isbResult.hit ? isbResult.inv : na, "ISB invalidation at signal", display=display.data_window)
 plot(entryEvent ? close : na, "Signal reference close (not fill)", display=display.data_window)
+plot(structureBias, "Bias confirmed structure +1/0/-1", display=display.data_window)
+plot(biasDir, "Bias effective +1/0/-1", display=display.data_window)
+plot(autoGuardHigh, "Bias guard high", display=display.data_window)
+plot(autoGuardLow, "Bias guard low", display=display.data_window)
 
 if barstate.islast
     bool hasModel = not na(sId)
@@ -1173,13 +1208,13 @@ if barstate.islast
     bool hasIrl = not na(sIrlT)
     f_layoutLabels()
     if showPanel
-        string dirText = biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
+        string dirText = biasPaused ? "B0!" : biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
         string stateText = not hasModel ? "WAIT" : sDir == 0 ? (sKind == 2 ? "BIAS?" : "COMP") : localTargetTaken ? "CP?" : alreadyEmitted ? "SIGNAL" : na(target) ? "CP -" : egfScenario and irlFailed ? "IRL X" : egfScenario and not irlTouched ? "IRL WAIT" : egfScenario and not egfReady ? "IRL" : "LTF"
         array<string> headings = array.from("TF", "#1", "B", "IRL", "T", "S", "N", "WHY", "DATA")
-        array<string> values = array.from(htf + " / " + timeframe.period, tag + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? (sIrlKind == 1 ? "FVG" : sIrlKind == 2 ? "OB?" : "LIQ") : "-", macroNow + (showQt ? " Q" + str.tostring(dayQuarter) + "/" + str.tostring(sessionQuarter) : ""), not sReady ? "HIST" : stateText + (sDropped > 0 ? " +" : ""), "C " + str.tostring(crtSignals) + " E " + str.tostring(egfSignals) + " I " + str.tostring(isbSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY))
+        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), tag + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? (sIrlKind == 1 ? "FVG" : sIrlKind == 2 ? "OB?" : "LIQ") : "-", macroNow + (showQt ? " Q" + str.tostring(dayQuarter) + "/" + str.tostring(sessionQuarter) : ""), not sReady ? "HIST" : stateText + (sDropped > 0 ? " +" : ""), "C " + str.tostring(crtSignals) + " E " + str.tostring(egfSignals) + " I " + str.tostring(isbSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY))
         for row = 0 to 8
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
-            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 7 ? lastClosedAudit : row == 6 ? "Independent channel hits; same-bar, same-side hits merge into one triangle." : "")
+            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 7 ? lastClosedAudit : row == 6 ? "Independent channel hits; same-bar, same-side hits merge into one triangle." : "")
     array<ClusterCandle> clusterCandles = array.new<ClusterCandle>()
     if showCluster and clusterActive
         if array.size(candleTimes) > 0
