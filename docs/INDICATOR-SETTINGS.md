@@ -46,7 +46,7 @@ Giới hạn pool/queue, pivot, độ xuyên tick, recovery và invalidation cơ
 
 Bỏ nhập tay SSL/BSL/POC/BL/SL/CP và các mode POC/Line, gate R:R tại close tín hiệu, model phụ, C/M sơ bộ và plot TDO/TO khỏi giao diện. CRT tự dùng C1 range. Không ép min R:R từ close của tam giác vì bạn sẽ chọn giá entry thực tế; vẫn kiểm tra hướng mục tiêu và không phát dấu khi bar chạm INV tham chiếu hoặc CP đã bị lấy. Chỉ báo không biết SL thực tế của bạn.
 
-OB/FVG **LTF** vẫn chỉ lọc nội bộ, không vẽ box/zone/nhãn entry. IRL HTF của EGF hiển thị riêng: FVG HTF hai hướng nếu tồn tại. Không vẽ line CISD/MSS hoặc chữ cạnh tam giác. Tam giác theo thân nến LTF: xanh Buy dưới nến, đỏ Sell trên nến; xem loại xác nhận trong tooltip.
+OB/FVG **LTF** vẫn chỉ lọc nội bộ, không vẽ box/zone/nhãn entry. IRL HTF của EGF hiển thị riêng: FVG HTF hai hướng nếu tồn tại. Không vẽ line CISD/MSS hoặc chữ cạnh tam giác. Tam giác cố định xấp xỉ nửa Tiny: xanh Buy dưới nến, đỏ Sell trên nến; xem loại xác nhận trong tooltip.
 
 ## Timeout và đọc IRL
 
@@ -111,4 +111,4 @@ Bộ lọc sóng dùng chung giữa CRT/EGF/ISB: sau một Buy, Buy ở nến sa
 
 Model hiện kết thúc khi TG/INV/TO/AMB hoặc ngoài recovery HIST. Kiểm tra target cũ trước khi EGF đổi bias. Xem [điều kiện và cách dùng ba nhóm](HTF-GROUPS-PROPOSAL.md). Phần tách nhóm và archive đã được triển khai.
 
-Tam giác hiện dùng tọa độ theo thân nến LTF thay glyph 6pt. Chiều ngang xấp xỉ 80% khoảng nến chuẩn và co giãn khi zoom; xem [chi tiết marker](CANDLE-WIDTH-MARKERS.md).
+Tam giác hiện dùng shape native của label, size=4 (xấp xỉ nửa Tiny ~7pt), giữ vị trí Buy dưới nến/Sell trên nến và màu xanh/đỏ. Không co giãn theo chiều ngang nến nữa.

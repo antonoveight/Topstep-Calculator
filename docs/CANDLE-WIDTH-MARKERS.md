@@ -1,4 +1,6 @@
-# Tam giác theo chiều rộng nến LTF
+# Tam giác theo chiều rộng nến LTF — bản cũ
+
+Đã được thay thế theo lựa chọn ngày 14/11/2026: dùng tam giác native cố định size=4, xấp xỉ nửa Tiny. Phần dưới là ghi chú kỹ thuật của bản vẽ theo chiều rộng nến trước đó, không mô tả source hiện hành. Kiểm tra hiện tại: `node tests/half-tiny-markers.cjs`.
 
 Cập nhật 14/11/2026. Thay glyph 6pt bằng hai cạnh hữu hạn và một linefill tạo tam giác đặc. Đáy rộng 80% một khoảng nến chart (`time ± 0.4 × chartSeconds`), tương ứng gần đúng thân nến chuẩn; đỉnh đặt đúng timestamp nến thỏa điều kiện, không lùi về pivot hoặc dời sang nến khác.
 

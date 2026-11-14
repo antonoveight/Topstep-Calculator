@@ -5,7 +5,7 @@ Cập nhật 14/11/2026. Hai khung H1/D1 theo lựa chọn người dùng để 
 ## Đã sửa trong code
 
 - Inputs HTF và Bias TF chỉ còn H1/D1. D1 chart mở từ H1 input vẫn có VIEW D1; không sinh model H2/H4/W. Các khung LTF M1/M3/M5 vẫn dùng tìm tín hiệu theo HTF đã chọn.
-- Dấu Buy/Sell dùng hình tam giác rộng khoảng một thân nến LTF, tự giãn theo trục thời gian; Buy xanh dưới nến, Sell đỏ trên nến. Không phụ thuộc cỡ chữ. Xem [cơ chế vẽ và quản lý marker](CANDLE-WIDTH-MARKERS.md).
+- Dấu Buy/Sell dùng tam giác native size=4, xấp xỉ nửa Tiny; Buy xanh dưới nến, Sell đỏ trên nến. Kích thước cố định theo lựa chọn mới, không dùng linefill theo chiều rộng nến.
 - Kiểm tra giá chạm CP/close xuyên INV của model **trước** khi EGF đổi bias và reset target. Đổi bias cùng nến không làm mất sự kiện chạm target cũ.
 - Nếu CRT chạm luôn biên đối diện ở nến hình thành, hoặc ISB chạm CP ngay nến resolve, không mở model cho một đường đi giá đã đi qua. Gắn **AMB**, không gán TG/TP vì OHLC không biết thứ tự nội nến.
 - Hover ô #1 của dashboard xem lý do model kết thúc gần nhất; khi không còn model, ô S thể hiện trạng thái kết thúc tương ứng.

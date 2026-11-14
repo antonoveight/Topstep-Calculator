@@ -1,0 +1,10 @@
+const fs=require('fs'),assert=require('node:assert/strict');
+const source=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
+assert.match(source,/style=up \? label.style_triangleup : label.style_triangledown, color=markerColor, size=4/);
+assert.match(source,/string markerLocation = up \? yloc.belowbar : yloc.abovebar/);
+assert.match(source,/color markerColor = up \? color.lime : color.red/);
+assert.match(source,/label.new\(bar_index, na, "", xloc=xloc.bar_index, yloc=markerLocation/);
+assert.doesNotMatch(source,/eventLeftEdges|eventRightEdges|eventFills|markerHalfWidth/,'Fixed-size markers no longer allocate candle-width geometry');
+assert.match(source,/while array.size\(eventLabels\) > markLimit\s+f_dropMark\(0\)/);
+assert.match(source,/if bucketCounter[^\n]+\n\s+f_dropMark\(markIndex\)/);
+console.log('PASS fixed half-Tiny native triangle size, direction/color, current candle anchor and History/Latest cleanup wiring. Native chart size unverified.');
