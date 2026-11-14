@@ -34,6 +34,7 @@ manualBsl = 0.0
 biasTf = input.timeframe("1D", "Bias TF (>= HTF)", options=["60", "120", "240", "1D"], group=G_BIAS, tooltip="Khung bias từ H1 đến D1, phải >= HTF hiệu lực. Mặc định D1; không đồng nghĩa bias cá nhân đọc từ FRVP/day high-low.")
 biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutral"], group=G_BIAS, tooltip="Auto dùng close phá swing xác nhận trên Bias TF; giữ hướng đến khi cấu trúc đổi. B0! tạm chặn theo close chart xuyên guard ngược hướng, không tự coi là bias đối diện. Long/Short/Neutral là ý kiến chủ động của bạn; reset khi bối cảnh thay đổi.")
 filterBias = true
+allowCrtCounter = input.bool(true, "CRT reversal at prior HTF key", group=G_ENTRY, tooltip="Cho CRT ngược bias khi đã chạm/phản ứng tại FVG, OB hoặc swing HTF được xác nhận trước C1. Sau đó vẫn cần CISD/MSS và Pullback theo cấu hình. CT không đổi bias tổng thể. B0/B0! vẫn chặn; tắt để chỉ theo bias như trước.")
 signalCadence = input.string(DEFAULT_SIGNAL_CADENCE, "Signal cadence", options=["Fresh reaction", "One per model"], group=G_ENTRY, tooltip="Sau dấu đầu cần pivot hồi mới đã xác nhận, tiến triển theo hướng giao dịch và xác nhận lại. Một nến đổi màu không đủ. EGF còn phải rời rồi trở lại IRL. Các kênh cùng nhịp chỉ gộp cùng bar, không phát nối đuôi khi chưa có pivot mới. One per model giữ một dấu/model.")
 signalTiming = input.string(DEFAULT_SIGNAL_TIMING, "Signal timing", options=["Pullback", "Confirmation close"], group=G_ENTRY, tooltip="Pullback: tam giác tại nến SAU xác nhận, khi giá hồi chạm mức/vùng và đóng đúng phía. Confirmation close: cho phép dấu tại nến đóng phá MSS/CISD cho cách vào market. FVG/OB retest luôn đợi nến sau khi vùng hình thành; không vẽ lùi hay dịch dấu hình thức.")
 entryMode = input.string(DEFAULT_ENTRY_MODE, "LTF condition", options=["Auto", "CISD", "MSS", "FVG retest", "OB retest"], group=G_ENTRY, tooltip="Điều kiện phát tam giác hướng đi, không phải giá entry cố định. EGF chờ chạm IRL rồi xác nhận LTF về phía ERL theo bias; mọi mode đều qua gate này. FVG/OB LTF chỉ lọc nội bộ; vùng IRL HTF hiển thị qua setting riêng. Không áp min R:R tại close tín hiệu vì bạn tự chọn entry thực tế.")
@@ -149,7 +150,20 @@ f_biasSnapshot(bool previous) =>
     [previous ? direction[1] : direction, previous ? age[1] : age, previous ? swingHigh[1] : swingHigh, previous ? swingLow[1] : swingLow, previous ? guardHigh[1] : guardHigh, previous ? guardLow[1] : guardLow]
 
 // All registry decisions execute IN the selected HTF, never from chart/LTF bars.
+type CrtKey
+    int kind = 0
+    int dir = 0
+    float hi = na
+    float lo = na
+    int born = na
+    int leftTime = na
+    int knownAt = na
+    int beforeTime = na
+    string tf = ""
+type KeyMap
+    array<CrtKey> levels = na
 type Model
+    CrtKey crtKey = na
     int uid = na
     int flags = 0
     int kind = 0
@@ -229,6 +243,7 @@ type ModelArchive
     int endReason = 0
     int endedAt = na
 type Zone
+    int knownAt = na
     int leftTime = na
     float hi = na
     float lo = na
@@ -236,6 +251,7 @@ type Zone
     int born = na
     int kind = 1
 type Liquidity
+    int knownAt = na
     float price = na
     int side = 0
     int born = na
@@ -325,24 +341,57 @@ f_archive(Model m, int reason, int endedAt) =>
 f_archiveAllowed(int kind) =>
     signalModels == "All" or (signalModels == "CRT" and kind == 1) or (signalModels == "EGF" and kind == 2) or (signalModels == "ISB" and kind == 3)
 
-f_engine() =>
-    [localBias, localBiasAge, localBiasHigh, localBiasLow, localGuardHigh, localGuardLow] = f_biasCore()
-    [higherBias, higherBiasAge, higherBiasHigh, higherBiasLow, higherGuardHigh, higherGuardLow] = request.security(syminfo.tickerid, biasTf, f_biasSnapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
-    int contextBias = biasMode == "Auto" ? (biasTf == htf ? localBias : nz(higherBias)) : biasMode == "Long" ? 1 : biasMode == "Short" ? -1 : 0
-    var array<Model> models = array.new<Model>()
-    var array<Zone> zones = array.new<Zone>()
-    var array<Liquidity> swings = array.new<Liquidity>()
-    var ModelArchive lastEnded = ModelArchive.new()
-    var int priorFocusId = na
-    bool archivedThisBar = false
-    var int lastRetired = na
-    var int retiredReason = 0
-    var int dropped = 0
-    var int firstSeen = time
-    int scanStart = last_bar_time - int(timeframe.in_seconds() * 1000) * scanDepth
-    bool inScan = time >= scanStart
-    float ph = ta.pivothigh(high, htfPivotLength, htfPivotLength)
-    float pl = ta.pivotlow(low, htfPivotLength, htfPivotLength)
+// References are matched BEFORE current-bar pool consumption/creation.
+f_keyReact(CrtKey k, int beforeTime, int direction, float barHigh, float barLow, float barClose) =>
+    bool preexisting = k.kind > 0 and not na(k.knownAt) and k.knownAt <= beforeTime
+    bool sameSide = k.dir == direction
+    bool zoneReaction = direction == 1 ? barLow <= k.hi and barHigh >= k.lo and barClose > k.hi : barHigh >= k.lo and barLow <= k.hi and barClose < k.lo
+    bool sweepReaction = direction == 1 ? barLow <= k.lo - sweepSize and barClose > k.hi : barHigh >= k.hi + sweepSize and barClose < k.lo
+    preexisting and sameSide and (k.kind == 3 ? sweepReaction : zoneReaction)
+
+f_findCrtKey(array<Zone> zones, array<Liquidity> swings, int beforeTime, int direction, float barHigh, float barLow, float barClose, string sourceTf) =>
+    CrtKey found = CrtKey.new()
+    for pass = 1 to 2
+        if array.size(zones) > 0
+            for offset = 0 to array.size(zones) - 1
+                Zone z = array.get(zones, array.size(zones) - 1 - offset)
+                CrtKey candidate = CrtKey.new(kind=z.kind, dir=z.dir, hi=z.hi, lo=z.lo, born=z.born, leftTime=z.leftTime, knownAt=z.knownAt, beforeTime=beforeTime, tf=sourceTf)
+                if found.kind == 0 and z.kind == pass and f_keyReact(candidate, beforeTime, direction, barHigh, barLow, barClose)
+                    found := candidate
+    if found.kind == 0 and array.size(swings) > 0
+        for offset = 0 to array.size(swings) - 1
+            Liquidity q = array.get(swings, array.size(swings) - 1 - offset)
+            CrtKey candidate = CrtKey.new(kind=3, dir=-q.side, hi=q.price, lo=q.price, born=q.born, leftTime=q.born, knownAt=q.knownAt, beforeTime=beforeTime, tf=sourceTf)
+            if found.kind == 0 and f_keyReact(candidate, beforeTime, direction, barHigh, barLow, barClose)
+                found := candidate
+    found
+
+f_keyIdentity(CrtKey key) =>
+    key.tf + ":" + str.tostring(key.kind) + ":" + str.tostring(key.dir) + ":" + str.tostring(key.knownAt)
+
+f_matchKeyMap(KeyMap keyMap, array<string> usedKeys, int beforeTime, int direction, float barHigh, float barLow, float barClose) =>
+    CrtKey found = CrtKey.new()
+    for pass = 1 to 3
+        if array.size(keyMap.levels) > 0
+            for j = 0 to array.size(keyMap.levels) - 1
+                CrtKey candidate = array.get(keyMap.levels, j)
+                if found.kind == 0 and candidate.kind == pass and not array.includes(usedKeys, f_keyIdentity(candidate)) and f_keyReact(candidate, beforeTime, direction, barHigh, barLow, barClose)
+                    found := candidate.copy()
+                    found.beforeTime := beforeTime
+    found
+
+f_markHigherUsed(KeyMap keyMap, array<string> usedKeys, int barStart, float barHigh, float barLow) =>
+    if array.size(keyMap.levels) > 0
+        for j = 0 to array.size(keyMap.levels) - 1
+            CrtKey key = array.get(keyMap.levels, j)
+            bool consumed = key.dir == 1 ? barLow <= key.lo : barHigh >= key.hi
+            string identity = f_keyIdentity(key)
+            if barStart >= key.knownAt and consumed and not array.includes(usedKeys, identity)
+                array.push(usedKeys, identity)
+    while array.size(usedKeys) > 160
+        array.shift(usedKeys)
+
+f_updateKeyPools(array<Zone> zones, array<Liquidity> swings, int scanStart, bool inScan, float ph, float pl) =>
     // Remove consumed or out-of-window references, before looking for new CP levels.
     int si = array.size(swings) - 1
     while si >= 0
@@ -351,9 +400,9 @@ f_engine() =>
             array.remove(swings, si)
         si -= 1
     if inScan and not na(ph) and time[htfPivotLength] >= scanStart and high < ph
-        array.push(swings, Liquidity.new(ph, 1, time[htfPivotLength]))
+        array.push(swings, Liquidity.new(knownAt=time_close, price=ph, side=1, born=time[htfPivotLength]))
     if inScan and not na(pl) and time[htfPivotLength] >= scanStart and low > pl
-        array.push(swings, Liquidity.new(pl, -1, time[htfPivotLength]))
+        array.push(swings, Liquidity.new(knownAt=time_close, price=pl, side=-1, born=time[htfPivotLength]))
     if array.size(swings) > 80
         array.shift(swings)
     int zi = array.size(zones) - 1
@@ -365,15 +414,80 @@ f_engine() =>
         zi -= 1
     if inScan and not na(high[2])
         if low > high[2]
-            array.push(zones, Zone.new(leftTime=time[2], hi=low, lo=high[2], dir=1, born=time, kind=1))
+            array.push(zones, Zone.new(knownAt=time_close, leftTime=time[2], hi=low, lo=high[2], dir=1, born=time, kind=1))
         if high < low[2]
-            array.push(zones, Zone.new(leftTime=time[2], hi=low[2], lo=high, dir=-1, born=time, kind=1))
+            array.push(zones, Zone.new(knownAt=time_close, leftTime=time[2], hi=low[2], lo=high, dir=-1, born=time, kind=1))
         if close[1] < open[1] and close > high[1]
-            array.push(zones, Zone.new(leftTime=time[1], hi=open[1], lo=low[1], dir=1, born=time[1], kind=2))
+            array.push(zones, Zone.new(knownAt=time_close, leftTime=time[1], hi=open[1], lo=low[1], dir=1, born=time[1], kind=2))
         if close[1] > open[1] and close < low[1]
-            array.push(zones, Zone.new(leftTime=time[1], hi=high[1], lo=open[1], dir=-1, born=time[1], kind=2))
+            array.push(zones, Zone.new(knownAt=time_close, leftTime=time[1], hi=high[1], lo=open[1], dir=-1, born=time[1], kind=2))
     while array.size(zones) > 60
         array.shift(zones)
+
+
+f_collectKeyMap(array<Zone> zones, array<Liquidity> swings, string sourceTf) =>
+    array<CrtKey> levels = array.new<CrtKey>()
+    for direction = -1 to 1 by 2
+        for pass = 1 to 2
+            int collected = 0
+            if array.size(zones) > 0
+                for offset = 0 to array.size(zones) - 1
+                    Zone z = array.get(zones, array.size(zones) - 1 - offset)
+                    if z.kind == pass and z.dir == direction and collected < 2
+                        array.push(levels, CrtKey.new(kind=z.kind, dir=z.dir, hi=z.hi, lo=z.lo, born=z.born, leftTime=z.leftTime, knownAt=z.knownAt, tf=sourceTf))
+                        collected += 1
+        int collected = 0
+        if array.size(swings) > 0
+            for offset = 0 to array.size(swings) - 1
+                Liquidity q = array.get(swings, array.size(swings) - 1 - offset)
+                if -q.side == direction and collected < 2
+                    array.push(levels, CrtKey.new(kind=3, dir=direction, hi=q.price, lo=q.price, born=q.born, leftTime=q.born, knownAt=q.knownAt, tf=sourceTf))
+                    collected += 1
+    KeyMap.new(levels)
+
+// A compact, immutable snapshot: two recent references per kind/direction (max 12).
+f_higherKeyMap() =>
+    var array<Zone> zones = array.new<Zone>()
+    var array<Liquidity> swings = array.new<Liquidity>()
+    int scanStart = last_bar_time - int(timeframe.in_seconds() * 1000) * scanDepth
+    float ph = ta.pivothigh(high, htfPivotLength, htfPivotLength)
+    float pl = ta.pivotlow(low, htfPivotLength, htfPivotLength)
+    f_updateKeyPools(zones, swings, scanStart, time >= scanStart, ph, pl)
+    f_collectKeyMap(zones, swings, biasTf)
+
+f_biasBundle() =>
+    [direction, age, swingHigh, swingLow, guardHigh, guardLow] = f_biasSnapshot(true)
+    KeyMap keyMap = f_higherKeyMap()
+    [direction, age, swingHigh, swingLow, guardHigh, guardLow, keyMap[1]]
+
+f_engine() =>
+    [localBias, localBiasAge, localBiasHigh, localBiasLow, localGuardHigh, localGuardLow] = f_biasCore()
+    [higherBias, higherBiasAge, higherBiasHigh, higherBiasLow, higherGuardHigh, higherGuardLow, higherKeyMap] = request.security(syminfo.tickerid, biasTf, f_biasBundle(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+    int contextBias = biasMode == "Auto" ? (biasTf == htf ? localBias : nz(higherBias)) : biasMode == "Long" ? 1 : biasMode == "Short" ? -1 : 0
+    var array<Model> models = array.new<Model>()
+    var array<Zone> zones = array.new<Zone>()
+    var array<Liquidity> swings = array.new<Liquidity>()
+    var ModelArchive lastEnded = ModelArchive.new()
+    var array<string> usedHigherKeys = array.new<string>()
+    var int priorFocusId = na
+    bool archivedThisBar = false
+    var int lastRetired = na
+    var int retiredReason = 0
+    var int dropped = 0
+    var int firstSeen = time
+    int scanStart = last_bar_time - int(timeframe.in_seconds() * 1000) * scanDepth
+    bool inScan = time >= scanStart
+    float ph = ta.pivothigh(high, htfPivotLength, htfPivotLength)
+    float pl = ta.pivotlow(low, htfPivotLength, htfPivotLength)
+    CrtKey priorBuyKey = f_findCrtKey(zones, swings, time[1], 1, high, low, close, htf)
+    CrtKey priorSellKey = f_findCrtKey(zones, swings, time[1], -1, high, low, close, htf)
+    if biasTf != htf and not na(higherKeyMap) and not na(higherKeyMap.levels)
+        if priorBuyKey.kind == 0
+            priorBuyKey := f_matchKeyMap(higherKeyMap, usedHigherKeys, time[1], 1, high, low, close)
+        if priorSellKey.kind == 0
+            priorSellKey := f_matchKeyMap(higherKeyMap, usedHigherKeys, time[1], -1, high, low, close)
+        f_markHigherUsed(higherKeyMap, usedHigherKeys, time, high, low)
+    f_updateKeyPools(zones, swings, scanStart, inScan, ph, pl)
 
     // Retire/resolve existing models first. Newly observed models never displace older valid ones.
     int mi = array.size(models) - 1
@@ -386,6 +500,8 @@ f_engine() =>
             m.cC := close
             m.cT := time
         bool older = time_close > m.confirmedAt
+        if older and m.kind == 1 and not na(m.crtKey) and m.crtKey.kind > 0 and (m.dir == 1 ? close < m.crtKey.lo : close > m.crtKey.hi)
+            m.crtKey := CrtKey.new()
         bool bad = older and m.dir != 0 and (m.dir == 1 ? (invalidMode == "Close" ? close < m.inv : low < m.inv) : (invalidMode == "Close" ? close > m.inv : high > m.inv))
         bool reached = older and not na(m.cp) and m.dir != 0 and (m.dir == 1 ? high >= m.cp : low <= m.cp)
         bool expired = (lifeHtf > 0 and bar_index - m.bornIndex >= lifeHtf) or m.uid < scanStart
@@ -473,6 +589,7 @@ f_engine() =>
             float rh = kind == 2 ? math.max(high, high[1]) : high[1]
             float rl = kind == 2 ? math.min(low, low[1]) : low[1]
             Model fresh = Model.new(uid=time, flags=flags, kind=kind, phase=crt ? 1 : 0, dir=direction, bornIndex=bar_index, confirmedAt=time_close, resolvedAt=direction != 0 ? time_close : na, hi=rh, lo=rl, inv=direction == 1 ? math.min(low, rl) : direction == -1 ? math.max(high, rh) : na, cp=crt ? (direction == 1 ? rh : rl) : na, aO=open[1], aH=high[1], aL=low[1], aC=close[1], aT=time[1], bO=open, bH=high, bL=low, bC=close, bT=time)
+            fresh.crtKey := crt ? (direction == 1 ? priorBuyKey : priorSellKey) : na
             fresh.hiT := kind == 2 and high > high[1] ? time : time[1]
             fresh.loT := kind == 2 and low < low[1] ? time : time[1]
             fresh.invT := direction == 1 ? (low < rl ? time : fresh.loT) : direction == -1 ? (high > rh ? time : fresh.hiT) : na
@@ -520,6 +637,7 @@ f_engine() =>
                 m.irlKind := 0
             f_refreshIrl(m, zones, swings)
     Model crtContext = Model.new()
+    Model crtFallback = Model.new()
     Model egfContext = Model.new()
     Model isbContext = Model.new()
     int primaryIndex = -1
@@ -528,29 +646,35 @@ f_engine() =>
             Model candidate = array.get(models, i)
             bool modelAllowed = signalModels == "All" or (signalModels == "CRT" and candidate.kind == 1) or (signalModels == "EGF" and candidate.kind == 2) or (signalModels == "ISB" and candidate.kind == 3)
             if modelAllowed
-                if candidate.kind == 1 and na(crtContext.uid)
-                    crtContext := candidate
+                if candidate.kind == 1
+                    if na(crtFallback.uid)
+                        crtFallback := candidate
+                    bool crtEligible = candidate.dir == contextBias or (allowCrtCounter and contextBias != 0 and candidate.dir == -contextBias and not na(candidate.crtKey) and candidate.crtKey.kind > 0)
+                    if na(crtContext.uid) and crtEligible
+                        crtContext := candidate
                 if candidate.kind == 2 and na(egfContext.uid)
                     egfContext := candidate
                 if candidate.kind == 3 and na(isbContext.uid)
                     isbContext := candidate
             if modelAllowed and primaryIndex == -1
                 primaryIndex := i
+    if na(crtContext.uid)
+        crtContext := crtFallback
     Model selected = primaryIndex >= 0 ? array.get(models, primaryIndex) : Model.new()
     Model secondModel = array.size(models) > 1 ? array.get(models, 1) : Model.new()
     Model thirdModel = array.size(models) > 2 ? array.get(models, 2) : Model.new()
     priorFocusId := selected.uid
     bool historyReady = firstSeen <= scanStart
-    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, secondModel.uid, secondModel.flags, secondModel.kind, secondModel.phase, secondModel.hi, secondModel.lo, secondModel.aT, thirdModel.uid, thirdModel.flags, thirdModel.kind, thirdModel.phase, thirdModel.hi, thirdModel.lo, thirdModel.aT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, crtContext.uid, crtContext.flags, crtContext.phase, crtContext.dir, crtContext.confirmedAt, crtContext.resolvedAt, crtContext.hi, crtContext.lo, crtContext.inv, crtContext.cp, crtContext.irlH, crtContext.irlL, crtContext.irlT, egfContext.uid, egfContext.flags, egfContext.phase, egfContext.dir, egfContext.confirmedAt, egfContext.resolvedAt, egfContext.hi, egfContext.lo, egfContext.inv, egfContext.cp, egfContext.irlH, egfContext.irlL, egfContext.irlT, isbContext.uid, isbContext.flags, isbContext.phase, isbContext.dir, isbContext.confirmedAt, isbContext.resolvedAt, isbContext.hi, isbContext.lo, isbContext.inv, isbContext.cp, isbContext.irlH, isbContext.irlL, isbContext.irlT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft, selected.innerHi, selected.innerLo, selected.innerHiT, selected.innerLoT, lastEnded]
+    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, secondModel.uid, secondModel.flags, secondModel.kind, secondModel.phase, secondModel.hi, secondModel.lo, secondModel.aT, thirdModel.uid, thirdModel.flags, thirdModel.kind, thirdModel.phase, thirdModel.hi, thirdModel.lo, thirdModel.aT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, crtContext.uid, crtContext.flags, crtContext.phase, crtContext.dir, crtContext.confirmedAt, crtContext.resolvedAt, crtContext.hi, crtContext.lo, crtContext.inv, crtContext.cp, crtContext.irlH, crtContext.irlL, crtContext.irlT, egfContext.uid, egfContext.flags, egfContext.phase, egfContext.dir, egfContext.confirmedAt, egfContext.resolvedAt, egfContext.hi, egfContext.lo, egfContext.inv, egfContext.cp, egfContext.irlH, egfContext.irlL, egfContext.irlT, isbContext.uid, isbContext.flags, isbContext.phase, isbContext.dir, isbContext.confirmedAt, isbContext.resolvedAt, isbContext.hi, isbContext.lo, isbContext.inv, isbContext.cp, isbContext.irlH, isbContext.irlL, isbContext.irlT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft, selected.innerHi, selected.innerLo, selected.innerHiT, selected.innerLoT, lastEnded, crtContext.crtKey]
 
-// f_snapshot offsets 111 scalar fields plus an immutable ModelArchive reference.
+// f_snapshot offsets 111 scalar fields plus immutable ModelArchive and CrtKey references.
 // On the HTF chart: previous output while forming, current output once the bar closes.
 // On lower charts: always previous CONFIRMED HTF output + lookahead_on.
 f_snapshot(bool previous) =>
-    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60, v61, v62, v63, v64, v65, v66, v67, v68, v69, v70, v71, v72, v73, v74, v75, v76, v77, v78, v79, v80, v81, v82, v83, v84, v85, v86, v87, v88, v89, v90, v91, v92, v93, v94, v95, v96, v97, v98, v99, v100, v101, v102, v103, v104, v105, v106, v107, v108, v109, v110, v111] = f_engine()
-    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57, previous ? v58[1] : v58, previous ? v59[1] : v59, previous ? v60[1] : v60, previous ? v61[1] : v61, previous ? v62[1] : v62, previous ? v63[1] : v63, previous ? v64[1] : v64, previous ? v65[1] : v65, previous ? v66[1] : v66, previous ? v67[1] : v67, previous ? v68[1] : v68, previous ? v69[1] : v69, previous ? v70[1] : v70, previous ? v71[1] : v71, previous ? v72[1] : v72, previous ? v73[1] : v73, previous ? v74[1] : v74, previous ? v75[1] : v75, previous ? v76[1] : v76, previous ? v77[1] : v77, previous ? v78[1] : v78, previous ? v79[1] : v79, previous ? v80[1] : v80, previous ? v81[1] : v81, previous ? v82[1] : v82, previous ? v83[1] : v83, previous ? v84[1] : v84, previous ? v85[1] : v85, previous ? v86[1] : v86, previous ? v87[1] : v87, previous ? v88[1] : v88, previous ? v89[1] : v89, previous ? v90[1] : v90, previous ? v91[1] : v91, previous ? v92[1] : v92, previous ? v93[1] : v93, previous ? v94[1] : v94, previous ? v95[1] : v95, previous ? v96[1] : v96, previous ? v97[1] : v97, previous ? v98[1] : v98, previous ? v99[1] : v99, previous ? v100[1] : v100, previous ? v101[1] : v101, previous ? v102[1] : v102, previous ? v103[1] : v103, previous ? v104[1] : v104, previous ? v105[1] : v105, previous ? v106[1] : v106, previous ? v107[1] : v107, previous ? v108[1] : v108, previous ? v109[1] : v109, previous ? v110[1] : v110, previous ? v111[1] : v111]
+    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60, v61, v62, v63, v64, v65, v66, v67, v68, v69, v70, v71, v72, v73, v74, v75, v76, v77, v78, v79, v80, v81, v82, v83, v84, v85, v86, v87, v88, v89, v90, v91, v92, v93, v94, v95, v96, v97, v98, v99, v100, v101, v102, v103, v104, v105, v106, v107, v108, v109, v110, v111, v112] = f_engine()
+    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57, previous ? v58[1] : v58, previous ? v59[1] : v59, previous ? v60[1] : v60, previous ? v61[1] : v61, previous ? v62[1] : v62, previous ? v63[1] : v63, previous ? v64[1] : v64, previous ? v65[1] : v65, previous ? v66[1] : v66, previous ? v67[1] : v67, previous ? v68[1] : v68, previous ? v69[1] : v69, previous ? v70[1] : v70, previous ? v71[1] : v71, previous ? v72[1] : v72, previous ? v73[1] : v73, previous ? v74[1] : v74, previous ? v75[1] : v75, previous ? v76[1] : v76, previous ? v77[1] : v77, previous ? v78[1] : v78, previous ? v79[1] : v79, previous ? v80[1] : v80, previous ? v81[1] : v81, previous ? v82[1] : v82, previous ? v83[1] : v83, previous ? v84[1] : v84, previous ? v85[1] : v85, previous ? v86[1] : v86, previous ? v87[1] : v87, previous ? v88[1] : v88, previous ? v89[1] : v89, previous ? v90[1] : v90, previous ? v91[1] : v91, previous ? v92[1] : v92, previous ? v93[1] : v93, previous ? v94[1] : v94, previous ? v95[1] : v95, previous ? v96[1] : v96, previous ? v97[1] : v97, previous ? v98[1] : v98, previous ? v99[1] : v99, previous ? v100[1] : v100, previous ? v101[1] : v101, previous ? v102[1] : v102, previous ? v103[1] : v103, previous ? v104[1] : v104, previous ? v105[1] : v105, previous ? v106[1] : v106, previous ? v107[1] : v107, previous ? v108[1] : v108, previous ? v109[1] : v109, previous ? v110[1] : v110, previous ? v111[1] : v111, previous ? v112[1] : v112]
 
-[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, s2Id, s2Flags, s2Kind, s2Phase, s2Hi, s2Lo, s2AT, s3Id, s3Flags, s3Kind, s3Phase, s3Hi, s3Lo, s3AT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, kCId, kCFlags, kCPhase, kCDir, kCConfirmed, kCResolved, kCHi, kCLo, kCInv, kCCp, kCIrlH, kCIrlL, kCIrlT, kEId, kEFlags, kEPhase, kEDir, kEConfirmed, kEResolved, kEHi, kELo, kEInv, kECp, kEIrlH, kEIrlL, kEIrlT, kIId, kIFlags, kIPhase, kIDir, kIConfirmed, kIResolved, kIHi, kILo, kIInv, kICp, kIIrlH, kIIrlL, kIIrlT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft, sInnerHi, sInnerLo, sInnerHiT, sInnerLoT, sArchived] = if onHtf
+[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, s2Id, s2Flags, s2Kind, s2Phase, s2Hi, s2Lo, s2AT, s3Id, s3Flags, s3Kind, s3Phase, s3Hi, s3Lo, s3AT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, kCId, kCFlags, kCPhase, kCDir, kCConfirmed, kCResolved, kCHi, kCLo, kCInv, kCCp, kCIrlH, kCIrlL, kCIrlT, kEId, kEFlags, kEPhase, kEDir, kEConfirmed, kEResolved, kEHi, kELo, kEInv, kECp, kEIrlH, kEIrlL, kEIrlT, kIId, kIFlags, kIPhase, kIDir, kIConfirmed, kIResolved, kIHi, kILo, kIInv, kICp, kIIrlH, kIIrlL, kIIrlT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft, sInnerHi, sInnerLo, sInnerHiT, sInnerLoT, sArchived, kCrtKey] = if onHtf
     f_snapshot(not barstate.isconfirmed)
 else
     request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
@@ -667,6 +791,7 @@ plot(showTrueOpens ? dayOpenPrice : na, "TDO actual open", color=color.new(color
 plot(showTrueOpens ? sessionOpenPrice : na, "Session TO actual open", color=color.new(color.orange, 35), style=plot.style_linebr, force_overlay=true)
 
 type SignalContext
+    CrtKey crtKey = na
     int id = na
     int kind = 0
     int flags = 0
@@ -721,6 +846,8 @@ type ReactionState
     float rearmPivotPrice = na
     int usedPivotTime = na
 type ChannelResult
+    bool counterBias = false
+    CrtKey keyRef = na
     bool hit = false
     int dir = 0
     int kind = 0
@@ -888,21 +1015,31 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             "MSS" => signalTiming == "Pullback" ? cmPullback and state.confirmTag == "M" : mss
             "FVG retest" => fvgRetest
             => obRetest
-        bool selectedEntry = rawEntry and confirmationContext
+        bool opposingBias = biasDir != 0 and biasDir == -ctx.dir
+        bool priorKey = sKind == 1 and not na(ctx.crtKey) and ctx.crtKey.kind > 0 and ctx.crtKey.dir == ctx.dir and not na(ctx.crtKey.knownAt) and ctx.crtKey.knownAt <= ctx.crtKey.beforeTime and ctx.crtKey.beforeTime < ctx.confirmed
+        bool keyHeld = priorKey and (bullish ? close > ctx.crtKey.lo : close < ctx.crtKey.hi)
+        bool counterContext = allowCrtCounter and sKind == 1 and opposingBias and priorKey and keyHeld
+        bool counterLtfReady = hasConfirmation and (entryMode == "FVG retest" ? fvgPullback : entryMode == "OB retest" ? obPullback : signalTiming != "Pullback" or bar_index > state.confirmIndex)
+        bool selectedEntry = rawEntry and confirmationContext and (not counterContext or counterLtfReady)
         float risk = bullish ? close - executionSl : executionSl - close
         float reward = not na(target) ? (bullish ? target - close : close - target) : na
-        bool biasAllowed = not filterBias or biasDir == ctx.dir
+        bool biasAllowed = not filterBias or biasDir == ctx.dir or counterContext
         bool alreadyEmitted = signalCadence == "One per model" ? state.everSent : state.sent
         string pendingStatus = signalTiming == "Pullback" and (entryMode == "Auto" or entryMode == "CISD" or entryMode == "MSS") ? (hasConfirmation or (not crtPath and (not na(state.fvgIndex) or not na(state.obIndex))) ? "WAIT RETEST" : "WAIT CONFIRM") : "LTF WAIT"
-        result.status := alreadyEmitted ? (signalCadence == "One per model" ? "USED" : egfScenario ? "IRL RETEST" : "PULLBACK") : na(target) ? "NO ERL" : not biasAllowed ? "BIAS" : not timeAllowed ? "TIME" : localTargetTaken ? "CP TAKEN" : invalidBar or risk <= 0 ? "INV" : reward <= 0 ? "PATH" : egfScenario and irlFailed ? "IRL X" : egfScenario and not irlTouched ? "IRL WAIT" : not confirmationContext ? "CONTEXT" : not selectedEntry ? pendingStatus : "READY"
+        if counterContext and not hasConfirmation
+            pendingStatus := "CT CONFIRM"
+        string biasWait = allowCrtCounter and sKind == 1 and opposingBias ? (not priorKey ? "NO KEY" : not keyHeld ? "KEY X" : "BIAS") : "BIAS"
+        result.status := alreadyEmitted ? (signalCadence == "One per model" ? "USED" : egfScenario ? "IRL RETEST" : "PULLBACK") : na(target) ? "NO ERL" : not biasAllowed ? biasWait : not timeAllowed ? "TIME" : localTargetTaken ? "CP TAKEN" : invalidBar or risk <= 0 ? "INV" : reward <= 0 ? "PATH" : egfScenario and irlFailed ? "IRL X" : egfScenario and not irlTouched ? "IRL WAIT" : not confirmationContext ? "CONTEXT" : not selectedEntry ? pendingStatus : "READY"
         string detectedTag = entryMode == "MSS" ? "M" : entryMode == "CISD" ? "C" : entryMode == "FVG retest" ? "F" : entryMode == "OB retest" ? "O" : signalTiming == "Pullback" ? (fvgPullback ? "F" : obPullback ? "O" : state.confirmTag) : cisd ? "C" : mss ? "M" : fvgRetest ? "F" : "O"
         if result.status == "READY" and not waveAllowed
             result.status := "WAVE WAIT"
         if selectedEntry and risk > 0 and not na(target) and reward > 0 and biasAllowed and timeAllowed and not invalidBar and not localTargetTaken and not alreadyEmitted and waveAllowed
             result.hit := true
+            result.counterBias := filterBias and counterContext and biasDir != ctx.dir
+            result.keyRef := result.counterBias ? ctx.crtKey : na
             result.tag := detectedTag
             result.confirmTime := detectedTag == "F" ? state.fvgTime : detectedTag == "O" ? state.obTime : signalTiming == "Pullback" ? state.confirmTime : time
-            result.status := "SIGNAL"
+            result.status := result.counterBias ? "CT SIGNAL" : "SIGNAL"
             state.sent := true
             state.everSent := true
             state.lastSignalBar := bar_index
@@ -933,7 +1070,7 @@ var array<ReactionState> channelStates = array.new<ReactionState>()
 if barstate.isfirst
     for i = 0 to 2
         array.push(channelStates, ReactionState.new())
-array<SignalContext> contexts = array.from(SignalContext.new(kind=1, id=kCId, flags=kCFlags, phase=kCPhase, dir=kCDir, confirmed=kCConfirmed, resolved=kCResolved, hi=kCHi, lo=kCLo, inv=kCInv, cp=kCCp, irlH=kCIrlH, irlL=kCIrlL, irlT=kCIrlT), SignalContext.new(kind=2, id=kEId, flags=kEFlags, phase=kEPhase, dir=kEDir, confirmed=kEConfirmed, resolved=kEResolved, hi=kEHi, lo=kELo, inv=kEInv, cp=kECp, irlH=kEIrlH, irlL=kEIrlL, irlT=kEIrlT), SignalContext.new(kind=3, id=kIId, flags=kIFlags, phase=kIPhase, dir=kIDir, confirmed=kIConfirmed, resolved=kIResolved, hi=kIHi, lo=kILo, inv=kIInv, cp=kICp, irlH=kIIrlH, irlL=kIIrlL, irlT=kIIrlT))
+array<SignalContext> contexts = array.from(SignalContext.new(crtKey=kCrtKey, kind=1, id=kCId, flags=kCFlags, phase=kCPhase, dir=kCDir, confirmed=kCConfirmed, resolved=kCResolved, hi=kCHi, lo=kCLo, inv=kCInv, cp=kCCp, irlH=kCIrlH, irlL=kCIrlL, irlT=kCIrlT), SignalContext.new(kind=2, id=kEId, flags=kEFlags, phase=kEPhase, dir=kEDir, confirmed=kEConfirmed, resolved=kEResolved, hi=kEHi, lo=kELo, inv=kEInv, cp=kECp, irlH=kEIrlH, irlL=kEIrlL, irlT=kEIrlT), SignalContext.new(kind=3, id=kIId, flags=kIFlags, phase=kIPhase, dir=kIDir, confirmed=kIConfirmed, resolved=kIResolved, hi=kIHi, lo=kILo, inv=kIInv, cp=kICp, irlH=kIIrlH, irlL=kIIrlL, irlT=kIIrlT))
 array<ChannelResult> channelResults = array.new<ChannelResult>()
 string modelKey = f_contextKey(sId, sResolved, sDir)
 bool entryEvent = false
@@ -1206,12 +1343,16 @@ f_note(bool up, string hint) =>
         array.push(eventBuckets, bucketCounter)
     while array.size(eventLabels) > markLimit
         f_dropMark(0)
+f_keyTag(CrtKey key) =>
+    key.kind == 1 ? "FVG" : key.kind == 2 ? "OB" : key.dir == 1 ? "SSL" : "BSL"
 string buyHint = ""
 string sellHint = ""
 for i = 0 to 2
     ChannelResult hit = array.get(channelResults, i)
     if hit.hit
         string hint = f_tag(hit.flags, hit.kind, hit.phase) + " / " + hit.tag + " / " + signalTiming + "\nConfirm bar " + str.format_time(hit.confirmTime, "dd/MM HH:mm", NY) + " NY | Trigger bar " + str.format_time(time, "dd/MM HH:mm", NY) + " NY | Signal CLOSE " + str.format_time(time_close, "dd/MM HH:mm:ss", NY) + " NY | Bias " + str.tostring(biasDir) + " | Close " + str.tostring(close, format.mintick) + " | CP " + str.tostring(hit.cp, format.mintick) + " | INV " + str.tostring(hit.inv, format.mintick)
+        if hit.counterBias
+            hint += "\nCT | " + hit.keyRef.tf + " " + f_keyTag(hit.keyRef) + " | Key " + str.tostring(hit.keyRef.lo, format.mintick) + "-" + str.tostring(hit.keyRef.hi, format.mintick) + " | Known " + str.format_time(hit.keyRef.knownAt, "dd/MM HH:mm", NY) + " NY | before CRT C1 " + str.format_time(hit.keyRef.beforeTime, "dd/MM HH:mm", NY) + " NY"
         if hit.dir == 1
             buyHint += (buyHint == "" ? "BUY\n" : "\n") + hint
         else
@@ -1252,6 +1393,7 @@ plot(crtResult.hit ? crtResult.inv : na, "CRT invalidation at signal", display=d
 plot(egfResult.hit ? egfResult.inv : na, "EGF invalidation at signal", display=display.data_window)
 plot(isbResult.hit ? isbResult.inv : na, "ISB invalidation at signal", display=display.data_window)
 plot(entryEvent ? close : na, "Signal reference close (not fill)", display=display.data_window)
+plot(crtResult.hit and crtResult.counterBias ? crtResult.dir : na, "CRT counter-bias CT +1/-1", display=display.data_window)
 plot(structureBias, "Bias confirmed structure +1/0/-1", display=display.data_window)
 plot(biasDir, "Bias effective +1/0/-1", display=display.data_window)
 plot(autoGuardHigh, "Bias guard high", display=display.data_window)
@@ -1296,6 +1438,8 @@ if barstate.islast
             box.set_rightbottom(area, zoneEnd, bottom)
         box.set_bgcolor(area, color.new(zoneColor, areaVisible ? 94 : 100))
         box.set_border_color(area, color.new(zoneColor, areaVisible ? 65 : 100))
+    bool showCrtKey = showLevels and drawActive and sKind == 1 and sId == kCId and not na(kCrtKey) and kCrtKey.kind > 0 and biasDir == -sDir
+    f_level(15, showCrtKey ? (kCrtKey.hi + kCrtKey.lo) / 2 : na, showCrtKey ? "K/" + f_keyTag(kCrtKey) : "", color.purple, showCrtKey, showCrtKey ? nz(kCrtKey.leftTime, kCrtKey.born) : na, showCrtKey ? kCrtKey.kind != 3 or kCrtKey.tf != htf : true, true)
     bool hasIrl = not na(sIrlT)
     f_layoutLabels()
     if showPanel

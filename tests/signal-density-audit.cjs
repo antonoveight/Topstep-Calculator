@@ -29,7 +29,7 @@ const pullback=run(crt,impulse),market=run(crt,impulse,{timing:'Confirmation clo
 assert.deepEqual(pullback.hits,[],'A clean impulse without a later retest is intentionally absent in Pullback mode');
 assert.deepEqual(market.hits,[101],'Confirmation-close identifies the earlier closed confirmation in that same impulse');
 const biasBlocked=run(crt,noisy,{bias:-1});
-assert.deepEqual(biasBlocked.hits,[]);assert.ok(biasBlocked.results.every(r=>r.status==='BIAS'));
+assert.deepEqual(biasBlocked.hits,[]);assert.ok(biasBlocked.results.every(r=>r.status==='NO KEY'),'Counter-bias CRT remains blocked without its preexisting key');
 const egf={...crt,id:2,kind:2,flags:2,phase:0};
 const noIrl=run(egf,noisy);
 assert.deepEqual(noIrl.hits,[]);assert.ok(noIrl.results.every(r=>r.status==='IRL WAIT'));

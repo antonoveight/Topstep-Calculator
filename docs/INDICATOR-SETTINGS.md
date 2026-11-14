@@ -8,7 +8,7 @@ Preset nền đã qua kiểm tra **tương thích workflow**, không phải tố
 
 HTF H1 hoặc D1 theo hai khung đối chiếu đang dùng; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; LTF condition Auto; time filter Context only. Để quan sát tần suất: Signal display = History, giữ 100 tam giác. Cửa sổ 3 nến HTF chỉ giới hạn line, không xóa dấu ở chế độ History. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
 
-## 25 setting
+## 26 setting
 
 | Setting | Vai trò |
 | --- | --- |
@@ -16,7 +16,8 @@ HTF H1 hoặc D1 theo hai khung đối chiếu đang dùng; chart M5; Bias Auto 
 | Models to observe | All chạy ba kênh LTF độc lập CRT/EGF/ISB; mỗi nhóm dùng model cũ nhất còn hiệu lực. Cụm HTF vẫn chỉ vẽ model ưu tiên chung. Chọn riêng một nhóm để đối chiếu. |
 | Model timeout | Mặc định 8 nến HTF sau C2; 0 tắt, tối đa 48. Không reset tuổi do đổi bias/IRL hoặc resolve ISB. Hết hạn bỏ model khỏi cụm và kênh tín hiệu. |
 | Bias TF | Chọn H1/H2/H4/D1, bias >= HTF hiệu lực; mặc định D1. Auto dùng cấu trúc swing và close đã xác nhận, có guard intraday; xem B0!, không có dữ liệu FRVP cá nhân. |
-| Bias | Auto / Long / Short / Neutral. EGF lấy hướng kịch bản từ bias, không lấy từ màu nến. CRT/ISB phải thuận bias để phát dấu. |
+| Bias | Auto / Long / Short / Neutral. EGF lấy hướng kịch bản từ bias, không lấy từ màu nến. ISB phải thuận bias; CRT có ngoại lệ CT tại key có trước, khi bật setting riêng. |
+| CRT reversal at prior HTF key | Bật mặc định: CRT ngược bias cần FVG/OB/swing HTF đã xác nhận trước C1, phản ứng CRT/TS rồi C/M và retest theo cấu hình. Không nới EGF/ISB, không đổi bias tổng thể. |
 | LTF condition | Auto / CISD / MSS / FVG retest / OB retest. Đây là điều kiện phát tín hiệu, không phải lựa chọn giá khớp lệnh. |
 | Signal timing | Mặc định Pullback: đợi hồi kiểm tra sau xác nhận. Confirmation close: cho phép dấu ở nến đóng phá C/M cho cách vào market. FVG/OB retest luôn đợi nến sau hình thành. |
 | Signal cadence | Fresh reaction: cần pivot hồi mới và tiến triển cấu trúc để phát lại; One per model giữ một dấu/model. WAVE WAIT là gate chung giữa các kênh. |
@@ -112,3 +113,7 @@ Bộ lọc sóng dùng chung giữa CRT/EGF/ISB: sau một Buy, Buy ở nến sa
 Model hiện kết thúc khi TG/INV/TO/AMB hoặc ngoài recovery HIST. Kiểm tra target cũ trước khi EGF đổi bias. Xem [điều kiện và cách dùng ba nhóm](HTF-GROUPS-PROPOSAL.md). Phần tách nhóm và archive đã được triển khai.
 
 Tam giác hiện dùng shape native của label, size=4 (xấp xỉ nửa Tiny ~7pt), giữ vị trí Buy dưới nến/Sell trên nến và màu xanh/đỏ. Không co giãn theo chiều ngang nến nữa.
+
+## CRT ngược bias
+
+Xem [điều kiện key có trước, xác nhận LTF và cách đọc CT](CRT-COUNTER-BIAS.md). B0/B0! vẫn chặn. Tắt CRT reversal at prior HTF key để chỉ theo bias như trước.

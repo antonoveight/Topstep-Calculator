@@ -1,6 +1,6 @@
 # TFA v6 — context HTF và direction signals
 
-Nguồn: indicators/funded-angler-v6.pine; đồng bộ sang chibao.txt bằng node tools/sync-indicator.cjs. [Hướng dẫn 25 setting và kiểm tra lịch sử](INDICATOR-SETTINGS.md). Bản này thay thế các mô tả trước về EGF ép hướng theo màu nến, box OB/FVG, C/M sơ bộ và R:R tại close tín hiệu.
+Nguồn: indicators/funded-angler-v6.pine; đồng bộ sang chibao.txt bằng node tools/sync-indicator.cjs. [Hướng dẫn 26 setting và kiểm tra lịch sử](INDICATOR-SETTINGS.md). Bản này thay thế các mô tả trước về EGF ép hướng theo màu nến, box OB/FVG, C/M sơ bộ và R:R tại close tín hiệu.
 
 ## 1. Những điều được giữ và được sửa
 
@@ -34,7 +34,7 @@ History mặc định giữ 100 tam giác, tối đa 200, tách hoàn toàn vi�
 
 ## 4. Drawing và source timestamps
 
-Snapshot trả 111 scalar cùng một ModelArchive bất biến chứa OHLC nguồn/lý do kết thúc; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
+Snapshot trả 111 scalar cùng một CrtKey metadata riêng và một ModelArchive bất biến chứa OHLC nguồn/lý do kết thúc; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
 
 Line xloc.bar_time bắt đầu từ nến nguồn; trên LTF map HTF high/low về timestamp nến con tạo cực trị trong cache 1000 bucket đầy đủ. Nếu cache không có, tìm trong tối đa 5000 bar chart đã tải. Không tìm được nguồn thì ẩn line tương ứng, không gắn giả vào nến tín hiệu. EQ dùng neo tổng quan vì không có nến cực trị riêng. Line được vẽ hiện tại nối lại nguồn cũ không có nghĩa tín hiệu đã biết ở thời điểm swing; pivot vẫn phải chờ xác nhận.
 
@@ -76,4 +76,6 @@ Checklist nghiệm thu chart: cùng symbol/session trên H1 và M5 → đối ch
 
 Xem [báo cáo workflow](SIGNAL-WORKFLOW-AUDIT.md). Các chỗ nghẽn được sửa: chỉ một model vào LTF, khóa một E cả model, wick mitigation bị coi như phá vùng, LTF excursion khóa vùng vĩnh viễn, và wick chạm INV bị coi như SL thực tế. Không nhắm tới một tỷ lệ tăng cố định; chưa có thống kê thị trường cho khẳng định gấp ba hoặc tăng win rate. Các gate bias/target/time/HTF closed vẫn giữ.
 
-Kiểm tra nhóm/ảnh lưu: `node tests/htf-cluster-groups.cjs` thực thi thân split/archive trích từ source, 36 tổ hợp loại model/số nến/giới hạn đuôi, metadata kết thúc và copy độc lập. Snapshot thêm object được offset như scalar; tổng tuple request = 112 + 6 + 6 = 124 < 127. Chưa có xác nhận chart/Replay.
+Kiểm tra nhóm/ảnh lưu: `node tests/htf-cluster-groups.cjs` thực thi thân split/archive trích từ source, 36 tổ hợp loại model/số nến/giới hạn đuôi, metadata kết thúc và copy độc lập. Snapshot thêm object được offset như scalar; tổng tuple request = 113 + 7 + 6 = 126 < 127. Chưa có xác nhận chart/Replay.
+
+CRT CT đã triển khai với key đã xác nhận trước C1, source cùng HTF hoặc Bias TF cao hơn, C/M + timing/ret theo cấu hình. EGF/ISB không được ngoại lệ. Xem [CRT counter-bias](CRT-COUNTER-BIAS.md) và chạy `node tests/crt-counter-bias.cjs`.

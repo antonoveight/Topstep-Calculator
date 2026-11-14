@@ -19,7 +19,7 @@ function evaluate(name,ctx){
  return evaluateExpr(expression(name),ctx);
 }
 function evaluateExpr(expr,ctx){
- ctx={structuralReset:false,waveAllowed:true,...ctx};
+ ctx={structuralReset:false,waveAllowed:true,counterContext:false,...ctx};
  const js=expr.replace(/\b(open|high|low|close|time)\[1\]/g,'previous.$1').replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!').replace(/\bmath\./g,'Math.').replace(/\bna\b(?!\s*\()/g,'null');
  return Function(...Object.keys(ctx),'return ('+js+');')(...Object.values(ctx));
 }
@@ -430,7 +430,7 @@ for(const dir of [1,-1]){
  assert.equal(swingMap.irlKind,3,'Retain internal swing liquidity as before');
  assert.equal(swingMap.irlH,dir===1?84:116);
 }
-assert.match(source,/Zone.new\(leftTime=time\[2\], hi=low, lo=high\[2\], dir=1, born=time/);
+assert.match(source,/Zone.new\(knownAt=time_close, leftTime=time\[2\], hi=low, lo=high\[2\], dir=1, born=time/);
 assert.match(source,/int zoneTime = side == 0 \? sBullIrlLeft : sBearIrlLeft/);
 const emptyMap=clusterHarness.refreshIrl({...irlModel},[],[]);assert.equal(emptyMap.irlT,null,'No data means no IRL');
 const retainedMap=clusterHarness.refreshIrl({...buyMap},[],irlSwings);
