@@ -1358,7 +1358,8 @@ if barstate.islast
                 ceiling := na(ceiling) ? item.h : math.max(ceiling, item.h)
                 floorPrice := na(floorPrice) ? item.l : math.min(floorPrice, item.l)
             float groupSpan = math.max(ceiling - floorPrice, syminfo.mintick * 8)
-            float labelY = floorPrice - math.max(groupSpan * 0.08, syminfo.mintick * 4)
+            float captionGap = math.max(visibleLabelGap, groupSpan * 0.12, syminfo.mintick * 8)
+            float labelY = floorPrice - math.max(groupSpan * 0.08, captionGap * 0.6)
             int groupStartTime = clusterStartTime + int(cursor * chartSeconds * 1000)
             for i = 0 to groupCount - 1
                 ClusterCandle item = array.get(candles, i)
@@ -1385,7 +1386,7 @@ if barstate.islast
                 label.set_tooltip(caption, str.format_time(item.t, "dd/MM HH:mm", NY) + " NY | O " + str.tostring(item.o, format.mintick) + " H " + str.tostring(item.h, format.mintick) + " L " + str.tostring(item.l, format.mintick) + " C " + str.tostring(item.c, format.mintick) + (archived ? " | history only / " + f_endTag(sArchived.endReason) : ""))
                 drawSlot += 1
             int headingTime = groupStartTime + int((groupCount * clusterStep - clusterStep + bodyWidth) * 0.5 * chartSeconds * 1000)
-            label.set_xy(heading, headingTime, labelY - math.max(groupSpan * 0.12, syminfo.mintick * 8))
+            label.set_xy(heading, headingTime, labelY - captionGap * 1.25)
             string headingText = group == 0 ? tag : group == 1 ? "FOLLOW" + (followTotal > followCount ? " …" + str.tostring(followTotal - followCount) : "") : "LAST / " + f_endTag(sArchived.endReason)
             label.set_text(heading, headingText)
             label.set_textcolor(heading, group == 2 ? color.gray : chart.fg_color)
