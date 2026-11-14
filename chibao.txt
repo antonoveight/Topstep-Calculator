@@ -17,7 +17,7 @@ const string G_VIEW = "5. Display"
 const string DEFAULT_ENTRY_MODE = "Auto"
 const string DEFAULT_SIGNAL_TIMING = "Pullback"
 const string DEFAULT_SIGNAL_CADENCE = "Fresh reaction"
-htfInput = input.timeframe("60", "HTF", group=G_HTF, tooltip="Khung xác định CRT/TS, Engulfing/Outside hoặc Inside Bar. Tự chọn khung để xác định model; mặc định H1 (60). H1/D1 chỉ là cấu hình đối chiếu ban đầu, không giới hạn lựa chọn. Chart LTF chỉ tìm entry.")
+htfInput = input.timeframe("60", "HTF", options=["60", "120", "240", "1D"], group=G_HTF, tooltip="Khung xác định CRT/TS, Engulfing/Outside hoặc Inside Bar: H1, H2, H4 hoặc D1. Mặc định H1; chart LTF chỉ tìm entry.")
 signalModels = input.string("All", "Models to observe", options=["All", "CRT", "EGF", "ISB"], group=G_HTF, tooltip="All xét CRT/EGF/ISB qua ba kênh LTF độc lập; mỗi nhóm giữ model cũ nhất còn hiệu lực. Cụm HTF chỉ vẽ model ưu tiên để gọn. Chọn một nhóm để đối chiếu với cùng nhóm trong All.")
 // A higher chart uses its own timeframe for context-only overview.
 bool overviewMode = timeframe.in_seconds() > timeframe.in_seconds(htfInput)
@@ -31,7 +31,7 @@ htfPivotLength = 2
 tsReference = "C1 range"
 manualSsl = 0.0
 manualBsl = 0.0
-biasTf = input.timeframe("1D", "Bias TF (>= HTF)", group=G_BIAS, tooltip="Khung tham chiếu bias riêng, phải >= HTF. D1 là cấu hình khởi đầu; không đồng nghĩa bias cá nhân đọc từ FRVP/day high-low.")
+biasTf = input.timeframe("1D", "Bias TF (>= HTF)", options=["60", "120", "240", "1D"], group=G_BIAS, tooltip="Khung bias từ H1 đến D1, phải >= HTF hiệu lực. Mặc định D1; không đồng nghĩa bias cá nhân đọc từ FRVP/day high-low.")
 biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutral"], group=G_BIAS, tooltip="Auto dùng close phá swing xác nhận trên Bias TF; giữ hướng đến khi cấu trúc đổi. B0! tạm chặn theo close chart xuyên guard ngược hướng, không tự coi là bias đối diện. Long/Short/Neutral là ý kiến chủ động của bạn; reset khi bối cảnh thay đổi.")
 filterBias = true
 signalCadence = input.string(DEFAULT_SIGNAL_CADENCE, "Signal cadence", options=["Fresh reaction", "One per model"], group=G_ENTRY, tooltip="Sau dấu đầu cần pivot hồi mới đã xác nhận, tiến triển theo hướng giao dịch và xác nhận lại. Một nến đổi màu không đủ. EGF còn phải rời rồi trở lại IRL. Các kênh cùng nhịp chỉ gộp cùng bar, không phát nối đuôi khi chưa có pivot mới. One per model giữ một dấu/model.")

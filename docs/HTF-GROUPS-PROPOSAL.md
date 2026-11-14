@@ -1,10 +1,10 @@
 # HTF tùy chọn, vòng đời model và tách cụm
 
-Cập nhật 14/11/2026. HTF/Bias TF mở tự chọn, mặc định H1/D1 để đối chiếu ban đầu; không tự khẳng định mọi feed có OHLC/session giống hệt nhau. Chỉ báo là công cụ tham khảo cấu trúc, không thay quyết định trên Topstep.
+Cập nhật 14/11/2026. HTF/Bias TF chỉ giữ H1/H2/H4/D1, mặc định H1/D1 để đối chiếu ban đầu; không tự khẳng định mọi feed có OHLC/session giống hệt nhau. Chỉ báo là công cụ tham khảo cấu trúc, không thay quyết định trên Topstep.
 
 ## Đã sửa trong code
 
-- Inputs HTF và Bias TF đã mở tự chọn timeframe, không giới hạn H1/D1. Mặc định vẫn H1/D1. Khi chart cao hơn HTF input sẽ dùng chart timeframe làm VIEW; Bias TF phải >= timeframe hiệu lực. LTF M1/M3/M5 vẫn dùng tìm tín hiệu.
+- Inputs HTF và Bias TF đã chỉ giữ H1/H2/H4/D1. Mặc định vẫn H1/D1. Khi chart cao hơn HTF input sẽ dùng chart timeframe làm VIEW; Bias TF phải >= timeframe hiệu lực. LTF M1/M3/M5 vẫn dùng tìm tín hiệu.
 - Dấu Buy/Sell dùng tam giác native size=4, xấp xỉ nửa Tiny; Buy xanh dưới nến, Sell đỏ trên nến. Kích thước cố định theo lựa chọn mới, không dùng linefill theo chiều rộng nến.
 - Kiểm tra giá chạm CP/close xuyên INV của model **trước** khi EGF đổi bias và reset target. Đổi bias cùng nến không làm mất sự kiện chạm target cũ.
 - Nếu CRT chạm luôn biên đối diện ở nến hình thành, hoặc ISB chạm CP ngay nến resolve, không mở model cho một đường đi giá đã đi qua. Gắn **AMB**, không gán TG/TP vì OHLC không biết thứ tự nội nến.

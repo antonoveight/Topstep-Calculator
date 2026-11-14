@@ -36,7 +36,7 @@ Data Window bổ sung `Bias confirmed structure`, `Bias effective`, `Bias guard 
 
 ## Mở chart D khi HTF cài H1/H4
 
-Bản cũ báo runtime error vì chart > HTF. Bản hiện hành mở tự chọn HTF/Bias TF, mặc định H1/D1. Chart cao hơn input HTF dùng chart timeframe làm VIEW; ví dụ chart D + input H4 → VIEW D, về M5 tự dùng lại H4. Bias TF phải >= timeframe hiệu lực và chart TF phải chia hết HTF hiệu lực. Không dùng request khung thấp để giả một model H4 trên chart D và không phát entry trên VIEW. Bias TF phải >= timeframe hiệu lực; chart phải tiêu chuẩn và chia hết timeframe hiệu lực.
+Bản cũ báo runtime error vì chart > HTF. Bản hiện hành cho chọn HTF/Bias TF trong H1/H2/H4/D1, mặc định H1/D1. Chart cao hơn input HTF dùng chart timeframe làm VIEW; ví dụ chart D + input H4 → VIEW D, về M5 tự dùng lại H4. Bias TF phải >= timeframe hiệu lực và chart TF phải chia hết HTF hiệu lực. Không dùng request khung thấp để giả một model H4 trên chart D và không phát entry trên VIEW. Bias TF phải >= timeframe hiệu lực; chart phải tiêu chuẩn và chia hết timeframe hiệu lực.
 
 ## Kiểm tra
 

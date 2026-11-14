@@ -169,8 +169,8 @@ for(const dir of [1,-1]){
  targetFlip.bias=-dir;targetFlip.step(bar(3,105,116,94,105));
  assert.equal(targetFlip.retired.find(r=>r.id===oldId)?.reason,'target','Bias flip cannot erase a target touched in the same HTF candle');
 }
-assert.match(source,/htfInput = input.timeframe\("60", "HTF", group=G_HTF/);
-assert.match(source,/biasTf = input.timeframe\("1D", "Bias TF \(>= HTF\)", group=G_BIAS/);
+assert.match(source,/htfInput = input.timeframe\("60", "HTF", options=\["60", "120", "240", "1D"\]/);
+assert.match(source,/biasTf = input.timeframe\("1D", "Bias TF \(>= HTF\)", options=\["60", "120", "240", "1D"\]/);
 for(const dir of [1,-1]){
  const hitBar=dir===1?bar(2,104,110,99,105):bar(2,106,111,100,105);
  const cp=dir===1?110:100;
