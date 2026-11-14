@@ -275,7 +275,7 @@ assert.equal(evaluateExpr(htfZoneInvalid,{m:{irlDir:1,irlL:100,irlH:105},low:98,
 const ltfZoneInvalid=source.match(/state.irlFailed := (egfScenario[^\n]+)/)[1];
 assert.equal(evaluateExpr(ltfZoneInvalid,{egfScenario:true,state:{irlTouched:true},bullish:true,close:99,sIrlL:100,sIrlH:105}),true);
 assert.equal(evaluateExpr(ltfZoneInvalid,{egfScenario:true,state:{irlTouched:true,irlFailed:true},bullish:true,close:101,sIrlL:100,sIrlH:105}),false,'Pending LTF excursion can reclaim while the confirmed HTF context remains valid');
-assert.match(source,/style=label.style_none, textcolor=markerColor, size=6/,'Compact triangle glyph is smaller than tiny text and independent of chart font size');
+assert.match(source,/linefill.new\(leftEdge, rightEdge, markerColor\)/,'Triangle uses chart-coordinate geometry instead of a font glyph');
 // Sequential OHLC fixtures execute the actual channel body through a restricted harness.
 const channelHarness=require('./helpers/pine-channel-harness.cjs').createHarness(source);
 const marketStep=(ctx,state,tape,options={})=>channelHarness.step(ctx,state,tape,{timing:'Confirmation close',...options});
@@ -352,7 +352,7 @@ assert.equal(mssHits[2].tag,'M');
 assert.match(source,/signalTiming = input.string\(DEFAULT_SIGNAL_TIMING/);
 assert.match(source,/recentOnly = input.bool\(true,/);
 assert.doesNotMatch(source,/extend=extend.right/,'No unbounded level projection');
-assert.match(source,/string markerGlyph = up \? "▴" : "▾"/);
+assert.match(source,/int markerHalfWidth = int\(chartSeconds \* 1000 \* 0.4\)/);
 assert.match(source,/if entryLong and showEntryTriangles/);
 assert.match(source,/if entryShort and showEntryTriangles/);
 assert.match(source,/lastVisualIndex := bar_index/,'LTF anchors start at actual condition bar');
@@ -394,11 +394,7 @@ for(const nextPrice of [100,100,100.01,101,200]){
  assert.ok(previousY==null||labelPrice-previousY>=visibleLabelGap,'Nearby annotations are vertically spaced without changing source levels');
  previousY=labelPrice;
 }
-// Native candle-relative placement must not depend on ATR or price-scale offsets.
-for(const up of [true,false]){
- const yloc={belowbar:'belowbar',abovebar:'abovebar'};
- assert.equal(evaluate('markerLocation',{up,yloc}),up?'belowbar':'abovebar');
-}
+require('./candle-width-markers.cjs');
 for(const clusterWidth of [2,3,6,7,15,16]){
  const candleWidth=evaluate('candleWidth',{clusterWidth});
  const left=100,right=100+candleWidth,middle=evaluate('middle',{left,right,int:Math.trunc});

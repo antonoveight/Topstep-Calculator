@@ -1031,6 +1031,9 @@ var array<int> renderedEnds = array.new<int>(16, na)
 var array<line> labelLeaders = array.new<line>()
 var array<label> eventLabels = array.new<label>()
 var array<int> eventBuckets = array.new<int>()
+var array<line> eventLeftEdges = array.new<line>()
+var array<line> eventRightEdges = array.new<line>()
+var array<linefill> eventFills = array.new<linefill>()
 var array<box> clusterBodies = array.new<box>()
 var array<line> clusterWicks = array.new<line>()
 var array<label> clusterLabels = array.new<label>()
@@ -1193,16 +1196,36 @@ f_layoutLabels() =>
                 line.set_xy2(leader, endpoint + 1, labelPrice)
                 line.set_color(leader, color.new(chart.fg_color, 45))
             previousY := labelPrice
+// Two finite edges plus a linefill form a solid triangle without font-size dependence.
+// 80% of one chart interval approximates the standard candlestick body width.
+f_dropMark(int index) =>
+    label.delete(array.remove(eventLabels, index))
+    linefill.delete(array.remove(eventFills, index))
+    line.delete(array.remove(eventLeftEdges, index))
+    line.delete(array.remove(eventRightEdges, index))
+    array.remove(eventBuckets, index)
+
 f_note(bool up, string hint) =>
-    string markerLocation = up ? yloc.belowbar : yloc.abovebar
     color markerColor = up ? color.lime : color.red
-    string markerGlyph = up ? "▴" : "▾"
+    int markerHalfWidth = int(chartSeconds * 1000 * 0.4)
+    int markerLeft = time - markerHalfWidth
+    int markerRight = time + markerHalfWidth
+    float markerHeight = math.max(visibleLabelGap * 0.25, syminfo.mintick * 2)
+    float markerGap = markerHeight * 0.65
+    float markerTip = up ? low - markerGap : high + markerGap
+    float markerBase = up ? markerTip - markerHeight : markerTip + markerHeight
+    float markerCenter = (markerTip + markerBase) / 2
     if markLimit > 0
-        array.push(eventLabels, label.new(bar_index, na, markerGlyph, xloc=xloc.bar_index, yloc=markerLocation, style=label.style_none, textcolor=markerColor, size=6, force_overlay=true, tooltip=hint))
+        line leftEdge = line.new(markerLeft, markerBase, time, markerTip, xloc=xloc.bar_time, extend=extend.none, color=color.new(markerColor, 100), width=1, force_overlay=true)
+        line rightEdge = line.new(markerRight, markerBase, time, markerTip, xloc=xloc.bar_time, extend=extend.none, color=color.new(markerColor, 100), width=1, force_overlay=true)
+        array.push(eventLeftEdges, leftEdge)
+        array.push(eventRightEdges, rightEdge)
+        array.push(eventFills, linefill.new(leftEdge, rightEdge, markerColor))
+        // Invisible hit area preserves the existing signal tooltip over the triangle.
+        array.push(eventLabels, label.new(time, markerCenter, " ", xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_center, color=color.new(markerColor, 100), textcolor=color.new(markerColor, 100), size=10, force_overlay=true, tooltip=hint))
         array.push(eventBuckets, bucketCounter)
     while array.size(eventLabels) > markLimit
-        label.delete(array.shift(eventLabels))
-        array.shift(eventBuckets)
+        f_dropMark(0)
 string buyHint = ""
 string sellHint = ""
 for i = 0 to 2
@@ -1222,8 +1245,7 @@ if not retainHistory and recentOnly and barstate.islast
     int markIndex = array.size(eventLabels) - 1
     while markIndex >= 0
         if bucketCounter - array.get(eventBuckets, markIndex) > drawHtfBars
-            label.delete(array.remove(eventLabels, markIndex))
-            array.remove(eventBuckets, markIndex)
+            f_dropMark(markIndex)
         markIndex -= 1
 
 // Counts use closed chart bars across the loaded dataset, independent of display pruning.
