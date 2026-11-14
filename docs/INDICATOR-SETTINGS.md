@@ -26,7 +26,7 @@ HTF H1 hoặc D1 theo hai khung đối chiếu đang dùng; chart M5; Bias Auto 
 | Model HTF candle cluster | Bật MODEL + FOLLOW của cùng model đang ưu tiên. MODEL giữ nến gốc; FOLLOW bắt đầu từ nến kế tiếp. |
 | Follow candles to show | Mặc định 6, chọn 2–12 nến gần nhất của FOLLOW. Dấu … báo số nến diễn biến bị lược hiển thị; dữ liệu/tuổi/tín hiệu vẫn tính đủ. |
 | Last ended model cluster | Mặc định tắt. Bật cụm LAST với nến nguồn mờ và mã TG/INV/TO/AMB/HIST của model vừa kết thúc. Không phát entry. |
-| Cluster offset | Mặc định 30 bar; tăng nếu muốn thêm khoảng trống bên phải chữ. |
+| Cluster offset | Mặc định 30 bar; khoảng cách thực tế có vùng đệm tối thiểu theo cỡ chữ để tách chú giải khỏi nến. Tăng nếu muốn thêm khoảng trống. |
 | Cluster body width | Mặc định 4 bar; số lẻ làm tròn xuống chẵn để râu đúng tâm. |
 | Model range / ERL / CP | Các line cấu trúc và mục tiêu có điều kiện. Không ảnh hưởng logic tam giác khi tắt. |
 | HTF internal liquidity / FVG | Hiện FVG, OB fallback và swing H/L HTF. Riêng box FVG neo C1 HTF khi mở LTF, chỉ xuất hiện sau close C3. |

@@ -1011,8 +1011,8 @@ int modelAnchorIndex = onHtf and barstate.islast and not na(sId) and (not recent
 int drawAnchorIndex = onHtf ? modelAnchorIndex : lastVisualKey == modelKey and not na(lastVisualIndex) ? lastVisualIndex : modelObservedIndex
 int drawAnchorTime = onHtf ? modelAnchorTime : lastVisualKey == modelKey and not na(lastVisualTime) ? lastVisualTime : modelObservedTime
 int drawSpan = int(math.ceil(drawHtfBars * htfSeconds / chartSeconds))
-int labelLaneBars = chartTextSize == "Huge" ? 24 : chartTextSize == "Large" ? 18 : chartTextSize == "Small" ? 10 : 14
-int clusterStartIndex = bar_index + (showLevels or showConfirm ? math.max(clusterOffset, labelLaneBars + 5) : clusterOffset)
+int labelLaneBars = chartTextSize == "Huge" ? 48 : chartTextSize == "Large" ? 36 : chartTextSize == "Small" ? 18 : 26
+int clusterStartIndex = bar_index + (showLevels or showConfirm or showIrl ? math.max(clusterOffset, labelLaneBars + 12) : clusterOffset)
 int drawingClipIndex = showCluster ? clusterStartIndex - labelLaneBars - 2 : bar_index + 498
 int drawEndIndex = not na(drawAnchorIndex) ? math.min(drawAnchorIndex + drawSpan, drawingClipIndex) : na
 bool recentModel = not na(sId) and not na(sModelAge) and sModelAge <= drawHtfBars
@@ -1386,7 +1386,7 @@ if barstate.islast
                 drawSlot += 1
             int headingTime = groupStartTime + int((groupCount * clusterStep - clusterStep + bodyWidth) * 0.5 * chartSeconds * 1000)
             label.set_xy(heading, headingTime, labelY - math.max(groupSpan * 0.12, syminfo.mintick * 8))
-            string headingText = group == 0 ? "MODEL / " + tag : group == 1 ? "FOLLOW" + (followTotal > followCount ? " …" + str.tostring(followTotal - followCount) : "") : "LAST / " + f_endTag(sArchived.endReason)
+            string headingText = group == 0 ? tag : group == 1 ? "FOLLOW" + (followTotal > followCount ? " …" + str.tostring(followTotal - followCount) : "") : "LAST / " + f_endTag(sArchived.endReason)
             label.set_text(heading, headingText)
             label.set_textcolor(heading, group == 2 ? color.gray : chart.fg_color)
             label.set_tooltip(heading, group == 2 ? f_tag(sArchived.flags, sArchived.kind, sArchived.phase) + " | End " + str.format_time(sArchived.endedAt, "dd/MM HH:mm", NY) + " NY | historical reference; no entries" : group == 1 ? str.tostring(followCount) + " shown / " + str.tostring(followTotal) + " after model; full series still tracked" : "Frozen model source | age " + str.tostring(sModelAge) + (lifeHtf > 0 ? "/" + str.tostring(lifeHtf) : ""))

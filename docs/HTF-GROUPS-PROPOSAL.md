@@ -24,6 +24,8 @@ CRT/TS lấy mục tiêu là biên đối diện range; EGF/ISB breakout dùng E
 
 ## Bố cục đã triển khai
 
+Cụm đầu chỉ hiển thị tên mẫu (ví dụ EGF, CRT/TS, ISB/BR), không có tiền tố MODEL. Cột chú giải có vùng đệm rộng theo cỡ chữ trước nến đầu; áp dụng cả khi chỉ bật IRL và tắt các mức range/ERL.
+
 Mặc định **hai nhóm nến của cùng một model** với khoảng trống rõ ràng:
 
 `[ MODEL GỐC: C1 C2 (C3) ]     [ DIỄN BIẾN: nến tiếp theo … N* ]`
