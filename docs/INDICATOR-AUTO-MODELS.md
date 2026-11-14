@@ -40,7 +40,7 @@ Line xloc.bar_time bắt đầu từ nến nguồn; trên LTF map HTF high/low v
 
 Điểm kết thúc dùng horizon từ neo tổng quan/tín hiệu hiện hành, cắt trước cột nhãn và cụm HTF; không giới hạn chiều dài tính từ swing cũ vì như vậy ERL cũ sẽ biến mất. Không extend.right. Timestamps vượt phần tương lai có thể vẽ dùng bước chart TF để chiếu vài bar; lịch nghỉ/session gap có thể làm phần chiếu ngắn hơn bố cục bar-index.
 
-Nhãn chữ trong suốt, gộp đúng mức/cùng nguồn và giãn theo dải giá nhìn thấy. Không dịch giá thật để né chữ; có leader khi nhãn dời. Cụm bên phải offset 30, thân 4, râu solid 1 px và đúng tâm; dùng OHLC nguồn thực. Chỉ tam giác cố định size.tiny, Buy xanh dưới nến/Sell đỏ trên nến, không chữ hoặc line C/M cạnh bar. Các hit cùng hướng/cùng bar gộp một hình với tooltip chứa từng context; counter tăng theo hit của từng kênh. Dashboard vẫn hiển thị trạng thái nội bộ.
+Nhãn chữ trong suốt, gộp đúng mức/cùng nguồn và giãn theo dải giá nhìn thấy. Không dịch giá thật để né chữ; có leader khi nhãn dời. Cụm bên phải offset 30, thân 4, râu solid 1 px và đúng tâm; dùng OHLC nguồn thực. Chỉ tam giác glyph cố định 6pt, Buy xanh dưới nến/Sell đỏ trên nến, không chữ hoặc line C/M cạnh bar. Các hit cùng hướng/cùng bar gộp một hình với tooltip chứa từng context; counter tăng theo hit của từng kênh. Dashboard vẫn hiển thị trạng thái nội bộ.
 
 Không thể hứa không chồng chữ ở mọi zoom/scale/cửa sổ vì Pine không cung cấp bounding box pixel. overlay + scale.none + force_overlay giữ cùng pane giá; instance phải ghim cùng scale symbol: [TradingView scale](https://www.tradingview.com/support/solutions/43000775579-indicator-moves-separately-or-is-not-attached-to-the-price/).
 

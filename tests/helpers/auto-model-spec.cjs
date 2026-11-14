@@ -5,15 +5,15 @@ class RegistrySpec {
   const index=this.bars.length,prior=this.bars.at(-1);this.bars.push(bar);
   this.models=this.models.filter(m=>{
    if(!m.c3&&(m.dir||m.kind===2))m.c3={...bar};
-   if(m.kind===2&&m.dir!==this.bias){m.dir=this.bias;m.phase=0;m.resolved=bar.t;m.inv=m.dir===1?m.lo:m.dir===-1?m.hi:null;m.cp=null;}
    const bad=m.dir&&(m.dir===1?(this.mode==='Close'?bar.c<m.inv:bar.l<m.inv):(this.mode==='Close'?bar.c>m.inv:bar.h>m.inv));
    const reached=m.cp!=null&&m.dir&&(m.dir===1?bar.h>=m.cp:bar.l<=m.cp);
    if(bad||reached||this.life>0&&index-m.index>=this.life){this.retired.push({id:m.id,reason:bad&&reached?'ambiguous':bad?'invalid':reached?'target':'expiry'});return false;}
+   if(m.kind===2&&m.dir!==this.bias){m.dir=this.bias;m.phase=0;m.resolved=bar.t;m.inv=m.dir===1?m.lo:m.dir===-1?m.hi:null;m.cp=null;}
    if(m.kind===3&&!m.dir){
     const lo=bar.l<=m.lo-.25,hi=bar.h>=m.hi+.25,inside=bar.c>m.lo&&bar.c<m.hi;
     if(lo&&hi&&inside){this.retired.push({id:m.id,reason:'ambiguous'});return false;}
     const direction=lo&&!hi&&inside?1:hi&&!lo&&inside?-1:bar.c>m.hi?1:bar.c<m.lo?-1:0;
-    if(direction){m.dir=direction;m.phase=inside?1:2;m.resolved=bar.t;m.inv=direction===1?Math.min(bar.l,m.lo):Math.max(bar.h,m.hi);m.cp=inside?(direction===1?m.hi:m.lo):null;m.c3={...bar};}
+    if(direction){m.dir=direction;m.phase=inside?1:2;m.resolved=bar.t;m.inv=direction===1?Math.min(bar.l,m.lo):Math.max(bar.h,m.hi);m.cp=inside?(direction===1?m.hi:m.lo):null;m.c3={...bar};if(inside&&(direction===1?bar.h>=m.cp:bar.l<=m.cp)){this.retired.push({id:m.id,reason:'ambiguous'});return false;}}
    }
    return true;
   });
@@ -25,7 +25,8 @@ class RegistrySpec {
     else{
      const kind=crt?1:isb?3:2,dir=crt?(p.tsBull?1:-1):kind===2?this.bias:0;
      const hi=kind===2?Math.max(prior.h,bar.h):prior.h,lo=kind===2?Math.min(prior.l,bar.l):prior.l;
-     this.models.push({id:bar.t,index,kind,flags:(crt?1:0)+(p.engulfBull||p.engulfBear?2:0)+(isb?4:0)+(p.outsideBar?8:0),dir,phase:crt?1:0,hi,lo,inv:dir===1?Math.min(bar.l,lo):dir===-1?Math.max(bar.h,hi):null,cp:crt?(dir===1?hi:lo):null,c1:{...prior},c2:{...bar},c3:null,resolved:dir?bar.t:null});
+     if(crt&&(dir===1?bar.h>=hi:bar.l<=lo))this.retired.push({id:bar.t,reason:'ambiguous'});
+     else this.models.push({id:bar.t,index,kind,flags:(crt?1:0)+(p.engulfBull||p.engulfBear?2:0)+(isb?4:0)+(p.outsideBar?8:0),dir,phase:crt?1:0,hi,lo,inv:dir===1?Math.min(bar.l,lo):dir===-1?Math.max(bar.h,hi):null,cp:crt?(dir===1?hi:lo):null,c1:{...prior},c2:{...bar},c3:null,resolved:dir?bar.t:null});
     }
    }
   }

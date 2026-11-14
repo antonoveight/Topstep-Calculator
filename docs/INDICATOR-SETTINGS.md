@@ -6,16 +6,16 @@ Bản hiện hành tập trung dựng bối cảnh HTF và phát tam giác xác 
 
 Preset nền đã qua kiểm tra **tương thích workflow**, không phải tối ưu lợi nhuận thị trường: xem [kết quả 20 tổ hợp và phạm vi kiểm tra](DAY-TRADING-DEFAULTS.md). Các mặc định LTF được khai báo tập trung trong code; chúng khớp cấu hình đang dùng nên không thay đổi hành vi so với bản trước.
 
-HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; LTF condition Auto; time filter Context only. Để quan sát tần suất: Signal display = History, giữ 100 tam giác. Cửa sổ 3 nến HTF chỉ giới hạn line, không xóa dấu ở chế độ History. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
+HTF H1 hoặc D1 theo hai khung đối chiếu đang dùng; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; LTF condition Auto; time filter Context only. Để quan sát tần suất: Signal display = History, giữ 100 tam giác. Cửa sổ 3 nến HTF chỉ giới hạn line, không xóa dấu ở chế độ History. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
 
 ## 23 setting
 
 | Setting | Vai trò |
 | --- | --- |
-| HTF | H1/H2/H4/D1 dựng range/model từ nến đã đóng. |
+| HTF | Chỉ H1/D1 dựng range/model từ nến đã đóng. |
 | Models to observe | All chạy ba kênh LTF độc lập CRT/EGF/ISB; mỗi nhóm dùng model cũ nhất còn hiệu lực. Cụm HTF vẫn chỉ vẽ model ưu tiên chung. Chọn riêng một nhóm để đối chiếu. |
 | Model timeout | Mặc định 8 nến HTF sau C2; 0 tắt, tối đa 48. Không reset tuổi do đổi bias/IRL hoặc resolve ISB. Hết hạn bỏ model khỏi cụm và kênh tín hiệu. |
-| Bias TF | Khung bias >= HTF; mặc định D1. Auto dùng cấu trúc swing và close đã xác nhận, có guard intraday; xem B0!, không có dữ liệu FRVP cá nhân. |
+| Bias TF | Chỉ H1/D1, khung bias >= HTF; mặc định D1. Auto dùng cấu trúc swing và close đã xác nhận, có guard intraday; xem B0!, không có dữ liệu FRVP cá nhân. |
 | Bias | Auto / Long / Short / Neutral. EGF lấy hướng kịch bản từ bias, không lấy từ màu nến. CRT/ISB phải thuận bias để phát dấu. |
 | LTF condition | Auto / CISD / MSS / FVG retest / OB retest. Đây là điều kiện phát tín hiệu, không phải lựa chọn giá khớp lệnh. |
 | Signal timing | Mặc định Pullback: đợi hồi kiểm tra sau xác nhận. Confirmation close: cho phép dấu ở nến đóng phá C/M cho cách vào market. FVG/OB retest luôn đợi nến sau hình thành. |
@@ -36,7 +36,7 @@ HTF H1 hoặc H2 theo khung đọc cấu trúc; chart M5; Bias Auto D1 hoặc Lo
 | Chart text size | Small/Normal/Large/Huge; mặc định Normal. Chữ nền trong suốt. |
 | Dashboard text size | Small/Normal/Large; mặc định Small. |
 
-Chart tiêu chuẩn: nếu chart > HTF input, chỉ báo dùng chart TF làm bối cảnh VIEW, không phát entry; về LTF dùng lại HTF đã chọn. Bias TF phải >= timeframe hiệu lực. Chỉ M1/M3/M5 nhỏ hơn HTF phát tín hiệu; xem [quy tắc D overview](BIAS-AND-SIGNAL-TIMING.md).
+Chart tiêu chuẩn: nếu chart D1 > HTF H1 input, chỉ báo dùng D1 làm bối cảnh VIEW, không phát entry; về LTF dùng lại HTF đã chọn. Bias TF phải >= timeframe hiệu lực. Chỉ M1/M3/M5 nhỏ hơn HTF phát tín hiệu; xem [quy tắc D overview](BIAS-AND-SIGNAL-TIMING.md).
 
 ## Những mục đã bỏ khỏi Inputs
 
@@ -44,7 +44,7 @@ Giới hạn pool/queue, pivot, độ xuyên tick, recovery và invalidation cơ
 
 Bỏ nhập tay SSL/BSL/POC/BL/SL/CP và các mode POC/Line, gate R:R tại close tín hiệu, model phụ, C/M sơ bộ và plot TDO/TO khỏi giao diện. CRT tự dùng C1 range. Không ép min R:R từ close của tam giác vì bạn sẽ chọn giá entry thực tế; vẫn kiểm tra hướng mục tiêu và không phát dấu khi bar chạm INV tham chiếu hoặc CP đã bị lấy. Chỉ báo không biết SL thực tế của bạn.
 
-OB/FVG **LTF** vẫn chỉ lọc nội bộ, không vẽ box/zone/nhãn entry. IRL HTF của EGF hiển thị riêng: FVG HTF hai hướng nếu tồn tại. Không vẽ line CISD/MSS hoặc chữ cạnh tam giác. Tam giác Tiny: xanh Buy dưới nến, đỏ Sell trên nến; xem loại xác nhận trong tooltip.
+OB/FVG **LTF** vẫn chỉ lọc nội bộ, không vẽ box/zone/nhãn entry. IRL HTF của EGF hiển thị riêng: FVG HTF hai hướng nếu tồn tại. Không vẽ line CISD/MSS hoặc chữ cạnh tam giác. Tam giác nhỏ 6pt: xanh Buy dưới nến, đỏ Sell trên nến; xem loại xác nhận trong tooltip.
 
 ## Timeout và đọc IRL
 
@@ -104,3 +104,7 @@ Xem [đặc tả và giới hạn kiểm tra](INDICATOR-AUTO-MODELS.md). Ảnh m
 Fresh reaction: sau một hit phải có pivot hồi đã xác nhận với nguồn sau nến tín hiệu (Buy pivot Low, Sell pivot High), Low cao hơn đáy nến hit và close vượt đỉnh nến hit đối với Buy; đối xứng với Sell. EGF còn phải rời rồi chạm lại IRL. Không mở lượt chỉ do một nến đổi màu. Lượt chờ chưa phát có thể được thay khi pivot hồi mới thuộc sau xác nhận cũ và run đối hướng mới xuất hiện sau xác nhận đó. Trong lượt mới, bỏ FVG/OB/C-M cũ, giữ run mới nếu hợp lệ; xác nhận tại nến hiện tại đã đóng, không backdate về nến pivot. Pullback tiếp tục đợi nến sau retest. One per model vẫn giữ everSent.
 
 Bộ lọc sóng dùng chung giữa CRT/EGF/ISB: sau một Buy, Buy ở nến sau cần một pivot Low đã xác nhận có timestamp nguồn sau nến Buy trước; Sell dùng pivot High tương ứng. Đổi model/revision hoặc đổi IRL không vượt qua gate này. Các hit cùng hướng cùng bar vẫn gộp một tam giác và giữ provenance; hit nối đuôi chưa có pivot mới nhận WAVE WAIT, không tiêu thụ state.sent. Lượt mới có thể được model/kênh khác phát trước, khi đó kênh theo sau trong cùng nhịp cũng bị chặn. Không dùng cooldown số nến cố định và không nhìn trước pivot.
+
+## Vòng đời và bố cục cụm
+
+Model hiện kết thúc khi TG/INV/TO/AMB hoặc ngoài recovery HIST. Kiểm tra target cũ trước khi EGF đổi bias. Xem [điều kiện chi tiết và đề xuất hai cụm](HTF-GROUPS-PROPOSAL.md); phần tách cụm và archive mới là đề xuất, chưa thay dãy đang vẽ.

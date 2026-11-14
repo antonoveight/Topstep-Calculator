@@ -29,9 +29,9 @@ assert.equal(expression('biasPaused',{...base,biasMode:'Long'}),false,'Manual bi
 assert.equal(expression('biasCheckClose',{barstate:{isconfirmed:false},close:90,previous:{close:105}}),105,'Intrabar price cannot make the closed-bar veto flicker');
 assert.equal(expression('biasCheckClose',{barstate:{isconfirmed:true},close:99,previous:{close:105}}),99);
 for(const field of ['direction','age','swingHigh','swingLow','guardHigh','guardLow'])assert.ok(source.includes(`previous ? ${field}[1] : ${field}`),'All six bias snapshot fields must be individually confirmed');
-assert.match(source,/label.new\(bar_index, na, "", xloc=xloc.bar_index, yloc=markerLocation/,'Triangles use current condition bar, never a pivot offset');
+assert.match(source,/label.new\(bar_index, na, markerGlyph, xloc=xloc.bar_index, yloc=markerLocation/,'Triangles use current condition bar, never a pivot offset');
 assert.match(source,/Signal CLOSE/,'Tooltip distinguishes signal-close time from candle-open time');
-const tf={in_seconds:x=>x==='240'?14400:86400,period:'1D'};
-const overviewMode=expression('overviewMode',{timeframe:tf,htfInput:'240'});
-assert.equal(overviewMode,true);assert.equal(expression('htf',{overviewMode,htfInput:'240',timeframe:tf}),'1D','Opening D uses D overview, not an invalid H4 lower-TF snapshot');
+const tf={in_seconds:x=>x==='60'?3600:86400,period:'1D'};
+const overviewMode=expression('overviewMode',{timeframe:tf,htfInput:'60'});
+assert.equal(overviewMode,true);assert.equal(expression('htf',{overviewMode,htfInput:'60',timeframe:tf}),'1D','Opening D uses D overview of the selected H1 context');
 console.log('PASS structural bias, protection trail, persistence, symmetric reversals, closed-bar veto, six confirmed snapshot fields, marker anchoring and D overview. No market/Replay result claimed.');

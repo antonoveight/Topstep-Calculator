@@ -152,6 +152,37 @@ assert.equal(pickIrl(model,[{...fvg,filled:true},ob]),ob,'Preserve the existing 
 assert.equal(pickIrl(model,[{...fvg,hi:111},{...fvg,dir:-1}]),null,'No fabricated IRL when no eligible zone exists');
 assert.deepEqual(pickErl(model,[{price:115,side:1},{price:112,side:1},{price:111,side:1,consumed:true},{price:98,side:-1}]),{up:112,down:98});
 assert.deepEqual(pickErl(model,[]),{up:null,down:null});
+const endCases=[
+ [{bad:false,reached:false,expired:false,m:{uid:100},scanStart:0},0],
+ [{bad:true,reached:false,expired:false,m:{uid:100},scanStart:0},1],
+ [{bad:false,reached:true,expired:true,m:{uid:100},scanStart:0},2],
+ [{bad:false,reached:false,expired:true,m:{uid:100},scanStart:0},3],
+ [{bad:true,reached:true,expired:true,m:{uid:100},scanStart:0},4],
+ [{bad:false,reached:false,expired:true,m:{uid:100},scanStart:101},5]
+];
+for(const [ctx,reason] of endCases)assert.equal(evaluate('endingReason',ctx),reason);
+assert.ok(engine.indexOf('bool reached =')<engine.indexOf('if m.kind == 2 and m.dir != contextBias'),'Evaluate old target before bias revision can clear it');
+for(const dir of [1,-1]){
+ const targetFlip=new RegistrySpec(patterns,{bias:dir});
+ for(const b of expansionBars)targetFlip.step(b);
+ const oldId=targetFlip.models[0].id;targetFlip.models[0].cp=dir===1?115:95;
+ targetFlip.bias=-dir;targetFlip.step(bar(3,105,116,94,105));
+ assert.equal(targetFlip.retired.find(r=>r.id===oldId)?.reason,'target','Bias flip cannot erase a target touched in the same HTF candle');
+}
+assert.match(source,/htfInput = input.timeframe\("60", "HTF", options=\["60", "1D"\]/);
+assert.match(source,/biasTf = input.timeframe\("1D", "Bias TF \(>= HTF\)", options=\["60", "1D"\]/);
+for(const dir of [1,-1]){
+ const hitBar=dir===1?bar(2,104,110,99,105):bar(2,106,111,100,105);
+ const cp=dir===1?110:100;
+ assert.equal(evaluate('targetAtBirth',{crt:true,direction:dir,high:hitBar.h,low:hitBar.l,fresh:{cp}}),true);
+ const bornDone=new RegistrySpec(patterns);bornDone.step(first);bornDone.step(hitBar);
+ assert.equal(bornDone.snapshot().length,0,'Do not arm a CRT whose opposite boundary was already touched at confirmation');
+ assert.equal(bornDone.retired.at(-1).reason,'ambiguous','Do not infer intrabar order or claim TP on the formation candle');
+ const resolveDone=new RegistrySpec(patterns);resolveDone.step(first);resolveDone.step(bar(2,104,108,102,106));
+ const id=resolveDone.models[0].id;resolveDone.step({...hitBar,t:3});
+ assert.equal(resolveDone.retired.find(x=>x.id===id)?.reason,'ambiguous','ISB resolution and target in one candle have unknown intrabar order');
+ assert.equal(evaluate('resolutionReached',{backIn:true,resolveDir:dir,high:hitBar.h,low:hitBar.l,m:{cp}}),true);
+}
 // Read-only projection of a closed HTF snapshot: all LTF samples share the same model/candles.
 const tape=new RegistrySpec(patterns),events=[];
 for(const b of [first,ts,bar(3,101,109,100.5,108)])events.push({closedAt:b.t*3600000,snapshot:tape.step(b)});
@@ -244,7 +275,7 @@ assert.equal(evaluateExpr(htfZoneInvalid,{m:{irlDir:1,irlL:100,irlH:105},low:98,
 const ltfZoneInvalid=source.match(/state.irlFailed := (egfScenario[^\n]+)/)[1];
 assert.equal(evaluateExpr(ltfZoneInvalid,{egfScenario:true,state:{irlTouched:true},bullish:true,close:99,sIrlL:100,sIrlH:105}),true);
 assert.equal(evaluateExpr(ltfZoneInvalid,{egfScenario:true,state:{irlTouched:true,irlFailed:true},bullish:true,close:101,sIrlL:100,sIrlH:105}),false,'Pending LTF excursion can reclaim while the confirmed HTF context remains valid');
-assert.match(source,/color=markerColor, size=size.tiny/,'Triangle size is fixed, independent of chart text size');
+assert.match(source,/style=label.style_none, textcolor=markerColor, size=6/,'Compact triangle glyph is smaller than tiny text and independent of chart font size');
 // Sequential OHLC fixtures execute the actual channel body through a restricted harness.
 const channelHarness=require('./helpers/pine-channel-harness.cjs').createHarness(source);
 const marketStep=(ctx,state,tape,options={})=>channelHarness.step(ctx,state,tape,{timing:'Confirmation close',...options});
@@ -321,7 +352,7 @@ assert.equal(mssHits[2].tag,'M');
 assert.match(source,/signalTiming = input.string\(DEFAULT_SIGNAL_TIMING/);
 assert.match(source,/recentOnly = input.bool\(true,/);
 assert.doesNotMatch(source,/extend=extend.right/,'No unbounded level projection');
-assert.match(source,/label.style_triangleup : label.style_triangledown/);
+assert.match(source,/string markerGlyph = up \? "▴" : "▾"/);
 assert.match(source,/if entryLong and showEntryTriangles/);
 assert.match(source,/if entryShort and showEntryTriangles/);
 assert.match(source,/lastVisualIndex := bar_index/,'LTF anchors start at actual condition bar');
