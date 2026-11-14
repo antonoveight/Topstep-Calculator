@@ -8,7 +8,7 @@ Preset nền đã qua kiểm tra **tương thích workflow**, không phải tố
 
 HTF H1 hoặc D1 theo hai khung đối chiếu đang dùng; chart M5; Bias Auto D1 hoặc Long/Short do bạn xác định; LTF condition Auto; time filter Context only. Để quan sát tần suất: Signal display = History, giữ 100 tam giác. Cửa sổ 3 nến HTF chỉ giới hạn line, không xóa dấu ở chế độ History. Cụm bên phải mặc định cách 30 bar, thân 4 bar. Chữ chart Normal, dashboard Small.
 
-## 23 setting
+## 25 setting
 
 | Setting | Vai trò |
 | --- | --- |
@@ -23,7 +23,9 @@ HTF H1 hoặc D1 theo hai khung đối chiếu đang dùng; chart M5; Bias Auto 
 | Time filter | Context only không chặn giờ; Web macros/working windows giới hạn giờ tín hiệu theo New York có DST. |
 | Macro background | Bật/tắt nền macro. Không tạo bias. |
 | QT clock context | Hiện đồng hồ quý trong dashboard, không quyết định hướng. |
-| Model HTF candle cluster | Toàn bộ dãy HTF từ C1 model còn hiệu lực đến N* hiện tại, gồm các nến trung gian; không còn giới hạn bốn nến. |
+| Model HTF candle cluster | Bật MODEL + FOLLOW của cùng model đang ưu tiên. MODEL giữ nến gốc; FOLLOW bắt đầu từ nến kế tiếp. |
+| Follow candles to show | Mặc định 6, chọn 2–12 nến gần nhất của FOLLOW. Dấu … báo số nến diễn biến bị lược hiển thị; dữ liệu/tuổi/tín hiệu vẫn tính đủ. |
+| Last ended model cluster | Mặc định tắt. Bật cụm LAST với nến nguồn mờ và mã TG/INV/TO/AMB/HIST của model vừa kết thúc. Không phát entry. |
 | Cluster offset | Mặc định 30 bar; tăng nếu muốn thêm khoảng trống bên phải chữ. |
 | Cluster body width | Mặc định 4 bar; số lẻ làm tròn xuống chẵn để râu đúng tâm. |
 | Model range / ERL / CP | Các line cấu trúc và mục tiêu có điều kiện. Không ảnh hưởng logic tam giác khi tắt. |
@@ -54,7 +56,7 @@ IRL giữ đủ FVG, OB fallback và swing H/L HTF như logic đã có; không l
 
 ## Đọc theo từng model
 
-Cụm HTF không bị ẩn theo tuổi line khi model còn hiệu lực. Dãy lấy OHLC từ các bucket chart đã tải, ưu tiên dữ liệu chart khi trùng nến nguồn; chỉ dùng OHLC nguồn HTF làm fallback khi thiếu bucket tương ứng. N* cập nhật theo nến hiện tại, không nhân đôi nến. C1/C2/TS/BR/C3 đánh dấu nguồn; nến trung gian không thêm chữ. Dãy dài tự thu khoảng cách và thân trong vùng 420 bar chart. Script dành tối đa 450 cặp thân/râu để không vượt ngân sách đối tượng; vượt mức sẽ báo rõ và không vẽ một dãy bị cắt đầu. Không thể khôi phục nến trung gian chưa có trong dữ liệu chart đã tải; cần tải đủ lịch sử tới C1 để đối chiếu toàn bộ dãy.
+MODEL giữ C1/C2 của EGF/ISB; CRT thêm C3 sau khi C3 được xác nhận. FOLLOW chứa các nến sau nguồn, mặc định sáu nến gần nhất, không nhân đôi nến giữa hai nhóm. N* là bucket đang hình thành, N là bucket cuối đã đóng; OHLC/râu vẫn theo giá thật. Các nến FOLLOW cũ hơn bị lược khỏi hình được báo bằng … và số lượng, không bỏ khỏi logic. LAST tùy chọn dùng bản lưu độc lập từ HTF, nên còn thấy sau timeout dù không còn model hoạt động. Tối đa 18 nến được vẽ (3 nguồn + 12 follow + 3 lịch sử); không co mô hình gốc do dãy dài. Có thể tăng khoảng trống bên phải chart hoặc giảm số nến FOLLOW khi màn hình hẹp.
 
 | Model | Hướng và điều kiện |
 | --- | --- |
@@ -107,4 +109,4 @@ Bộ lọc sóng dùng chung giữa CRT/EGF/ISB: sau một Buy, Buy ở nến sa
 
 ## Vòng đời và bố cục cụm
 
-Model hiện kết thúc khi TG/INV/TO/AMB hoặc ngoài recovery HIST. Kiểm tra target cũ trước khi EGF đổi bias. Xem [điều kiện chi tiết và đề xuất hai cụm](HTF-GROUPS-PROPOSAL.md); phần tách cụm và archive mới là đề xuất, chưa thay dãy đang vẽ.
+Model hiện kết thúc khi TG/INV/TO/AMB hoặc ngoài recovery HIST. Kiểm tra target cũ trước khi EGF đổi bias. Xem [điều kiện và cách dùng ba nhóm](HTF-GROUPS-PROPOSAL.md). Phần tách nhóm và archive đã được triển khai.

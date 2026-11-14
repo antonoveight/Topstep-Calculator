@@ -22,21 +22,23 @@ Cập nhật 14/11/2026. Hai khung H1/D1 theo lựa chọn người dùng để 
 
 CRT/TS lấy mục tiêu là biên đối diện range; EGF/ISB breakout dùng ERL hợp lệ. Khi chưa có CP thì không có kết luận đạt target và không có entry thiếu đường đi. Hỏng một IRL chỉ bỏ vùng đó để tìm reference khác; chưa tự hủy model. Bias đổi cập nhật kịch bản EGF nếu model cũ chưa kết thúc; không gia hạn timeout.
 
-## Đề xuất bố cục — chưa triển khai phần tách cụm
+## Bố cục đã triển khai
 
 Mặc định **hai nhóm nến của cùng một model** với khoảng trống rõ ràng:
 
 `[ MODEL GỐC: C1 C2 (C3) ]     [ DIỄN BIẾN: nến tiếp theo … N* ]`
 
 1. **Model gốc:** EGF/ISB giữ hai nến nguồn. CRT hiển thị C1/C2 và C3 khi C3 đã đóng; C1/C2 hiện là điều kiện phát hiện sweep/reclaim trong engine, C3 là phần quan sát tiếp theo, không tạo giả hay backdate để ép có đủ ba nến. Nến TS/BR resolve của ISB được đánh dấu đúng timestamp, kể cả có nhiều nến nén ở giữa.
-2. **Diễn biến sau model:** bắt đầu ngay sau nến cuối của nhóm 1, không lặp nến giữa hai nhóm. Có N* cập nhật live. Gợi ý hiển thị 4–6 nến gần nhất của đoạn diễn biến; khi dài hơn có dấu `…` và tổng số nến, không co cả model gốc thành các nét nhỏ. Dữ liệu theo dõi và tuổi model vẫn tính đủ, việc rút gọn chỉ là hiển thị.
-3. **Nhóm lịch sử tùy chọn:** giữ model vừa kết thúc gần nhất, màu dịu và mã TG/INV/TO/AMB. Khi xem lịch sử có thể chọn model này làm reference, nhưng không phát lại tín hiệu và không tự phục hồi hiệu lực do còn được vẽ. Mặc định tắt nhóm 3 để màn hình gọn.
+2. **Diễn biến sau model:** bắt đầu ngay sau nến cuối của nhóm 1, không lặp nến giữa hai nhóm. Có N* cập nhật live. Mặc định hiển thị 6 nến gần nhất, điều chỉnh 2–12 bằng Follow candles to show; khi dài hơn có dấu `…` và tổng số nến, không co cả model gốc thành các nét nhỏ. Dữ liệu theo dõi và tuổi model vẫn tính đủ, việc rút gọn chỉ là hiển thị.
+3. **Nhóm lịch sử tùy chọn:** giữ model vừa kết thúc gần nhất, màu dịu và mã TG/INV/TO/AMB. Bật Last ended model cluster để xem bản tham chiếu nến nguồn này, không phát lại tín hiệu và không tự phục hồi hiệu lực do còn được vẽ. Mặc định tắt nhóm 3 để màn hình gọn.
 
 Timeout hiện là **hết hiệu lực theo thời gian**, không đơn thuần ẩn hình. Model có thể còn hợp lệ về giá nhưng đã TO. Giữ một bản tham chiếu sau TO giải quyết việc mất hình để xem lại mà không âm thầm kéo dài thời gian vào lệnh. Nếu cần tiếp tục theo dõi xem sau TO giá tới CP hay INV, nên lưu đó là kết quả quan sát sau timeout, tách khỏi kết quả trong cửa sổ hoạt động.
 
-Phần tách cụm cần được thực hiện sau khi chốt cách hiển thị. Bản này chưa thay dãy nến liên tục đang dùng và chưa bổ sung archive model.
+Phần tách nhóm đã triển khai. Hai setting mới: Follow candles to show = 6 và Last ended model cluster = false. Nếu không còn model hoạt động, bật nhóm LAST vẫn xem được model đã kết thúc gần nhất thuộc nhóm đang lọc. Archive chỉ giữ một model, không phải thư viện mọi model quá khứ. Khi cùng bar có nhiều model kết thúc, ưu tiên model vừa focus. N* đang hình thành; N đã đóng.
 
 ## Kiểm tra
+
+Bản tách nhóm ngày 14/11/2026 đã qua `htf-cluster-groups`, `indicator-contract`, `signal-density-audit` và ma trận `day-trading-settings`. Pine Editor nhận đúng source cuối với archive đã offset (exactSource=true, success=true, errors=null). Chưa kiểm tra runtime/Replay; bộ evaluator LTF và wave gate được đối chiếu giữ nguyên so với bản trước.
 
 Pine Editor tạm ngày 14/11/2026 nhận đúng toàn bộ source cuối: exactSource=true, success=true, errors=null. Chưa kiểm tra runtime/Replay hoặc kích thước glyph trên chart thật.
 

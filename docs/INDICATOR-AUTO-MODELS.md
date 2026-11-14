@@ -1,6 +1,6 @@
 # TFA v6 — context HTF và direction signals
 
-Nguồn: indicators/funded-angler-v6.pine; đồng bộ sang chibao.txt bằng node tools/sync-indicator.cjs. [Hướng dẫn 23 setting và kiểm tra lịch sử](INDICATOR-SETTINGS.md). Bản này thay thế các mô tả trước về EGF ép hướng theo màu nến, box OB/FVG, C/M sơ bộ và R:R tại close tín hiệu.
+Nguồn: indicators/funded-angler-v6.pine; đồng bộ sang chibao.txt bằng node tools/sync-indicator.cjs. [Hướng dẫn 25 setting và kiểm tra lịch sử](INDICATOR-SETTINGS.md). Bản này thay thế các mô tả trước về EGF ép hướng theo màu nến, box OB/FVG, C/M sơ bộ và R:R tại close tín hiệu.
 
 ## 1. Những điều được giữ và được sửa
 
@@ -34,7 +34,7 @@ History mặc định giữ 100 tam giác, tối đa 200, tách hoàn toàn vi�
 
 ## 4. Drawing và source timestamps
 
-Snapshot trả 111 scalar; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
+Snapshot trả 111 scalar cùng một ModelArchive bất biến chứa OHLC nguồn/lý do kết thúc; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
 
 Line xloc.bar_time bắt đầu từ nến nguồn; trên LTF map HTF high/low về timestamp nến con tạo cực trị trong cache 1000 bucket đầy đủ. Nếu cache không có, tìm trong tối đa 5000 bar chart đã tải. Không tìm được nguồn thì ẩn line tương ứng, không gắn giả vào nến tín hiệu. EQ dùng neo tổng quan vì không có nến cực trị riêng. Line được vẽ hiện tại nối lại nguồn cũ không có nghĩa tín hiệu đã biết ở thời điểm swing; pivot vẫn phải chờ xác nhận.
 
@@ -58,7 +58,7 @@ Bộ lọc sóng dùng chung giữa CRT/EGF/ISB: sau một Buy, Buy ở nến sa
 
 ## 6. Kiểm tra và giới hạn
 
-Cụm bên phải đã bỏ bốn slot cố định. Dãy được ghép theo timestamp từ C1 tới hiện tại, gồm toàn bộ bucket HTF đã tải và fallback ba nến nguồn nếu thiếu; không lặp nguồn/live. Model đang hiệu lực giữ cụm dù recency line hết hạn. Các đối tượng thân/râu được cấp phát theo số nến và xóa khi đổi model/tắt cụm; OHLC/râu vẫn theo giá thật. Bố cục dùng tọa độ thời gian, tự nén dãy dài trong 420 bar chart. Dành 450 cặp thân/râu, chừa ngân sách cho line khác; nếu vượt báo lỗi giới hạn thay vì âm thầm cắt nến. Xem [giới hạn drawing của Pine](https://www.tradingview.com/pine-script-docs/writing/limitations/#line-box-polyline-and-label-limits). Dữ liệu chart chưa tải không thể dựng lại đầy đủ nến trung gian.
+Cụm bên phải chia MODEL và FOLLOW theo timestamp. MODEL EGF/ISB giữ hai nến nguồn; CRT thêm C3 đã đóng. FOLLOW bắt đầu sau nguồn, giữ 2–12 nến cuối (mặc định 6) và báo số bị lược. LAST mặc định tắt, dùng ModelArchive có 21 trường primitive sao chép lúc model kết thúc, không giữ tham chiếu model đang thay đổi và không nhập vào signal contexts. Ưu tiên model đang focus khi có nhiều retirement cùng bar; archive tôn trọng Models to observe. Mọi đường retire (giá/timeout/recovery, ISB hai phía, resolve đã đi qua đích, CRT ambiguous lúc hình thành) đều lưu lý do và thời điểm cuối. Tối đa 18 body/wick/caption; resize/tắt cụm xóa object thừa. Xem [hướng dẫn nhóm](HTF-GROUPS-PROPOSAL.md).
 
 Harness riêng thực thi thân đoạn ghép dãy từ source (không mô phỏng Pine runtime/drawing): 8/40/200/449 nến lịch sử và live; khoảng cách mẹ–ISB; loại trùng timestamp, ưu tiên OHLC chart, cập nhật live, bỏ bucket chưa đủ, đổi model và tắt cụm. Kiểm tra công thức nén/midpoint râu, số nến tăng không rơi lại vào đường vẽ bốn slot.
 
@@ -75,3 +75,5 @@ Checklist nghiệm thu chart: cùng symbol/session trên H1 và M5 → đối ch
 ## Audit tần suất và xác nhận
 
 Xem [báo cáo workflow](SIGNAL-WORKFLOW-AUDIT.md). Các chỗ nghẽn được sửa: chỉ một model vào LTF, khóa một E cả model, wick mitigation bị coi như phá vùng, LTF excursion khóa vùng vĩnh viễn, và wick chạm INV bị coi như SL thực tế. Không nhắm tới một tỷ lệ tăng cố định; chưa có thống kê thị trường cho khẳng định gấp ba hoặc tăng win rate. Các gate bias/target/time/HTF closed vẫn giữ.
+
+Kiểm tra nhóm/ảnh lưu: `node tests/htf-cluster-groups.cjs` thực thi thân split/archive trích từ source, 36 tổ hợp loại model/số nến/giới hạn đuôi, metadata kết thúc và copy độc lập. Snapshot thêm object được offset như scalar; tổng tuple request = 112 + 6 + 6 = 124 < 127. Chưa có xác nhận chart/Replay.

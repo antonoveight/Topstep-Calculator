@@ -404,19 +404,15 @@ for(const clusterWidth of [2,3,6,7,15,16]){
  const left=100,right=100+candleWidth,middle=evaluate('middle',{left,right,int:Math.trunc});
  assert.equal(middle,(left+right)/2,'Wick is centered on body, including odd requested widths');
 }
-for(const renderCount of [2,4,8,30,100,450]){
- const candleWidth=4,math={min:Math.min,max:Math.max};
- const clusterStep=evaluate('clusterStep',{candleWidth,renderCount,math});
- const bodyWidth=evaluate('bodyWidth',{clusterStep,candleWidth});
- assert.ok(bodyWidth>0&&bodyWidth<clusterStep,'Compression preserves separate bodies and centered wicks');
- assert.ok(clusterStep*renderCount<=420.00001,'Full sequence stays within the reserved future width');
+for(const clusterWidth of [2,4,16]){
+ const candleWidth=clusterWidth,clusterStep=evaluate('clusterStep',{candleWidth});
+ assert.ok(clusterStep>candleWidth,'Each body has visible spacing');
+ assert.ok(evaluate('groupGap',{clusterStep})>clusterStep,'Groups have more spacing than adjacent candles');
 }
-assert.match(source,/bool clusterActive = not na\(sId\)\s*\n/,'An active model cluster must not expire with line recency');
-assert.doesNotMatch(source,/thirdFrozen|pendingThird|extraLive/,'Remove the frozen four-slot rendering path');
-for(const clusterCount of [0,4,40,450,451,1000]){
- const clusterOverflow=evaluate('clusterOverflow',{clusterCount});
- assert.equal(evaluate('renderCount',{clusterOverflow,clusterCount}),clusterCount<=450?clusterCount:0,'Render the entire sequence or explicitly report overflow, never silently clip its start');
-}
+assert.match(source,/bool clusterActive = not na\(sId\)\s*\n/);
+assert.ok(source.includes('previous ? v111[1] : v111'),'Archived object also uses confirmed snapshot');
+assert.match(source,/showArchive = input.bool\(false,/,'Archive is opt-in');
+assert.match(source,/clusterFollowCount = input.int\(6,/,'Follow tail defaults to six candles');
 const clusterHarness=require('./helpers/pine-cluster-harness.cjs').createClusterHarness(source);
 const irlModel={kind:2,hi:120,lo:80,dir:1,irlT:null};
 const irlZones=[{hi:94,lo:90,dir:1,born:10,leftTime:8,kind:1},{hi:110,lo:106,dir:-1,born:11,kind:1},{hi:96,lo:92,dir:1,born:12,kind:2},{hi:130,lo:125,dir:-1,born:13,kind:1}];

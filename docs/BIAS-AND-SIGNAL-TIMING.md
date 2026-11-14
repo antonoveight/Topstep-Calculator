@@ -21,7 +21,7 @@ Auto mới dùng cấu trúc trên Bias TF:
 - Buy bảo vệ bằng swing Low; Sell bảo vệ bằng swing High. Pivot hồi mới đã xác nhận chỉ siết mức bảo vệ theo hướng cấu trúc. Một nến hồi xanh/đỏ hoặc râu quét đơn lẻ không tự đổi hướng.
 - Chưa biết swing/cấu trúc thì Neutral, không đoán hướng từ màu nến.
 
-Snapshot bias có sáu scalar, tất cả offset riêng khi đọc từ khung lớn: direction, age, swing High/Low và guard High/Low. Snapshot model 111 trường + hai request bias mỗi request 6 trường = 123, dưới giới hạn tuple 127. Các thay đổi HTF của EGF vẫn chỉ theo bias cấu trúc đã đóng; nhãn bias H1/H4 không được lấy từ màu nến model.
+Snapshot bias có sáu scalar, tất cả offset riêng khi đọc từ khung lớn: direction, age, swing High/Low và guard High/Low. Snapshot model 111 trường + hai request bias mỗi request 6 trường = 123; thêm một object archive thành 124, dưới giới hạn tuple 127. Các thay đổi HTF của EGF vẫn chỉ theo bias cấu trúc đã đóng; nhãn bias H1/H4 không được lấy từ màu nến model.
 
 ## Chặn rủi ro trong ngày bằng close chart
 
