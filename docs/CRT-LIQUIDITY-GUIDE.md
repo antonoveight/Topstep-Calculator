@@ -66,3 +66,6 @@ Nếu phát triển indicator riêng sau này: thống nhất định nghĩa m�
 - [Pine execution model](https://www.tradingview.com/pine-script-docs/language/execution-model/), [repainting](https://www.tradingview.com/pine-script-docs/concepts/repainting/): xác nhận nến, tín hiệu đang chạy và thông tin vẽ vào quá khứ.
 
 AI Chart Lens chỉ đọc những gì thấy trong ảnh. Thiếu giá, khung giờ, nến đã đóng hay FRVP thì phải ghi thiếu dữ liệu; không dựng POC, volume, tick size hoặc trạng thái tài khoản.
+
+
+Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội bộ và EQ/CE](EGF-INTERNAL-REFERENCES.md). EGF không tự tạo FVG; OB là vùng phản ứng riêng; iBSL/iSSL cần quét rồi reclaim, không chỉ chạm. Không có reference thì không phát tín hiệu EGF.

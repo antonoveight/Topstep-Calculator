@@ -55,3 +55,6 @@ Các ô quản trị trên web chỉ là ghi nhận giữ SL / trailing / Full T
 ## 6. Chuẩn bị chỉ báo, chưa triển khai
 
 Cần đặc tả tiếp: strict/inclusive equal highs/lows; engulf thân với nến doji; phạm vi range; quét một/hai biên; thời hạn setup; xác nhận LTF; quy tắc phối hợp nhiều HTF; ngưỡng displacement/CISD/MSS; cách neo FRVP theo thời gian. Các nội dung chưa chốt không được tự suy đoán thành tín hiệu trên web hoặc Pine.
+
+
+Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội bộ và EQ/CE](EGF-INTERNAL-REFERENCES.md). EGF không tự tạo FVG; OB là vùng phản ứng riêng; iBSL/iSSL cần quét rồi reclaim, không chỉ chạm. Không có reference thì không phát tín hiệu EGF.

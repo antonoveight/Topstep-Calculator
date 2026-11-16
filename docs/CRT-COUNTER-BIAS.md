@@ -35,7 +35,7 @@ Trong mỗi nhóm vẫn chỉ có một context được xét. CRT chọn model 
 
 ## Dữ liệu xác nhận và kiểm tra
 
-Snapshot chính có 111 scalar + ModelArchive + CrtKey, tất cả offset riêng khi đọc HTF. Request bias trong engine trả sáu scalar đã xác nhận và một KeyMap đã offset; bias ngoài giữ sáu scalar. Tổng tuple = 113 + 7 + 6 = **126**, dưới giới hạn 127. CrtKey dùng các trường primitive, KeyMap giới hạn 12 level và không truyền cả pool ra chart. Object được copy trước khi gắn thời điểm C1; không sửa snapshot dùng chung.
+Snapshot chính có 112 scalar + ModelArchive + CrtKey, tất cả offset riêng khi đọc HTF. Request bias trong engine trả sáu scalar đã xác nhận và một KeyMap đã offset; bias ngoài giữ sáu scalar. Tổng tuple = 114 + 7 + 6 = **127**, bằng giới hạn 127. CrtKey dùng các trường primitive, KeyMap giới hạn 12 level và không truyền cả pool ra chart. Object được copy trước khi gắn thời điểm C1; không sửa snapshot dùng chung.
 
 `node tests/crt-counter-bias.cjs` thực thi thân key matching/map và LTF channel trích từ source: key cũ/mới, pivot xác nhận muộn, FVG/OB/swing, chạm/reclaim, higher-TF map/copy/consumption, CT Buy/Sell, chặn khi thiếu C/M/ret, target/INV/time/wave/neutral và không nới EGF/ISB. Các test contract, signal density, 20 tổ hợp workflow và nhóm HTF cũng được chạy.
 

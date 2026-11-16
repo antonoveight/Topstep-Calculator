@@ -24,7 +24,7 @@ Khi bias đổi, EGF giữ range/C1/C2, reset hướng kịch bản, CP/IRL và 
 
 ERL là pivot HTF đã xác nhận, chưa bị lấy, ngoài range; chọn mức gần nhất mỗi phía. CP của EGF/ISB breakout lấy ERL thật, không measured move tự tạo. CP của CRT/TS là biên đối diện của range quét. CP được giữ cho revision; context ERL có thể đổi khi swing bị lấy hoặc có swing mới.
 
-IRL giữ đủ FVG, OB fallback và swing H/L HTF như logic đã có; không loại OB hoặc thanh khoản điểm. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG là một loại IRL, không thay thế mọi thành phần IRL khác. Box entry LTF vẫn được ẩn như trước.
+Reference HTF giữ FVG, OB và swing H/L: FVG là mất cân bằng, OB là vùng phản ứng riêng, swing là thanh khoản nội bộ; không loại OB hoặc swing. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG không bắt buộc do EGF tạo ra; EQ không là reference thay thế. Với swing cần quét-reclaim trước xác nhận LTF. Box entry LTF vẫn được ẩn như trước.
 
 EGF: nhận bias → chọn IRL/ERL → chờ bar LTF thực sự chạm IRL → xác nhận LTF về phía ERL. Nhịp hồi vào IRL không tự tạo tín hiệu ngược bias. Không ép close ra khỏi toàn bộ vùng để được xét; vẫn phải có C/M hoặc retest hợp lệ. Nếu đã chạm rồi LTF close qua biên xa (Buy dưới đáy vùng, Sell trên đỉnh vùng), tạm chặn phản ứng. LTF reclaim có thể hợp lệ trở lại nếu snapshot HTF vẫn giữ vùng; không nhìn trước kết quả HTF close và không tự xác nhận TS HTF khi HTF còn chạy. Nếu CP đã bị lấy thì không đuổi giá. Thiếu bias/vùng/đích thì chờ.
 
@@ -34,7 +34,7 @@ History mặc định giữ 100 tam giác, tối đa 200, tách hoàn toàn vi�
 
 ## 4. Drawing và source timestamps
 
-Snapshot trả 111 scalar cùng một CrtKey metadata riêng và một ModelArchive bất biến chứa OHLC nguồn/lý do kết thúc; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
+Snapshot trả 112 scalar cùng một CrtKey metadata riêng và một ModelArchive bất biến chứa OHLC nguồn/lý do kết thúc; từng trường được offset riêng trên LTF, gồm thời gian nguồn RH/RL/INV/CP/ERL. Không dùng barstate.isconfirmed bên trong request để giả xác nhận HTF. Preview live tách biệt, gom OHLC thật từ chart; không trình bày bucket đầu thiếu dữ liệu như nến đầy đủ.
 
 Line xloc.bar_time bắt đầu từ nến nguồn; trên LTF map HTF high/low về timestamp nến con tạo cực trị trong cache 1000 bucket đầy đủ. Nếu cache không có, tìm trong tối đa 5000 bar chart đã tải. Không tìm được nguồn thì ẩn line tương ứng, không gắn giả vào nến tín hiệu. EQ dùng neo tổng quan vì không có nến cực trị riêng. Line được vẽ hiện tại nối lại nguồn cũ không có nghĩa tín hiệu đã biết ở thời điểm swing; pivot vẫn phải chờ xác nhận.
 
@@ -46,7 +46,7 @@ Không thể hứa không chồng chữ ở mọi zoom/scale/cửa sổ vì Pine
 
 Signal timing mặc định Pullback tách xác nhận khỏi điều kiện hồi: đóng phá C/M cố định mức chờ, nến sau phải hồi chạm và đóng đúng phía hoặc retest vùng hợp lệ của nhánh. Auto CRT/TS cần C/M trước retest. Confirmation close cho cách market vẫn là lựa chọn riêng. FVG/OB không bao giờ phát retest tại chính nến tạo vùng. Tooltip ghi Confirm bar/Trigger bar; tam giác đặt tại trigger thực sự, không backdate. Fixture tuần tự kiểm tra cả ba nhóm, Buy/Sell, mức MSS cố định dù scanner nhận pivot mới, FVG/OB hình thành rồi retest, cùng các gate bias/time/CP.
 
-Snapshot hiện có 111 scalar, gồm 14 trường bản đồ FVG/OB, swing nội bộ và neo nguồn. Mọi trường offset riêng. Harness kiểm tra FVG ưu tiên, OB/swing fallback được giữ, neo C1 HTF tách biệt thời điểm xác nhận C3.
+Snapshot hiện có 112 scalar, gồm 14 trường bản đồ FVG/OB, swing nội bộ và neo nguồn. Mọi trường offset riêng. Harness kiểm tra FVG ưu tiên, OB/swing fallback được giữ, neo C1 HTF tách biệt thời điểm xác nhận C3.
 
 Ngày 13/11/2026, toàn bộ bản source có timeout và bản đồ IRL đã qua Pine Editor tạm: exactSource=true, success=true, errors=null. Đây là chẩn đoán editor; chưa kiểm tra runtime/Replay trên chart.
 
@@ -76,6 +76,9 @@ Checklist nghiệm thu chart: cùng symbol/session trên H1 và M5 → đối ch
 
 Xem [báo cáo workflow](SIGNAL-WORKFLOW-AUDIT.md). Các chỗ nghẽn được sửa: chỉ một model vào LTF, khóa một E cả model, wick mitigation bị coi như phá vùng, LTF excursion khóa vùng vĩnh viễn, và wick chạm INV bị coi như SL thực tế. Không nhắm tới một tỷ lệ tăng cố định; chưa có thống kê thị trường cho khẳng định gấp ba hoặc tăng win rate. Các gate bias/target/time/HTF closed vẫn giữ.
 
-Kiểm tra nhóm/ảnh lưu: `node tests/htf-cluster-groups.cjs` thực thi thân split/archive trích từ source, 36 tổ hợp loại model/số nến/giới hạn đuôi, metadata kết thúc và copy độc lập. Snapshot thêm object được offset như scalar; tổng tuple request = 113 + 7 + 6 = 126 < 127. Chưa có xác nhận chart/Replay.
+Kiểm tra nhóm/ảnh lưu: `node tests/htf-cluster-groups.cjs` thực thi thân split/archive trích từ source, 36 tổ hợp loại model/số nến/giới hạn đuôi, metadata kết thúc và copy độc lập. Snapshot thêm object được offset như scalar; tổng tuple request = 114 + 7 + 6 = 127 (đạt giới hạn 127). Chưa có xác nhận chart/Replay.
 
 CRT CT đã triển khai với key đã xác nhận trước C1, source cùng HTF hoặc Bias TF cao hơn, C/M + timing/ret theo cấu hình. EGF/ISB không được ngoại lệ. Xem [CRT counter-bias](CRT-COUNTER-BIAS.md) và chạy `node tests/crt-counter-bias.cjs`.
+
+
+Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội bộ và EQ/CE](EGF-INTERNAL-REFERENCES.md). EGF không tự tạo FVG; OB là vùng phản ứng riêng; iBSL/iSSL cần quét rồi reclaim, không chỉ chạm. Không có reference thì không phát tín hiệu EGF.

@@ -32,7 +32,7 @@ const biasBlocked=run(crt,noisy,{bias:-1});
 assert.deepEqual(biasBlocked.hits,[]);assert.ok(biasBlocked.results.every(r=>r.status==='NO KEY'),'Counter-bias CRT remains blocked without its preexisting key');
 const egf={...crt,id:2,kind:2,flags:2,phase:0};
 const noIrl=run(egf,noisy);
-assert.deepEqual(noIrl.hits,[]);assert.ok(noIrl.results.every(r=>r.status==='IRL WAIT'));
+assert.deepEqual(noIrl.hits,[]);assert.ok(noIrl.results.every(r=>r.status==='NO REF'));
 const noModel=run({...crt,id:null,dir:0},noisy);
 assert.deepEqual(noModel.hits,[]);assert.ok(noModel.results.every(r=>r.status==='NO MODEL'));
 // A later distinct C/M + retest may be missed because a first, unfilled pending

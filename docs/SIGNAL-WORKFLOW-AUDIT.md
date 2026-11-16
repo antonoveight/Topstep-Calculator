@@ -6,7 +6,7 @@ Mục tiêu: loại các chỗ nghẽn làm bỏ sót xác nhận hợp lệ, kh
 
 1. Nhận diện CRT/TS, EGF/OUT và ISB trên HTF đã đóng; cùng cặp có thể gộp flag, root ưu tiên CRT/TS → ISB → EGF/OUT.
 2. Registry giữ các model còn hiệu lực. Cụm/line chỉ dùng một focus FIFO chung để không chồng hình.
-3. Xuất thêm ba context cũ nhất còn hiệu lực của từng nhóm, độc lập focus. Snapshot có 111 scalar, tất cả offset riêng trên LTF; không dùng nến HTF tương lai.
+3. Xuất thêm ba context cũ nhất còn hiệu lực của từng nhóm, độc lập focus. Snapshot có 112 scalar, tất cả offset riêng trên LTF; không dùng nến HTF tương lai.
 4. Ba ReactionState riêng theo dõi IRL, run-open, MSS, FVG/OB, mother retest, CP taken và cadence của CRT/EGF/ISB. Không chia sẻ trạng thái sent giữa ba nhóm.
 5. Mỗi nhánh áp điều kiện riêng, sau đó gate chung: nến LTF đã đóng, hướng/mục tiêu hợp lệ, bias, time nếu bật, context chưa bị vô hiệu và CP chưa bị lấy.
 6. Các hit cùng bar/cùng hướng được gộp một tam giác cố định size.tiny. Tooltip chứa đầy đủ model/xác nhận/CP/INV của từng hit. Counter C/E/I đếm hit từng nhóm, không phải số hình hợp nhất.
@@ -40,7 +40,7 @@ Bộ lọc sóng dùng chung giữa CRT/EGF/ISB: sau một Buy, Buy ở nến sa
 
 ## Giới hạn còn giữ có chủ đích
 
-Timeout mặc định 8 HTF từ C2/bornIndex, không gia hạn do bias/IRL/resolve. IRL giữ đủ FVG, OB fallback và swing H/L HTF như logic đã có; không loại OB hoặc thanh khoản điểm. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG là một loại IRL, không thay thế mọi thành phần IRL khác. Box entry LTF vẫn được ẩn như trước. Snapshot 111 scalar với mọi trường offset riêng.
+Timeout mặc định 8 HTF từ C2/bornIndex, không gia hạn do bias/IRL/resolve. Reference HTF giữ FVG, OB và swing H/L: FVG là mất cân bằng, OB là vùng phản ứng riêng, swing là thanh khoản nội bộ; không loại OB hoặc swing. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG không bắt buộc do EGF tạo ra; EQ không là reference thay thế. Với swing cần quét-reclaim trước xác nhận LTF. Box entry LTF vẫn được ẩn như trước. Snapshot 112 scalar với mọi trường offset riêng.
 
 Không xét tất cả 12 model cùng nhóm song song; mỗi nhóm dùng FIFO. Queue đầy vẫn bỏ model mới thay vì đẩy model cũ còn hiệu lực. Bias neutral/counter-bias, thiếu ERL/IRL, thiếu mother retest, ngoài time gate, CP đã lấy và nến LTF chưa đóng vẫn không phát dấu. Chart chỉ hỗ trợ tín hiệu M1/M3/M5 dưới HTF.
 

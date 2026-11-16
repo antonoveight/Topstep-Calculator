@@ -19,7 +19,7 @@ function evaluate(name,ctx){
  return evaluateExpr(expression(name),ctx);
 }
 function evaluateExpr(expr,ctx){
- ctx={structuralReset:false,waveAllowed:true,counterContext:false,...ctx};
+ ctx={structuralReset:false,waveAllowed:true,counterContext:false,liquidityPoint:false,...ctx};
  const js=expr.replace(/\b(open|high|low|close|time)\[1\]/g,'previous.$1').replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!').replace(/\bmath\./g,'Math.').replace(/\bna\b(?!\s*\()/g,'null');
  return Function(...Object.keys(ctx),'return ('+js+');')(...Object.values(ctx));
 }

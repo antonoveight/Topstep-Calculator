@@ -30,7 +30,7 @@ HTF H1 hoặc D1 theo hai khung đối chiếu đang dùng; chart M5; Bias Auto 
 | Cluster offset | Mặc định 30 bar; khoảng cách thực tế có vùng đệm tối thiểu theo cỡ chữ để tách chú giải khỏi nến. Tăng nếu muốn thêm khoảng trống. |
 | Cluster body width | Mặc định 4 bar; số lẻ làm tròn xuống chẵn để râu đúng tâm. |
 | Model range / ERL / CP | Các line cấu trúc và mục tiêu có điều kiện. Không ảnh hưởng logic tam giác khi tắt. |
-| HTF internal liquidity / FVG | Hiện FVG, OB fallback và swing H/L HTF. Riêng box FVG neo C1 HTF khi mở LTF, chỉ xuất hiện sau close C3. |
+| HTF FVG / OB / internal stops | Hiện FVG+/-, OB+/- và iBSL/iSSL; phân biệt vùng phản ứng với thanh khoản tại swing. Riêng box FVG neo C1 HTF khi mở LTF, chỉ xuất hiện sau close C3. |
 | Compact panel | Bảng tổng quan model, bias, IRL nội bộ, thời gian và trạng thái. |
 | Signal display | History (mặc định) giữ dấu quá khứ, Latest chỉ giữ dấu gần nhất. Không thay điều kiện nhận diện/alert. |
 | Historical signals to keep | Mặc định 100, tối đa 200; 0 ẩn dấu. Ở Latest chỉ giữ 1 nếu số này >0. |
@@ -53,7 +53,7 @@ OB/FVG **LTF** vẫn chỉ lọc nội bộ, không vẽ box/zone/nhãn entry. I
 
 Model timeout = 8 đếm nến HTF từ C2, không từ C1 hay số phút thực. Đây là quy tắc chờ cá nhân, không phải thời hạn cố định của ICT. Ví dụ H1: hết hạn tại close nến thứ 8 sau nến xác nhận; không gia hạn khi đổi bias, IRL, hoặc ISB mới resolve. Nhãn dưới cụm hiển thị tuổi/giới hạn; hết hạn thì FIFO chọn model còn hiệu lực tiếp theo, hoặc không vẽ nếu không còn model. Không xóa tam giác lịch sử đã phát.
 
-IRL giữ đủ FVG, OB fallback và swing H/L HTF như logic đã có; không loại OB hoặc thanh khoản điểm. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG là một loại IRL, không thay thế mọi thành phần IRL khác. Box entry LTF vẫn được ẩn như trước.
+Reference HTF giữ FVG, OB và swing H/L: FVG là mất cân bằng, OB là vùng phản ứng riêng, swing là thanh khoản nội bộ; không loại OB hoặc swing. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG không bắt buộc do EGF tạo ra; EQ không là reference thay thế. Với swing cần quét-reclaim trước xác nhận LTF. Box entry LTF vẫn được ẩn như trước.
 
 ## Đọc theo từng model
 
@@ -117,3 +117,6 @@ Tam giác hiện dùng shape native của label, size=4 (xấp xỉ nửa Tiny ~
 ## CRT ngược bias
 
 Xem [điều kiện key có trước, xác nhận LTF và cách đọc CT](CRT-COUNTER-BIAS.md). B0/B0! vẫn chặn. Tắt CRT reversal at prior HTF key để chỉ theo bias như trước.
+
+
+Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội bộ và EQ/CE](EGF-INTERNAL-REFERENCES.md). EGF không tự tạo FVG; OB là vùng phản ứng riêng; iBSL/iSSL cần quét rồi reclaim, không chỉ chạm. Không có reference thì không phát tín hiệu EGF.
