@@ -1,5 +1,7 @@
 # Preset nền day trading và phạm vi kiểm tra
 
+Hiệu đính 16/11/2026: [hai tầng OB](OB-TIMEFRAME-ROLES.md) đã có điều kiện chặt hơn. Các fixture OB cũ trong ma trận preset không còn đạt strength/biên nguồn; test OB riêng có ca dương CISD/MSS và retest, ca âm cho mẫu cũ. Auto/Pullback/Fresh reaction vẫn khớp 10/10 fixture workflow; không diễn giải số khớp của mode OB thành tần suất hoặc chất lượng thị trường.
+
 Ngày 14/11/2026. Mục tiêu: phù hợp workflow cá nhân đã chốt (HTF model → LTF xác nhận → Pullback → một tín hiệu cho một nhịp cấu trúc), không tối đa số tam giác. Chưa xác định bộ setting có lợi nhuận/drawdown tốt nhất trên XAUUSD.
 
 ## Kiểm tra đã chạy

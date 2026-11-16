@@ -1,6 +1,6 @@
 # CẨM NANG TOÀN DIỆN: HỆ THỐNG GIAO DỊCH CRT (INSIDE BAR & ENGULFING) VÀ CHU KỲ THANH KHOẢN IRL $\longleftrightarrow$ ERL
 
-> Hiệu đính 16/11/2026: đây là cẩm nang tham khảo. Các quy tắc EGF/FVG và IRL được làm rõ tại [EGF khi không có FVG](docs/EGF-INTERNAL-REFERENCES.md); đoạn Pine minh họa phía dưới là mã cũ, không dùng làm chỉ báo hiện hành.
+> Hiệu đính 16/11/2026: đây là cẩm nang tham khảo. Hai tầng OB được chuẩn hóa tại [OB HTF / entry LTF](docs/OB-TIMEFRAME-ROLES.md). Các quy tắc EGF/FVG và IRL được làm rõ tại [EGF khi không có FVG](docs/EGF-INTERNAL-REFERENCES.md); đoạn Pine minh họa phía dưới là mã cũ, không dùng làm chỉ báo hiện hành.
 
 ---
 
@@ -14,7 +14,7 @@ Trong hệ thống **ICT (Inner Circle Trader)** và **CRT (Candle Range Theory)
   * **Thành phần:** Gồm **BSL (Buy-side Liquidity)** trên đỉnh cũ và **SSL (Sell-side Liquidity)** dưới đáy cũ (nơi tập trung Stop Loss và lệnh Breakout).
   * **Vai trò:** Là **Mục tiêu thanh lý (Target)** cuối cùng của dòng tiền thông minh.
 * **IRL (Internal Range Liquidity – Thanh khoản trong biên):**
-  * **Cấu tạo:** IRL được xét tương đối với range và timeframe: gồm thanh khoản tại đỉnh/đáy nội bộ hoặc mất cân bằng như **FVG**. **OB** được ghi riêng là vùng phản ứng. **EQ** là 50% range; **CE** là trung điểm FVG đang xét. EQ/CE không tự tạo thành một vùng thanh khoản mới.
+  * **Cấu tạo:** IRL được xét tương đối với range và timeframe: gồm thanh khoản tại đỉnh/đáy nội bộ hoặc mất cân bằng như **FVG**. **OB** là vùng phản ứng và có thể thuộc IRL khi nằm trong range đang xét; OB HTF khác OB entry LTF về vai trò và khung xác nhận. **EQ** là 50% range; **CE** là trung điểm FVG đang xét. EQ/CE không tự tạo thành một vùng thanh khoản mới.
   * **Vai trò:** Là **Điểm tựa / Bệ phóng (Springboard)** để giá tái cân bằng và nạp nhiên liệu cho nhịp đẩy kế tiếp.
 
 ### 1.2. Chu kỳ chuyển động tuần hoàn: $\text{ERL} \longleftrightarrow \text{IRL}$

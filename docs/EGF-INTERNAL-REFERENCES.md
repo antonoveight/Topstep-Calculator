@@ -6,7 +6,7 @@ Hiệu đính 16/11/2026, thay thế nhận định “EGF tự tạo FVG” và
 
 - Engulfing xét thân; Outside Bar xét High–Low. Hai hình thái không đồng nghĩa. Cặp nến không tự xác nhận FVG: cần ba nến đóng, Bull Low C3 > High C1 hoặc Bear High C3 < Low C1.
 - IRL tương đối với range và timeframe đã chọn. ICT Episode 3, khoảng 35:04–35:31, mô tả đỉnh/đáy ngắn hạn bên trong nhịp và các stop trên/dưới chúng, hoặc mất cân bằng trong range. [Video gốc](https://www.youtube.com/watch?v=nQfHZ2DEJ8c&t=2104s), [bản chép lời để đối chiếu](https://info.quagmyre.com/xwiki/bin/view/Forex/The-Inner-Circle-Trader/ICT-Youtube-Series-2022/ICT-YT-2022-01-26-ICT-Mentorship-2022-Episode-3-srt/). Nghiên cứu dựa trên bản chép lời; không xác nhận đã xem từng khung hình.
-- FVG là vùng mất cân bằng. OB được ghi riêng là vùng phản ứng; không gọi mọi nến đối màu là OB. Quy tắc nhận diện OB hiện tại trong code là nến đối màu trước close phá High/Low của nó, không phải bằng chứng có lệnh tổ chức.
+- FVG là vùng mất cân bằng. OB là vùng phản ứng và có thể thuộc IRL khi nằm trong range tham chiếu; nhãn riêng không loại OB khỏi IRL. Không gọi mọi nến đối màu là OB. HTF OB cần cực trị, pivot đã biết và displacement phá cấu trúc; OB entry LTF xác nhận bởi CISD hoặc MSS. Xem [hai tầng OB](OB-TIMEFRAME-ROLES.md); OHLC không chứng minh có lệnh tổ chức.
 - EQ = 50% range; CE = trung điểm FVG đang xét. Hai giá có thể khác nhau; không tự tạo thành một vùng thanh khoản hoặc tín hiệu.
 - POC từ FRVP là khái niệm khối lượng riêng. Chỉ báo này không đọc FRVP/POC hoặc nét vẽ thủ công của bạn.
 

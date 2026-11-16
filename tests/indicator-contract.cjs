@@ -338,7 +338,9 @@ const fvgTape=[...reactionTape.slice(0,4),bar(102,109,112,108,111),bar(103,111,1
 const fvgTrace=traceTiming(channelContexts[0],fvgTape,{entryMode:'FVG retest'});
 assert.deepEqual(fvgTrace.hits.map(h=>h.hit),[false,false,false,true],'FVG formation candle cannot count as its own retest');
 assert.equal(fvgTrace.hits[3].confirmTime,102);
-const obTrace=traceTiming(channelContexts[0],pullbackTape,{entryMode:'OB retest'});
+assert.ok(traceTiming(channelContexts[0],pullbackTape,{entryMode:'OB retest'}).hits.every(h=>!h.hit),'Old CISD-only cross without displacement through the source wick is not an entry OB');
+const confirmedObTape=[...pullbackTape];confirmedObTape[3]=bar(101,103,109,102,108);confirmedObTape[5]=bar(103,108,109,104,106);
+const obTrace=traceTiming(channelContexts[0],confirmedObTape,{entryMode:'OB retest'});
 assert.deepEqual(obTrace.hits.map(h=>h.hit),[false,false,false,true],'OB creation candle cannot count as its own retest');
 assert.equal(obTrace.hits[3].tag,'O');
 const mssTape=[...reactionTape.slice(0,2),bar(100,103,110,102,106),bar(101,106,109,106,108),bar(102,108,109,104,106)];

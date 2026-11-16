@@ -212,3 +212,5 @@ Nếu máy bật giảm chuyển động, mặc định hồ theo hệ thống v
 Trong Studio hoặc mục **Chuyển động & hiển thị** của hồ, chọn Combine/XFA theo nguồn chart thực tế. Ứng dụng không tự nhận dạng tài khoản từ video: chưa chọn thì hiện **SOURCE NOT CONFIRMED**. Đổi/ngừng nguồn chia sẻ sẽ xóa xác nhận cũ; đổi tài khoản bên trong cùng cửa sổ cần tự cập nhật lựa chọn. Nhãn không thay đổi tài khoản calculator và không lưu qua tải lại. Crop chart chỉ giúp chọn vùng hình; không xác nhận quyền phát lại hay bảo đảm TikTok chấp nhận nội dung. Bản rà soát và nguồn tham khảo tại `docs/LIVE-WORDING-REVIEW.md`. Kiểm tra bằng `node tests/pond-public.cjs`.
 
 Hiệu đính EGF/IRL: [FVG, OB, internal stops và EQ/CE](docs/EGF-INTERNAL-REFERENCES.md). Không mặc định EGF tạo FVG; swing cần quét-reclaim trước xác nhận LTF.
+
+[Quy tắc OB HTF và OB entry LTF](docs/OB-TIMEFRAME-ROLES.md): phân biệt vị trí tham chiếu với điều kiện vào lệnh.

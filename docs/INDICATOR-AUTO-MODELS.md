@@ -24,7 +24,7 @@ Khi bias đổi, EGF giữ range/C1/C2, reset hướng kịch bản, CP/IRL và 
 
 ERL là pivot HTF đã xác nhận, chưa bị lấy, ngoài range; chọn mức gần nhất mỗi phía. CP của EGF/ISB breakout lấy ERL thật, không measured move tự tạo. CP của CRT/TS là biên đối diện của range quét. CP được giữ cho revision; context ERL có thể đổi khi swing bị lấy hoặc có swing mới.
 
-Reference HTF giữ FVG, OB và swing H/L: FVG là mất cân bằng, OB là vùng phản ứng riêng, swing là thanh khoản nội bộ; không loại OB hoặc swing. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG không bắt buộc do EGF tạo ra; EQ không là reference thay thế. Với swing cần quét-reclaim trước xác nhận LTF. Box entry LTF vẫn được ẩn như trước.
+Reference HTF giữ FVG, OB và swing H/L: FVG là mất cân bằng, OB là vùng phản ứng có thể thuộc IRL trong range, swing là thanh khoản nội bộ; không loại OB hoặc swing. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG không bắt buộc do EGF tạo ra; EQ không là reference thay thế. Với swing cần quét-reclaim trước xác nhận LTF. Box entry LTF vẫn được ẩn như trước.
 
 EGF: nhận bias → chọn IRL/ERL → chờ bar LTF thực sự chạm IRL → xác nhận LTF về phía ERL. Nhịp hồi vào IRL không tự tạo tín hiệu ngược bias. Không ép close ra khỏi toàn bộ vùng để được xét; vẫn phải có C/M hoặc retest hợp lệ. Nếu đã chạm rồi LTF close qua biên xa (Buy dưới đáy vùng, Sell trên đỉnh vùng), tạm chặn phản ứng. LTF reclaim có thể hợp lệ trở lại nếu snapshot HTF vẫn giữ vùng; không nhìn trước kết quả HTF close và không tự xác nhận TS HTF khi HTF còn chạy. Nếu CP đã bị lấy thì không đuổi giá. Thiếu bias/vùng/đích thì chờ.
 
@@ -81,4 +81,7 @@ Kiểm tra nhóm/ảnh lưu: `node tests/htf-cluster-groups.cjs` thực thi thâ
 CRT CT đã triển khai với key đã xác nhận trước C1, source cùng HTF hoặc Bias TF cao hơn, C/M + timing/ret theo cấu hình. EGF/ISB không được ngoại lệ. Xem [CRT counter-bias](CRT-COUNTER-BIAS.md) và chạy `node tests/crt-counter-bias.cjs`.
 
 
-Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội bộ và EQ/CE](EGF-INTERNAL-REFERENCES.md). EGF không tự tạo FVG; OB là vùng phản ứng riêng; iBSL/iSSL cần quét rồi reclaim, không chỉ chạm. Không có reference thì không phát tín hiệu EGF.
+Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội bộ và EQ/CE](EGF-INTERNAL-REFERENCES.md). EGF không tự tạo FVG; OB là vùng phản ứng có thể thuộc IRL trong range; iBSL/iSSL cần quét rồi reclaim, không chỉ chạm. Không có reference thì không phát tín hiệu EGF.
+
+
+Chuẩn hóa OB 16/11/2026: [OB HTF và OB entry LTF](OB-TIMEFRAME-ROLES.md). HTF cần nguồn cực trị, pivot cấu trúc đã biết và displacement phá cấu trúc; LTF cần CISD hoặc MSS xác nhận, vượt biên nguồn và retest từ nến sau. Hai tầng được xác nhận trên khung riêng.

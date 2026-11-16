@@ -391,7 +391,55 @@ f_markHigherUsed(KeyMap keyMap, array<string> usedKeys, int barStart, float barH
     while array.size(usedKeys) > 160
         array.shift(usedKeys)
 
+// Explicit tool convention, not a universal ICT threshold: directional body >= 50%,
+// close in the final quarter. Shared strength filter; HTF and LTF confirmation differ.
+f_obDisplacement(int direction, float opening, float barHigh, float barLow, float closing) =>
+    float span = barHigh - barLow
+    span > 0 and (direction == 1 ? closing > opening and closing - opening >= span * 0.5 and closing >= barLow + span * 0.75 : closing < opening and opening - closing >= span * 0.5 and closing <= barHigh - span * 0.75)
+
+type ObSeed
+    float opening = na
+    float hi = na
+    float lo = na
+    float structure = na
+    int sourceTime = na
+    int sourceIndex = na
+    bool used = false
+
+// HTF POI: a local extreme + an already-known structural pivot, not any candle pair.
+f_obSeedStep(ObSeed seed, int direction, float candidateOpen, float candidateHigh, float candidateLow, float candidateClose, int candidateTime, int candidateIndex, bool localExtreme, float structureLevel, float opening, float barHigh, float barLow, float closing, float priorClose, int currentIndex) =>
+    bool opposite = direction == 1 ? candidateClose < candidateOpen : candidateClose > candidateOpen
+    bool structureAhead = not na(structureLevel) and (direction == 1 ? structureLevel >= candidateHigh : structureLevel <= candidateLow)
+    if opposite and localExtreme and structureAhead
+        seed.opening := candidateOpen
+        seed.hi := candidateHigh
+        seed.lo := candidateLow
+        seed.structure := structureLevel
+        seed.sourceTime := candidateTime
+        seed.sourceIndex := candidateIndex
+        seed.used := false
+    bool active = not na(seed.sourceIndex) and not seed.used and currentIndex > seed.sourceIndex and currentIndex - seed.sourceIndex <= 8
+    bool invalid = active and (direction == 1 ? barLow < seed.lo : barHigh > seed.hi)
+    if invalid or (not na(seed.sourceIndex) and currentIndex - seed.sourceIndex > 8)
+        seed.used := true
+    bool structuralBreak = active and not invalid and (direction == 1 ? closing > seed.structure and priorClose <= seed.structure and closing > seed.hi : closing < seed.structure and priorClose >= seed.structure and closing < seed.lo)
+    bool confirmed = structuralBreak and f_obDisplacement(direction, opening, barHigh, barLow, closing)
+    if confirmed
+        seed.used := true
+    confirmed
+
 f_updateKeyPools(array<Zone> zones, array<Liquidity> swings, int scanStart, bool inScan, float ph, float pl) =>
+    var ObSeed bullOb = ObSeed.new()
+    var ObSeed bearOb = ObSeed.new()
+    var float knownObHigh = na
+    var float knownObLow = na
+    // Update confirmed pivots only AFTER evaluating this bar: no retroactive pivot context.
+    bool bullishOb = f_obSeedStep(bullOb, 1, open[1], high[1], low[1], close[1], time[1], bar_index - 1, low[1] <= low[2] and low[1] <= low, knownObHigh, open, high, low, close, close[1], bar_index)
+    bool bearishOb = f_obSeedStep(bearOb, -1, open[1], high[1], low[1], close[1], time[1], bar_index - 1, high[1] >= high[2] and high[1] >= high, knownObLow, open, high, low, close, close[1], bar_index)
+    if not na(ph)
+        knownObHigh := ph
+    if not na(pl)
+        knownObLow := pl
     // Remove consumed or out-of-window references, before looking for new CP levels.
     int si = array.size(swings) - 1
     while si >= 0
@@ -417,10 +465,10 @@ f_updateKeyPools(array<Zone> zones, array<Liquidity> swings, int scanStart, bool
             array.push(zones, Zone.new(knownAt=time_close, leftTime=time[2], hi=low, lo=high[2], dir=1, born=time, kind=1))
         if high < low[2]
             array.push(zones, Zone.new(knownAt=time_close, leftTime=time[2], hi=low[2], lo=high, dir=-1, born=time, kind=1))
-        if close[1] < open[1] and close > high[1]
-            array.push(zones, Zone.new(knownAt=time_close, leftTime=time[1], hi=open[1], lo=low[1], dir=1, born=time[1], kind=2))
-        if close[1] > open[1] and close < low[1]
-            array.push(zones, Zone.new(knownAt=time_close, leftTime=time[1], hi=high[1], lo=open[1], dir=-1, born=time[1], kind=2))
+        if bullishOb and bullOb.sourceTime >= scanStart
+            array.push(zones, Zone.new(knownAt=time_close, leftTime=bullOb.sourceTime, hi=bullOb.opening, lo=bullOb.lo, dir=1, born=bullOb.sourceTime, kind=2))
+        if bearishOb and bearOb.sourceTime >= scanStart
+            array.push(zones, Zone.new(knownAt=time_close, leftTime=bearOb.sourceTime, hi=bearOb.hi, lo=bearOb.opening, dir=-1, born=bearOb.sourceTime, kind=2))
     while array.size(zones) > 60
         array.shift(zones)
 
@@ -816,6 +864,7 @@ type ReactionState
     float opposingOpen = na
     float opposingHigh = na
     float opposingLow = na
+    int opposingTime = na
     float mssLevel = na
     float fvgTop = na
     float fvgBottom = na
@@ -873,6 +922,7 @@ f_clearReaction(ReactionState state, int phaseAt, float seedPivot, bool keepRun 
         state.opposingOpen := na
         state.opposingHigh := na
         state.opposingLow := na
+        state.opposingTime := na
     state.mssLevel := seedPivot
     state.fvgTop := na
     state.fvgBottom := na
@@ -960,6 +1010,7 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             state.opposingOpen := open
             state.opposingHigh := high
             state.opposingLow := low
+            state.opposingTime := time
         float deliveryLevel = state.deliveryLevel
         float mssLevel = state.mssLevel
         bool cisd = not na(deliveryLevel) and (bullish ? close > deliveryLevel and (close[1] <= deliveryLevel or structuralReset) : close < deliveryLevel and (close[1] >= deliveryLevel or structuralReset))
@@ -975,7 +1026,11 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             state.fvgTime := na
             state.fvgTop := na
             state.fvgBottom := na
-        if cisd and not na(state.opposingOpen) and na(state.obIndex) and (not egfScenario or state.irlTouched)
+        // LTF entry OB belongs to the current reaction and a C/M displacement.
+        bool obShift = (cisd and entryMode != "MSS") or (mss and entryMode != "CISD")
+        bool obSourceReady = not na(state.opposingTime) and not na(phaseAt) and state.opposingTime >= phaseAt and state.opposingTime < time
+        bool obValidated = obShift and obSourceReady and (bullish ? close > state.opposingHigh : close < state.opposingLow) and f_obDisplacement(ctx.dir, open, high, low, close)
+        if obValidated and na(state.obIndex) and (not egfScenario or (state.irlTouched and not state.irlFailed))
             state.obTop := bullish ? state.opposingOpen : state.opposingHigh
             state.obBottom := bullish ? state.opposingLow : state.opposingOpen
             state.obIndex := bar_index

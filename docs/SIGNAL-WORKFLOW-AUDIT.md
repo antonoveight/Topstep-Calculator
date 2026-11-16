@@ -40,7 +40,7 @@ Bộ lọc sóng dùng chung giữa CRT/EGF/ISB: sau một Buy, Buy ở nến sa
 
 ## Giới hạn còn giữ có chủ đích
 
-Timeout mặc định 8 HTF từ C2/bornIndex, không gia hạn do bias/IRL/resolve. Reference HTF giữ FVG, OB và swing H/L: FVG là mất cân bằng, OB là vùng phản ứng riêng, swing là thanh khoản nội bộ; không loại OB hoặc swing. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG không bắt buộc do EGF tạo ra; EQ không là reference thay thế. Với swing cần quét-reclaim trước xác nhận LTF. Box entry LTF vẫn được ẩn như trước. Snapshot 112 scalar với mọi trường offset riêng.
+Timeout mặc định 8 HTF từ C2/bornIndex, không gia hạn do bias/IRL/resolve. Reference HTF giữ FVG, OB và swing H/L: FVG là mất cân bằng, OB là vùng phản ứng có thể thuộc IRL trong range, swing là thanh khoản nội bộ; không loại OB hoặc swing. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG không bắt buộc do EGF tạo ra; EQ không là reference thay thế. Với swing cần quét-reclaim trước xác nhận LTF. Box entry LTF vẫn được ẩn như trước. Snapshot 112 scalar với mọi trường offset riêng.
 
 Không xét tất cả 12 model cùng nhóm song song; mỗi nhóm dùng FIFO. Queue đầy vẫn bỏ model mới thay vì đẩy model cũ còn hiệu lực. Bias neutral/counter-bias, thiếu ERL/IRL, thiếu mother retest, ngoài time gate, CP đã lấy và nến LTF chưa đóng vẫn không phát dấu. Chart chỉ hỗ trợ tín hiệu M1/M3/M5 dưới HTF.
 
@@ -58,3 +58,6 @@ Kết quả editor và giới hạn chart/Replay được cập nhật trong [đ
 ## Cách quan sát thực tế
 
 Giữ cùng symbol/session/HTF/LTF/bias/time và cùng dữ liệu tải. Bật All, History, 100–200 dấu, Fresh reaction. Xem N; hover WHY để biết trạng thái ba kênh, hover tam giác và Data Window để xem từng nhóm. Sau đó chọn từng nhóm; bộ đếm tương ứng phải khớp All nếu dữ liệu/cấu hình không đổi. So Fresh reaction với One per model để thấy tác động của cadence. Tạo lại alert E+/E− sau khi đổi source/input; alert HTF vẫn theo focus, alert tín hiệu theo hợp ba kênh.
+
+
+Chuẩn hóa OB 16/11/2026: [OB HTF và OB entry LTF](OB-TIMEFRAME-ROLES.md). HTF cần nguồn cực trị, pivot cấu trúc đã biết và displacement phá cấu trúc; LTF cần CISD hoặc MSS xác nhận, vượt biên nguồn và retest từ nến sau. Hai tầng được xác nhận trên khung riêng.

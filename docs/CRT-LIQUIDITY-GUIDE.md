@@ -12,7 +12,7 @@ Luôn xác định **range tham chiếu và khung thời gian** trước khi g�
 | --- | --- |
 | ERL / BSL / SSL | Thanh khoản bên ngoài range tham chiếu: phía trên đỉnh hoặc dưới đáy đã chọn. Là mục tiêu có điều kiện, không phải đích chắc chắn. |
 | Thanh khoản nội bộ | Các đỉnh/đáy nhỏ nằm trong range tham chiếu, gồm biên Inside Bar khi xét trong Mother Bar. |
-| FVG / OB | Vùng phản ứng hoặc tái cân bằng được đánh dấu riêng; không gộp mọi vùng thành cùng một loại IRL. |
+| FVG / OB | Đánh dấu riêng FVG (mất cân bằng) và OB (vùng phản ứng); OB trong range cũng có thể được xét như internal reference/IRL. Phân biệt với OB entry LTF. |
 | EQ | `(Range High + Range Low) / 2` của range đã chọn. |
 | CE | Trung điểm của FVG hoặc vùng mất cân bằng đang xét. Không mặc định bằng EQ. |
 | POC | Mức có khối lượng lớn nhất trong FRVP đã neo. Không suy ra POC từ trung điểm, FVG hoặc hình dạng nến. |
@@ -68,4 +68,4 @@ Nếu phát triển indicator riêng sau này: thống nhất định nghĩa m�
 AI Chart Lens chỉ đọc những gì thấy trong ảnh. Thiếu giá, khung giờ, nến đã đóng hay FRVP thì phải ghi thiếu dữ liệu; không dựng POC, volume, tick size hoặc trạng thái tài khoản.
 
 
-Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội bộ và EQ/CE](EGF-INTERNAL-REFERENCES.md). EGF không tự tạo FVG; OB là vùng phản ứng riêng; iBSL/iSSL cần quét rồi reclaim, không chỉ chạm. Không có reference thì không phát tín hiệu EGF.
+Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội bộ và EQ/CE](EGF-INTERNAL-REFERENCES.md) và [hai tầng OB](OB-TIMEFRAME-ROLES.md). EGF không tự tạo FVG; OB trong range có thể thuộc IRL, nhưng OB HTF và OB entry LTF được xác nhận trên khung riêng. iBSL/iSSL cần quét rồi reclaim, không chỉ chạm. Không có reference thì không phát tín hiệu EGF.

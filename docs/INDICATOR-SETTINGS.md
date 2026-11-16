@@ -53,7 +53,7 @@ OB/FVG **LTF** vẫn chỉ lọc nội bộ, không vẽ box/zone/nhãn entry. I
 
 Model timeout = 8 đếm nến HTF từ C2, không từ C1 hay số phút thực. Đây là quy tắc chờ cá nhân, không phải thời hạn cố định của ICT. Ví dụ H1: hết hạn tại close nến thứ 8 sau nến xác nhận; không gia hạn khi đổi bias, IRL, hoặc ISB mới resolve. Nhãn dưới cụm hiển thị tuổi/giới hạn; hết hạn thì FIFO chọn model còn hiệu lực tiếp theo, hoặc không vẽ nếu không còn model. Không xóa tam giác lịch sử đã phát.
 
-Reference HTF giữ FVG, OB và swing H/L: FVG là mất cân bằng, OB là vùng phản ứng riêng, swing là thanh khoản nội bộ; không loại OB hoặc swing. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG không bắt buộc do EGF tạo ra; EQ không là reference thay thế. Với swing cần quét-reclaim trước xác nhận LTF. Box entry LTF vẫn được ẩn như trước.
+Reference HTF giữ FVG, OB và swing H/L: FVG là mất cân bằng, OB là vùng phản ứng có thể thuộc IRL trong range, swing là thanh khoản nội bộ; không loại OB hoặc swing. Riêng cách vẽ FVG khi mở LTF: gap Bull = Low C3 > High C1, Bear = High C3 < Low C1; box và CE line neo vào timestamp C1 **HTF**, không vào nến LTF hiện tại. Vùng chỉ được biết sau close C3 HTF. OB vẫn neo nến nguồn của OB; swing H/L neo cực trị thật. Hai hướng hiển thị nếu có, * chỉ reference đang dùng theo bias. FVG không bắt buộc do EGF tạo ra; EQ không là reference thay thế. Với swing cần quét-reclaim trước xác nhận LTF. Box entry LTF vẫn được ẩn như trước.
 
 ## Đọc theo từng model
 
@@ -119,4 +119,7 @@ Tam giác hiện dùng shape native của label, size=4 (xấp xỉ nửa Tiny ~
 Xem [điều kiện key có trước, xác nhận LTF và cách đọc CT](CRT-COUNTER-BIAS.md). B0/B0! vẫn chặn. Tắt CRT reversal at prior HTF key để chỉ theo bias như trước.
 
 
-Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội bộ và EQ/CE](EGF-INTERNAL-REFERENCES.md). EGF không tự tạo FVG; OB là vùng phản ứng riêng; iBSL/iSSL cần quét rồi reclaim, không chỉ chạm. Không có reference thì không phát tín hiệu EGF.
+Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội bộ và EQ/CE](EGF-INTERNAL-REFERENCES.md). EGF không tự tạo FVG; OB là vùng phản ứng có thể thuộc IRL trong range; iBSL/iSSL cần quét rồi reclaim, không chỉ chạm. Không có reference thì không phát tín hiệu EGF.
+
+
+Chuẩn hóa OB 16/11/2026: [OB HTF và OB entry LTF](OB-TIMEFRAME-ROLES.md). HTF cần nguồn cực trị, pivot cấu trúc đã biết và displacement phá cấu trúc; LTF cần CISD hoặc MSS xác nhận, vượt biên nguồn và retest từ nến sau. Hai tầng được xác nhận trên khung riêng.

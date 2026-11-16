@@ -48,12 +48,14 @@ const noCm=[...tape.slice(0,2),bar(100,103,105,102,104),bar(101,104,109,103,108)
 assert.deepEqual(run(ctx,{entryMode:'FVG retest' },noCm).hits,[],'An explicit FVG mode cannot bypass counter-bias C/M confirmation');
 const postConfirmFvg=[...tape.slice(0,4),bar(102,109,112,108,111),bar(103,111,112,107,110)];
 assert.deepEqual(run(ctx,{entryMode:'FVG retest'},postConfirmFvg).hits.map(h=>h.t),[103],'Post-confirmation FVG then later retest remains available to CT');
-assert.deepEqual(run(ctx,{entryMode:'OB retest'}).hits.map(h=>h.t),[103]);
+assert.deepEqual(run(ctx,{entryMode:'OB retest'}).hits,[],'Old weak CISD does not establish an entry OB');
+const strongObTape=[...tape];strongObTape[3]=bar(101,103,109,102,108);
+assert.deepEqual(run(ctx,{entryMode:'OB retest'},strongObTape).hits.map(h=>h.t),[103],'CT still accepts a validated OB and later retest');
 assert.deepEqual(run({...ctx,cp:107}).hits,[],'No CT after the CRT target has been consumed');
 assert.deepEqual(run({...ctx,inv:108}).hits,[],'CT cannot bypass invalidation');
 assert.deepEqual(run({...ctx,crtKey:{...key,lo:107,hi:109}}).hits,[],'The current LTF close must still hold the key side');
 assert.ok(source.indexOf('CrtKey priorBuyKey =')<source.indexOf('f_updateKeyPools(zones, swings, scanStart, inScan'),'Capture reaction before C2 consumes its key');
 assert.ok(source.includes('previous ? v112[1] : v112'),'Matched CRT key must be snapshot-confirmed');
 assert.match(source,/knownAt=time_close, price=ph/,'A pivot key records detection time separately from pivot source time');
-assert.match(source,/knownAt=time_close, leftTime=time\[1\], hi=open\[1\]/,'OB is known on its break-confirmation bar, not its earlier source bar');
+assert.match(source,/knownAt=time_close, leftTime=bullOb.sourceTime, hi=bullOb.opening/,'OB is known on its break-confirmation bar, not its earlier source bar');
 console.log('PASS prior-key causality/reaction, higher-TF compact map, immutable match, CT Buy/Sell actual source entry, target and all blocking gates. No market/Replay result claimed.');
