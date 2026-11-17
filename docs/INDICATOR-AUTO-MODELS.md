@@ -85,3 +85,6 @@ Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội
 
 
 Chuẩn hóa OB 16/11/2026: [OB HTF và OB entry LTF](OB-TIMEFRAME-ROLES.md). HTF cần nguồn cực trị, pivot cấu trúc đã biết và displacement phá cấu trúc; LTF cần CISD hoặc MSS xác nhận, vượt biên nguồn và retest từ nến sau. Hai tầng được xác nhận trên khung riêng.
+
+
+Cập nhật 17/11/2026: [range chính và cụm kích hoạt EGF/ISB](MODEL-CONTEXT-PRIORITY.md); [fibo CRT, Early C2 và cách neo EGF/ISB](FIBO-CONVENTION.md). Early C2 chỉ là quy trình lưu trữ, chưa phải tín hiệu Pine.

@@ -214,3 +214,5 @@ Trong Studio hoặc mục **Chuyển động & hiển thị** của hồ, chọn
 Hiệu đính EGF/IRL: [FVG, OB, internal stops và EQ/CE](docs/EGF-INTERNAL-REFERENCES.md). Không mặc định EGF tạo FVG; swing cần quét-reclaim trước xác nhận LTF.
 
 [Quy tắc OB HTF và OB entry LTF](docs/OB-TIMEFRAME-ROLES.md): phân biệt vị trí tham chiếu với điều kiện vào lệnh.
+
+Quy trình 17/11/2026: [fibo CRT / Early C2 / EGF / ISB](docs/FIBO-CONVENTION.md), [range chính và cụm kích hoạt](docs/MODEL-CONTEXT-PRIORITY.md). Ảnh minh họa giả định nằm trong hai tài liệu.

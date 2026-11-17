@@ -6,7 +6,7 @@ Mục tiêu: loại các chỗ nghẽn làm bỏ sót xác nhận hợp lệ, kh
 
 1. Nhận diện CRT/TS, EGF/OUT và ISB trên HTF đã đóng; cùng cặp có thể gộp flag, root ưu tiên CRT/TS → ISB → EGF/OUT.
 2. Registry giữ các model còn hiệu lực. Cụm/line chỉ dùng một focus FIFO chung để không chồng hình.
-3. Xuất thêm ba context cũ nhất còn hiệu lực của từng nhóm, độc lập focus. Snapshot có 112 scalar, tất cả offset riêng trên LTF; không dùng nến HTF tương lai.
+3. Xuất thêm ba context còn hiệu lực của từng nhóm, EGF/ISB ưu tiên sẵn sàng/sự kiện HTF đã xác nhận, độc lập focus. Snapshot có 112 scalar, tất cả offset riêng trên LTF; không dùng nến HTF tương lai.
 4. Ba ReactionState riêng theo dõi IRL, run-open, MSS, FVG/OB, mother retest, CP taken và cadence của CRT/EGF/ISB. Không chia sẻ trạng thái sent giữa ba nhóm.
 5. Mỗi nhánh áp điều kiện riêng, sau đó gate chung: nến LTF đã đóng, hướng/mục tiêu hợp lệ, bias, time nếu bật, context chưa bị vô hiệu và CP chưa bị lấy.
 6. Các hit cùng bar/cùng hướng được gộp một tam giác cố định size.tiny. Tooltip chứa đầy đủ model/xác nhận/CP/INV của từng hit. Counter C/E/I đếm hit từng nhóm, không phải số hình hợp nhất.
@@ -61,3 +61,6 @@ Giữ cùng symbol/session/HTF/LTF/bias/time và cùng dữ liệu tải. Bật 
 
 
 Chuẩn hóa OB 16/11/2026: [OB HTF và OB entry LTF](OB-TIMEFRAME-ROLES.md). HTF cần nguồn cực trị, pivot cấu trúc đã biết và displacement phá cấu trúc; LTF cần CISD hoặc MSS xác nhận, vượt biên nguồn và retest từ nến sau. Hai tầng được xác nhận trên khung riêng.
+
+
+Cập nhật 17/11/2026: [range chính và cụm kích hoạt EGF/ISB](MODEL-CONTEXT-PRIORITY.md); [fibo CRT, Early C2 và cách neo EGF/ISB](FIBO-CONVENTION.md). Early C2 chỉ là quy trình lưu trữ, chưa phải tín hiệu Pine.

@@ -13,7 +13,7 @@ HTF H1 hoặc D1 theo hai khung đối chiếu đang dùng; chart M5; Bias Auto 
 | Setting | Vai trò |
 | --- | --- |
 | HTF | H1/H2/H4/D1 dựng range/model từ nến đã đóng; mặc định H1. |
-| Models to observe | All chạy ba kênh LTF độc lập CRT/EGF/ISB; mỗi nhóm dùng model cũ nhất còn hiệu lực. Cụm HTF vẫn chỉ vẽ model ưu tiên chung. Chọn riêng một nhóm để đối chiếu. |
+| Models to observe | All chạy ba kênh LTF độc lập CRT/EGF/ISB; EGF/ISB chọn context theo trạng thái sẵn sàng và sự kiện HTF đã xác nhận, hòa thì FIFO. Cụm HTF vẫn chỉ vẽ model ưu tiên chung. Chọn riêng một nhóm để đối chiếu. |
 | Model timeout | Mặc định 8 nến HTF sau C2; 0 tắt, tối đa 48. Không reset tuổi do đổi bias/IRL hoặc resolve ISB. Hết hạn bỏ model khỏi cụm và kênh tín hiệu. |
 | Bias TF | Chọn H1/H2/H4/D1, bias >= HTF hiệu lực; mặc định D1. Auto dùng cấu trúc swing và close đã xác nhận, có guard intraday; xem B0!, không có dữ liệu FRVP cá nhân. |
 | Bias | Auto / Long / Short / Neutral. EGF lấy hướng kịch bản từ bias, không lấy từ màu nến. ISB phải thuận bias; CRT có ngoại lệ CT tại key có trước, khi bật setting riêng. |
@@ -123,3 +123,6 @@ Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội
 
 
 Chuẩn hóa OB 16/11/2026: [OB HTF và OB entry LTF](OB-TIMEFRAME-ROLES.md). HTF cần nguồn cực trị, pivot cấu trúc đã biết và displacement phá cấu trúc; LTF cần CISD hoặc MSS xác nhận, vượt biên nguồn và retest từ nến sau. Hai tầng được xác nhận trên khung riêng.
+
+
+Cập nhật 17/11/2026: [range chính và cụm kích hoạt EGF/ISB](MODEL-CONTEXT-PRIORITY.md); [fibo CRT, Early C2 và cách neo EGF/ISB](FIBO-CONVENTION.md). Early C2 chỉ là quy trình lưu trữ, chưa phải tín hiệu Pine.

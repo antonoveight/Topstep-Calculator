@@ -2,6 +2,8 @@
 
 Bản chuẩn hóa cho web và cơ sở đặc tả chỉ báo cá nhân sau này. Đây là tổ chức thông tin theo quyết định của người dùng, chưa phải thuật toán được kiểm định. Ưu tiên bản này khi các hướng dẫn cũ còn dùng bốn phương pháp CRT/Trend/AMD/Break.
 
+Quy ước fibo mới ngày 17/11/2026: **0 = SL tại cực trị sweep; 0.1 = ET2; 0.2 = ET1; 0.4 = break; 0.6 = BE; 0.8 = TL; 1 = TP ở đầu bên kia**. Xem [quy ước fibo cá nhân](FIBO-CONVENTION.md). Đây là ghi nhớ đánh dấu chart, chưa thay đổi thuật toán chỉ báo.
+
 ## 1. Phân tầng
 
 | Lớp | Vai trò | Nội dung |
@@ -32,7 +34,7 @@ Trong chỉ báo cá nhân, CISD/MSS chung vai trò xác nhận đổi hướng 
 
 Xem [chỉ báo Auto HTF và đặc tả hiệu lực/bias/entry](INDICATOR-AUTO-MODELS.md), nguồn `indicators/funded-angler-v6.pine`. Chỉ báo tự nhận diện từ giá; checklist web vẫn là ghi nhận thủ công, không tự nhận feed hoặc tín hiệu từ TradingView.
 
-Chỉ báo hiện tách ba kênh tín hiệu CRT/EGF/ISB, mỗi nhóm giữ model cũ nhất còn hiệu lực; cụm nến trên màn hình vẫn dùng focus FIFO chung. Fresh reaction cho phép xác nhận mới sau nhịp hồi/IRL retest mới, One per model giữ quy tắc cũ để đối chiếu. Râu sweep/reclaim không tự là SL thực tế; vùng HTF đang giữ chỉ bị xóa bởi HTF close-through, còn excursion LTF có thể reclaim khi context vẫn hợp lệ. Mọi tín hiệu vẫn cần nến LTF đóng và gate bias/target/time. Xem [audit workflow](SIGNAL-WORKFLOW-AUDIT.md).
+Chỉ báo hiện tách ba kênh tín hiệu CRT/EGF/ISB, cụm chính giữ range FIFO, kênh EGF/ISB ưu tiên context sẵn sàng/sự kiện HTF đã xác nhận (xem MODEL-CONTEXT-PRIORITY.md); cụm nến trên màn hình vẫn dùng focus FIFO chung. Fresh reaction cho phép xác nhận mới sau nhịp hồi/IRL retest mới, One per model giữ quy tắc cũ để đối chiếu. Râu sweep/reclaim không tự là SL thực tế; vùng HTF đang giữ chỉ bị xóa bởi HTF close-through, còn excursion LTF có thể reclaim khi context vẫn hợp lệ. Mọi tín hiệu vẫn cần nến LTF đóng và gate bias/target/time. Xem [audit workflow](SIGNAL-WORKFLOW-AUDIT.md).
 
 Đây là ghi nhận của người dùng. Web không có feed OHLC/volume để tự kiểm chứng; tick sai thứ tự không tự hoàn thành bước còn thiếu. “Đã ghi nhận vào lệnh” không có nghĩa web gửi lệnh.
 
@@ -61,3 +63,6 @@ Hiệu đính EGF/IRL 16/11/2026: xem [phân biệt FVG, OB, thanh khoản nội
 
 
 Chuẩn hóa OB 16/11/2026: [OB HTF và OB entry LTF](OB-TIMEFRAME-ROLES.md). HTF cần nguồn cực trị, pivot cấu trúc đã biết và displacement phá cấu trúc; LTF cần CISD hoặc MSS xác nhận, vượt biên nguồn và retest từ nến sau. Hai tầng được xác nhận trên khung riêng.
+
+
+Cập nhật 17/11/2026: [range chính và cụm kích hoạt EGF/ISB](MODEL-CONTEXT-PRIORITY.md); [fibo CRT, Early C2 và cách neo EGF/ISB](FIBO-CONVENTION.md). Early C2 chỉ là quy trình lưu trữ, chưa phải tín hiệu Pine.

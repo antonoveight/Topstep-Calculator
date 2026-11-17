@@ -18,7 +18,7 @@ const string DEFAULT_ENTRY_MODE = "Auto"
 const string DEFAULT_SIGNAL_TIMING = "Pullback"
 const string DEFAULT_SIGNAL_CADENCE = "Fresh reaction"
 htfInput = input.timeframe("60", "HTF", options=["60", "120", "240", "1D"], group=G_HTF, tooltip="Khung xác định CRT/TS, Engulfing/Outside hoặc Inside Bar: H1, H2, H4 hoặc D1. Mặc định H1; chart LTF chỉ tìm entry.")
-signalModels = input.string("All", "Models to observe", options=["All", "CRT", "EGF", "ISB"], group=G_HTF, tooltip="All xét CRT/EGF/ISB qua ba kênh LTF độc lập; mỗi nhóm giữ model cũ nhất còn hiệu lực. Cụm HTF chỉ vẽ model ưu tiên để gọn. Chọn một nhóm để đối chiếu với cùng nhóm trong All.")
+signalModels = input.string("All", "Models to observe", options=["All", "CRT", "EGF", "ISB"], group=G_HTF, tooltip="All xét ba kênh LTF độc lập. Cụm chính giữ range FIFO. EGF/ISB ưu tiên context đủ điều kiện và sự kiện vị trí HTF đã xác nhận gần nhất; hòa thì giữ model cũ. Đây không phải điểm xác suất. CRT giữ gate hiện hành. Chọn riêng một nhóm để đối chiếu.")
 // A higher chart uses its own timeframe for context-only overview.
 bool overviewMode = timeframe.in_seconds() > timeframe.in_seconds(htfInput)
 string htf = overviewMode ? timeframe.period : htfInput
@@ -191,6 +191,11 @@ type Model
     int irlKind = 0
     int irlDir = 0
     int irlLeft = na
+    int triggerAt = na
+    int triggerRef = na
+    int triggerDir = 0
+    int triggerKind = 0
+    bool triggerLeft = false
     int bullIrlLeft = na
     int bearIrlLeft = na
     float innerHi = na
@@ -335,6 +340,43 @@ f_refreshIrl(Model m, array<Zone> zones, array<Liquidity> swings) =>
         else
             m.innerHi := m.irlH
             m.innerHiT := m.irlT
+
+// These are readiness tiers, not a probability or profitability score.
+f_contextTier(Model m, int direction) =>
+    bool path = not na(m.uid) and m.dir != 0 and m.dir == direction and not na(m.cp)
+    bool locationReady = m.kind == 2 ? not na(m.irlT) : m.kind == 3 and m.phase != 0
+    path and locationReady ? (not na(m.triggerAt) ? 2 : 1) : 0
+
+f_preferContext(Model candidate, Model current, int direction) =>
+    int candidateTier = f_contextTier(candidate, direction)
+    int currentTier = f_contextTier(current, direction)
+    na(current.uid) or candidateTier > currentTier or (candidateTier == currentTier and candidateTier == 2 and candidate.triggerAt > current.triggerAt)
+
+f_trackTrigger(Model m, int barStart, int barEnd, float barHigh, float barLow, float closing) =>
+    int reference = m.kind == 2 ? m.irlT : m.resolvedAt
+    if m.triggerDir != m.dir or m.triggerKind != m.irlKind or m.triggerRef != reference or (na(m.triggerRef) != na(reference))
+        m.triggerAt := na
+        m.triggerRef := reference
+        m.triggerDir := m.dir
+        m.triggerKind := m.irlKind
+        m.triggerLeft := false
+    bool afterActivation = barStart >= m.confirmedAt and m.dir != 0
+    bool zoneVisit = not na(m.irlT) and barLow <= m.irlH and barHigh >= m.irlL
+    bool stopsTaken = m.dir == 1 ? barLow <= m.irlL - sweepSize : barHigh >= m.irlH + sweepSize
+    bool zoneHeld = m.dir == 1 ? closing > m.irlL : closing < m.irlH
+    bool reclaim = m.dir == 1 ? closing > m.irlH : closing < m.irlL
+    bool egfEvent = m.kind == 2 and afterActivation and zoneVisit and (m.irlKind == 3 ? stopsTaken and reclaim : zoneHeld)
+    float boundary = m.dir == 1 ? m.hi : m.lo
+    bool breakoutRetest = m.kind == 3 and m.phase == 2 and barStart >= m.resolvedAt and barLow <= boundary and barHigh >= boundary and (m.dir == 1 ? closing > boundary : closing < boundary)
+    bool falseBreak = m.kind == 3 and m.phase == 1 and not na(m.resolvedAt)
+    bool away = m.kind == 2 ? (m.dir == 1 ? barLow > m.irlH : barHigh < m.irlL) : (m.dir == 1 ? barLow > boundary : barHigh < boundary)
+    if not na(m.triggerAt) and away
+        m.triggerLeft := true
+    if (egfEvent or breakoutRetest) and (na(m.triggerAt) or m.triggerLeft)
+        m.triggerAt := barEnd
+        m.triggerLeft := false
+    if falseBreak and na(m.triggerAt)
+        m.triggerAt := m.resolvedAt
 
 f_archive(Model m, int reason, int endedAt) =>
     ModelArchive.new(uid=m.uid, flags=m.flags, kind=m.kind, phase=m.phase, aO=m.aO, aH=m.aH, aL=m.aL, aC=m.aC, aT=m.aT, bO=m.bO, bH=m.bH, bL=m.bL, bC=m.bC, bT=m.bT, cO=m.cO, cH=m.cH, cL=m.cL, cC=m.cC, cT=m.cT, endReason=reason, endedAt=endedAt)
@@ -684,6 +726,7 @@ f_engine() =>
                 m.irlL := na
                 m.irlKind := 0
             f_refreshIrl(m, zones, swings)
+            f_trackTrigger(m, time, time_close, high, low, close)
     Model crtContext = Model.new()
     Model crtFallback = Model.new()
     Model egfContext = Model.new()
@@ -700,9 +743,9 @@ f_engine() =>
                     bool crtEligible = candidate.dir == contextBias or (allowCrtCounter and contextBias != 0 and candidate.dir == -contextBias and not na(candidate.crtKey) and candidate.crtKey.kind > 0)
                     if na(crtContext.uid) and crtEligible
                         crtContext := candidate
-                if candidate.kind == 2 and na(egfContext.uid)
+                if candidate.kind == 2 and f_preferContext(candidate, egfContext, contextBias)
                     egfContext := candidate
-                if candidate.kind == 3 and na(isbContext.uid)
+                if candidate.kind == 3 and f_preferContext(candidate, isbContext, contextBias)
                     isbContext := candidate
             if modelAllowed and primaryIndex == -1
                 primaryIndex := i
