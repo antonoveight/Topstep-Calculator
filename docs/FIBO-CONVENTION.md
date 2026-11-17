@@ -20,6 +20,8 @@ Không tiếp tục dùng tên SL cho mức 0.1 hoặc ET cho mức 0.2 trong qu
 
 CRT Sell: kéo từ **Low C1 (anchor)** đến **High C2 (cực trị sweep)**, kiểm tra trên công cụ rằng High C2 có nhãn 0/SL và Low C1 có nhãn 1/TP. Buy đọc đối xứng. Giá tại mức r được tính từ SL tới TP: `SL + r × (TP − SL)`. Vì vậy với Sell, ET2/0.1 cao hơn ET1/0.2 và gần SL hơn. Không suy ra số lot từ độ rộng hình vẽ.
 
+**High/Low lấy toàn bộ râu nến:** High là đầu râu trên, Low là đầu râu dưới, không phải Open/Close. Quy tắc này áp dụng cho C1, C2, mother, cực trị phản ứng và ERL được chọn. Điểm tròn trong ảnh đánh dấu cực trị nguồn. Nếu nến không có râu ở một phía thì cực trị có thể trùng mép thân; ảnh có râu phải neo đến đầu râu.
+
 - **CRT Confirmed:** C2 HTF đã quét và đóng trong range C1; sang C3 chờ hồi và phản ứng tại một trong hai ET, cùng điều kiện entry LTF đã chọn. Không bắt buộc C3 sẽ hồi đủ hoặc đạt TP.
 - **Early C2:** HTF chưa xác nhận. Cần key HTF có trước, thực sự vượt High C1 đối với Sell, LTF đã đóng reclaim, MSS hoặc CISD giảm, rồi hồi ET và phản ứng. Quét một đỉnh LTF chưa vượt High C1 không là sweep của CRT HTF đó. Đây là nhánh riêng cần thống kê riêng, không gọi là CRT Confirmed.
 - Trước entry, đỉnh C2 và fibo còn tạm; đỉnh mới yêu cầu đánh giá lại sweep/reclaim/xác nhận. Sau entry, không nới SL theo đỉnh mới. Cực trị chart khác giá stop thực thi nếu có tick buffer/slippage; phải tính tổng rủi ro trước.
@@ -48,4 +50,6 @@ Các mục trên là quy trình cá nhân được lưu ngày 17/11/2026, chưa 
 
 ![CRT fibo và Early C2](images/crt-fibo-early-c2.png)
 
-![Neo fibo cho EGF và ISB](images/fibo-egf-isb.png)
+![Fibo EGF Sell và Buy, neo đầu râu](images/fibo-egf-buy-sell.png)
+
+![Fibo ISB false break Sell và breakout Buy, neo đầu râu](images/fibo-isb-falsebreak-breakout.png)
