@@ -1,8 +1,10 @@
 # Kế hoạch cải tổ hệ thống chỉ giữ CRT
 
-Cập nhật 21/11/2026 theo quyết định của người dùng và [nghiên cứu nguồn Romeotpt](CRT-ROMEOTPT-RESEARCH.md). Chỉ có **CRT là phương pháp giao dịch**. IRL, ERL, key level và TS phục vụ vị trí, hướng đi và xác nhận của CRT; EGF/ISB không còn là phương pháp hay kênh phát tín hiệu độc lập trong bản dự kiến.
+Cập nhật trạng thái 22/11/2026 theo quyết định của người dùng và [nghiên cứu nguồn Romeotpt](CRT-ROMEOTPT-RESEARCH.md). Chỉ có **CRT là phương pháp giao dịch**. IRL, ERL, key level và TS phục vụ vị trí, hướng đi và xác nhận của CRT; EGF/ISB không còn là phương pháp hay kênh phát tín hiệu độc lập trong bản hiện hành.
 
 Tài liệu này thay thế kế hoạch ba phương pháp cho đợt cải tổ kế tiếp. Cập nhật triển khai: Pine đã chuyển sang [CRT V1](CRT-V1-SPEC.md), có bản lưu multi-model, bộ ca tổng hợp và kiểm tra biên dịch riêng. Web/checklist đã chuyển CRT-only, lưu snapshot cũ và giữ nhật ký EGF/ISB. Ngày 22/11/2026 người dùng tạm chấp nhận Replay baseline; đã gỡ lại fibo tự động theo yêu cầu và giữ quy ước thủ công. Bước tiếp theo đã thực hiện là [nghiên cứu Early C2 và ca kiểm tra](EARLY-C2-RESEARCH.md); chưa đưa Early vào Pine/web.
+
+Đối chiếu mức hoàn thành và phần còn lại tại [bản rà soát 22/11/2026](CRT-COMPLETION-AUDIT.md). Fibo đã hủy theo yêu cầu; Early C2 chỉ nghiên cứu. Không tự coi backlog là các tính năng đã nghiệm thu.
 
 ## 1 Chuẩn hóa phạm vi trước khi viết lại
 
@@ -79,7 +81,7 @@ Vòng đời cần tách: ứng viên C2; CRT Confirmed; chờ phản ứng C3; 
 
 **Bước 3 — Vị trí và lifecycle:** bổ sung trạng thái key/EQ/TP/entry window, kiểm tra bias/CT và fake shift theo đặc tả. Không nâng tần suất làm mục tiêu.
 
-**Bước 4 — Fibo và hiển thị:** thêm overlay CRT khi dữ liệu neo đã nghiệm thu; không gộp triển khai Early C2. Test wick anchors, hướng Buy/Sell, timestamp, zoom/pan và không chồng chữ.
+**Bước 4 — Hiển thị; fibo đã hủy:** giữ các mức và cụm nến CRT; hoàn thiện tooltip OHLC cùng thời gian mở/đóng theo feed. Không khôi phục fibo tự động hoặc gộp Early C2 vào bản Confirmed. Kiểm tra zoom/pan thực tế vẫn tách khỏi fixture.
 
 **Bước 5 — Web và tài liệu:** checklist, thuật ngữ, nhật ký, hình và tham chiếu đồng bộ. Source hiện hành, kế hoạch và tài liệu lịch sử phải được phân biệt.
 

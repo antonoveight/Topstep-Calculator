@@ -51,6 +51,8 @@ Dữ liệu lưu trong LocalStorage. Hãy dùng cùng trình duyệt và cùng �
 
 ## Hệ thống HTF → kịch bản → entry LTF
 
+[Bảng rà soát hoàn thành 22/11/2026](docs/CRT-COMPLETION-AUDIT.md) ghi rõ phần đã triển khai, phần hủy theo yêu cầu và backlog. Chỉ báo đã bổ sung hủy pending C/M khi close phủ nhận trước entry và giờ mở/đóng nến nguồn theo feed.
+
 Kiểm tra web CRT-only: `node tools/check-crt-web.cjs`. Xem [migration và nghiệm thu web](docs/CRT-WEB-VALIDATION.md); bộ kiểm tra này không thay thế Replay chỉ báo trên chart.
 
 [Bản chuẩn hóa hiện hành](docs/TRADING-FRAMEWORK.md) quy định CRT-only, điều kiện C2/C3 và entry LTF theo CRT V1. Trend/AMD/Break không còn là lựa chọn phương pháp mới; bản ghi cũ giữ nguyên tên và mã. Checklist cũ được giữ trong snapshot `__legacy`, không được chuyển thành xác nhận cấu trúc mới. Chuyển động/cỡ cá là minh họa, các ô quản trị không tự đo số R.

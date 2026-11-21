@@ -24,6 +24,8 @@ Ngày 21/11/2026. Áp dụng cho `indicators/funded-angler-v6.pine` và bản sa
 1. Chỉ quan sát entry ở **C3**, tức nến HTF đầu tiên sau C2. Snapshot của C2 có tuổi 0 trong C3; sang C4 tuổi 1, khóa entry với WHY `C3 CLOSED`.
 2. Trong C3, đợi nến LTF đóng xác nhận CISD **hoặc** MSS. CISD vượt run-open đối hướng; MSS vượt pivot đã xác nhận. Cùng bar ưu tiên C, trừ khi chọn riêng MSS. Đây là baseline kỹ thuật, chưa gọi là “True MSS” theo bài giảng gốc.
 3. Mặc định `Auto / Pullback / Fresh reaction`: sau xác nhận, đợi **nến sau** hồi mức C/M hoặc retest FVG/OB hình thành từ xác nhận đó. Mode FVG/OB riêng cũng không bỏ qua C/M.
+Trước khi phát tín hiệu, nếu close xuyên ngược mức C/M đang chờ thì hủy pending confirmation và các cache FVG/OB của phản ứng đó. Chờ xác nhận mới rồi retest ở nến sau; wick/equal close không tự hủy. Không thay đổi một tín hiệu đã phát. Xem [rà soát vòng đời](CRT-COMPLETION-AUDIT.md).
+
 4. `Confirmation close` là lựa chọn tham khảo market tại close C/M. FVG/OB vẫn luôn cần retest ở nến sau khi hình thành.
 5. Tam giác nằm tại nến **đủ điều kiện đóng**, không lùi về nến nguồn hay pivot. Buy xanh dưới nến; Sell đỏ trên nến; native label size 4 theo lựa chọn trước đây.
 6. Chạm target hoặc cực trị SL C2 trên một nến LTF đã đóng sẽ khóa phần entry còn lại của setup, kể cả giá quay lại. Nếu cả hai cùng bị chạm, không suy ra thứ tự hay kết quả giao dịch.
@@ -51,6 +53,7 @@ Registry giữ các bối cảnh chưa kết thúc. Cặp mới đang mở C3 đ
 ## Hiển thị và mặc định
 
 - HTF H1; có thể chọn H2/H4/D1. Bias D1 và phải >= HTF. LTF hỗ trợ M1/M3/M5 chia hết HTF; khung HTF chỉ xem bối cảnh, không phát entry LTF.
+- Tooltip từng nến có Open/Close timestamp theo feed và OHLC; nến live ghi Scheduled close, thiếu timestamp ghi `-`.
 - Cụm đầu giữ C1–C2; FOLLOW bắt đầu C3 và giữ đuôi gần nhất, gồm nến live; LAST tùy chọn hiển thị nguồn model đã kết thúc. Giá OHLC dùng dữ liệu chart, không trộn live vào detector.
 - High/Low/TP/INV và ERL bắt đầu từ nến tạo mức; FVG neo nến đầu bộ ba HTF nhưng chỉ xuất hiện sau xác nhận. Chữ trong suốt, có bố trí tránh đè; cần nghiệm thu hình thực tế trên chart.
 - History 100 dấu, Latest tùy chọn; thay đổi giới hạn hiển thị không đổi logic/alert. Macro/QT mặc định chỉ là bối cảnh, không suy hướng.

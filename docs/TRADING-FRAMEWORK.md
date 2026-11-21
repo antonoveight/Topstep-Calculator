@@ -38,6 +38,8 @@ Các ô +1R/+2R/Full TP trên web chỉ ghi nhận thủ công và điều khi�
 - Nhật ký mới chỉ chọn CRT hoặc Chưa phân loại. Khi sửa bản ghi cũ, có thể giữ nguyên mã cũ; validator/import/export tiếp tục đọc mã 1–7. Dữ liệu tài khoản, payout và PnL không được chuyển đổi bởi checklist.
 - Nếu checklist JSON hỏng, giữ nguyên chuỗi gốc và ngừng ghi đè checklist cho tới khi khôi phục.
 
+Khi pending C/M bị close xuyên ngược trước entry, chỉ báo bỏ xác nhận cũ và đợi xác nhận/retest mới. Đây không phải tự đóng một lệnh thực tế.
+
 ## Kiểm tra và phần còn lại
 
 `node tests/htf-framework.cjs` kiểm tra migration và workflow trình duyệt. `node tests/liquidity-guide.cjs` kiểm tra hướng dẫn và prompt Gemini qua mock; không gửi ảnh thật. [Báo cáo web](CRT-WEB-VALIDATION.md) tách khỏi [kiểm tra Pine](CRT-V1-VALIDATION.md).

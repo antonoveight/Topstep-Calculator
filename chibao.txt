@@ -154,6 +154,8 @@ type CrtKey
 type KeyMap
     array<CrtKey> levels = na
 type Model
+    int aEnd = na
+    int cEnd = na
     CrtKey crtKey = na
     bool eqTouched = false
     int uid = na
@@ -213,6 +215,9 @@ type Model
     float cC = na
     int cT = na
 type ModelArchive
+    int aEnd = na
+    int bEnd = na
+    int cEnd = na
     int uid = na
     int flags = na
     int kind = na
@@ -322,7 +327,7 @@ f_refreshIrl(Model m, array<Zone> zones, array<Liquidity> swings) =>
             m.innerHiT := m.irlT
 
 f_archive(Model m, int reason, int endedAt) =>
-    ModelArchive.new(uid=m.uid, flags=m.flags, kind=m.kind, phase=m.phase, aO=m.aO, aH=m.aH, aL=m.aL, aC=m.aC, aT=m.aT, bO=m.bO, bH=m.bH, bL=m.bL, bC=m.bC, bT=m.bT, cO=m.cO, cH=m.cH, cL=m.cL, cC=m.cC, cT=m.cT, endReason=reason, endedAt=endedAt)
+    ModelArchive.new(aEnd=m.aEnd, bEnd=m.confirmedAt, cEnd=m.cEnd, uid=m.uid, flags=m.flags, kind=m.kind, phase=m.phase, aO=m.aO, aH=m.aH, aL=m.aL, aC=m.aC, aT=m.aT, bO=m.bO, bH=m.bH, bL=m.bL, bC=m.bC, bT=m.bT, cO=m.cO, cH=m.cH, cL=m.cL, cC=m.cC, cT=m.cT, endReason=reason, endedAt=endedAt)
 f_archiveAllowed(int kind) =>
     kind == 1
 
@@ -536,6 +541,7 @@ f_engine() =>
             m.cL := low
             m.cC := close
             m.cT := time
+            m.cEnd := time_close
         bool older = time_close > m.confirmedAt
         if older and m.kind == 1 and not na(m.crtKey) and m.crtKey.kind > 0 and (m.dir == 1 ? close < m.crtKey.lo : close > m.crtKey.hi)
             m.crtKey := CrtKey.new()
@@ -573,7 +579,7 @@ f_engine() =>
             int direction = tsBull ? 1 : -1
             float rh = high[1]
             float rl = low[1]
-            Model fresh = Model.new(uid=time, flags=1, kind=1, phase=1, dir=direction, bornIndex=bar_index, confirmedAt=time_close, resolvedAt=time_close, hi=rh, lo=rl, inv=direction == 1 ? low : high, cp=direction == 1 ? rh : rl, aO=open[1], aH=high[1], aL=low[1], aC=close[1], aT=time[1], bO=open, bH=high, bL=low, bC=close, bT=time)
+            Model fresh = Model.new(aEnd=time_close[1], uid=time, flags=1, kind=1, phase=1, dir=direction, bornIndex=bar_index, confirmedAt=time_close, resolvedAt=time_close, hi=rh, lo=rl, inv=direction == 1 ? low : high, cp=direction == 1 ? rh : rl, aO=open[1], aH=high[1], aL=low[1], aC=close[1], aT=time[1], bO=open, bH=high, bL=low, bC=close, bT=time)
             fresh.crtKey := direction == 1 ? priorBuyKey : priorSellKey
             fresh.hiT := time[1]
             fresh.loT := time[1]
@@ -635,15 +641,15 @@ f_engine() =>
         selected := fallback
     priorFocusId := selected.uid
     bool historyReady = firstSeen <= scanStart
-    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft, selected.innerHi, selected.innerLo, selected.innerHiT, selected.innerLoT, lastEnded, selected.crtKey, selected.eqTouched]
+    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft, selected.innerHi, selected.innerLo, selected.innerHiT, selected.innerLoT, lastEnded, selected.crtKey, selected.eqTouched, selected.aEnd, selected.cEnd]
 
 // Every snapshot field is individually offset; live OHLC is display-only.
 // C3 receives the previous confirmed C2 snapshot (age 0); C4 receives age 1.
 f_snapshot(bool previous) =>
-    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60] = f_engine()
-    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57, previous ? v58[1] : v58, previous ? v59[1] : v59, previous ? v60[1] : v60]
+    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60, v61, v62] = f_engine()
+    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57, previous ? v58[1] : v58, previous ? v59[1] : v59, previous ? v60[1] : v60, previous ? v61[1] : v61, previous ? v62[1] : v62]
 
-[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft, sInnerHi, sInnerLo, sInnerHiT, sInnerLoT, sArchived, kCrtKey, sEqTouched] = if onHtf
+[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft, sInnerHi, sInnerLo, sInnerHiT, sInnerLoT, sArchived, kCrtKey, sEqTouched, sAEnd, sCEnd] = if onHtf
     f_snapshot(not barstate.isconfirmed)
 else
     request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
@@ -673,6 +679,7 @@ var int liveLowTime = na
 var bool liveComplete = false
 var int bucketCounter = 0
 var array<int> candleTimes = array.new<int>()
+var array<int> candleEndTimes = array.new<int>()
 var array<float> candleOpens = array.new<float>()
 var array<float> candleHighs = array.new<float>()
 var array<float> candleLows = array.new<float>()
@@ -683,6 +690,7 @@ bool newBucket = na(liveT) or bucketTime != liveT
 if newBucket
     if not na(liveT) and liveComplete
         array.push(candleTimes, liveT)
+        array.push(candleEndTimes, liveEnd)
         array.push(candleOpens, liveO)
         array.push(candleHighs, liveH)
         array.push(candleLows, liveL)
@@ -691,6 +699,7 @@ if newBucket
         array.push(candleLowTimes, liveLowTime)
         if array.size(candleTimes) > 1000
             array.shift(candleTimes)
+            array.shift(candleEndTimes)
             array.shift(candleOpens)
             array.shift(candleHighs)
             array.shift(candleLows)
@@ -868,6 +877,10 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         bool opposing = bullish ? close < open : close > open
         bool priorOpposing = bullish ? close[1] < open[1] : close[1] > open[1]
         float seedPivot = bullish ? knownHigh : knownLow
+        // A failed, unfilled shift cannot turn its later re-break into an old retest.
+        bool revokedPending = not state.sent and not na(state.confirmIndex) and bar_index > state.confirmIndex and (bullish ? close < state.confirmLevel : close > state.confirmLevel)
+        if revokedPending
+            f_clearReaction(state, time, seedPivot)
         bool newReactionPivot = bullish ? not na(pivotLow) : not na(pivotHigh)
         if newReactionPivot and time[pivotLength] >= activatedAt
             state.rearmPivotTime := time[pivotLength]
@@ -963,7 +976,7 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         float reward = not na(target) ? (bullish ? target - close : close - target) : na
         bool biasAllowed = not filterBias or biasDir == ctx.dir or counterContext
         bool alreadyEmitted = signalCadence == "One per model" ? state.everSent : state.sent
-        string pendingStatus = hasConfirmation ? "WAIT RETEST" : "WAIT CONFIRM"
+        string pendingStatus = hasConfirmation ? "WAIT RETEST" : revokedPending ? "CM RESET" : "WAIT CONFIRM"
         if counterContext and not hasConfirmation
             pendingStatus := "CT CONFIRM"
         string biasWait = allowCrtCounter and rootKind == 1 and opposingBias ? (not priorKey ? "NO KEY" : not keyHeld ? "KEY X" : "BIAS") : "BIAS"
@@ -1148,6 +1161,11 @@ f_archiveCandles(ModelArchive ended, array<ClusterCandle> candles) =>
         f_insertCluster(candles, ended.bT, ended.bO, ended.bH, ended.bL, ended.bC)
         if ended.kind == 1
             f_insertCluster(candles, ended.cT, ended.cO, ended.cH, ended.cL, ended.cC)
+
+// Close timestamps come from the feed; never infer them by adding nominal TF seconds.
+f_candleEnd(int sourceTime, int aTime, int aClose, int bTime, int bClose, int cTime, int cClose, int liveTime, int liveClose, array<int> cachedTimes, array<int> cachedEnds) =>
+    int cached = array.indexof(cachedTimes, sourceTime)
+    not na(sourceTime) ? (sourceTime == aTime ? aClose : sourceTime == bTime ? bClose : sourceTime == cTime ? cClose : sourceTime == liveTime ? liveClose : cached >= 0 and cached < array.size(cachedEnds) ? array.get(cachedEnds, cached) : na) : na
 
 f_tag(int flags, int kind, int phase) =>
     "CRT/TS"
@@ -1430,7 +1448,9 @@ if barstate.islast
                 label.set_xy(caption, middle, labelY)
                 label.set_text(caption, candleCaption)
                 label.set_textcolor(caption, archived ? color.gray : chart.fg_color)
-                label.set_tooltip(caption, str.format_time(item.t, "dd/MM HH:mm", NY) + " NY | O " + str.tostring(item.o, format.mintick) + " H " + str.tostring(item.h, format.mintick) + " L " + str.tostring(item.l, format.mintick) + " C " + str.tostring(item.c, format.mintick) + (archived ? " | history only / " + f_endTag(sArchived.endReason) : ""))
+                int sourceClose = f_candleEnd(item.t, archived ? sArchived.aT : sAT, archived ? sArchived.aEnd : sAEnd, archived ? sArchived.bT : sBT, archived ? sArchived.bEnd : sConfirmed, archived ? sArchived.cT : sCT, archived ? sArchived.cEnd : sCEnd, liveT, liveEnd, candleTimes, candleEndTimes)
+                string closeCaption = not archived and item.t == liveT and not currentBucketClosed ? "Scheduled close " : "Close "
+                label.set_tooltip(caption, "Open " + str.format_time(item.t, "dd/MM HH:mm", NY) + " NY | " + closeCaption + (not na(sourceClose) ? str.format_time(sourceClose, "dd/MM HH:mm", NY) + " NY" : "-") + " | O " + str.tostring(item.o, format.mintick) + " H " + str.tostring(item.h, format.mintick) + " L " + str.tostring(item.l, format.mintick) + " C " + str.tostring(item.c, format.mintick) + (archived ? " | history only / " + f_endTag(sArchived.endReason) : ""))
                 drawSlot += 1
             int headingTime = groupStartTime + int((groupCount * clusterStep - clusterStep + bodyWidth) * 0.5 * chartSeconds * 1000)
             label.set_xy(heading, headingTime, labelY - captionGap * 1.25)

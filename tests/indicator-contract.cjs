@@ -14,11 +14,13 @@ assert.match(source,/f_snapshot\(true\), lookahead=barmerge.lookahead_on/);
 assert.match(source,/f_snapshot\(not barstate.isconfirmed\)/);
 const fields=source.match(/^    \[selected.uid,.+$/m)[0].trim().slice(1,-1).split(', ');
 const names=source.match(/^\[sId,.+\] = if onHtf/m)[0].split('] =')[0].slice(1).split(', ');
-assert.equal(fields.length,61);assert.equal(names.length,fields.length);
+assert.equal(fields.length,63);assert.equal(names.length,fields.length);
 for(let i=0;i<fields.length;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`));
 assert.equal(fields[names.indexOf('sArchived')],'lastEnded');
 assert.equal(fields[names.indexOf('kCrtKey')],'selected.crtKey');
 assert.equal(fields[names.indexOf('sEqTouched')],'selected.eqTouched');
+assert.equal(fields[names.indexOf('sAEnd')],'selected.aEnd');
+assert.equal(fields[names.indexOf('sCEnd')],'selected.cEnd');
 assert.ok(fields.length+7+6<=127,'All nested request tuple fields fit Pine budget');
 const engine=source.slice(source.indexOf('f_engine() =>'),source.indexOf('// Every snapshot'));
 assert.doesNotMatch(engine,/\blive[OHLC]\b/);
@@ -50,4 +52,4 @@ for(const date of ['2026-07-14T23:00:00Z','2026-12-14T00:00:00Z','2026-03-08T06:
 }
 const clean=source.replace(/\/\/[^\n]*/g,'').replace(/"(?:[^"\\]|\\.)*"/g,'""'),stack=[],pairs={')':'(',']':'[','}':'{'};
 for(const c of clean){if('([{'.includes(c))stack.push(c);else if(Object.hasOwn(pairs,c))assert.equal(stack.pop(),pairs[c]);}assert.equal(stack.length,0);
-console.log('PASS CRT-only detector/channel, 61 confirmed snapshot fields (74 total request fields), current-bar gates, sync, macros 1440 minutes, DST/QT and delimiters. Not Pine runtime.');
+console.log('PASS CRT-only detector/channel, 63 confirmed snapshot fields (76 total request fields), current-bar gates, sync, macros 1440 minutes, DST/QT and delimiters. Not Pine runtime.');

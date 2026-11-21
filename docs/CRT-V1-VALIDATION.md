@@ -48,3 +48,7 @@ Người dùng tạm chấp nhận Replay baseline để tiếp tục, không ph
 Theo yêu cầu mới, đã gỡ input/helper/line fibo và trả renderer về bản trước fibo; giữ các mức RH/RL/EQ/INV/CP/ERL/IRL/key. Không đổi engine/bias/entry C3. Bộ kiểm tra hiện hành có 12 nhóm, gồm test loại bỏ fibo. Quy ước fibo thủ công được giữ. [Early C2](EARLY-C2-RESEARCH.md) có 35 tình huống, 70 lượt đối xứng và 354 kiểm tra prefix; chỉ là giao thức nghiên cứu, chưa được import vào runtime.
 
 Source sau gỡ fibo được biên dịch lại bằng đúng mã cuối trong phiên Pine Editor tạm: `exactSource=true`, `success=true`, `errors=null`, không có warning. Các số ca Early ở trên là kiểm tra giao thức tổng hợp, không phải kết quả Pine hoặc thị trường.
+
+## Rà soát hoàn thiện — 22/11/2026
+
+Đã tái hiện và sửa pending C/M bị giữ sau close phủ nhận, thêm test wick/boundary và xác nhận lại trước retest. Hoàn thiện giờ đóng C1/C2/C3 trong snapshot/archive/cache và tooltip, phân biệt nến live. Snapshot hiện 63 field, tổng tuple 76. Bộ hiện hành có 14 nhóm chỉ báo, 12 nhóm web và nghiên cứu Early riêng; xem [bảng hoàn thành/phần còn lại](CRT-COMPLETION-AUDIT.md).

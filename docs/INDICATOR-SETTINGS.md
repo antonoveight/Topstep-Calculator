@@ -45,6 +45,7 @@ Chỉ cần chọn HTF/Bias theo phân tích thực tế. Không nới điều k
 | NO MODEL / VIEW TF | Chưa có CRT phù hợp hoặc đang xem khung không phát entry LTF. |
 | WAIT CLOSE | Nến đang chạy; chưa dùng close chưa xác nhận. |
 | WAIT CONFIRM / CT CONFIRM | Chưa có C/M LTF; CT là nhánh ngược bias. |
+| CM RESET | Close xuyên ngược mức C/M trước entry; bỏ pending/cache cũ, chờ xác nhận mới rồi retest. Không phải kết quả SL của một lệnh. |
 | WAIT RETEST | Đã xác nhận, chờ hồi ở nến sau; không đuổi nếu giá đi luôn. |
 | BIAS / NO KEY / KEY X | Bias chặn hoặc nhánh CT thiếu/mất key có trước. B0! là guard intraday tạm chặn, không phải bias đối diện. |
 | TIME / WAVE WAIT | Ngoài giờ lọc hoặc chưa có pivot xác nhận nhịp mới. |
@@ -62,3 +63,5 @@ Chart M1/M3/M5 nhỏ hơn và chia hết HTF mới phát entry. Khi chart > HTF 
 Fibo tự động đã gỡ ngày 22/11/2026 theo yêu cầu. Bạn đánh dấu fibo thủ công theo [quy ước](FIBO-CONVENTION.md). Chỉ báo không kiểm tra ET fill hoặc tự quản lý lệnh. [Early C2](EARLY-C2-RESEARCH.md) chỉ đang ở bước nghiên cứu, chưa có input/tín hiệu Early.
 
 Kiểm tra: `node tools/check-crt.cjs`. Phân biệt rõ ca tổng hợp, biên dịch Pine và Replay thị trường; kết quả của loại trước không thay thế loại sau.
+
+Tooltip cụm nến hiện cả giờ mở/đóng từ feed; `Scheduled close` dành cho nến live. Không suy giờ đóng từ độ dài danh nghĩa HTF qua gap phiên.
