@@ -1,5 +1,7 @@
 # The Funded Angler · Trading Desk
 
+Định hướng 21/11/2026: [chỉ giữ phương pháp CRT](docs/CRT-ONLY-REFORM-PLAN.md), dựa trên [đối chiếu nguồn Romeotpt](docs/CRT-ROMEOTPT-RESEARCH.md) và quy ước cá nhân. Đây là kế hoạch cải tổ; web/Pine hiện hành chưa được chuyển sang CRT-only.
+
 Ứng dụng web tĩnh quản lý nhật ký giao dịch, rủi ro và lịch sử payout cá nhân cho tài khoản Combine/XFA. HTML nằm trong `index.html`; quy tắc, lưu trữ và giao diện nâng cao được tách trong `assets/`. `topstep.html` là bản sao tương thích.
 
 Giao diện Trading Desk dùng nền graphite, điểm nhấn teal và hai chế độ sáng/tối.

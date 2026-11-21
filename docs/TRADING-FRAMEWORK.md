@@ -1,5 +1,7 @@
 # Hệ thống hiện hành: cấu trúc HTF → kịch bản HTF → entry LTF
 
+**Định hướng mới 21/11/2026: chỉ tập trung CRT.** [Kế hoạch cải tổ CRT-only](CRT-ONLY-REFORM-PLAN.md) và [nghiên cứu nguồn Romeotpt](CRT-ROMEOTPT-RESEARCH.md) hướng dẫn đợt triển khai kế tiếp. Các phần ba model dưới đây mô tả bản web/Pine đang chạy, chưa được chuyển đổi; không còn là định hướng phương pháp mới.
+
 Bản chuẩn hóa cho web và cơ sở đặc tả chỉ báo cá nhân sau này. Đây là tổ chức thông tin theo quyết định của người dùng, chưa phải thuật toán được kiểm định. Ưu tiên bản này khi các hướng dẫn cũ còn dùng bốn phương pháp CRT/Trend/AMD/Break.
 
 Quy ước fibo mới ngày 17/11/2026: **0 = SL tại cực trị sweep; 0.1 = ET2; 0.2 = ET1; 0.4 = break; 0.6 = BE; 0.8 = TL; 1 = TP ở đầu bên kia**. Xem [quy ước fibo cá nhân](FIBO-CONVENTION.md). Đây là ghi nhớ đánh dấu chart, chưa thay đổi thuật toán chỉ báo.
