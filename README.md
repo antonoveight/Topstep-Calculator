@@ -1,6 +1,6 @@
 # The Funded Angler · Trading Desk
 
-Định hướng 21/11/2026: [chỉ giữ phương pháp CRT](docs/CRT-ONLY-REFORM-PLAN.md), dựa trên [đối chiếu nguồn Romeotpt](docs/CRT-ROMEOTPT-RESEARCH.md) và quy ước cá nhân. Đây là kế hoạch cải tổ; web/Pine hiện hành chưa được chuyển sang CRT-only.
+Định hướng 21/11/2026: [chỉ giữ phương pháp CRT](docs/CRT-ONLY-REFORM-PLAN.md), dựa trên [đối chiếu nguồn Romeotpt](docs/CRT-ROMEOTPT-RESEARCH.md) và quy ước cá nhân. Pine đã triển khai [CRT V1](docs/CRT-V1-SPEC.md): C2 confirmed, một kênh LTF trong C3. Web/checklist vẫn là bản cũ, sẽ chuyển đổi sau nghiệm thu chart. Chạy `node tools/check-crt.cjs` để kiểm tra chỉ báo; đây không phải backtest lợi nhuận.
 
 Ứng dụng web tĩnh quản lý nhật ký giao dịch, rủi ro và lịch sử payout cá nhân cho tài khoản Combine/XFA. HTML nằm trong `index.html`; quy tắc, lưu trữ và giao diện nâng cao được tách trong `assets/`. `topstep.html` là bản sao tương thích.
 

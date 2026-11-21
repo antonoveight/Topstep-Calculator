@@ -1,5 +1,7 @@
 # HTF tùy chọn, vòng đời model và tách cụm
 
+> Lưu ý 21/11/2026: phần mô tả nhiều model là lịch sử trước CRT V1. Chỉ báo hiện chỉ có CRT, entry trong C3; ưu tiên [đặc tả hiện hành](CRT-V1-SPEC.md) và [setting CRT V1](INDICATOR-SETTINGS.md). Web chưa chuyển đổi.
+
 Cập nhật 14/11/2026. HTF/Bias TF chỉ giữ H1/H2/H4/D1, mặc định H1/D1 để đối chiếu ban đầu; không tự khẳng định mọi feed có OHLC/session giống hệt nhau. Chỉ báo là công cụ tham khảo cấu trúc, không thay quyết định trên Topstep.
 
 ## Đã sửa trong code

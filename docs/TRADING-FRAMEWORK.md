@@ -1,6 +1,6 @@
 # Hệ thống hiện hành: cấu trúc HTF → kịch bản HTF → entry LTF
 
-**Định hướng mới 21/11/2026: chỉ tập trung CRT.** [Kế hoạch cải tổ CRT-only](CRT-ONLY-REFORM-PLAN.md) và [nghiên cứu nguồn Romeotpt](CRT-ROMEOTPT-RESEARCH.md) hướng dẫn đợt triển khai kế tiếp. Các phần ba model dưới đây mô tả bản web/Pine đang chạy, chưa được chuyển đổi; không còn là định hướng phương pháp mới.
+**Định hướng mới 21/11/2026: chỉ tập trung CRT.** [Kế hoạch cải tổ CRT-only](CRT-ONLY-REFORM-PLAN.md) và [nghiên cứu nguồn Romeotpt](CRT-ROMEOTPT-RESEARCH.md) hướng dẫn đợt triển khai kế tiếp. Pine hiện thực hiện [CRT V1](CRT-V1-SPEC.md): C1 range → C2 sweep/reclaim đã đóng → xác nhận và Pullback LTF trong C3. Các phần ba model bên dưới chỉ còn mô tả web/checklist và dữ liệu lịch sử chưa chuyển đổi; không áp dụng làm đặc tả Pine hiện tại.
 
 Bản chuẩn hóa cho web và cơ sở đặc tả chỉ báo cá nhân sau này. Đây là tổ chức thông tin theo quyết định của người dùng, chưa phải thuật toán được kiểm định. Ưu tiên bản này khi các hướng dẫn cũ còn dùng bốn phương pháp CRT/Trend/AMD/Break.
 

@@ -30,9 +30,6 @@ assert.deepEqual(pullback.hits,[],'A clean impulse without a later retest is int
 assert.deepEqual(market.hits,[101],'Confirmation-close identifies the earlier closed confirmation in that same impulse');
 const biasBlocked=run(crt,noisy,{bias:-1});
 assert.deepEqual(biasBlocked.hits,[]);assert.ok(biasBlocked.results.every(r=>r.status==='NO KEY'),'Counter-bias CRT remains blocked without its preexisting key');
-const egf={...crt,id:2,kind:2,flags:2,phase:0};
-const noIrl=run(egf,noisy);
-assert.deepEqual(noIrl.hits,[]);assert.ok(noIrl.results.every(r=>r.status==='NO REF'));
 const noModel=run({...crt,id:null,dir:0},noisy);
 assert.deepEqual(noModel.hits,[]);assert.ok(noModel.results.every(r=>r.status==='NO MODEL'));
 // A later distinct C/M + retest may be missed because a first, unfilled pending
@@ -51,14 +48,14 @@ assert.deepEqual(run(sell,mirror(renewed),{pivots:{106:{pivotHigh:94}}}).hits,[1
 assert.deepEqual(run(sell,mirror(twoStructures),{pivots:{106:{pivotHigh:91.5}}}).hits,[107],'Pending replacement is symmetric for Sell');
 assert.deepEqual(run(crt,renewed,{pivots:{106:{pivotLow:106}},waveAllowed:false}).hits,[],'Wave gating blocks signals before state is consumed');
 // Execute the actual global wave predicate around independent channel states.
-const waveExpr=source.match(/    bool waveAllowed = (.+)/)[1].replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!');
-const allow=Function('ctx','lastBuyTime','lastSellTime','bar_index','lastBuyBar','lastSellBar','lastPivotLowTime','lastPivotHighTime','na','return '+waveExpr);
+const waveExpr=source.match(/^bool waveAllowed = (.+)/m)[1].replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!');
+const allow=Function('sDir','lastBuyTime','lastSellTime','bar_index','lastBuyBar','lastSellBar','lastPivotLowTime','lastPivotHighTime','na','return '+waveExpr);
 function runTogether(tape,contexts,pivots={}){
  const states=contexts.map(c=>harness.state(c)),hits=[],statuses=[];let lastBuy=null,lastBuyBar=null,pivotTime=null;
  for(let j=2;j<tape.length;j++){
   if(pivots[tape[j].t])pivotTime=tape[j-2].t;
   for(let k=0;k<contexts.length;k++){
-   const gate=allow(contexts[k],lastBuy,null,j,lastBuyBar,null,pivotTime,null,x=>x==null);
+   const gate=allow(contexts[k].dir,lastBuy,null,j,lastBuyBar,null,pivotTime,null,x=>x==null);
    const result=harness.step(contexts[k],states[k],tape.slice(0,j+1),{...pivots[tape[j].t],waveAllowed:gate});
    statuses.push({t:tape[j].t,k,status:result.status});
    if(result.hit){hits.push({t:tape[j].t,k});lastBuy=tape[j].t;lastBuyBar=j;}
@@ -74,4 +71,4 @@ const sameBar=runTogether(noisy,[crt,{...crt,id:2}]);
 assert.deepEqual(sameBar.hits,[{t:102,k:0},{t:102,k:1}],'Same-bar provenance remains available for one combined triangle');
 const nextWave=runTogether(renewed,[crt,{...crt,id:2,confirmed:104,resolved:104}],{106:{pivotLow:106}});
 assert.deepEqual(nextWave.hits,[{t:102,k:0},{t:106,k:1}],'New confirmed wave accepts its first valid trigger and suppresses a trailing sibling on the next candle');
-console.log(JSON.stringify({syntheticOnly:true,ltfBars:noisy.length-2,oneParentModel:{freshReaction:fresh.hits,onePerModel:once.hits},impulseWithoutRetest:{pullback:pullback.hits,confirmationClose:market.hits},laterStructure:{oldPending:pendingOld.hits,evaluatedAsNewReaction:laterStructureIsolated.hits},sameTapeBlocked:{oppositeBias:biasBlocked.hits.length,egfWithoutIrl:noIrl.hits.length,noHtfModel:noModel.hits.length}},null,2));
+console.log(JSON.stringify({syntheticOnly:true,ltfBars:noisy.length-2,oneParentModel:{freshReaction:fresh.hits,onePerModel:once.hits},impulseWithoutRetest:{pullback:pullback.hits,confirmationClose:market.hits},laterStructure:{oldPending:pendingOld.hits,evaluatedAsNewReaction:laterStructureIsolated.hits},sameTapeBlocked:{oppositeBias:biasBlocked.hits.length,noHtfModel:noModel.hits.length}},null,2));

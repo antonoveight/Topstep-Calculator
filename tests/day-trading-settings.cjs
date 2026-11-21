@@ -5,13 +5,12 @@ const source=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
 const harness=require('./helpers/pine-channel-harness.cjs').createHarness(source);
 const bar=(t,o,h,l,c)=>({t,o,h,l,c});
 const crt={id:1,kind:1,flags:1,phase:1,dir:1,confirmed:100,resolved:100,hi:120,lo:90,inv:90,cp:120,irlH:null,irlL:null,irlT:null};
-const egf={...crt,id:2,kind:2,flags:2,phase:0,irlH:104,irlL:102,irlT:90};
 const start=[bar(98,100,103,99,102),bar(99,102,104,101,103)];
 const cases={
  cisd:{ctx:crt,tape:[...start,bar(100,105,106,102,103),bar(101,103,107,102,106),bar(102,106,109,106,108),bar(103,108,109,104,106)],expected:[103]},
  mss:{ctx:crt,seed:{mssLevel:105},tape:[bar(98,102,104,101,103),bar(99,103,105,102,104),bar(100,104,107,103,106),bar(101,106,108,104.5,107)],expected:[101]},
- fvg:{ctx:egf,tape:[...start,bar(100,103,105,102,104),bar(101,104,109,103,108),bar(102,108,111,107,110),bar(103,110,112,106,109)],expected:[103]},
- ob:{ctx:egf,tape:[...start,bar(100,105,106,102,103),bar(101,103,107,102,106),bar(102,106,108,104,107)],expected:[102]},
+ fvg:{ctx:crt,seed:{mssLevel:105},tape:[...start,bar(100,103,105,102,104),bar(101,104,109,103,108),bar(102,108,111,107,110),bar(103,110,112,106,109)],expected:[103]},
+ ob:{ctx:crt,tape:[...start,bar(100,105,106,102,103),bar(101,103,107,102,106),bar(102,106,108,104,107)],expected:[102]},
  renewed:{ctx:crt,pivots:{106:{pivotLow:106}},tape:[...start,bar(100,105,106,102,103),bar(101,103,107,102,106),bar(102,106,107,104,105.5),bar(103,105.5,110,105,109),bar(104,109,110,106,107),bar(105,107,112,107,111),bar(106,111,112,108,110),bar(107,110,112,108.5,110.5)],expected:[102,107]}
 };
 function mirror(test){
@@ -45,7 +44,7 @@ for(const [name,field,input] of [['DEFAULT_ENTRY_MODE','entryMode','entryMode'],
  assert.equal(declared[1],eligible[0][field],'Source default matches the workflow-compatible profile');
  assert.ok(source.includes(input+' = input.string('+name+','),'Input must actually consume the validated default');
 }
-const report={date:'2026-11-14',scope:'synthetic workflow compatibility; NOT market optimization',combinations:results.length,blockedChecks,eligible:eligible.map(({entryMode,timing,cadence})=>({entryMode,timing,cadence})),notEvaluated:['HTF H1/H2/H4','Bias TF','model timeout','time windows','profit','drawdown','spread/slippage','actual XAUUSD history','Pine chart/Replay'],results};
+const report={date:'2026-11-21',scope:'synthetic workflow compatibility; NOT market optimization',combinations:results.length,blockedChecks,eligible:eligible.map(({entryMode,timing,cadence})=>({entryMode,timing,cadence})),notEvaluated:['HTF H1/H2/H4','Bias TF','model timeout','time windows','profit','drawdown','spread/slippage','actual XAUUSD history','Pine chart/Replay'],results};
 if(require.main===module){
  console.table(results.map(({entryMode,timing,cadence,matchingWorkflowCases,totalCases})=>({entryMode,timing,cadence,match:matchingWorkflowCases+'/'+totalCases})));
  console.log(JSON.stringify({combinations:report.combinations,blockedChecks,eligible:report.eligible,scope:report.scope}));

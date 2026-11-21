@@ -1,5 +1,7 @@
 # Quy ước fibo cá nhân
 
+> Từ 21/11/2026, phương pháp chính là [CRT V1](CRT-V1-SPEC.md). Các ví dụ EGF/ISB bên dưới được giữ để đối chiếu lịch sử; chưa có fibo/ET tự động hoặc Early C2 trong chỉ báo hiện tại.
+
 Cập nhật theo xác nhận của người dùng ngày 17/11/2026 và hai ảnh mẫu. Đây là quy ước đánh dấu chart, chưa phải yêu cầu thay đổi thuật toán chỉ báo hoặc tự động quản lý lệnh.
 
 | Mức fibo | Nhãn hiện hành | Ý nghĩa / thay đổi |

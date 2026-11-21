@@ -21,7 +21,7 @@ Auto mới dùng cấu trúc trên Bias TF:
 - Buy bảo vệ bằng swing Low; Sell bảo vệ bằng swing High. Pivot hồi mới đã xác nhận chỉ siết mức bảo vệ theo hướng cấu trúc. Một nến hồi xanh/đỏ hoặc râu quét đơn lẻ không tự đổi hướng.
 - Chưa biết swing/cấu trúc thì Neutral, không đoán hướng từ màu nến.
 
-Snapshot bias có sáu scalar, tất cả offset riêng khi đọc từ khung lớn: direction, age, swing High/Low và guard High/Low. Snapshot model có 112 scalar, thêm archive và CRT key riêng thành 114; request bias trong engine có 7 phần tử, ngoài có 6, tổng 127, bằng giới hạn tuple Pine. Các thay đổi HTF của EGF vẫn chỉ theo bias cấu trúc đã đóng; nhãn bias H1/H4 không được lấy từ màu nến model.
+Snapshot bias có sáu scalar, tất cả offset riêng khi đọc từ khung lớn: direction, age, swing High/Low và guard High/Low. Từ [CRT V1](CRT-V1-SPEC.md), snapshot model có 61 field, request bias trong engine có 7 phần tử, ngoài có 6, tổng 74. EGF/ISB không còn kênh riêng. Hướng CRT theo sweep/reclaim; bias giữ vai trò lọc cùng ngoại lệ key có trước, không lấy màu nến làm bias. Entry chỉ trong C3 và timeout chỉ giới hạn quan sát.
 
 ## Chặn rủi ro trong ngày bằng close chart
 

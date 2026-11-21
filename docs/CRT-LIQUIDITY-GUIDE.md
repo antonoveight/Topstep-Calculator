@@ -2,7 +2,7 @@
 
 Tài liệu này chọn lọc từ cẩm nang CRT / Inside Bar / Engulfing / IRL–ERL do người dùng cung cấp. Đây là hướng dẫn đọc chart và ghi nhận thủ công, không phải bộ phát tín hiệu hoặc kết quả kiểm định chiến lược.
 
-**Cấu trúc hệ thống hiện hành:** [HTF → kịch bản → entry LTF](TRADING-FRAMEWORK.md). Chỉ giữ CRT, Engulfing/Outside Bar và Inside Bar là nhóm cấu trúc HTF. Trend, AMD và Break trong các ghi chú cũ chỉ mô tả bối cảnh/hành vi; không còn là phương pháp độc lập.
+**Cấu trúc hiện hành từ 21/11/2026:** chỉ [CRT V1](CRT-V1-SPEC.md), với IRL/ERL, key và TS phục vụ bối cảnh/xác nhận. Các ví dụ Engulfing/Inside Bar trong tài liệu này là nội dung lịch sử; web/checklist đang chờ chuyển đổi. Trend, AMD và Break chỉ mô tả bối cảnh/hành vi.
 
 ## 1. Quy ước chung
 

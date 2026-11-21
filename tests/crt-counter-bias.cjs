@@ -55,7 +55,7 @@ assert.deepEqual(run({...ctx,cp:107}).hits,[],'No CT after the CRT target has be
 assert.deepEqual(run({...ctx,inv:108}).hits,[],'CT cannot bypass invalidation');
 assert.deepEqual(run({...ctx,crtKey:{...key,lo:107,hi:109}}).hits,[],'The current LTF close must still hold the key side');
 assert.ok(source.indexOf('CrtKey priorBuyKey =')<source.indexOf('f_updateKeyPools(zones, swings, scanStart, inScan'),'Capture reaction before C2 consumes its key');
-assert.ok(source.includes('previous ? v112[1] : v112'),'Matched CRT key must be snapshot-confirmed');
+assert.ok(source.includes('previous ? v59[1] : v59'),'Matched CRT key must be snapshot-confirmed');
 assert.match(source,/knownAt=time_close, price=ph/,'A pivot key records detection time separately from pivot source time');
 assert.match(source,/knownAt=time_close, leftTime=bullOb.sourceTime, hi=bullOb.opening/,'OB is known on its break-confirmation bar, not its earlier source bar');
 console.log('PASS prior-key causality/reaction, higher-TF compact map, immutable match, CT Buy/Sell actual source entry, target and all blocking gates. No market/Replay result claimed.');

@@ -40,7 +40,7 @@ function createHarness(source){
    const b=tape.at(-1),keys={open:'o',high:'h',low:'l',close:'c',time:'t'};
    const history=(field,n)=>{const prior=tape.at(-1-n);return prior?prior[keys[field]]:null;};
    const env=[{isconfirmed:options.confirmed!==false},options.isLtf!==false,b.t,tape.length-1,b.o,b.h,b.l,b.c,history,x=>x==null||Number.isNaN(x),options.cadence||'Fresh reaction',2,.01,options.entryMode||'Auto',options.timing||'Pullback',true,options.allowCrtCounter!==false,options.bias??ctx.dir,options.timeAllowed!==false,clear,args=>({...defaults('ChannelResult'),...args})];
-   return stepWithSweep(...env,options.sweepSize??.01,displacement,{irlKind:0,...ctx},state,options.knownHigh??null,options.knownLow??null,options.pivotHigh??null,options.pivotLow??null,options.waveAllowed!==false);
+   return stepWithSweep(...env,options.sweepSize??.01,displacement,{age:0,irlKind:0,...ctx},state,options.knownHigh??null,options.knownLow??null,options.pivotHigh??null,options.pivotLow??null,options.waveAllowed!==false);
   }
  };
 }

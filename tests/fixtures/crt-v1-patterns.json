@@ -1,0 +1,17 @@
+{
+  "c1": {"o":104,"h":110,"l":100,"c":108},
+  "sweepSize":0.25,
+  "cases":[
+    {"name":"low raid and reclaim","c2":{"o":103,"h":109,"l":99,"c":102},"dir":1},
+    {"name":"high raid and reclaim","c2":{"o":108,"h":111,"l":101,"c":107},"dir":-1},
+    {"name":"touch is not sweep","c2":{"o":103,"h":109,"l":100,"c":102},"dir":0},
+    {"name":"insufficient tick penetration","c2":{"o":103,"h":109,"l":99.9,"c":102},"dir":0},
+    {"name":"close at low boundary","c2":{"o":103,"h":109,"l":99,"c":100},"dir":0},
+    {"name":"close outside range","c2":{"o":103,"h":109,"l":99,"c":99.5},"dir":0},
+    {"name":"double sweep","c2":{"o":103,"h":111,"l":99,"c":104},"dir":0},
+    {"name":"inside compression only","c2":{"o":104,"h":109,"l":101,"c":106},"dir":0},
+    {"name":"body engulf without raid","c2":{"o":109,"h":109.5,"l":102,"c":103},"dir":0},
+    {"name":"CRT may also engulf body","c2":{"o":109,"h":109.5,"l":99,"c":103},"dir":1},
+    {"name":"minimum one tick","c2":{"o":103,"h":109,"l":99.75,"c":102},"dir":1}
+  ]
+}
