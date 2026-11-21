@@ -1,3 +1,5 @@
+> Lịch sử trước thay đổi 22/11/2026. Các quy tắc xác nhận LTF, key và thời gian tại đây đã được thay thế bằng [CRT thuần & thời gian](CRT-PURE-AND-TIME.md). Không dùng tài liệu này để cài đặt bản hiện tại.
+
 # OB HTF và OB entry LTF
 
 Cập nhật 16/11/2026. Hai tầng có chung bản chất OB; khác khung xác nhận và vai trò. OB nằm trong dealing range có thể là một internal reference/IRL. Việc hiển thị nhãn riêng OB và FVG không loại OB khỏi khái niệm IRL.

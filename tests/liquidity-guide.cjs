@@ -50,7 +50,7 @@ const { chromium } = require('../.review-tools/node_modules/playwright');
         const prompt = request.contents.flatMap(c => c.parts).map(p => p.text || '').join('\n');
         assert.match(prompt, /IRL|ERL/);
         assert.match(prompt, /NO_TRADE/);
-        assert.match(prompt, /CRT V1/);
+        assert.match(prompt, /CRT Pure TS/);
         assert.match(prompt, /C3/);
         assert.match(prompt, /Turtle Soup/);
         assert.match(await page.locator('#checklist-setup-5').innerText(), /TS/);

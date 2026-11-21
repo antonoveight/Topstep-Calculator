@@ -1,11 +1,11 @@
 /* Pure checklist interpretation, shared by the scene and exhaustive state tests. */
 const PondLogic = (() => {
     const legacyNames={1:'CRT · FRVP (cũ)',2:'Trend (cũ)',3:'AMD (cũ)',4:'Break (cũ)',6:'Engulfing / Outside · HTF (cũ)',7:'Inside Bar · HTF (cũ)'};
-    const schema='crt-v1';
-    const steps=['C1 và key HTF','C2 đóng xác nhận TS','Xác nhận LTF trong C3','Pullback và entry theo kế hoạch'];
+    const schema='crt-ts-v2';
+    const steps=['C1 và key HTF','C2 đóng xác nhận TS','TS LTF đóng trong C3','Pullback và entry theo kế hoạch'];
     const config=(name,visual,effect)=>({name,visual,steps,effect,status:['Đang quan sát HTF','Đã xác nhận cấu trúc HTF','Đã chọn kịch bản HTF','Đã xác nhận entry LTF','Đã ghi nhận vào lệnh'],actions:['Đánh dấu HTF','Chốt kịch bản','Chờ entry LTF','Ghi nhận vào lệnh']});
     const setups={5:config('CRT · HTF',1,['cast','approach','bite','hook'])};
-    setups[5].status=['Đang quan sát C1 / key HTF','Đã đánh dấu C1 và key','C2 đã đóng xác nhận TS','Đã xác nhận LTF trong C3','Đã ghi nhận entry sau Pullback'];
+    setups[5].status=['Đang quan sát C1 / key HTF','Đã đánh dấu C1 và key','C2 đã đóng xác nhận TS','TS LTF đã đóng trong C3','Đã ghi nhận entry sau Pullback'];
     setups[5].actions=['Đánh dấu C1','Xác nhận C2 / TS','Xác nhận LTF · C3','Ghi nhận entry'];
     function name(id){return setups[id]?.name||(legacyNames[id]||'Chưa phân loại');}
     function visual(id){return setups[id]?.visual||Number(id)||1;}

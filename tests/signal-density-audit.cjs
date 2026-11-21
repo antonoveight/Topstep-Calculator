@@ -1,3 +1,5 @@
+// HISTORICAL before pure CRT 2026-11-22; excluded from current check runners.
+// Superseded by tests/pure-crt.cjs, crt-liquidity.cjs and crt-context.cjs.
 // Reproduce density/missing-signal mechanisms on synthetic OHLC using the actual
 // Pine channel body. This is not market frequency, a backtest, or a Pine runtime.
 const assert=require('node:assert/strict'),fs=require('node:fs');

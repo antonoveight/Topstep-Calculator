@@ -1,3 +1,5 @@
+// HISTORICAL before pure CRT 2026-11-22; excluded from current check runners.
+// Superseded by tests/pure-crt.cjs, crt-liquidity.cjs and crt-context.cjs.
 const fs=require('fs'),assert=require('node:assert/strict');
 const source=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
 const keys=require('./helpers/pine-crt-key-harness.cjs').createKeyHarness(source);

@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const C=require('../assets/crt-time.js'),T=require('../assets/market-time.js');
+assert.equal(C.parse('2026-03-08T02:30',T.NY),null);
+assert.equal(C.parse('2026-11-01T01:30',T.NY),null,'Reject ambiguous fall-back wall minute');
+assert.equal(C.parse('2026-07-14T09:00',T.NY).toISOString(),'2026-07-14T13:00:00.000Z');
+assert.equal(C.parse('2026-11-14T09:00',T.NY).toISOString(),'2026-11-14T14:00:00.000Z');
+assert.equal(C.parse('2026-11-14T09:00','Asia/Ho_Chi_Minh').toISOString(),'2026-11-14T02:00:00.000Z');
+assert.equal(C.parse('garbage','UTC'),null);assert.equal(C.parse('2026-02-30T10:00','UTC'),null);
+const a=new Date('2026-11-22T10:00Z'),b=new Date('2026-11-22T11:00Z');
+for(const [now,want] of [['09:59','WAIT C3'],['10:00','C3 OPEN'],['10:59','C3 OPEN'],['11:00','C3 CLOSED'],['11:01','C3 CLOSED']])assert.equal(C.state(a,b,new Date(`2026-11-22T${now}Z`)).phase,want);
+assert.equal(C.state(b,a).phase,'UNSET');assert.equal(C.state(null,b).phase,'UNSET');
+for(const p of ['index.html','topstep.html','assets/market-hours.js','assets/cockpit.js'])assert.doesNotMatch(fs.readFileSync(p,'utf8'),/ICT|Quarterly|CISD|MSS|FVG|\bOB\b|C\/M/);
+assert.equal(fs.readFileSync('index.html','utf8'),fs.readFileSync('topstep.html','utf8'));
+console.log('PASS CRT clock open/close boundaries, unset/reversed dates, NY DST including missing/duplicated minutes, VN conversion and active-surface removal.');

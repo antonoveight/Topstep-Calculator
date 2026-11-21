@@ -1,3 +1,5 @@
+// HISTORICAL before pure CRT 2026-11-22; excluded from current check runners.
+// Superseded by tests/pure-crt.cjs, crt-liquidity.cjs and crt-context.cjs.
 // PERSONAL RESEARCH PROTOCOL, not an Early C2 Pine implementation or market backtest.
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const {replay}=require('./helpers/early-c2-research-spec.cjs'),fixtures=require('./fixtures/early-c2-research.json');

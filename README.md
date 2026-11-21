@@ -1,6 +1,6 @@
 # The Funded Angler · Trading Desk
 
-Định hướng 21/11/2026: [chỉ giữ phương pháp CRT](docs/CRT-ONLY-REFORM-PLAN.md), dựa trên [đối chiếu nguồn Romeotpt](docs/CRT-ROMEOTPT-RESEARCH.md) và quy ước cá nhân. Pine đã triển khai [CRT V1](docs/CRT-V1-SPEC.md): C2 confirmed, một kênh LTF trong C3. Web/checklist và AI Chart Lens cũng đã chuyển sang CRT-only; Người dùng tạm chấp nhận Replay baseline; agent chưa thực hiện Replay độc lập do phiên tạm yêu cầu đăng nhập. Chạy `node tools/check-crt.cjs` để kiểm tra chỉ báo; đây không phải backtest lợi nhuận.
+Hệ thống hiện hành 22/11/2026: [CRT thuần & thời gian](docs/CRT-PURE-AND-TIME.md). CRT HTF đã đóng, TS/retest LTF chỉ trong C3; IRL/ERL theo swing HTF. Web, checklist và AI Chart Lens đã đồng bộ. Bộ xác nhận mới cần Replay lại; chưa có đánh giá lợi nhuận.
 
 Ứng dụng web tĩnh quản lý nhật ký giao dịch, rủi ro và lịch sử payout cá nhân cho tài khoản Combine/XFA. HTML nằm trong `index.html`; quy tắc, lưu trữ và giao diện nâng cao được tách trong `assets/`. `topstep.html` là bản sao tương thích.
 
@@ -11,12 +11,7 @@ Quản trị rủi ro, Phiên & tin tức và Cài đặt. Nhật ký và calcul
 các phần nhập liệu hiện có; quản lý tài khoản, giao diện, thông báo và sao lưu
 được gom vào Cài đặt. Chi tiết tại [UI redesign](docs/UI-REDESIGN.md).
 
-Timeline phiên thị trường có thêm **AS1 (18:50–19:10 NY)** và **AS2
-(19:50–20:10 NY)**, tự quy đổi giờ mùa hè/mùa đông. Bật **Quarterly Theory**
-cạnh công tắc ICT Macros để xem Q1–Q4 của ngày, các đoạn 90 phút, micro 22,5
-phút và mốc thời gian True Open. Có thể kéo timeline để xem thử. Đây là lớp
-ngữ cảnh thời gian; các điều kiện bias/CRT/FRVP vẫn do bạn xác nhận trên chart.
-Nguồn và phạm vi triển khai: [Market cycles research](docs/MARKET-CYCLES-RESEARCH.md).
+Timeline giữ phiên thị trường và tin tức, bổ sung đồng hồ CRT C1/C2/C3. Các lớp thời gian cũ đã gỡ; lịch và giới hạn nguồn tại [CRT thuần & thời gian](docs/CRT-PURE-AND-TIME.md). Entry LTF dùng TS đã đóng rồi retest trong C3.
 
 ## Chạy ứng dụng
 
@@ -35,7 +30,7 @@ Dữ liệu lưu trong LocalStorage. Hãy dùng cùng trình duyệt và cùng �
 - XFA: số dư bắt đầu $0, MLL ban đầu âm theo gói; khóa MLL tại $0 sau payout đầu tiên.
 - Standard/Consistency payout theo từng chu kỳ: kiểm tra số ngày, lợi nhuận và hạn mức. Đây là **ghi nhận cá nhân**, không gửi yêu cầu rút hay đặt lệnh lên Topstep.
 - Calculator tính Micro và hợp đồng lớn theo ngân sách SL và ticks/points; trả về 0 khi không đủ ngân sách.
-- Checklist CRT V1: C1/key → C2 đóng TS → xác nhận LTF trong C3 → Pullback/entry. Giữ snapshot trước chuyển đổi, nhật ký EGF/ISB cũ và cá đã câu; không chuyển ô cũ thành xác nhận CRT mới.
+- Checklist CRT thuần: C1/key → C2 đóng TS → xác nhận LTF trong C3 → Pullback/entry. Giữ snapshot trước chuyển đổi, nhật ký EGF/ISB cũ và cá đã câu; không chuyển ô cũ thành xác nhận CRT mới.
 - Hồ câu có nút **Toàn màn hình 16:9**: hiện cảnh hồ, nút thao tác như “Thả câu” và nút **Đóng lệnh thủ công · Thu cá**. Nhấn **Esc** hoặc chạm đúp mặt hồ để thoát; giữ nguyên tiến độ checkbox. Nếu trình duyệt chặn Fullscreen API, ứng dụng mở chế độ phủ toàn màn hình trong trang. Màn hình khác tỷ lệ 16:9 có viền tối để giữ tỷ lệ cảnh. Tab/Shift+Tab di chuyển giữa các nút đang dùng được.
 - Hồ Câu Tĩnh Tâm dùng cảnh minh họa 2.5D theo mẫu đã duyệt, với cần/dây/phao và gợn nước bằng Canvas. Điều khiển nằm ngoài cảnh; hỗ trợ tạm dừng, giảm chuyển động theo hệ thống và tự dừng khi không hiển thị. Trên điện thoại, checklist nằm ngay sau hồ câu.
 - Hồ có nước dao động, lau nhẹ, cá nền xuất hiện ngẫu nhiên và cá mục tiêu riêng. Các bước vào lệnh đọc theo setup và điều kiện trước đó; tích sai thứ tự không tự hoàn thành bước còn thiếu. Các ô quản lý giữ SL/trailing/Full TP **độc lập**, được lưu riêng theo cấu trúc; ghi nhận kết quả thực tế không bắt buộc trailing trước. TP được ưu tiên khi vẫn có các ô khác được tích.
@@ -51,19 +46,19 @@ Dữ liệu lưu trong LocalStorage. Hãy dùng cùng trình duyệt và cùng �
 
 ## Hệ thống HTF → kịch bản → entry LTF
 
-[Bảng rà soát hoàn thành 22/11/2026](docs/CRT-COMPLETION-AUDIT.md) ghi rõ phần đã triển khai, phần hủy theo yêu cầu và backlog. Chỉ báo đã bổ sung hủy pending C/M khi close phủ nhận trước entry và giờ mở/đóng nến nguồn theo feed.
+[Bảng rà soát hoàn thành 22/11/2026](docs/CRT-COMPLETION-AUDIT.md) ghi rõ phần đã triển khai, phần hủy theo yêu cầu và backlog. Chỉ báo đã bổ sung hủy pending TS khi close phủ nhận trước entry và giờ mở/đóng nến nguồn theo feed.
 
 Kiểm tra web CRT-only: `node tools/check-crt-web.cjs`. Xem [migration và nghiệm thu web](docs/CRT-WEB-VALIDATION.md); bộ kiểm tra này không thay thế Replay chỉ báo trên chart.
 
-[Bản chuẩn hóa hiện hành](docs/TRADING-FRAMEWORK.md) quy định CRT-only, điều kiện C2/C3 và entry LTF theo CRT V1. Trend/AMD/Break không còn là lựa chọn phương pháp mới; bản ghi cũ giữ nguyên tên và mã. Checklist cũ được giữ trong snapshot `__legacy`, không được chuyển thành xác nhận cấu trúc mới. Chuyển động/cỡ cá là minh họa, các ô quản trị không tự đo số R.
+[Bản chuẩn hóa hiện hành](docs/TRADING-FRAMEWORK.md) quy định CRT-only, điều kiện C2/C3 và entry LTF theo CRT thuần. Trend/AMD/Break không còn là lựa chọn phương pháp mới; bản ghi cũ giữ nguyên tên và mã. Checklist cũ được giữ trong snapshot `__legacy`, không được chuyển thành xác nhận cấu trúc mới. Chuyển động/cỡ cá là minh họa, các ô quản trị không tự đo số R.
 
 ## Bổ sung CRT và bối cảnh thanh khoản
 
-CRT có TS (Turtle Soup) ở tầng HTF: quét mức đã đánh dấu rồi reclaim/đóng trở lại range; CISD và MSS là các lựa chọn xác nhận entry LTF riêng. Không đồng nhất close ngoài range với TS và không tự gán tỷ lệ thắng.
+CRT có TS (Turtle Soup) ở tầng HTF: quét mức đã đánh dấu rồi reclaim/đóng trở lại range; TS LTF đã đóng và retest ở nến sau là xác nhận entry LTF. Không đồng nhất close ngoài range với TS và không tự gán tỷ lệ thắng.
 
 [Hướng dẫn setting chỉ báo](docs/INDICATOR-SETTINGS.md): cấu hình khởi đầu theo HTF → LTF, bảng tra toàn bộ Inputs và cách kiểm tra khi không có tam giác. Chữ chart mặc định Normal, dashboard Small, tùy chỉnh độc lập trong Display.
 
-Chỉ báo cá nhân: [TFA v6 · CRT V1](indicators/funded-angler-v6.pine), bản sao [chibao.txt](chibao.txt), [25 setting](docs/INDICATOR-SETTINGS.md). Chỉ một kênh CRT sau C2 đã đóng, entry trong C3; mặc định Auto/Pullback/Fresh reaction. FVG/OB/swing HTF, IRL/ERL và ngoại lệ CT tại key có trước được giữ. History mặc định 100 dấu; cụm nguồn C1–C2, FOLLOW từ C3, LAST tùy chọn. Fibo tự động đã gỡ theo yêu cầu; quy ước fibo thủ công được giữ. [Early C2 đang ở bước nghiên cứu và ca kiểm tra](docs/EARLY-C2-RESEARCH.md), chưa phát tín hiệu trên chỉ báo và chưa kiểm định hiệu suất thị trường. Chỉnh source rồi chạy `node tools/sync-indicator.cjs` và `node tools/check-crt.cjs`.
+Chỉ báo cá nhân: [TFA v6 · CRT thuần](indicators/funded-angler-v6.pine), bản sao [chibao.txt](chibao.txt), [21 setting](docs/INDICATOR-SETTINGS.md). Chỉ một kênh CRT sau C2 đã đóng, entry trong C3; mặc định TS/Pullback/Fresh reaction. IRL/ERL theo swing HTF và ngoại lệ CT tại key swing có trước được giữ. History mặc định 100 dấu; cụm nguồn C1–C2, FOLLOW từ C3, LAST tùy chọn. Fibo tự động đã gỡ theo yêu cầu; quy ước fibo thủ công được giữ. [Early C2 đang ở bước nghiên cứu và ca kiểm tra](docs/EARLY-C2-RESEARCH.md), chưa phát tín hiệu trên chỉ báo và chưa kiểm định hiệu suất thị trường. Chỉnh source rồi chạy `node tools/sync-indicator.cjs` và `node tools/check-crt.cjs`.
 
 [Hướng dẫn đã chuẩn hóa](docs/CRT-LIQUIDITY-GUIDE.md) bổ sung range tham chiếu, IRL/ERL, key và sweep/reclaim cho CRT; các ví dụ EGF/ISB còn lại chỉ là lịch sử. Trong Checklist, mở hướng dẫn **Cấu trúc** HTF hoặc **Bản đồ thanh khoản · IRL / ERL** để đọc khi cần; các hướng dẫn mặc định thu gọn, không xuất hiện trong khung live. AI Chart Lens dùng cùng quy ước, ghi rõ khi ảnh thiếu dữ liệu FRVP/nến đóng/giá thay vì tự tạo mức.
 
@@ -117,7 +112,7 @@ assets/pond-fullscreen.js         Toàn màn hình 16:9, điều khiển bàn ph
 assets/pond-ambient.js            Chuyển động môi trường và nhân vật
 assets/pond-scene.js              Ghép lớp cảnh, tư thế, tay/cần và chất lượng
 assets/pond-water.js              Sóng, phản chiếu và gợn mặt hồ
-assets/pond-behavior.js           Hành vi cá; lượt mới dùng CRT V1
+assets/pond-behavior.js           Hành vi cá; lượt mới dùng CRT thuần
 assets/pond-schedule.js           Lịch dùng chung theo mục 7 của playbook
 assets/pond-execution.js          Kết quả lượt câu, đánh giá và lưu khôi phục
 assets/pond-live.js               Studio, nguồn chart và cam kết/tổng kết buổi
@@ -217,7 +212,7 @@ Nếu máy bật giảm chuyển động, mặc định hồ theo hệ thống v
 
 Trong Studio hoặc mục **Chuyển động & hiển thị** của hồ, chọn Combine/XFA theo nguồn chart thực tế. Ứng dụng không tự nhận dạng tài khoản từ video: chưa chọn thì hiện **SOURCE NOT CONFIRMED**. Đổi/ngừng nguồn chia sẻ sẽ xóa xác nhận cũ; đổi tài khoản bên trong cùng cửa sổ cần tự cập nhật lựa chọn. Nhãn không thay đổi tài khoản calculator và không lưu qua tải lại. Crop chart chỉ giúp chọn vùng hình; không xác nhận quyền phát lại hay bảo đảm TikTok chấp nhận nội dung. Bản rà soát và nguồn tham khảo tại `docs/LIVE-WORDING-REVIEW.md`. Kiểm tra bằng `node tests/pond-public.cjs`.
 
-Hiệu đính EGF/IRL: [FVG, OB, internal stops và EQ/CE](docs/EGF-INTERNAL-REFERENCES.md). Không mặc định EGF tạo FVG; swing cần quét-reclaim trước xác nhận LTF.
+Tài liệu nhiều mô hình trước đây chỉ còn giá trị lịch sử. Quy tắc hiện hành: [CRT thuần & thời gian](docs/CRT-PURE-AND-TIME.md).
 
 [Quy tắc OB HTF và OB entry LTF](docs/OB-TIMEFRAME-ROLES.md): phân biệt vị trí tham chiếu với điều kiện vào lệnh.
 

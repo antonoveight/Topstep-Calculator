@@ -1,3 +1,5 @@
+> Lịch sử trước thay đổi 22/11/2026. Entry/key/time đã được thay bằng đặc tả CRT thuần trong [CRT thuần & thời gian](CRT-PURE-AND-TIME.md). Không dùng các bộ lọc cũ làm yêu cầu cho bản hiện hành.
+
 # CRT-only web — kiểm tra 21/11/2026
 
 ## Phạm vi đã thực hiện

@@ -31,7 +31,7 @@ function createHarness(source){
  const environment=['barstate','isLtf','time','bar_index','open','high','low','close','history','na','signalCadence','pivotLength','tolerance','entryMode','signalTiming','filterBias','allowCrtCounter','biasDir','timeAllowed','f_clearReaction','makeResult'];
  environment.push('sweepSize');
  environment.push('f_obDisplacement');
- const displacementBody=body('f_obDisplacement').map((l,i,a)=>i===a.length-1?'return '+expr(l.trim())+';':expr(l.trim().replace(/^float /,'let '))+';').join('\n');
+ const displacementBody=source.includes('f_obDisplacement(')?body('f_obDisplacement').map((l,i,a)=>i===a.length-1?'return '+expr(l.trim())+';':expr(l.trim().replace(/^float /,'let '))+';').join('\n'):'return false;';
  const displacement=Function('direction','opening','barHigh','barLow','closing',displacementBody);
  const stepWithSweep=Function(...environment,'ctx','state','knownHigh','knownLow','pivotHigh','pivotLow','waveAllowed',translate('f_stepChannel'));
  return {

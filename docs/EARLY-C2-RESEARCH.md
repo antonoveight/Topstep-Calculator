@@ -1,3 +1,5 @@
+> Lịch sử trước thay đổi 22/11/2026. Các quy tắc xác nhận LTF, key và thời gian tại đây đã được thay thế bằng [CRT thuần & thời gian](CRT-PURE-AND-TIME.md). Không dùng tài liệu này để cài đặt bản hiện tại.
+
 # Early C2 — quy tắc nghiên cứu và bộ ca kiểm tra
 
 Ngày 22/11/2026. Người dùng chọn **nghiên cứu, chốt quy tắc và ca kiểm tra trước**. Tài liệu này là giao thức cá nhân để kiểm chứng; chưa thêm Early C2, tam giác hay alert vào Pine/web. Chỉ báo vẫn là CRT Confirmed, entry C3. Fibo tự động đã gỡ theo yêu cầu; quy ước fibo thủ công giữ nguyên.

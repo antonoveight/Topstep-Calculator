@@ -1,3 +1,5 @@
+> Lịch sử trước thay đổi 22/11/2026. Các quy tắc xác nhận LTF, key và thời gian tại đây đã được thay thế bằng [CRT thuần & thời gian](CRT-PURE-AND-TIME.md). Không dùng tài liệu này để cài đặt bản hiện tại.
+
 # Kế hoạch cải tổ hệ thống chỉ giữ CRT
 
 Cập nhật trạng thái 22/11/2026 theo quyết định của người dùng và [nghiên cứu nguồn Romeotpt](CRT-ROMEOTPT-RESEARCH.md). Chỉ có **CRT là phương pháp giao dịch**. IRL, ERL, key level và TS phục vụ vị trí, hướng đi và xác nhận của CRT; EGF/ISB không còn là phương pháp hay kênh phát tín hiệu độc lập trong bản hiện hành.

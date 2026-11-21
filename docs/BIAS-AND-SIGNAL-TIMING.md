@@ -1,3 +1,5 @@
+> Lịch sử trước thay đổi 22/11/2026. Entry/key/time đã được thay bằng đặc tả CRT thuần trong [CRT thuần & thời gian](CRT-PURE-AND-TIME.md). Không dùng các bộ lọc cũ làm yêu cầu cho bản hiện hành.
+
 # Bias cấu trúc và thời điểm tam giác
 
 Cập nhật 14/11/2026 sau ảnh USTECH100/US Tech 100 CFD StoneX, chart M5, HTF lần lượt H1/H4, Bias D1. Không suy diễn dữ liệu này là XAUUSD và không lấy giá xấp xỉ trên ảnh để dựng OHLC giả làm dữ liệu thị trường.

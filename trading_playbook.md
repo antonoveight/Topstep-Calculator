@@ -1,3 +1,5 @@
+> Lịch sử trước thay đổi 22/11/2026. Entry/key/time đã được thay bằng đặc tả CRT thuần trong [CRT thuần & thời gian](docs/CRT-PURE-AND-TIME.md). Không dùng các bộ lọc cũ làm yêu cầu cho bản hiện hành.
+
 # SỔ TAY GIAO DỊCH THỰC CHIẾN (TRADING PLAYBOOK) — THAM KHẢO 3.0
 
 > **Hệ thống web hiện hành:** [Cấu trúc HTF → kịch bản HTF → entry LTF](docs/TRADING-FRAMEWORK.md). Từ 21/11/2026 chỉ giữ CRT V1: C1/key → C2 sweep/reclaim đã đóng → xác nhận và Pullback LTF trong C3. IRL/ERL, TS, FVG/OB/swing giữ vai trò hỗ trợ. EGF/ISB và các nhánh cũ bên dưới là lịch sử, không còn là lựa chọn phương pháp mới. Các mục lịch sử dưới đây chỉ áp dụng khi tương thích bản chuẩn hóa.

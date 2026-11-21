@@ -1,3 +1,5 @@
+// HISTORICAL before pure CRT 2026-11-22; excluded from current check runners.
+// Superseded by tests/pure-crt.cjs, crt-liquidity.cjs and crt-context.cjs.
 // Old EGF workflow: tests/legacy-egf-internal-references.cjs, excluded from CRT runner.
 const fs=require('node:fs'),assert=require('node:assert/strict');
 const s=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');

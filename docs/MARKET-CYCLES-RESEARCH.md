@@ -1,3 +1,5 @@
+> Lịch sử trước thay đổi 22/11/2026. Các quy tắc xác nhận LTF, key và thời gian tại đây đã được thay thế bằng [CRT thuần & thời gian](CRT-PURE-AND-TIME.md). Không dùng tài liệu này để cài đặt bản hiện tại.
+
 # Asia macros and Quarterly Theory
 
 Research and implementation: 31 October 2026.

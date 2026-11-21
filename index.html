@@ -634,7 +634,6 @@ input:checked + .slider:before {
 <link rel="stylesheet" href="assets/pond-live.css?v=20261015-layers2">
 <link rel="stylesheet" href="assets/pond-public.css?v=20261015-public">
 <link rel="stylesheet" href="assets/desk-ui.css?v=20261031-desk">
-<link rel="stylesheet" href="assets/market-quarterly.css?v=20261031-cycles">
 <link rel="stylesheet" href="assets/crt-workflow.css?v=20261121-crt-v1">
 </head>
 <body style="display: flex; min-height: 100vh;">
@@ -1526,7 +1525,7 @@ input:checked + .slider:before {
                                     <strong style="color: var(--text-primary);">2. Nam châm hút giá (DOL):</strong><br>
                                     • Hướng về Đỉnh <strong>PDH / BSL</strong>?<br>
                                     • Hướng về Đáy <strong>PDL / SSL</strong>?<br>
-                                    • FVG H4 chưa lấp?
+                                    • Swing H4 chưa bị quét?
                                 </div>
                                 <div style="background: var(--bg-card); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-inner);">
                                     <strong style="color: var(--text-primary);">3. Day Open (Mốc tham chiếu):</strong><br>
@@ -1569,9 +1568,7 @@ input:checked + .slider:before {
 <label style="display:flex;flex-direction:column;gap:4px;min-width:0;">Điều kiện entry<select id="executionEntry" onchange="onExecutionContextChange(this.id)" style="width:100%;min-width:0;background:var(--bg-card);color:var(--text-primary);padding:7px;border:1px solid var(--border-inner);border-radius:6px;">
 <option value="">Chọn điều kiện</option>
 
-<option value="CISD">CISD hoặc MSS → Pullback</option>
-<option value="FVG">C/M → FVG retest</option>
-<option value="OB">C/M → OB retest</option>
+<option value="TS">CRT/TS LTF → Pullback</option>
 
 
 </select>
@@ -1581,13 +1578,13 @@ input:checked + .slider:before {
 </textarea>
 </label>
 <details class="crt-fibo-reference"><summary>Fibo cá nhân · mức tham chiếu</summary><p>0 SL · 0.1 ET2 · 0.2 ET1 · 0.4 break · 0.6 BE · 0.8 TL · 1 TP</p><p>Sell: High C2 là SL, Low C1 là TP; Buy đối xứng. High/Low gồm râu. ET cần phản ứng; BE/TL không tự dời SL.</p><a href="docs/CRT-V1-SPEC.md" target="_blank" rel="noopener">Đọc quy trình CRT V1</a></details>
-<small id="frameworkMigrationNotice" style="display:none;color:var(--text-muted);">Checklist trước CRT V1 được giữ nguyên trong snapshot. Lượt mới bắt đầu chưa xác nhận; nhật ký và cá trong giỏ vẫn còn.</small>
+<small id="frameworkMigrationNotice" style="display:none;color:var(--text-muted);">Checklist trước CRT thuần được giữ nguyên trong snapshot. Lượt mới bắt đầu chưa xác nhận; nhật ký và cá trong giỏ vẫn còn.</small>
 </div>
 <div class="crt-workflow-heading"><strong id="tab-setup-5">CRT · Confirmed</strong><span>C1 → C2 / TS → C3</span></div>
 <div id="checklist-setup-5" class="checklist-step-group" style="display:flex;flex-direction:column;gap:8px;">
 <details class="setup-liquidity-guide b-card-inner" style="padding:8px 10px;font-size:11.5px;line-height:1.5;">
 <summary style="cursor:pointer;">CRT / TS trên HTF</summary>
-<p>C1 và C2 gồm cả râu. C2 phải xuyên một biên C1 rồi đóng hẳn trở lại trong range; chạm, close ngoài hoặc quét hai biên không xác nhận CRT một hướng. Trong C3, đợi CISD hoặc MSS đã đóng rồi Pullback. Ngược bias cần key HTF đã biết trước C1.</p>
+<p>C1 và C2 gồm cả râu. C2 phải xuyên một biên C1 rồi đóng hẳn trở lại trong range; chạm, close ngoài hoặc quét hai biên không xác nhận CRT một hướng. Trong C3, đợi TS LTF đóng xác nhận rồi retest biên C1 LTF ở nến sau. Ngược bias cần key HTF đã biết trước C1.</p>
 </details>
 <label class="chk-step-card">
 <input type="checkbox" id="chk-s5-1" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
@@ -1607,7 +1604,7 @@ input:checked + .slider:before {
 <input type="checkbox" id="chk-s5-3" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
 <div style="min-width:0;">
 <div style="font-size:12px;font-weight:700;color:var(--text-primary);">3. C3 có xác nhận LTF đã đóng</div>
-<div style="font-size:11px;color:var(--text-muted);">CISD hoặc MSS theo hướng CRT; FVG/OB retest cần C/M trước đó. Hết C3 thì dừng tìm entry.</div>
+<div style="font-size:11px;color:var(--text-muted);">TS LTF: quét một biên nến trước rồi đóng lại trong range, cùng hướng CRT HTF; sau đó chờ retest giữ cực trị TS. Hết C3 thì dừng tìm entry.</div>
 </div>
 </label>
 <label class="chk-step-card">
@@ -1676,9 +1673,9 @@ input:checked + .slider:before {
                         <summary style="cursor: pointer; font-weight: 700; color: var(--text-primary);">Bản đồ thanh khoản · IRL / ERL</summary>
                         <div style="margin-top: 10px; color: var(--text-slate);">
                             <p><strong>Cấu trúc HTF → Kịch bản HTF → Entry LTF.</strong> Giữ mục tiêu và vô hiệu của kịch bản HTF; LTF giúp chọn điểm vào và SL thực thi.</p>
-                            <p>ERL nằm ngoài range; đỉnh/đáy nội bộ nằm trong range. FVG/OB là vùng phản ứng riêng. <strong>POC ≠ EQ ≠ CE:</strong> khối lượng, trung điểm range và trung điểm vùng mất cân bằng.</p>
-                            <p>CRT không bắt buộc tự tạo FVG. FVG, OB và swing HTF vẫn là tham chiếu; không đồng nhất OB HTF với OB entry LTF.</p>
-                            <p><strong>Sweep:</strong> vượt mức rồi đóng trở lại theo khung xác nhận. <strong>Break:</strong> đóng ngoài biên rồi chờ retest theo setup; vẫn có thể thất bại. Macro/QT giúp tập trung quan sát, không thay xác nhận giá.</p>
+                            <p><strong>IRL:</strong> swing high/low HTF đã xác nhận nằm trong range C1. <strong>ERL:</strong> thanh khoản nằm ngoài range. POC là điểm tập trung khối lượng; EQ chỉ là trung điểm C1.</p>
+                            <p>Chỉ dùng mức có nguồn nến rõ ràng. Key ngược bias là swing HTF đã biết trước C1, được C2 sweep và reclaim. Không có IRL hợp lệ thì để trống.</p>
+                            <p><strong>Sweep:</strong> vượt mức rồi đóng trở lại theo khung xác nhận. <strong>Break:</strong> đóng ngoài biên rồi chờ retest theo setup; vẫn có thể thất bại. Thời gian CRT theo nến HTF: C2 đóng xác nhận, chỉ tìm entry trong C3.</p>
                             <p>Một mục tiêu <strong>Full TP</strong>; SL theo cấu trúc. Không chốt một phần hoặc tự dời BE theo +1R/+2R. Đóng tay cần ghi lý do.</p>
                             <a href="docs/CRT-LIQUIDITY-GUIDE.md" target="_blank" rel="noopener">Đọc hướng dẫn đã chuẩn hóa ↗</a><p><a href="docs/INDICATOR-AUTO-MODELS.md" target="_blank" rel="noopener">Chỉ báo CRT V1 · logic và setting</a> · <a href="indicators/funded-angler-v6.pine" download>Tải TFA v6 · CRT V1</a></p>
                         </div>
@@ -1868,7 +1865,7 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                             <div class="b-card-inner" style="padding: 9px 11px;">
                                 <div style="font-weight: 700; color: var(--color-green); margin-bottom: 3px;">🧭 Bản Đồ Thanh Khoản HTF Bắt Buộc</div>
                                 <div style="color: var(--text-slate); line-height: 1.4;">
-                                    • <strong>Chỉ săn C2 sweep tại:</strong> PDH/PDL, ONH/ONL (Asian), 1H/4H FVG/OB, Daily/Session Open.<br>
+                                    • <strong>Chỉ săn C2 sweep tại:</strong> PDH/PDL, ONH/ONL và swing HTF đã được xác nhận trước C1.<br>
                                     • <strong>Quét lơ lửng giữa chart:</strong> Nhiễu ngẫu nhiên → Bỏ qua tuyệt đối.
                                 </div>
                             </div>
@@ -1877,7 +1874,7 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                                 <div style="font-weight: 700; color: var(--color-primary); margin-bottom: 3px;">⏱️ HTF xác lập · LTF thực thi</div>
                                 <div style="color: var(--text-slate); line-height: 1.4;">
                                     • <strong>3 Ca chuẩn:</strong> Sáng (07:45–10:00) · Chiều (14:00–16:00) · Tối (20:15–22:30).<br>
-                                    • <strong>Điều kiện:</strong> Chờ nến xác nhận đúng khung đã chọn. Macro/QT chỉ hỗ trợ quan sát.
+                                    • <strong>Điều kiện:</strong> Chờ nến xác nhận đúng khung đã chọn. Chỉ tìm entry trong C3 sau khi C2 đóng xác nhận.
                                 </div>
                             </div>
 
@@ -1925,24 +1922,8 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                         </p>
                     </div>
 
-                    <!-- Right Controls: Push Notifications + ICT Macros Toggle + 24 Hour Toggle -->
+                    <!-- Session clock controls -->
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                        <button type="button" id="marketHoursBtnToggleNotif" onclick="MarketHours.togglePushNotifications(event)" class="b-btn-secondary" style="height: 30px; padding: 0 10px; font-size: 11px; gap: 4px;" title="Bật/Tắt thông báo đẩy Desktop cho 10 khung giờ ICT Macros">
-                            🔔 Bật Thông Báo ICT
-                        </button>
-                        <button type="button" id="marketHoursBtnToggleSound" onclick="MarketHours.toggleSoundAlerts(event)" class="b-btn-secondary" style="height: 30px; padding: 0 10px; font-size: 11px; gap: 4px;" title="Bật/Tắt chuông âm thanh cảnh báo ICT">
-                            🔊 Chuông: BẬT
-                        </button>
-                        <button type="button" id="marketHoursBtnTestNotif" onclick="MarketHours.testNotification(event)" class="b-btn-secondary" style="height: 30px; padding: 0 8px; font-size: 11px;" title="Thử nghiệm thông báo đẩy ICT Macro">
-                            🧪 Thử Cảnh Báo
-                        </button>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 12px; font-weight: 700; color: #F59E0B;">⚡ Hiện ICT Macros</span>
-                            <label class="switch" style="position: relative; display: inline-block; width: 42px; height: 22px; margin: 0;">
-                                <input type="checkbox" id="marketHoursIctToggle" checked style="opacity: 0; width: 0; height: 0;">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">24 Hour Time</span>
                             <label class="switch" style="position: relative; display: inline-block; width: 42px; height: 22px; margin: 0;">
@@ -2057,24 +2038,10 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
                         <span style="color: #7C3AED;">● Tokyo</span>
                         <span style="color: #0284C7;">● London</span>
                         <span style="color: #16A34A;">● New York</span>
-                        <span style="color: #D97706;">● ICT Macros</span>
                     </div>
                 </div>
 
-                <!-- Detailed ICT Macros Table Collapsible Section (Matches user's screenshot, prevents text overlap) -->
-                <div id="marketHoursIctTableSection" style="margin-top: 14px; background: var(--bg-card-inner); border-radius: 8px; border: 1px solid var(--border-inner); padding: 14px 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; user-select: none;" onclick="MarketHours.toggleIctTable()">
-                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            <span style="font-size: 13.5px; font-weight: 800; color: #F59E0B;">⚡ Bảng Chi Tiết 10 ICT Macros (Thuật Toán New York)</span>
-                            <span class="b-badge" style="font-size: 9.5px; background: rgba(245, 158, 11, 0.18); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.4);">Múi Giờ Gốc: New York</span>
-                            <span class="b-badge b-badge-dim" style="font-size: 9.5px;">Tự Động Quy Đổi Múi Giờ</span>
-                        </div>
-                        <span id="ictTableToggleArrow" style="font-size: 11px; color: var(--color-primary); font-weight: 700;">▲ Thu gọn</span>
-                    </div>
-                    <div id="marketHoursIctTableContainer" style="overflow-x: auto;">
-                        <!-- Populated dynamically by MarketHours.renderIctDetailTable() -->
-                    </div>
-                </div>
+                <section id="crtTimeContext"></section>
             </div>
 
             <!-- SECTION: ECONOMIC CALENDAR & TRADINGVIEW -->
@@ -2542,14 +2509,15 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
 <!-- JavaScript Engine -->
 <script src="assets/trading-rules.js"></script>
 <script src="assets/account-store.js"></script>
-<script src="assets/cockpit.js?v=20261121-crt-v1"></script>
+<script src="assets/cockpit.js?v=20261122-crt-time"></script>
 <script src="assets/news-radar.js?v=20261020-calendar"></script>
 <script src="assets/market-time.js?v=20261031-cycles"></script>
-<script src="assets/market-quarterly.js?v=20261031-cycles"></script>
-<script src="assets/market-hours.js?v=20261031-cycles"></script>
+<link rel="stylesheet" href="assets/crt-time.css?v=20261122-crt-time">
+<script src="assets/crt-time.js?v=20261122-crt-time"></script>
+<script src="assets/market-hours.js?v=20261122-crt-time"></script>
 <script src="assets/workspace.js?v=20261121-crt-v1"></script>
 
-    <script src="assets/pond-model.js?v=20261121-crt-v1"></script>
+    <script src="assets/pond-model.js?v=20261122-crt-time"></script>
     <script src="assets/pond-life.js"></script>
     <script src="assets/pond-clock.js"></script>
     <script src="assets/pond-schedule.js?v=20261121-crt-v1"></script>
@@ -2581,7 +2549,6 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
         <div id="quickSearchPills" style="display: flex; gap: 6px; padding: 10px 18px; border-bottom: 1px solid var(--border-inner); overflow-x: auto; font-size: 11px;">
             <button type="button" onclick="filterQuickSearchCategory('ALL')" class="b-badge b-badge-blue quick-cat-pill" style="cursor: pointer; border: none;">Tất cả</button>
             <button type="button" onclick="filterQuickSearchCategory('Điều Hướng')" class="b-badge b-badge-dim quick-cat-pill" style="cursor: pointer; border: none;">Điều Hướng</button>
-            <button type="button" onclick="filterQuickSearchCategory('ICT Macro')" class="b-badge b-badge-dim quick-cat-pill" style="cursor: pointer; border: none;">ICT Macros</button>
             <button type="button" onclick="filterQuickSearchCategory('Công Cụ')" class="b-badge b-badge-dim quick-cat-pill" style="cursor: pointer; border: none;">Công Cụ</button>
             <button type="button" onclick="filterQuickSearchCategory('Luật Topstep')" class="b-badge b-badge-dim quick-cat-pill" style="cursor: pointer; border: none;">Luật Topstep</button>
         </div>

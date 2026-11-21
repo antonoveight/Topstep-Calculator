@@ -1,3 +1,5 @@
+// HISTORICAL before pure CRT 2026-11-22; excluded from current check runners.
+// Superseded by tests/pure-crt.cjs, crt-liquidity.cjs and crt-context.cjs.
 // Executes the actual pure OB seed/strength bodies, plus the existing LTF adapter.
 // Does not emulate security, pivots, Pine rollback or market fills.
 const assert=require('node:assert/strict'),fs=require('node:fs');

@@ -1,3 +1,5 @@
+> Lịch sử trước thay đổi 22/11/2026. Các quy tắc xác nhận LTF, key và thời gian tại đây đã được thay thế bằng [CRT thuần & thời gian](CRT-PURE-AND-TIME.md). Không dùng tài liệu này để cài đặt bản hiện tại.
+
 # TFA v6 — CRT V1
 
 Từ 21/11/2026, nguồn chính `indicators/funded-angler-v6.pine` chỉ nhận diện CRT. `chibao.txt` là bản đồng bộ để dán vào Pine Editor. [Đặc tả CRT V1](CRT-V1-SPEC.md) và [25 setting](INDICATOR-SETTINGS.md) thay thế các mô tả detector EGF/ISB trước đây.

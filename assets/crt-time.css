@@ -1,0 +1,8 @@
+#crtTimeContext { min-width: 0; }
+#crtTimeContext label { display: flex; flex-direction: column; gap: 4px; max-width: 100%; font-size: 14px; }
+#crtTimeContext input, #crtTimeContext select, #crtTimeContext button { font: inherit; font-size: 14px; min-height: 38px; max-width: 100%; }
+#crtTimeContext input, #crtTimeContext select { padding: 6px 9px; }
+#crtTimeContext small { display: block; color: var(--text-muted); font-size: 14px; }
+#crtTimeContext summary { cursor: pointer; }
+#crtTimeContext p { margin: 8px 0; }
+#crtTimeContext a { color: var(--color-primary); text-decoration: underline; }

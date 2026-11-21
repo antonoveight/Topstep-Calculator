@@ -1,0 +1,1472 @@
+// Mozilla Public License 2.0: https://mozilla.org/MPL/2.0/
+// The Funded Angler - CRT V1, confirmed C2 / C3-only LTF signals.
+// History and model-branch formulas tested in Node; chart / Replay validation still required.
+// See docs/CRT-V1-SPEC.md for scope, lifecycle, priority and validation limits.
+//@version=6
+indicator("The Funded Angler v6 - CRT V1", shorttitle="TFA v6", overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=500, max_boxes_count=500, max_labels_count=300)
+
+const string NY = "America/New_York"
+const string VN = "Asia/Ho_Chi_Minh"
+const string G_HTF = "1. Auto HTF"
+const string G_BIAS = "2. Bias"
+const string G_ENTRY = "3. LTF"
+const string G_TIME = "4. Time"
+const string G_VIEW = "5. Display"
+// Day-trading workflow baseline: verified by tests/day-trading-settings.cjs.
+// Compatibility fixtures, NOT an XAUUSD profit/drawdown optimization.
+const string DEFAULT_ENTRY_MODE = "Auto"
+const string DEFAULT_SIGNAL_TIMING = "Pullback"
+const string DEFAULT_SIGNAL_CADENCE = "Fresh reaction"
+htfInput = input.timeframe("60", "HTF", options=["60", "120", "240", "1D"], group=G_HTF, tooltip="Khung xác nhận C1/C2 CRT/TS: H1, H2, H4 hoặc D1. Mặc định H1; entry LTF chỉ trong C3.")
+// CRT V1: one confirmed TS model and one causal LTF channel.
+// A higher chart uses its own timeframe for context-only overview.
+bool overviewMode = timeframe.in_seconds() > timeframe.in_seconds(htfInput)
+string htf = overviewMode ? timeframe.period : htfInput
+minSweepTicks = 1
+scanDepth = 1000
+queueLimit = 12
+lifeHtf = input.int(8, "Context timeout (HTF bars, 0 = off)", minval=0, maxval=48, group=G_HTF, tooltip="Giới hạn lưu bối cảnh sau C2. Entry chỉ trong C3, độc lập với timeout. TG=chạm target; INV=close HTF qua cực trị C2; TO=hết thời gian quan sát, không phải kết quả lệnh. 0 tắt timeout.")
+invalidMode = "Close"
+htfPivotLength = 2
+tsReference = "C1 range"
+manualSsl = 0.0
+manualBsl = 0.0
+biasTf = input.timeframe("1D", "Bias TF (>= HTF)", options=["60", "120", "240", "1D"], group=G_BIAS, tooltip="Khung bias từ H1 đến D1, phải >= HTF hiệu lực. Mặc định D1; không đồng nghĩa bias cá nhân đọc từ FRVP/day high-low.")
+biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutral"], group=G_BIAS, tooltip="Auto dùng close phá swing xác nhận trên Bias TF; giữ hướng đến khi cấu trúc đổi. B0! tạm chặn theo close chart xuyên guard ngược hướng, không tự coi là bias đối diện. Long/Short/Neutral là ý kiến chủ động của bạn; reset khi bối cảnh thay đổi.")
+filterBias = true
+allowCrtCounter = input.bool(true, "CRT reversal at prior HTF key", group=G_ENTRY, tooltip="Cho CRT ngược bias khi đã chạm/phản ứng tại FVG, OB hoặc swing HTF được xác nhận trước C1. Sau đó vẫn cần CISD/MSS và Pullback theo cấu hình. CT không đổi bias tổng thể. B0/B0! vẫn chặn; tắt để chỉ theo bias như trước.")
+signalCadence = input.string(DEFAULT_SIGNAL_CADENCE, "Signal cadence", options=["Fresh reaction", "One per model"], group=G_ENTRY, tooltip="Chỉ trong C3. Fresh reaction cần pivot hồi mới được xác nhận và tiến triển sau tín hiệu trước; One per model chỉ một dấu. Không phải mỗi nến đổi màu đều là setup mới.")
+signalTiming = input.string(DEFAULT_SIGNAL_TIMING, "Signal timing", options=["Pullback", "Confirmation close"], group=G_ENTRY, tooltip="Pullback: tam giác tại nến SAU xác nhận, khi giá hồi chạm mức/vùng và đóng đúng phía. Confirmation close: cho phép dấu tại nến đóng phá MSS/CISD cho cách vào market. FVG/OB retest luôn đợi nến sau khi vùng hình thành; không vẽ lùi hay dịch dấu hình thức.")
+entryMode = input.string(DEFAULT_ENTRY_MODE, "LTF condition", options=["Auto", "CISD", "MSS", "FVG retest", "OB retest"], group=G_ENTRY, tooltip="Auto dùng CISD hoặc MSS đã đóng, rồi Pullback ở nến sau. FVG/OB là điều kiện nội bộ, không vẽ vùng entry. Mọi lựa chọn cần xác nhận C/M trong C3; đây là tín hiệu tham khảo, không phải giá khớp lệnh hay ET tự động.")
+pivotLength = 2
+manualPoc = 0.0
+manualLine = 0.0
+manualInvalid = 0.0
+manualTarget = 0.0
+minRR = 0.0
+retestTicks = 1
+showConfirm = false
+timeGate = input.string("Context only", "Time filter for E", options=["Context only", "Web macros", "Web working windows"], group=G_TIME, tooltip="Context only chỉ quan sát giờ. Web macros/working windows chặn E ngoài cửa sổ tương ứng của web theo America/New_York, có DST.")
+showTimeBg = input.bool(false, "Macro background", group=G_TIME, tooltip="Tô nền các macro để quan sát; không tự tạo tín hiệu hay thay bias.")
+showQt = input.bool(true, "QT clock context", group=G_TIME, tooltip="Hiện đồng hồ quý intraday trong panel. QT chỉ là bối cảnh thời gian, không tự suy ra hướng lệnh.")
+showTrueOpens = false
+showCluster = input.bool(true, "CRT HTF candle groups", group=G_VIEW, tooltip="Cụm nguồn giữ C1–C2. FOLLOW bắt đầu từ C3 và có N* live, không trộn vào cặp gốc. LAST là model đã kết thúc, chỉ tham khảo.")
+clusterFollowCount = input.int(6, "Follow candles to show", minval=2, maxval=12, group=G_VIEW, tooltip="Cụm MODEL giữ nến gốc; cụm FOLLOW hiển thị số nến diễn biến gần nhất, mặc định 6. Nến cũ bị lược hiển thị được báo bằng dấu … và số lượng. Không đổi timeout hoặc tín hiệu.")
+showArchive = input.bool(false, "Last ended model cluster", group=G_VIEW, tooltip="Cụm LAST giữ nến nguồn của model vừa kết thúc và mã TG/INV/TO/AMB/HIST. Chỉ để tham khảo lịch sử, không khôi phục hiệu lực hoặc phát tín hiệu. Mặc định tắt.")
+clusterOffset = input.int(30, "Cluster offset (bars)", minval=3, maxval=80, group=G_VIEW, tooltip="Khoảng cách từ bar chart cuối đến cụm HTF, theo số bar chart. Mặc định 30 bar để cách xa cột chú thích.")
+clusterWidth = input.int(4, "Cluster body width (bars)", minval=2, maxval=16, group=G_VIEW, tooltip="Độ rộng thân nến HTF, mặc định 4 bar. Số lẻ được làm tròn xuống số chẵn để râu luôn đúng tâm thân. Không ảnh hưởng OHLC; râu đồng bộ line mảnh 1 px.")
+showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW, tooltip="Các mức nối từ nến tạo cực trị/swing tương ứng, không từ nến tín hiệu. EQ 50% dùng neo tổng quan. Nếu nguồn không có trong dữ liệu chart hoặc chưa có ERL hợp lệ thì không ghim giả. Tắt chỉ ẩn line, không đổi tín hiệu.")
+showIrl = input.bool(true, "HTF internal references", group=G_VIEW, tooltip="FVG, OB và swing nội bộ C1 được hiển thị khi có nguồn HTF hợp lệ. FVG neo nến đầu bộ ba, chỉ biết sau close nến thứ ba. OB neo nến nguồn nhưng chỉ xuất hiện sau xác nhận cấu trúc. Đây là tham chiếu, không tự tạo entry hay đổi hướng CRT.")
+showSecondary = false
+showPanel = input.bool(true, "Compact panel", group=G_VIEW, tooltip="Bảng tổng quan cố định góc trên phải. TF=khung, #1=model ưu tiên, B=bias, REF=loại vùng/mức đang theo dõi, T=thời gian, S=trạng thái.")
+historyMode = input.string("History", "Signal display", options=["History", "Latest"], group=G_VIEW, tooltip="History giữ dấu quá khứ theo giới hạn bên dưới, không xóa vì cửa sổ 3 HTF của các line. Latest chỉ giữ dấu gần nhất. Không đổi điều kiện tính toán hoặc alert.")
+historyMarks = input.int(100, "Historical signals to keep (0 = hide)", minval=0, maxval=200, group=G_VIEW, tooltip="Mặc định 100, tối đa 200 tam giác lịch sử. 0 ẩn dấu. Các bộ đếm dashboard tính toàn bộ dữ liệu chart đã tải, có thể lớn hơn số dấu được giữ.")
+bool retainHistory = historyMode == "History"
+int markLimit = historyMarks == 0 ? 0 : retainHistory ? historyMarks : 1
+recentOnly = input.bool(true, "Hide drawings without a recent signal", group=G_VIEW, tooltip="Ẩn phần vẽ quá cửa sổ gần nhất. Cụm HTF gần đây có thể hiện trước entry LTF để xem tổng quan; không có nghĩa đã có lệnh.")
+drawHtfBars = input.int(3, "Drawing horizon / recency (HTF bars)", minval=1, maxval=12, group=G_VIEW, tooltip="Giới hạn phần chiếu về trước và tuổi hình, mặc định 3 HTF. Đầu line vẫn nối về swing nguồn cũ. Không hủy hiệu lực model.")
+showEntryTriangles = true
+chartTextSize = input.string("Normal", "Chart text size", options=["Small", "Normal", "Large", "Huge"], group=G_VIEW, tooltip="Normal tăng hai mức so với Tiny trước đây. Áp dụng cho nhãn mức giá, vùng IRL, caption HTF và đồng hồ; không đổi tọa độ giá.")
+dashboardTextSize = input.string("Small", "Dashboard text size", options=["Small", "Normal", "Large"], group=G_VIEW, tooltip="Small lớn hơn một mức so với dashboard cũ. Chọn Normal khi chia đôi màn hình hoặc live.")
+string chartFont = chartTextSize == "Small" ? size.small : chartTextSize == "Large" ? size.large : chartTextSize == "Huge" ? size.huge : size.normal
+string dashboardFont = dashboardTextSize == "Large" ? size.large : dashboardTextSize == "Normal" ? size.normal : size.small
+
+float chartSeconds = timeframe.in_seconds()
+float htfSeconds = timeframe.in_seconds(htf)
+bool onHtf = chartSeconds == htfSeconds
+bool isLtf = chartSeconds < htfSeconds and (chartSeconds == 60 or chartSeconds == 180 or chartSeconds == 300)
+float sweepSize = syminfo.mintick * minSweepTicks
+float tolerance = syminfo.mintick * retestTicks
+if barstate.isfirst and (not chart.is_standard or na(chartSeconds) or chartSeconds > htfSeconds or htfSeconds % chartSeconds != 0 or timeframe.in_seconds(biasTf) < htfSeconds)
+    runtime.error("Use a standard chart TF dividing HTF; effective HTF <= Bias TF. Higher charts use their own TF as VIEW.")
+
+f_endTag(int reason) =>
+    reason == 1 ? "INV" : reason == 2 ? "TG" : reason == 3 ? "TO" : reason == 4 ? "AMB" : reason == 5 ? "HIST" : reason == 6 ? "CAP" : "WAIT"
+f_has(int flags, int bit) =>
+    int(math.floor(flags / bit)) % 2 == 1
+f_patterns(float c1o, float c1h, float c1l, float c1c, float c2o, float c2h, float c2l, float c2c) =>
+    float lowRef = tsReference == "C1 range" ? c1l : manualSsl > 0 ? manualSsl : na
+    float highRef = tsReference == "C1 range" ? c1h : manualBsl > 0 ? manualBsl : na
+    bool tookLow = not na(lowRef) and c2l <= lowRef - sweepSize
+    bool tookHigh = not na(highRef) and c2h >= highRef + sweepSize
+    bool reclaimed = c2c > c1l and c2c < c1h
+    bool sweptBothC1 = c2l <= c1l - sweepSize and c2h >= c1h + sweepSize
+    bool doubleSweep = sweptBothC1 or (tookLow and tookHigh)
+    bool tsBull = tookLow and not doubleSweep and reclaimed and c2c > lowRef
+    bool tsBear = tookHigh and not doubleSweep and reclaimed and c2c < highRef
+    [tsBull, tsBear]
+
+type BiasState
+    int direction = 0
+    int age = 0
+    float swingHigh = na
+    float swingLow = na
+    float protectedHigh = na
+    float protectedLow = na
+
+// Only confirmed pivots and closes in the bias timeframe reach this state machine.
+f_biasStep(BiasState state, float ph, float pl, float closing, float priorClose) =>
+    state.age += 1
+    if not na(ph)
+        state.swingHigh := ph
+    if not na(pl)
+        state.swingLow := pl
+    bool brokeHigh = not na(state.swingHigh) and closing > state.swingHigh and priorClose <= state.swingHigh
+    bool brokeLow = not na(state.swingLow) and closing < state.swingLow and priorClose >= state.swingLow
+    bool lostBull = state.direction == 1 and not na(state.protectedLow) and closing < state.protectedLow
+    bool lostBear = state.direction == -1 and not na(state.protectedHigh) and closing > state.protectedHigh
+    int nextDirection = brokeHigh or lostBear ? 1 : brokeLow or lostBull ? -1 : 0
+    if nextDirection != 0 and not (brokeHigh and brokeLow)
+        if state.direction != nextDirection
+            state.age := 0
+        state.direction := nextDirection
+        state.protectedLow := nextDirection == 1 ? state.swingLow : na
+        state.protectedHigh := nextDirection == -1 ? state.swingHigh : na
+    // Trail only with confirmed structural swings; a single opposing candle is insufficient.
+    if state.direction == 1 and not na(pl)
+        state.protectedLow := na(state.protectedLow) ? pl : math.max(state.protectedLow, pl)
+    if state.direction == -1 and not na(ph)
+        state.protectedHigh := na(state.protectedHigh) ? ph : math.min(state.protectedHigh, ph)
+
+f_biasCore() =>
+    var BiasState state = BiasState.new()
+    float ph = ta.pivothigh(high, htfPivotLength, htfPivotLength)
+    float pl = ta.pivotlow(low, htfPivotLength, htfPivotLength)
+    f_biasStep(state, ph, pl, close, close[1])
+    float guardHigh = state.direction == -1 and not na(state.protectedHigh) ? math.min(high, state.protectedHigh) : high
+    float guardLow = state.direction == 1 and not na(state.protectedLow) ? math.max(low, state.protectedLow) : low
+    [state.direction, state.age, state.swingHigh, state.swingLow, guardHigh, guardLow]
+f_biasSnapshot(bool previous) =>
+    [direction, age, swingHigh, swingLow, guardHigh, guardLow] = f_biasCore()
+    [previous ? direction[1] : direction, previous ? age[1] : age, previous ? swingHigh[1] : swingHigh, previous ? swingLow[1] : swingLow, previous ? guardHigh[1] : guardHigh, previous ? guardLow[1] : guardLow]
+
+// All registry decisions execute IN the selected HTF, never from chart/LTF bars.
+type CrtKey
+    int kind = 0
+    int dir = 0
+    float hi = na
+    float lo = na
+    int born = na
+    int leftTime = na
+    int knownAt = na
+    int beforeTime = na
+    string tf = ""
+type KeyMap
+    array<CrtKey> levels = na
+type Model
+    int aEnd = na
+    int cEnd = na
+    CrtKey crtKey = na
+    bool eqTouched = false
+    int uid = na
+    int flags = 0
+    int kind = 0
+    int phase = 0
+    int dir = 0
+    int bornIndex = na
+    int confirmedAt = na
+    int resolvedAt = na
+    int resolvedIndex = na
+    float hi = na
+    float lo = na
+    float inv = na
+    float cp = na
+    float erlU = na
+    float erlL = na
+    int hiT = na
+    int loT = na
+    int invT = na
+    int cpT = na
+    int erlUT = na
+    int erlLT = na
+    float irlH = na
+    float irlL = na
+    int irlT = na
+    int irlKind = 0
+    int irlDir = 0
+    int irlLeft = na
+    int bullIrlLeft = na
+    int bearIrlLeft = na
+    float innerHi = na
+    float innerLo = na
+    int innerHiT = na
+    int innerLoT = na
+    float bullIrlH = na
+    float bullIrlL = na
+    int bullIrlT = na
+    int bullIrlKind = 0
+    float bearIrlH = na
+    float bearIrlL = na
+    int bearIrlT = na
+    int bearIrlKind = 0
+    float aO = na
+    float aH = na
+    float aL = na
+    float aC = na
+    int aT = na
+    float bO = na
+    float bH = na
+    float bL = na
+    float bC = na
+    int bT = na
+    float cO = na
+    float cH = na
+    float cL = na
+    float cC = na
+    int cT = na
+type ModelArchive
+    int aEnd = na
+    int bEnd = na
+    int cEnd = na
+    int uid = na
+    int flags = na
+    int kind = na
+    int phase = na
+    float aO = na
+    float aH = na
+    float aL = na
+    float aC = na
+    int aT = na
+    float bO = na
+    float bH = na
+    float bL = na
+    float bC = na
+    int bT = na
+    float cO = na
+    float cH = na
+    float cL = na
+    float cC = na
+    int cT = na
+    int endReason = 0
+    int endedAt = na
+type Zone
+    int knownAt = na
+    int leftTime = na
+    float hi = na
+    float lo = na
+    int dir = 0
+    int born = na
+    int kind = 1
+type Liquidity
+    int knownAt = na
+    float price = na
+    int side = 0
+    int born = na
+
+f_refreshIrl(Model m, array<Zone> zones, array<Liquidity> swings) =>
+    m.bullIrlLeft := na
+    m.bearIrlLeft := na
+    m.bullIrlH := na
+    m.bullIrlL := na
+    m.bullIrlT := na
+    m.bullIrlKind := 0
+    m.bearIrlH := na
+    m.bearIrlL := na
+    m.bearIrlT := na
+    m.bearIrlKind := 0
+    m.innerHi := na
+    m.innerLo := na
+    m.innerHiT := na
+    m.innerLoT := na
+    // Separate candidate maps: do not discard the other direction just because bias is set.
+    for pass = 1 to 2
+        if array.size(zones) > 0
+            for offset = 0 to array.size(zones) - 1
+                Zone z = array.get(zones, array.size(zones) - 1 - offset)
+                bool internalZone = z.kind == pass and z.hi <= m.hi and z.lo >= m.lo
+                if internalZone and z.dir == 1 and na(m.bullIrlT)
+                    m.bullIrlH := z.hi
+                    m.bullIrlL := z.lo
+                    m.bullIrlT := z.born
+                    m.bullIrlKind := z.kind
+                    m.bullIrlLeft := z.leftTime
+                if internalZone and z.dir == -1 and na(m.bearIrlT)
+                    m.bearIrlH := z.hi
+                    m.bearIrlL := z.lo
+                    m.bearIrlT := z.born
+                    m.bearIrlKind := z.kind
+                    m.bearIrlLeft := z.leftTime
+    if array.size(swings) > 0
+        for j = 0 to array.size(swings) - 1
+            Liquidity q = array.get(swings, j)
+            bool internalSwing = q.price < m.hi and q.price > m.lo
+            if internalSwing and q.side == 1 and (na(m.innerHi) or q.price > m.innerHi)
+                m.innerHi := q.price
+                m.innerHiT := q.born
+            if internalSwing and q.side == -1 and (na(m.innerLo) or q.price < m.innerLo)
+                m.innerLo := q.price
+                m.innerLoT := q.born
+    if na(m.irlT) and m.dir != 0
+        bool bull = m.dir == 1
+        m.irlH := bull ? m.bullIrlH : m.bearIrlH
+        m.irlL := bull ? m.bullIrlL : m.bearIrlL
+        m.irlT := bull ? m.bullIrlT : m.bearIrlT
+        m.irlLeft := bull ? m.bullIrlLeft : m.bearIrlLeft
+        m.irlKind := bull ? m.bullIrlKind : m.bearIrlKind
+        m.irlDir := m.dir
+    // Preserve the selected reaction zone through wick mitigation until HTF close-through.
+    if not na(m.irlT) and m.irlKind != 3
+        if m.irlDir == 1
+            m.bullIrlH := m.irlH
+            m.bullIrlL := m.irlL
+            m.bullIrlT := m.irlT
+            m.bullIrlKind := m.irlKind
+            m.bullIrlLeft := m.irlLeft
+        else
+            m.bearIrlH := m.irlH
+            m.bearIrlL := m.irlL
+            m.bearIrlT := m.irlT
+            m.bearIrlKind := m.irlKind
+            m.bearIrlLeft := m.irlLeft
+    if not na(m.irlT) and m.irlKind == 3
+        if m.irlDir == 1
+            m.innerLo := m.irlL
+            m.innerLoT := m.irlT
+        else
+            m.innerHi := m.irlH
+            m.innerHiT := m.irlT
+
+f_archive(Model m, int reason, int endedAt) =>
+    ModelArchive.new(aEnd=m.aEnd, bEnd=m.confirmedAt, cEnd=m.cEnd, uid=m.uid, flags=m.flags, kind=m.kind, phase=m.phase, aO=m.aO, aH=m.aH, aL=m.aL, aC=m.aC, aT=m.aT, bO=m.bO, bH=m.bH, bL=m.bL, bC=m.bC, bT=m.bT, cO=m.cO, cH=m.cH, cL=m.cL, cC=m.cC, cT=m.cT, endReason=reason, endedAt=endedAt)
+f_archiveAllowed(int kind) =>
+    kind == 1
+
+// Context outcomes, not executed trade outcomes. OHLC cannot order both barriers.
+f_crtEnd(int direction, float invalidation, float targetLevel, float barHigh, float barLow, float closing, bool older, bool outsideHistory, bool timedOut) =>
+    bool bad = older and (direction == 1 ? closing < invalidation : closing > invalidation)
+    bool reached = older and (direction == 1 ? barHigh >= targetLevel : barLow <= targetLevel)
+    bad and reached ? 4 : bad ? 1 : reached ? 2 : outsideHistory ? 5 : timedOut ? 3 : 0
+
+// References are matched BEFORE current-bar pool consumption/creation.
+f_keyReact(CrtKey k, int beforeTime, int direction, float barHigh, float barLow, float barClose) =>
+    bool preexisting = k.kind > 0 and not na(k.knownAt) and k.knownAt <= beforeTime
+    bool sameSide = k.dir == direction
+    bool zoneReaction = direction == 1 ? barLow <= k.hi and barHigh >= k.lo and barClose > k.hi : barHigh >= k.lo and barLow <= k.hi and barClose < k.lo
+    bool sweepReaction = direction == 1 ? barLow <= k.lo - sweepSize and barClose > k.hi : barHigh >= k.hi + sweepSize and barClose < k.lo
+    preexisting and sameSide and (k.kind == 3 ? sweepReaction : zoneReaction)
+
+f_findCrtKey(array<Zone> zones, array<Liquidity> swings, int beforeTime, int direction, float barHigh, float barLow, float barClose, string sourceTf) =>
+    CrtKey found = CrtKey.new()
+    for pass = 1 to 2
+        if array.size(zones) > 0
+            for offset = 0 to array.size(zones) - 1
+                Zone z = array.get(zones, array.size(zones) - 1 - offset)
+                CrtKey candidate = CrtKey.new(kind=z.kind, dir=z.dir, hi=z.hi, lo=z.lo, born=z.born, leftTime=z.leftTime, knownAt=z.knownAt, beforeTime=beforeTime, tf=sourceTf)
+                if found.kind == 0 and z.kind == pass and f_keyReact(candidate, beforeTime, direction, barHigh, barLow, barClose)
+                    found := candidate
+    if found.kind == 0 and array.size(swings) > 0
+        for offset = 0 to array.size(swings) - 1
+            Liquidity q = array.get(swings, array.size(swings) - 1 - offset)
+            CrtKey candidate = CrtKey.new(kind=3, dir=-q.side, hi=q.price, lo=q.price, born=q.born, leftTime=q.born, knownAt=q.knownAt, beforeTime=beforeTime, tf=sourceTf)
+            if found.kind == 0 and f_keyReact(candidate, beforeTime, direction, barHigh, barLow, barClose)
+                found := candidate
+    found
+
+f_keyIdentity(CrtKey key) =>
+    key.tf + ":" + str.tostring(key.kind) + ":" + str.tostring(key.dir) + ":" + str.tostring(key.knownAt)
+
+f_matchKeyMap(KeyMap keyMap, array<string> usedKeys, int beforeTime, int direction, float barHigh, float barLow, float barClose) =>
+    CrtKey found = CrtKey.new()
+    for pass = 1 to 3
+        if array.size(keyMap.levels) > 0
+            for j = 0 to array.size(keyMap.levels) - 1
+                CrtKey candidate = array.get(keyMap.levels, j)
+                if found.kind == 0 and candidate.kind == pass and not array.includes(usedKeys, f_keyIdentity(candidate)) and f_keyReact(candidate, beforeTime, direction, barHigh, barLow, barClose)
+                    found := candidate.copy()
+                    found.beforeTime := beforeTime
+    found
+
+f_markHigherUsed(KeyMap keyMap, array<string> usedKeys, int barStart, float barHigh, float barLow) =>
+    if array.size(keyMap.levels) > 0
+        for j = 0 to array.size(keyMap.levels) - 1
+            CrtKey key = array.get(keyMap.levels, j)
+            bool consumed = key.dir == 1 ? barLow <= key.lo : barHigh >= key.hi
+            string identity = f_keyIdentity(key)
+            if barStart >= key.knownAt and consumed and not array.includes(usedKeys, identity)
+                array.push(usedKeys, identity)
+    while array.size(usedKeys) > 160
+        array.shift(usedKeys)
+
+// Explicit tool convention, not a universal ICT threshold: directional body >= 50%,
+// close in the final quarter. Shared strength filter; HTF and LTF confirmation differ.
+f_obDisplacement(int direction, float opening, float barHigh, float barLow, float closing) =>
+    float span = barHigh - barLow
+    span > 0 and (direction == 1 ? closing > opening and closing - opening >= span * 0.5 and closing >= barLow + span * 0.75 : closing < opening and opening - closing >= span * 0.5 and closing <= barHigh - span * 0.75)
+
+type ObSeed
+    float opening = na
+    float hi = na
+    float lo = na
+    float structure = na
+    int sourceTime = na
+    int sourceIndex = na
+    bool used = false
+
+// HTF POI: a local extreme + an already-known structural pivot, not any candle pair.
+f_obSeedStep(ObSeed seed, int direction, float candidateOpen, float candidateHigh, float candidateLow, float candidateClose, int candidateTime, int candidateIndex, bool localExtreme, float structureLevel, float opening, float barHigh, float barLow, float closing, float priorClose, int currentIndex) =>
+    bool opposite = direction == 1 ? candidateClose < candidateOpen : candidateClose > candidateOpen
+    bool structureAhead = not na(structureLevel) and (direction == 1 ? structureLevel >= candidateHigh : structureLevel <= candidateLow)
+    if opposite and localExtreme and structureAhead
+        seed.opening := candidateOpen
+        seed.hi := candidateHigh
+        seed.lo := candidateLow
+        seed.structure := structureLevel
+        seed.sourceTime := candidateTime
+        seed.sourceIndex := candidateIndex
+        seed.used := false
+    bool active = not na(seed.sourceIndex) and not seed.used and currentIndex > seed.sourceIndex and currentIndex - seed.sourceIndex <= 8
+    bool invalid = active and (direction == 1 ? barLow < seed.lo : barHigh > seed.hi)
+    if invalid or (not na(seed.sourceIndex) and currentIndex - seed.sourceIndex > 8)
+        seed.used := true
+    bool structuralBreak = active and not invalid and (direction == 1 ? closing > seed.structure and priorClose <= seed.structure and closing > seed.hi : closing < seed.structure and priorClose >= seed.structure and closing < seed.lo)
+    bool confirmed = structuralBreak and f_obDisplacement(direction, opening, barHigh, barLow, closing)
+    if confirmed
+        seed.used := true
+    confirmed
+
+f_updateKeyPools(array<Zone> zones, array<Liquidity> swings, int scanStart, bool inScan, float ph, float pl) =>
+    var ObSeed bullOb = ObSeed.new()
+    var ObSeed bearOb = ObSeed.new()
+    var float knownObHigh = na
+    var float knownObLow = na
+    // Update confirmed pivots only AFTER evaluating this bar: no retroactive pivot context.
+    bool bullishOb = f_obSeedStep(bullOb, 1, open[1], high[1], low[1], close[1], time[1], bar_index - 1, low[1] <= low[2] and low[1] <= low, knownObHigh, open, high, low, close, close[1], bar_index)
+    bool bearishOb = f_obSeedStep(bearOb, -1, open[1], high[1], low[1], close[1], time[1], bar_index - 1, high[1] >= high[2] and high[1] >= high, knownObLow, open, high, low, close, close[1], bar_index)
+    if not na(ph)
+        knownObHigh := ph
+    if not na(pl)
+        knownObLow := pl
+    // Remove consumed or out-of-window references, before looking for new CP levels.
+    int si = array.size(swings) - 1
+    while si >= 0
+        Liquidity q = array.get(swings, si)
+        if q.born < scanStart or (q.side == 1 ? high >= q.price : low <= q.price)
+            array.remove(swings, si)
+        si -= 1
+    if inScan and not na(ph) and time[htfPivotLength] >= scanStart and high < ph
+        array.push(swings, Liquidity.new(knownAt=time_close, price=ph, side=1, born=time[htfPivotLength]))
+    if inScan and not na(pl) and time[htfPivotLength] >= scanStart and low > pl
+        array.push(swings, Liquidity.new(knownAt=time_close, price=pl, side=-1, born=time[htfPivotLength]))
+    if array.size(swings) > 80
+        array.shift(swings)
+    int zi = array.size(zones) - 1
+    while zi >= 0
+        Zone z = array.get(zones, zi)
+        bool filled = z.dir == 1 ? low <= z.lo : high >= z.hi
+        if z.born < scanStart or filled
+            array.remove(zones, zi)
+        zi -= 1
+    if inScan and not na(high[2])
+        if low > high[2]
+            array.push(zones, Zone.new(knownAt=time_close, leftTime=time[2], hi=low, lo=high[2], dir=1, born=time, kind=1))
+        if high < low[2]
+            array.push(zones, Zone.new(knownAt=time_close, leftTime=time[2], hi=low[2], lo=high, dir=-1, born=time, kind=1))
+        if bullishOb and bullOb.sourceTime >= scanStart
+            array.push(zones, Zone.new(knownAt=time_close, leftTime=bullOb.sourceTime, hi=bullOb.opening, lo=bullOb.lo, dir=1, born=bullOb.sourceTime, kind=2))
+        if bearishOb and bearOb.sourceTime >= scanStart
+            array.push(zones, Zone.new(knownAt=time_close, leftTime=bearOb.sourceTime, hi=bearOb.hi, lo=bearOb.opening, dir=-1, born=bearOb.sourceTime, kind=2))
+    while array.size(zones) > 60
+        array.shift(zones)
+
+
+f_collectKeyMap(array<Zone> zones, array<Liquidity> swings, string sourceTf) =>
+    array<CrtKey> levels = array.new<CrtKey>()
+    for direction = -1 to 1 by 2
+        for pass = 1 to 2
+            int collected = 0
+            if array.size(zones) > 0
+                for offset = 0 to array.size(zones) - 1
+                    Zone z = array.get(zones, array.size(zones) - 1 - offset)
+                    if z.kind == pass and z.dir == direction and collected < 2
+                        array.push(levels, CrtKey.new(kind=z.kind, dir=z.dir, hi=z.hi, lo=z.lo, born=z.born, leftTime=z.leftTime, knownAt=z.knownAt, tf=sourceTf))
+                        collected += 1
+        int collected = 0
+        if array.size(swings) > 0
+            for offset = 0 to array.size(swings) - 1
+                Liquidity q = array.get(swings, array.size(swings) - 1 - offset)
+                if -q.side == direction and collected < 2
+                    array.push(levels, CrtKey.new(kind=3, dir=direction, hi=q.price, lo=q.price, born=q.born, leftTime=q.born, knownAt=q.knownAt, tf=sourceTf))
+                    collected += 1
+    KeyMap.new(levels)
+
+// A compact, immutable snapshot: two recent references per kind/direction (max 12).
+f_higherKeyMap() =>
+    var array<Zone> zones = array.new<Zone>()
+    var array<Liquidity> swings = array.new<Liquidity>()
+    int scanStart = last_bar_time - int(timeframe.in_seconds() * 1000) * scanDepth
+    float ph = ta.pivothigh(high, htfPivotLength, htfPivotLength)
+    float pl = ta.pivotlow(low, htfPivotLength, htfPivotLength)
+    f_updateKeyPools(zones, swings, scanStart, time >= scanStart, ph, pl)
+    f_collectKeyMap(zones, swings, biasTf)
+
+f_biasBundle() =>
+    [direction, age, swingHigh, swingLow, guardHigh, guardLow] = f_biasSnapshot(true)
+    KeyMap keyMap = f_higherKeyMap()
+    [direction, age, swingHigh, swingLow, guardHigh, guardLow, keyMap[1]]
+
+f_engine() =>
+    [higherBias, higherBiasAge, higherBiasHigh, higherBiasLow, higherGuardHigh, higherGuardLow, higherKeyMap] = request.security(syminfo.tickerid, biasTf, f_biasBundle(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+    var array<Model> models = array.new<Model>()
+    var array<Zone> zones = array.new<Zone>()
+    var array<Liquidity> swings = array.new<Liquidity>()
+    var ModelArchive lastEnded = ModelArchive.new()
+    var array<string> usedHigherKeys = array.new<string>()
+    var int priorFocusId = na
+    bool archivedThisBar = false
+    var int lastRetired = na
+    var int retiredReason = 0
+    var int dropped = 0
+    var int firstSeen = time
+    int scanStart = last_bar_time - int(timeframe.in_seconds() * 1000) * scanDepth
+    bool inScan = time >= scanStart
+    float ph = ta.pivothigh(high, htfPivotLength, htfPivotLength)
+    float pl = ta.pivotlow(low, htfPivotLength, htfPivotLength)
+    CrtKey priorBuyKey = f_findCrtKey(zones, swings, time[1], 1, high, low, close, htf)
+    CrtKey priorSellKey = f_findCrtKey(zones, swings, time[1], -1, high, low, close, htf)
+    if biasTf != htf and not na(higherKeyMap) and not na(higherKeyMap.levels)
+        if priorBuyKey.kind == 0
+            priorBuyKey := f_matchKeyMap(higherKeyMap, usedHigherKeys, time[1], 1, high, low, close)
+        if priorSellKey.kind == 0
+            priorSellKey := f_matchKeyMap(higherKeyMap, usedHigherKeys, time[1], -1, high, low, close)
+        f_markHigherUsed(higherKeyMap, usedHigherKeys, time, high, low)
+    f_updateKeyPools(zones, swings, scanStart, inScan, ph, pl)
+
+    // Retire context outcomes first; entry permission is independently restricted to C3.
+    int mi = array.size(models) - 1
+    while mi >= 0
+        Model m = array.get(models, mi)
+        if na(m.cT) and time > m.bT and m.dir != 0
+            m.cO := open
+            m.cH := high
+            m.cL := low
+            m.cC := close
+            m.cT := time
+            m.cEnd := time_close
+        bool older = time_close > m.confirmedAt
+        if older and m.kind == 1 and not na(m.crtKey) and m.crtKey.kind > 0 and (m.dir == 1 ? close < m.crtKey.lo : close > m.crtKey.hi)
+            m.crtKey := CrtKey.new()
+        float equilibrium = (m.hi + m.lo) / 2
+        if older and (m.dir == 1 ? high >= equilibrium : low <= equilibrium)
+            m.eqTouched := true
+        int endingReason = f_crtEnd(m.dir, m.inv, m.cp, high, low, close, older, m.uid < scanStart, lifeHtf > 0 and bar_index - m.bornIndex >= lifeHtf)
+        if endingReason != 0
+            lastRetired := m.uid
+            retiredReason := endingReason
+            if f_archiveAllowed(m.kind) and (m.uid == priorFocusId or not archivedThisBar)
+                lastEnded := f_archive(m, endingReason, time_close)
+                archivedThisBar := true
+            array.remove(models, mi)
+        else if not na(m.irlT) and time > m.irlT and (m.irlDir == 1 ? close < m.irlL : close > m.irlH)
+            m.irlH := na
+            m.irlL := na
+            m.irlT := na
+            m.irlKind := 0
+        mi -= 1
+
+    [tsBull, tsBear] = f_patterns(open[1], high[1], low[1], close[1], open, high, low, close)
+    bool crt = tsBull or tsBear
+    if inScan and not na(time[1]) and crt
+        // With timeout disabled, old context-only records must not starve a new C3.
+        bool freshPath = tsBull ? high < high[1] : low > low[1]
+        if array.size(models) >= queueLimit and freshPath
+            Model oldest = array.shift(models)
+            lastRetired := oldest.uid
+            retiredReason := 6
+            if oldest.uid == priorFocusId or not archivedThisBar
+                lastEnded := f_archive(oldest, 6, time_close)
+                archivedThisBar := true
+        if array.size(models) < queueLimit
+            int direction = tsBull ? 1 : -1
+            float rh = high[1]
+            float rl = low[1]
+            Model fresh = Model.new(aEnd=time_close[1], uid=time, flags=1, kind=1, phase=1, dir=direction, bornIndex=bar_index, confirmedAt=time_close, resolvedAt=time_close, hi=rh, lo=rl, inv=direction == 1 ? low : high, cp=direction == 1 ? rh : rl, aO=open[1], aH=high[1], aL=low[1], aC=close[1], aT=time[1], bO=open, bH=high, bL=low, bC=close, bT=time)
+            fresh.crtKey := direction == 1 ? priorBuyKey : priorSellKey
+            fresh.hiT := time[1]
+            fresh.loT := time[1]
+            fresh.invT := time
+            fresh.cpT := time[1]
+            bool targetAtBirth = direction == 1 ? high >= fresh.cp : low <= fresh.cp
+            if targetAtBirth
+                lastRetired := fresh.uid
+                retiredReason := 4
+                if not archivedThisBar and f_archiveAllowed(fresh.kind)
+                    lastEnded := f_archive(fresh, 4, time_close)
+                    archivedThisBar := true
+            else
+                array.push(models, fresh)
+        else
+            dropped += 1
+
+    // Search genuine, unconsumed HTF references. No EQ-as-IRL or invented measured targets.
+    if array.size(models) > 0
+        for i = 0 to array.size(models) - 1
+            Model m = array.get(models, i)
+            float up = na
+            float dn = na
+            int upT = na
+            int dnT = na
+            if array.size(swings) > 0
+                for j = 0 to array.size(swings) - 1
+                    Liquidity q = array.get(swings, j)
+                    if q.side == 1 and q.price > m.hi and (na(up) or q.price < up)
+                        up := q.price
+                        upT := q.born
+                    if q.side == -1 and q.price < m.lo and (na(dn) or q.price > dn)
+                        dn := q.price
+                        dnT := q.born
+            m.erlU := up
+            m.erlL := dn
+            m.erlUT := upT
+            m.erlLT := dnT
+            if m.dir != 0 and na(m.cp)
+                m.cp := m.dir == 1 ? up : dn
+                m.cpT := m.dir == 1 ? upT : dnT
+            if not na(m.irlT) and m.dir != 0 and m.irlDir != m.dir
+                m.irlT := na
+                m.irlH := na
+                m.irlL := na
+                m.irlKind := 0
+            f_refreshIrl(m, zones, swings)
+    // Prefer the oldest entry-open CRT. Expired entry windows remain context only.
+    Model selected = Model.new()
+    Model fallback = Model.new()
+    if array.size(models) > 0
+        for i = 0 to array.size(models) - 1
+            Model candidate = array.get(models, i)
+            if na(fallback.uid)
+                fallback := candidate
+            if na(selected.uid) and bar_index == candidate.bornIndex
+                selected := candidate
+    if na(selected.uid)
+        selected := fallback
+    priorFocusId := selected.uid
+    bool historyReady = firstSeen <= scanStart
+    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft, selected.innerHi, selected.innerLo, selected.innerHiT, selected.innerLoT, lastEnded, selected.crtKey, selected.eqTouched, selected.aEnd, selected.cEnd]
+
+// Every snapshot field is individually offset; live OHLC is display-only.
+// C3 receives the previous confirmed C2 snapshot (age 0); C4 receives age 1.
+f_snapshot(bool previous) =>
+    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60, v61, v62] = f_engine()
+    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57, previous ? v58[1] : v58, previous ? v59[1] : v59, previous ? v60[1] : v60, previous ? v61[1] : v61, previous ? v62[1] : v62]
+
+[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft, sInnerHi, sInnerLo, sInnerHiT, sInnerLoT, sArchived, kCrtKey, sEqTouched, sAEnd, sCEnd] = if onHtf
+    f_snapshot(not barstate.isconfirmed)
+else
+    request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+
+// Independent bias from the chosen reference TF: confirmed reclaim or range close-through.
+[autoBias, autoBiasAge, autoBiasHigh, autoBiasLow, autoGuardHigh, autoGuardLow] = if chartSeconds == timeframe.in_seconds(biasTf)
+    f_biasSnapshot(not barstate.isconfirmed)
+else
+    request.security(syminfo.tickerid, biasTf, f_biasSnapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+int structureBias = biasMode == "Auto" ? nz(autoBias) : biasMode == "Long" ? 1 : biasMode == "Short" ? -1 : 0
+float biasCheckClose = barstate.isconfirmed ? close : close[1]
+bool biasPaused = biasMode == "Auto" and chartSeconds < timeframe.in_seconds(biasTf) and (structureBias == 1 ? not na(autoGuardLow) and biasCheckClose < autoGuardLow : structureBias == -1 ? not na(autoGuardHigh) and biasCheckClose > autoGuardHigh : false)
+int biasDir = biasPaused ? 0 : structureBias
+
+// Preview is aggregated from THIS chart's actual bars, including the live bar.
+// Incomplete first buckets are not presented as complete OHLC candles.
+int bucketTime = time(htf)
+int bucketEnd = time_close(htf)
+var float liveO = na
+var float liveH = na
+var float liveL = na
+var float liveC = na
+var int liveT = na
+var int liveEnd = na
+var int liveHighTime = na
+var int liveLowTime = na
+var bool liveComplete = false
+var int bucketCounter = 0
+var array<int> candleTimes = array.new<int>()
+var array<int> candleEndTimes = array.new<int>()
+var array<float> candleOpens = array.new<float>()
+var array<float> candleHighs = array.new<float>()
+var array<float> candleLows = array.new<float>()
+var array<float> candleCloses = array.new<float>()
+var array<int> candleHighTimes = array.new<int>()
+var array<int> candleLowTimes = array.new<int>()
+bool newBucket = na(liveT) or bucketTime != liveT
+if newBucket
+    if not na(liveT) and liveComplete
+        array.push(candleTimes, liveT)
+        array.push(candleEndTimes, liveEnd)
+        array.push(candleOpens, liveO)
+        array.push(candleHighs, liveH)
+        array.push(candleLows, liveL)
+        array.push(candleCloses, liveC)
+        array.push(candleHighTimes, liveHighTime)
+        array.push(candleLowTimes, liveLowTime)
+        if array.size(candleTimes) > 1000
+            array.shift(candleTimes)
+            array.shift(candleEndTimes)
+            array.shift(candleOpens)
+            array.shift(candleHighs)
+            array.shift(candleLows)
+            array.shift(candleCloses)
+            array.shift(candleHighTimes)
+            array.shift(candleLowTimes)
+    bucketCounter += 1
+    liveT := bucketTime
+    liveEnd := bucketEnd
+    liveO := open
+    liveH := high
+    liveL := low
+    liveC := close
+    liveHighTime := time
+    liveLowTime := time
+    liveComplete := time == bucketTime
+else
+    if high > liveH
+        liveHighTime := time
+    if low < liveL
+        liveLowTime := time
+    liveH := math.max(liveH, high)
+    liveL := math.min(liveL, low)
+    liveC := close
+
+// Entry gates use exact bar-close time. The panel uses actual wall time on realtime bars.
+int stamp = na(time_close) ? time : time_close
+int nyMinute = hour(stamp, NY) * 60 + minute(stamp, NY)
+f_window(int value, int start, int finish) =>
+    value >= start and value < finish
+// Same 10 half-open macro intervals as assets/market-hours.js. No new claims about the schedule.
+string macro = f_window(nyMinute, 1130, 1150) ? "AS1" : f_window(nyMinute, 1190, 1210) ? "AS2" : f_window(nyMinute, 153, 180) ? "LM1" : f_window(nyMinute, 243, 270) ? "LM2" : f_window(nyMinute, 530, 550) ? "AM1" : f_window(nyMinute, 590, 610) ? "AM2" : f_window(nyMinute, 650, 670) ? "AM3" : f_window(nyMinute, 710, 730) ? "LNC" : f_window(nyMinute, 790, 820) ? "PM" : f_window(nyMinute, 915, 945) ? "CLS" : "-"
+int contextStamp = barstate.isrealtime ? timenow : stamp
+int nyNowMinute = hour(contextStamp, NY) * 60 + minute(contextStamp, NY)
+string macroNow = f_window(nyNowMinute, 1130, 1150) ? "AS1" : f_window(nyNowMinute, 1190, 1210) ? "AS2" : f_window(nyNowMinute, 153, 180) ? "LM1" : f_window(nyNowMinute, 243, 270) ? "LM2" : f_window(nyNowMinute, 530, 550) ? "AM1" : f_window(nyNowMinute, 590, 610) ? "AM2" : f_window(nyNowMinute, 650, 670) ? "AM3" : f_window(nyNowMinute, 710, 730) ? "LNC" : f_window(nyNowMinute, 790, 820) ? "PM" : f_window(nyNowMinute, 915, 945) ? "CLS" : "-"
+int vnMinute = hour(stamp, VN) * 60 + minute(stamp, VN)
+int nyUtcHourDelta = (hour(stamp, NY) - hour(stamp, "Etc/UTC") + 24) % 24
+bool winter = nyUtcHourDelta == 19
+bool working = f_window(vnMinute, 465, 600) or f_window(vnMinute, 840, 960) or f_window(vnMinute, 1215 + (winter ? 60 : 0), 1350 + (winter ? 60 : 0))
+bool timeAllowed = timeGate == "Context only" or (timeGate == "Web macros" ? macro != "-" : working)
+float cycleMinute = (nyNowMinute + second(contextStamp, NY) / 60.0 - 1080 + 1440) % 1440
+int dayQuarter = int(math.floor(cycleMinute / 360)) + 1
+int sessionQuarter = int(math.floor((cycleMinute % 360) / 90)) + 1
+int microQuarter = int(math.floor((cycleMinute % 90) / 22.5)) + 1
+bgcolor(showTimeBg and macroNow != "-" ? color.new(color.teal, 92) : na, title="Macro observation window")
+
+// True Open prices are actual opens only. Never approximate a missing boundary with a later bar.
+// At 18:00 a new theoretical trading cycle begins: its TDO is the upcoming midnight.
+int dayOpenStamp = timestamp(NY, year(time, NY), month(time, NY), dayofmonth(time, NY) + (hour(time, NY) >= 18 ? 1 : 0), 0, 0)
+int sessionToHour = hour(time, NY) >= 18 ? 19 : hour(time, NY) >= 12 ? 13 : hour(time, NY) >= 6 ? 7 : 1
+int sessionOpenStamp = timestamp(NY, year(time, NY), month(time, NY), dayofmonth(time, NY), sessionToHour, 30)
+var int lastDayOpenStamp = na
+var int lastSessionOpenStamp = na
+var float dayOpenPrice = na
+var float sessionOpenPrice = na
+if na(lastDayOpenStamp) or dayOpenStamp != lastDayOpenStamp
+    dayOpenPrice := na
+    lastDayOpenStamp := dayOpenStamp
+if na(lastSessionOpenStamp) or sessionOpenStamp != lastSessionOpenStamp
+    sessionOpenPrice := na
+    lastSessionOpenStamp := sessionOpenStamp
+if time == dayOpenStamp
+    dayOpenPrice := open
+if time == sessionOpenStamp
+    sessionOpenPrice := open
+plot(showTrueOpens ? dayOpenPrice : na, "TDO actual open", color=color.new(color.aqua, 35), style=plot.style_linebr, force_overlay=true)
+plot(showTrueOpens ? sessionOpenPrice : na, "Session TO actual open", color=color.new(color.orange, 35), style=plot.style_linebr, force_overlay=true)
+
+type SignalContext
+    int age = 0
+    int irlKind = 0
+    CrtKey crtKey = na
+    int id = na
+    int kind = 0
+    int flags = 0
+    int phase = 0
+    int dir = 0
+    int confirmed = na
+    int resolved = na
+    float hi = na
+    float lo = na
+    float inv = na
+    float cp = na
+    float irlH = na
+    float irlL = na
+    int irlT = na
+type ReactionState
+    string key = ""
+    int activatedAt = na
+    int phaseAt = na
+    float deliveryLevel = na
+    int deliveryTime = na
+    float opposingOpen = na
+    float opposingHigh = na
+    float opposingLow = na
+    int opposingTime = na
+    float mssLevel = na
+    float fvgTop = na
+    float fvgBottom = na
+    int fvgIndex = na
+    int fvgTime = na
+    float obTop = na
+    float obBottom = na
+    int obIndex = na
+    int obTime = na
+    int confirmIndex = na
+    int confirmTime = na
+    float confirmLevel = na
+    string confirmTag = ""
+    bool localStopTaken = false
+    bool localTargetTaken = false
+    bool sent = false
+    bool everSent = false
+    int lastSignalBar = na
+    int lastSignalTime = na
+    float lastSignalHigh = na
+    float lastSignalLow = na
+    int rearmPivotTime = na
+    float rearmPivotPrice = na
+    int usedPivotTime = na
+type ChannelResult
+    bool counterBias = false
+    CrtKey keyRef = na
+    bool hit = false
+    int dir = 0
+    int kind = 0
+    int flags = 0
+    int phase = 0
+    int id = na
+    string key = ""
+    string tag = ""
+    string status = "WAIT"
+    float cp = na
+    float inv = na
+    int confirmTime = na
+
+f_contextKey(int id, int resolved, int direction) =>
+    na(id) ? "" : str.tostring(id) + ":" + str.tostring(resolved) + ":" + str.tostring(direction)
+f_clearReaction(ReactionState state, int phaseAt, float seedPivot, bool keepRun = false) =>
+    state.phaseAt := phaseAt
+    if not keepRun
+        state.deliveryLevel := na
+        state.deliveryTime := na
+        state.opposingOpen := na
+        state.opposingHigh := na
+        state.opposingLow := na
+        state.opposingTime := na
+    state.mssLevel := seedPivot
+    state.fvgTop := na
+    state.fvgBottom := na
+    state.fvgIndex := na
+    state.fvgTime := na
+    state.obTop := na
+    state.obBottom := na
+    state.obIndex := na
+    state.obTime := na
+    state.confirmIndex := na
+    state.confirmTime := na
+    state.confirmLevel := na
+    state.confirmTag := ""
+    state.sent := false
+
+// One CRT channel. Only confirmed LTF bars in C3 may emit.
+f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float knownLow, float pivotHigh, float pivotLow, bool waveAllowed = true) =>
+    ChannelResult result = ChannelResult.new(dir=ctx.dir, kind=ctx.kind, flags=ctx.flags, phase=ctx.phase, id=ctx.id, key=state.key, cp=ctx.cp, inv=ctx.inv)
+    int rootKind = ctx.kind
+    float target = ctx.cp
+    float executionSl = ctx.inv
+    int activatedAt = state.activatedAt
+    bool entryWindow = ctx.age == 0
+    bool armed = not na(ctx.id) and ctx.kind == 1 and ctx.dir != 0
+    result.status := not isLtf ? "VIEW TF" : not armed ? (na(ctx.id) ? "NO MODEL" : "NO DIR") : not entryWindow ? "C3 CLOSED" : "WAIT CLOSE"
+    if armed and barstate.isconfirmed and isLtf and entryWindow and time >= activatedAt
+        bool bullish = ctx.dir == 1
+        bool opposing = bullish ? close < open : close > open
+        bool priorOpposing = bullish ? close[1] < open[1] : close[1] > open[1]
+        float seedPivot = bullish ? knownHigh : knownLow
+        // A failed, unfilled shift cannot turn its later re-break into an old retest.
+        bool revokedPending = not state.sent and not na(state.confirmIndex) and bar_index > state.confirmIndex and (bullish ? close < state.confirmLevel : close > state.confirmLevel)
+        if revokedPending
+            f_clearReaction(state, time, seedPivot)
+        bool newReactionPivot = bullish ? not na(pivotLow) : not na(pivotHigh)
+        if newReactionPivot and time[pivotLength] >= activatedAt
+            state.rearmPivotTime := time[pivotLength]
+            state.rearmPivotPrice := bullish ? pivotLow : pivotHigh
+        int reactionAnchor = state.sent ? state.lastSignalTime : state.confirmTime
+        bool unusedPivot = not na(state.rearmPivotTime) and (na(state.usedPivotTime) or state.rearmPivotTime > state.usedPivotTime)
+        bool pivotAfterAnchor = unusedPivot and not na(reactionAnchor) and state.rearmPivotTime > reactionAnchor
+        bool progressed = bullish ? state.rearmPivotPrice > state.lastSignalLow and close > state.lastSignalHigh : state.rearmPivotPrice < state.lastSignalHigh and close < state.lastSignalLow
+        bool freshReaction = signalCadence == "Fresh reaction" and state.sent and pivotAfterAnchor and progressed
+        bool replacePending = not state.sent and not na(state.confirmIndex) and pivotAfterAnchor and not na(state.deliveryTime) and state.deliveryTime > state.confirmTime
+        bool structuralReset = freshReaction or replacePending
+        if structuralReset
+            state.usedPivotTime := state.rearmPivotTime
+            f_clearReaction(state, state.rearmPivotTime, seedPivot, not na(state.deliveryTime) and state.deliveryTime > reactionAnchor)
+        int phaseAt = state.phaseAt
+        bool freshMssPivot = not na(phaseAt) and time[pivotLength] >= phaseAt and (bullish ? not na(pivotHigh) : not na(pivotLow))
+        if freshMssPivot
+            state.mssLevel := bullish ? pivotHigh : pivotLow
+        if opposing and (not structuralReset or na(state.deliveryLevel))
+            if na(state.deliveryLevel) or not priorOpposing
+                state.deliveryLevel := open
+                state.deliveryTime := time
+            state.opposingOpen := open
+            state.opposingHigh := high
+            state.opposingLow := low
+            state.opposingTime := time
+        float deliveryLevel = state.deliveryLevel
+        float mssLevel = state.mssLevel
+        bool cisd = not na(deliveryLevel) and (bullish ? close > deliveryLevel and (close[1] <= deliveryLevel or structuralReset) : close < deliveryLevel and (close[1] >= deliveryLevel or structuralReset))
+        bool mss = not na(mssLevel) and (bullish ? close > mssLevel and (close[1] <= mssLevel or structuralReset) : close < mssLevel and (close[1] >= mssLevel or structuralReset))
+        bool newFvg = not na(phaseAt) and time[2] >= phaseAt and (bullish ? low > high[2] : high < low[2])
+        if newFvg and na(state.fvgIndex)
+            state.fvgTop := bullish ? low : low[2]
+            state.fvgBottom := bullish ? high[2] : high
+            state.fvgIndex := bar_index
+            state.fvgTime := time
+        if not na(state.fvgIndex) and (bullish ? close < state.fvgBottom : close > state.fvgTop)
+            state.fvgIndex := na
+            state.fvgTime := na
+            state.fvgTop := na
+            state.fvgBottom := na
+        // LTF entry OB belongs to the current reaction and a C/M displacement.
+        bool obShift = (cisd and entryMode != "MSS") or (mss and entryMode != "CISD")
+        bool obSourceReady = not na(state.opposingTime) and not na(phaseAt) and state.opposingTime >= phaseAt and state.opposingTime < time
+        bool obValidated = obShift and obSourceReady and (bullish ? close > state.opposingHigh : close < state.opposingLow) and f_obDisplacement(ctx.dir, open, high, low, close)
+        if obValidated and na(state.obIndex)
+            state.obTop := bullish ? state.opposingOpen : state.opposingHigh
+            state.obBottom := bullish ? state.opposingLow : state.opposingOpen
+            state.obIndex := bar_index
+            state.obTime := time
+        if not na(state.obIndex) and (bullish ? close < state.obBottom : close > state.obTop)
+            state.obIndex := na
+            state.obTime := na
+            state.obTop := na
+            state.obBottom := na
+        bool fvgRetest = not na(state.fvgIndex) and bar_index > state.fvgIndex and low <= state.fvgTop and high >= state.fvgBottom and (bullish ? close > state.fvgTop : close < state.fvgBottom)
+        bool obRetest = not na(state.obIndex) and bar_index > state.obIndex and low <= state.obTop and high >= state.obBottom and (bullish ? close > state.obTop : close < state.obBottom)
+        if not na(target) and (bullish ? high >= target : low <= target)
+            state.localTargetTaken := true
+        if bullish ? low <= executionSl : high >= executionSl
+            state.localStopTaken := true
+        bool localTargetTaken = state.localTargetTaken
+        bool invalidBar = state.localStopTaken
+        bool confirmationContext = true
+        bool autoEntry = cisd or mss
+        bool pickC = cisd and entryMode != "MSS"
+        bool pickM = mss and not pickC and entryMode != "CISD"
+        if na(state.confirmIndex) and confirmationContext and not invalidBar and not localTargetTaken and (pickC or pickM)
+            state.confirmIndex := bar_index
+            state.confirmTime := time
+            state.confirmLevel := pickC ? deliveryLevel : mssLevel
+            state.confirmTag := pickC ? "C" : "M"
+        bool hasConfirmation = not na(state.confirmIndex)
+        bool levelRetest = hasConfirmation and bar_index > state.confirmIndex and low <= state.confirmLevel + tolerance and high >= state.confirmLevel - tolerance and (bullish ? close > state.confirmLevel : close < state.confirmLevel)
+        bool cmPullback = levelRetest
+        bool crtPath = true
+        bool fvgPullback = fvgRetest and (not crtPath or (hasConfirmation and bar_index > state.confirmIndex and state.fvgIndex >= state.confirmIndex))
+        bool obPullback = obRetest and (not crtPath or (hasConfirmation and bar_index > state.confirmIndex and state.obIndex >= state.confirmIndex))
+        bool autoPullback = cmPullback or fvgPullback or obPullback
+        bool rawEntry = switch entryMode
+            "Auto" => signalTiming == "Pullback" ? autoPullback : autoEntry
+            "CISD" => signalTiming == "Pullback" ? cmPullback and state.confirmTag == "C" : cisd
+            "MSS" => signalTiming == "Pullback" ? cmPullback and state.confirmTag == "M" : mss
+            "FVG retest" => fvgPullback
+            => obPullback
+        bool opposingBias = biasDir != 0 and biasDir == -ctx.dir
+        bool priorKey = rootKind == 1 and not na(ctx.crtKey) and ctx.crtKey.kind > 0 and ctx.crtKey.dir == ctx.dir and not na(ctx.crtKey.knownAt) and ctx.crtKey.knownAt <= ctx.crtKey.beforeTime and ctx.crtKey.beforeTime < ctx.confirmed
+        bool keyHeld = priorKey and (bullish ? close > ctx.crtKey.lo : close < ctx.crtKey.hi)
+        bool counterContext = allowCrtCounter and rootKind == 1 and opposingBias and priorKey and keyHeld
+        bool counterLtfReady = hasConfirmation and (entryMode == "FVG retest" ? fvgPullback : entryMode == "OB retest" ? obPullback : signalTiming != "Pullback" or bar_index > state.confirmIndex)
+        bool selectedEntry = rawEntry and confirmationContext and (not counterContext or counterLtfReady)
+        float risk = bullish ? close - executionSl : executionSl - close
+        float reward = not na(target) ? (bullish ? target - close : close - target) : na
+        bool biasAllowed = not filterBias or biasDir == ctx.dir or counterContext
+        bool alreadyEmitted = signalCadence == "One per model" ? state.everSent : state.sent
+        string pendingStatus = hasConfirmation ? "WAIT RETEST" : revokedPending ? "CM RESET" : "WAIT CONFIRM"
+        if counterContext and not hasConfirmation
+            pendingStatus := "CT CONFIRM"
+        string biasWait = allowCrtCounter and rootKind == 1 and opposingBias ? (not priorKey ? "NO KEY" : not keyHeld ? "KEY X" : "BIAS") : "BIAS"
+        result.status := localTargetTaken ? "CP TAKEN" : invalidBar ? "SL TOUCHED" : alreadyEmitted ? (signalCadence == "One per model" ? "USED" : "PULLBACK") : na(target) ? "NO TARGET" : not biasAllowed ? biasWait : not timeAllowed ? "TIME" : risk <= 0 ? "INV" : reward <= 0 ? "PATH" : not selectedEntry ? pendingStatus : "READY"
+        string detectedTag = entryMode == "MSS" ? "M" : entryMode == "CISD" ? "C" : entryMode == "FVG retest" ? "F" : entryMode == "OB retest" ? "O" : signalTiming == "Pullback" ? (fvgPullback ? "F" : obPullback ? "O" : state.confirmTag) : cisd ? "C" : mss ? "M" : fvgRetest ? "F" : "O"
+        if result.status == "READY" and not waveAllowed
+            result.status := "WAVE WAIT"
+        if selectedEntry and risk > 0 and not na(target) and reward > 0 and biasAllowed and timeAllowed and not invalidBar and not localTargetTaken and not alreadyEmitted and waveAllowed
+            result.hit := true
+            result.counterBias := filterBias and counterContext and biasDir != ctx.dir
+            result.keyRef := result.counterBias ? ctx.crtKey : na
+            result.tag := detectedTag
+            result.confirmTime := detectedTag == "F" ? state.fvgTime : detectedTag == "O" ? state.obTime : signalTiming == "Pullback" ? state.confirmTime : time
+            result.status := result.counterBias ? "CT SIGNAL" : "SIGNAL"
+            state.sent := true
+            state.everSent := true
+            state.lastSignalBar := bar_index
+            state.lastSignalTime := time
+            state.lastSignalHigh := high
+            state.lastSignalLow := low
+    result
+
+var float lastPivotHigh = na
+var float lastPivotLow = na
+var int lastPivotHighTime = na
+var int lastPivotLowTime = na
+var int lastBuyTime = na
+var int lastSellTime = na
+var int lastBuyBar = na
+var int lastSellBar = na
+float pivotHigh = ta.pivothigh(high, pivotLength, pivotLength)
+float pivotLow = ta.pivotlow(low, pivotLength, pivotLength)
+if barstate.isconfirmed
+    if not na(pivotHigh)
+        lastPivotHigh := pivotHigh
+        lastPivotHighTime := time[pivotLength]
+    if not na(pivotLow)
+        lastPivotLow := pivotLow
+        lastPivotLowTime := time[pivotLength]
+var ReactionState crtState = ReactionState.new()
+SignalContext ctx = SignalContext.new(age=sModelAge, crtKey=kCrtKey, kind=1, id=sId, flags=sFlags, phase=sPhase, dir=sDir, confirmed=sConfirmed, resolved=sResolved, hi=sHi, lo=sLo, inv=sInv, cp=sCp, irlH=sIrlH, irlL=sIrlL, irlT=sIrlT)
+string modelKey = f_contextKey(sId, sResolved, sDir)
+if barstate.isconfirmed and crtState.key != modelKey
+    crtState := ReactionState.new(key=modelKey, activatedAt=sConfirmed, phaseAt=sConfirmed, mssLevel=sDir == 1 ? lastPivotHigh : lastPivotLow)
+bool waveAllowed = sDir == 1 ? na(lastBuyTime) or bar_index == lastBuyBar or (not na(lastPivotLowTime) and lastPivotLowTime > lastBuyTime) : na(lastSellTime) or bar_index == lastSellBar or (not na(lastPivotHighTime) and lastPivotHighTime > lastSellTime)
+ChannelResult crtResult = f_stepChannel(ctx, crtState, lastPivotHigh, lastPivotLow, pivotHigh, pivotLow, waveAllowed)
+if crtResult.hit and crtResult.dir == 1
+    lastBuyTime := time
+    lastBuyBar := bar_index
+if crtResult.hit and crtResult.dir == -1
+    lastSellTime := time
+    lastSellBar := bar_index
+array<ChannelResult> channelResults = array.from(crtResult)
+bool entryEvent = crtResult.hit
+bool entryLong = entryEvent and crtResult.dir == 1
+bool entryShort = entryEvent and crtResult.dir == -1
+bool focusSignal = entryEvent
+string auditSummary = "CRT: " + crtResult.status + (sEqTouched ? " | EQ touched (not TP)" : "") + " | Entry C3 only | Model " + str.tostring(sId)
+string signalStatus = crtResult.status
+float target = sCp
+float executionSl = sInv
+bool localTargetTaken = crtState.localTargetTaken
+bool alreadyEmitted = crtState.sent
+
+// Drawing focus and the single signal context always refer to the same CRT.
+var string selectedKey = ""
+bool changedModel = modelKey != selectedKey
+var int lastVisualTime = na
+var int lastVisualIndex = na
+var int lastVisualBucket = na
+var string lastVisualKey = ""
+var int modelObservedIndex = na
+var int modelObservedTime = na
+if changedModel
+    selectedKey := modelKey
+    modelObservedIndex := not na(sId) ? bar_index : na
+    modelObservedTime := not na(sId) ? time : na
+    lastVisualTime := na
+    lastVisualIndex := na
+    lastVisualBucket := na
+    lastVisualKey := ""
+if focusSignal
+    lastVisualTime := time
+    lastVisualIndex := bar_index
+    lastVisualBucket := bucketCounter
+    lastVisualKey := modelKey
+f_sourceIndex(int sourceTime) =>
+    int found = na
+    if not na(sourceTime)
+        for offset = 0 to math.min(bar_index, 4999)
+            if time[offset] == sourceTime
+                found := bar_index - offset
+                break
+    found
+int modelAnchorTime = not na(sResolved) and sResolved > sConfirmed and not na(sCT) ? sCT : sBT
+int modelAnchorIndex = onHtf and barstate.islast and not na(sId) and (not recentOnly or sModelAge <= drawHtfBars) ? f_sourceIndex(modelAnchorTime) : na
+int drawAnchorIndex = onHtf ? modelAnchorIndex : lastVisualKey == modelKey and not na(lastVisualIndex) ? lastVisualIndex : modelObservedIndex
+int drawAnchorTime = onHtf ? modelAnchorTime : lastVisualKey == modelKey and not na(lastVisualTime) ? lastVisualTime : modelObservedTime
+int drawSpan = int(math.ceil(drawHtfBars * htfSeconds / chartSeconds))
+int labelLaneBars = chartTextSize == "Huge" ? 48 : chartTextSize == "Large" ? 36 : chartTextSize == "Small" ? 18 : 26
+int clusterStartIndex = bar_index + (showLevels or showConfirm or showIrl ? math.max(clusterOffset, labelLaneBars + 12) : clusterOffset)
+int drawingClipIndex = showCluster ? clusterStartIndex - labelLaneBars - 2 : bar_index + 498
+int drawEndIndex = not na(drawAnchorIndex) ? math.min(drawAnchorIndex + drawSpan, drawingClipIndex) : na
+bool recentModel = not na(sId) and not na(sModelAge) and sModelAge <= drawHtfBars
+bool recentLtfSignal = lastVisualKey == modelKey and not na(lastVisualBucket) and bucketCounter - lastVisualBucket <= drawHtfBars
+bool drawActive = not na(sId) and not na(drawAnchorIndex) and drawAnchorIndex >= bar_index - 9999 and drawEndIndex >= drawAnchorIndex and (not recentOnly or (onHtf ? recentModel : recentModel or recentLtfSignal))
+bool clusterActive = not na(sId)
+
+// Finite drawings use real chart bar indices and real prices, on the main price pane.
+
+var array<line> levelLines = array.new<line>()
+var array<label> levelLabels = array.new<label>()
+var array<float> renderedPrices = array.new<float>(16, na)
+var array<int> renderedPriorities = array.new<int>(16, 0)
+var array<int> renderedAnchors = array.new<int>(16, na)
+var array<int> renderedEnds = array.new<int>(16, na)
+var array<line> labelLeaders = array.new<line>()
+var array<label> eventLabels = array.new<label>()
+var array<int> eventBuckets = array.new<int>()
+var array<box> clusterBodies = array.new<box>()
+var array<line> clusterWicks = array.new<line>()
+var array<label> clusterLabels = array.new<label>()
+var array<label> groupLabels = array.new<label>()
+var array<box> htfIrlAreas = array.new<box>()
+var label clockLabel = label.new(bar_index, high, "", force_overlay=true, style=label.style_label_up, color=color.new(chart.bg_color, 100), textcolor=chart.fg_color, size=chartFont)
+var table panel = table.new(position.top_right, 2, 9, bgcolor=color.new(#111820, 12), border_width=0)
+if barstate.isfirst
+    for i = 0 to 1
+        array.push(htfIrlAreas, box.new(time, high, time, low, xloc=xloc.bar_time, force_overlay=true, bgcolor=color.new(color.gray, 100), border_color=color.new(color.gray, 100)))
+    for i = 0 to 15
+        array.push(levelLines, line.new(time, high, time, high, xloc=xloc.bar_time, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
+        array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_left, textalign=text.align_left, size=chartFont, color=color.new(chart.bg_color, 100)))
+        array.push(labelLeaders, line.new(bar_index, high, bar_index, high, force_overlay=true, style=line.style_dotted, color=color.new(color.gray, 100)))
+    for i = 0 to 2
+        array.push(groupLabels, label.new(time, low, "", xloc=xloc.bar_time, force_overlay=true, style=label.style_label_up, color=color.new(chart.bg_color, 100), textcolor=chart.fg_color, size=size.small))
+type ClusterCandle
+    int t
+    float o
+    float h
+    float l
+    float c
+// Merge frozen source candles only where chart-derived OHLC is unavailable.
+// Keep chronological order, including all intervening CRT follow candles.
+f_insertCluster(array<ClusterCandle> candles, int t, float o, float h, float l, float c) =>
+    if not na(t) and not na(o)
+        int insertion = array.size(candles)
+        bool exists = false
+        if array.size(candles) > 0
+            for j = 0 to array.size(candles) - 1
+                int itemTime = array.get(candles, j).t
+                if itemTime == t
+                    exists := true
+                    break
+                if itemTime > t
+                    insertion := j
+                    break
+        if not exists
+            array.insert(candles, insertion, ClusterCandle.new(t, o, h, l, c))
+// MODEL and FOLLOW are disjoint slices of the same chronological candle series.
+f_splitCluster(array<ClusterCandle> seriesCandles, int kind, int aT, int bT, int cT, int followLimit, array<ClusterCandle> origin, array<ClusterCandle> follow) =>
+    array.clear(origin)
+    array.clear(follow)
+    int sourceEnd = bT
+    int followTotal = 0
+    if array.size(seriesCandles) > 0
+        for j = 0 to array.size(seriesCandles) - 1
+            ClusterCandle item = array.get(seriesCandles, j)
+            bool isOrigin = item.t == aT or item.t == bT
+            if isOrigin
+                array.push(origin, item)
+            else if item.t > sourceEnd
+                array.push(follow, item)
+                followTotal += 1
+    while array.size(follow) > followLimit
+        array.shift(follow)
+    followTotal
+
+f_archiveCandles(ModelArchive ended, array<ClusterCandle> candles) =>
+    array.clear(candles)
+    if not na(ended) and not na(ended.uid)
+        f_insertCluster(candles, ended.aT, ended.aO, ended.aH, ended.aL, ended.aC)
+        f_insertCluster(candles, ended.bT, ended.bO, ended.bH, ended.bL, ended.bC)
+        if ended.kind == 1
+            f_insertCluster(candles, ended.cT, ended.cO, ended.cH, ended.cL, ended.cC)
+
+// Close timestamps come from the feed; never infer them by adding nominal TF seconds.
+f_candleEnd(int sourceTime, int aTime, int aClose, int bTime, int bClose, int cTime, int cClose, int liveTime, int liveClose, array<int> cachedTimes, array<int> cachedEnds) =>
+    int cached = array.indexof(cachedTimes, sourceTime)
+    not na(sourceTime) ? (sourceTime == aTime ? aClose : sourceTime == bTime ? bClose : sourceTime == cTime ? cClose : sourceTime == liveTime ? liveClose : cached >= 0 and cached < array.size(cachedEnds) ? array.get(cachedEnds, cached) : na) : na
+
+f_tag(int flags, int kind, int phase) =>
+    "CRT/TS"
+f_levelPriority(int slot) =>
+    slot == 12 ? 5 : slot == 3 ? 4 : slot == 11 ? 3 : slot == 4 ? 2 : 1
+f_extremeTime(int sourceTime, float price) =>
+    int found = onHtf ? sourceTime : na
+    int cached = array.indexof(candleTimes, sourceTime)
+    if not onHtf and cached >= 0
+        if math.abs(price - array.get(candleHighs, cached)) < syminfo.mintick * 0.5
+            found := array.get(candleHighTimes, cached)
+        else if math.abs(price - array.get(candleLows, cached)) < syminfo.mintick * 0.5
+            found := array.get(candleLowTimes, cached)
+    if not onHtf and na(found) and not na(sourceTime) and sourceTime + int(htfSeconds * 1000) > time[math.min(bar_index, 4999)]
+        for offset = 0 to math.min(bar_index, 4999)
+            if time[offset] >= sourceTime and time[offset] < sourceTime + int(htfSeconds * 1000) and (math.abs(high[offset] - price) < syminfo.mintick * 0.5 or math.abs(low[offset] - price) < syminfo.mintick * 0.5)
+                found := time[offset]
+                break
+    found
+f_indexTime(int index) =>
+    int found = na
+    if not na(index)
+        if index > bar_index
+            found := time + int((index - bar_index) * chartSeconds * 1000)
+        else if bar_index - index <= 4999
+            found := time[bar_index - index]
+    found
+f_level(int slot, float price, string caption, color shade, bool visible, int sourceTime = na, bool exactTime = false, bool currentProjection = false) =>
+    line ln = array.get(levelLines, slot)
+    label lb = array.get(levelLabels, slot)
+    int anchor = na(sourceTime) ? drawAnchorTime : exactTime ? sourceTime : f_extremeTime(sourceTime, price)
+    int endpoint = currentProjection ? math.min(bar_index + drawSpan, drawingClipIndex) : drawEndIndex
+    int endTime = f_indexTime(endpoint)
+    bool ok = visible and not na(anchor) and not na(endTime) and endTime >= anchor and not na(price)
+    int owner = slot
+    if ok and slot > 0
+        for prior = 0 to slot - 1
+            float priorPrice = array.get(renderedPrices, prior)
+            if not na(priorPrice) and math.abs(price - priorPrice) < syminfo.mintick * 0.5 and array.get(renderedAnchors, prior) == anchor
+                owner := prior
+                break
+    bool standalone = ok and owner == slot
+    if standalone
+        array.set(renderedPrices, slot, price)
+        array.set(renderedAnchors, slot, anchor)
+        array.set(renderedEnds, slot, endpoint)
+        array.set(renderedPriorities, slot, f_levelPriority(slot))
+        line.set_xy1(ln, anchor, price)
+        line.set_xy2(ln, endTime, price)
+        label.set_xy(lb, endpoint + 1, price)
+    line.set_color(ln, standalone ? shade : color.new(shade, 100))
+    label.set_text(lb, standalone ? caption : "")
+    label.set_textcolor(lb, shade)
+    label.set_tooltip(lb, standalone ? caption + " · " + str.tostring(price, format.mintick) : "")
+    if ok and owner != slot
+        label ownerLabel = array.get(levelLabels, owner)
+        string combinedCaption = label.get_text(ownerLabel) + (caption != "" ? " / " + caption : "")
+        label.set_text(ownerLabel, combinedCaption)
+        label.set_tooltip(ownerLabel, combinedCaption + " · " + str.tostring(price, format.mintick))
+        if f_levelPriority(slot) > array.get(renderedPriorities, owner)
+            array.set(renderedPriorities, owner, f_levelPriority(slot))
+            line.set_color(array.get(levelLines, owner), shade)
+            label.set_textcolor(ownerLabel, shade)
+// Only labels move vertically; source price levels and their start bars never move.
+var float viewHigh = na
+var float viewLow = na
+if time >= chart.left_visible_bar_time and time <= chart.right_visible_bar_time
+    viewHigh := na(viewHigh) ? high : math.max(viewHigh, high)
+    viewLow := na(viewLow) ? low : math.min(viewLow, low)
+float fontSpacing = chartTextSize == "Huge" ? 2.0 : chartTextSize == "Large" ? 1.5 : chartTextSize == "Small" ? 0.85 : 1.0
+float visibleLabelGap = math.max(nz(viewHigh - viewLow, high - low) * 0.04 * fontSpacing, nz(ta.atr(14), high - low) * 0.5, syminfo.mintick * 12)
+f_layoutLabels() =>
+    array<bool> placed = array.new<bool>(16, false)
+    float previousY = na
+    for slot = 0 to 15
+        line.set_color(array.get(labelLeaders, slot), color.new(color.gray, 100))
+    for pass = 0 to 15
+        int next = na
+        float nextPrice = na
+        for slot = 0 to 15
+            float candidate = array.get(renderedPrices, slot)
+            if not array.get(placed, slot) and not na(candidate) and (na(nextPrice) or candidate < nextPrice)
+                next := slot
+                nextPrice := candidate
+        if not na(next)
+            array.set(placed, next, true)
+            float labelPrice = na(previousY) ? nextPrice : math.max(nextPrice, previousY + visibleLabelGap)
+            label lb = array.get(levelLabels, next)
+            int endpoint = array.get(renderedEnds, next)
+            label.set_xy(lb, endpoint + 2, labelPrice)
+            if math.abs(labelPrice - nextPrice) > syminfo.mintick * 0.5
+                line leader = array.get(labelLeaders, next)
+                line.set_xy1(leader, endpoint, nextPrice)
+                line.set_xy2(leader, endpoint + 1, labelPrice)
+                line.set_color(leader, color.new(chart.fg_color, 45))
+            previousY := labelPrice
+// Fixed half-Tiny marker: Tiny label size is approximately 7pt; use 4pt.
+f_dropMark(int index) =>
+    label.delete(array.remove(eventLabels, index))
+    array.remove(eventBuckets, index)
+
+f_note(bool up, string hint) =>
+    color markerColor = up ? color.lime : color.red
+    string markerLocation = up ? yloc.belowbar : yloc.abovebar
+    if markLimit > 0
+        array.push(eventLabels, label.new(bar_index, na, "", xloc=xloc.bar_index, yloc=markerLocation, style=up ? label.style_triangleup : label.style_triangledown, color=markerColor, size=4, force_overlay=true, tooltip=hint))
+        array.push(eventBuckets, bucketCounter)
+    while array.size(eventLabels) > markLimit
+        f_dropMark(0)
+f_keyTag(CrtKey key) =>
+    key.kind == 1 ? "FVG" : key.kind == 2 ? "OB" : key.dir == 1 ? "SSL" : "BSL"
+string buyHint = ""
+string sellHint = ""
+for i = 0 to 0
+    ChannelResult hit = array.get(channelResults, i)
+    if hit.hit
+        string hint = f_tag(hit.flags, hit.kind, hit.phase) + " / " + hit.tag + " / " + signalTiming + "\nConfirm bar " + str.format_time(hit.confirmTime, "dd/MM HH:mm", NY) + " NY | Trigger bar " + str.format_time(time, "dd/MM HH:mm", NY) + " NY | Signal CLOSE " + str.format_time(time_close, "dd/MM HH:mm:ss", NY) + " NY | Bias " + str.tostring(biasDir) + " | Close " + str.tostring(close, format.mintick) + " | CP " + str.tostring(hit.cp, format.mintick) + " | INV " + str.tostring(hit.inv, format.mintick)
+        hint += "\nCRT #" + str.tostring(hit.id) + " | C1 " + str.format_time(sAT, "dd/MM HH:mm", NY) + " NY O " + str.tostring(sAO, format.mintick) + " H " + str.tostring(sAH, format.mintick) + " L " + str.tostring(sAL, format.mintick) + " C " + str.tostring(sAC, format.mintick) + "\nC2 " + str.format_time(sBT, "dd/MM HH:mm", NY) + " NY O " + str.tostring(sBO, format.mintick) + " H " + str.tostring(sBH, format.mintick) + " L " + str.tostring(sBL, format.mintick) + " C " + str.tostring(sBC, format.mintick) + " | HTF confirmed " + str.format_time(sConfirmed, "dd/MM HH:mm", NY) + " NY | C3 only; ET is manual"
+        if hit.counterBias
+            hint += "\nCT | " + hit.keyRef.tf + " " + f_keyTag(hit.keyRef) + " | Key " + str.tostring(hit.keyRef.lo, format.mintick) + "-" + str.tostring(hit.keyRef.hi, format.mintick) + " | Known " + str.format_time(hit.keyRef.knownAt, "dd/MM HH:mm", NY) + " NY | before CRT C1 " + str.format_time(hit.keyRef.beforeTime, "dd/MM HH:mm", NY) + " NY"
+        if hit.dir == 1
+            buyHint += (buyHint == "" ? "BUY\n" : "\n") + hint
+        else
+            sellHint += (sellHint == "" ? "SELL\n" : "\n") + hint
+if entryLong and showEntryTriangles
+    f_note(true, buyHint)
+if entryShort and showEntryTriangles
+    f_note(false, sellHint)
+
+if not retainHistory and recentOnly and barstate.islast
+    int markIndex = array.size(eventLabels) - 1
+    while markIndex >= 0
+        if bucketCounter - array.get(eventBuckets, markIndex) > drawHtfBars
+            f_dropMark(markIndex)
+        markIndex -= 1
+
+// Counts use closed chart bars across the loaded dataset, independent of display pruning.
+var int dataStart = math.max(time, last_bar_time - int(htfSeconds * 1000) * scanDepth)
+var string lastClosedStatus = "WAIT"
+var string lastClosedAudit = ""
+var int crtSignals = 0
+if barstate.isconfirmed
+    lastClosedStatus := signalStatus
+    lastClosedAudit := auditSummary
+if barstate.isconfirmed and entryEvent
+    crtSignals += crtResult.hit ? 1 : 0
+plot(crtResult.hit ? crtResult.dir : na, "CRT direction +1/-1", display=display.data_window)
+plot(crtResult.hit ? crtResult.cp : na, "CRT target at signal", display=display.data_window)
+plot(crtResult.hit ? crtResult.inv : na, "CRT invalidation at signal", display=display.data_window)
+plot(entryEvent ? close : na, "Signal reference close (not fill)", display=display.data_window)
+plot(crtResult.hit and crtResult.counterBias ? crtResult.dir : na, "CRT counter-bias CT +1/-1", display=display.data_window)
+plot(structureBias, "Bias confirmed structure +1/0/-1", display=display.data_window)
+plot(biasDir, "Bias effective +1/0/-1", display=display.data_window)
+plot(autoGuardHigh, "Bias guard high", display=display.data_window)
+plot(autoGuardLow, "Bias guard low", display=display.data_window)
+
+if barstate.islast
+    bool hasModel = not na(sId)
+    color primaryColor = sDir == 1 ? color.teal : sDir == -1 ? color.orange : color.silver
+    string tag = hasModel ? f_tag(sFlags, sKind, sPhase) : "-"
+    array.fill(renderedPrices, na)
+    array.fill(renderedPriorities, 0)
+    array.fill(renderedAnchors, na)
+    array.fill(renderedEnds, na)
+    f_level(0, sHi, "RH", primaryColor, showLevels and drawActive, sHiT)
+    f_level(1, sLo, "RL", primaryColor, showLevels and drawActive, sLoT)
+    f_level(2, (sHi + sLo) / 2, sEqTouched ? "EQ*" : "EQ", color.new(chart.fg_color, 35), showLevels and drawActive)
+    f_level(3, sInv, "INV", color.new(color.red, 15), showLevels and drawActive, sInvT)
+    f_level(4, sCp, "CP", color.aqua, showLevels and drawActive, sCpT)
+    f_level(5, sErlU, "ERL+", color.new(color.orange, 35), showLevels and drawActive, sErlUT)
+    f_level(6, sErlL, "ERL-", color.new(color.teal, 35), showLevels and drawActive, sErlLT)
+    bool irlVisible = showIrl and hasModel and drawActive
+    bool bullSelected = not na(sIrlT) and sDir == 1 and sIrlKind != 3
+    bool bearSelected = not na(sIrlT) and sDir == -1 and sIrlKind != 3
+    f_level(11, (sBullIrlH + sBullIrlL) / 2, (sBullIrlKind == 1 ? "FVG+" : "OB+") + (bullSelected ? "*" : ""), color.teal, irlVisible and not na(sBullIrlT), sBullIrlLeft, true, true)
+    f_level(12, (sBearIrlH + sBearIrlL) / 2, (sBearIrlKind == 1 ? "FVG-" : "OB-") + (bearSelected ? "*" : ""), color.orange, irlVisible and not na(sBearIrlT), sBearIrlLeft, true, true)
+    f_level(13, sInnerHi, "iBSL" + (sIrlKind == 3 and sDir == -1 ? "*" : ""), color.orange, irlVisible and not na(sInnerHiT), sInnerHiT, false, true)
+    f_level(14, sInnerLo, "iSSL" + (sIrlKind == 3 and sDir == 1 ? "*" : ""), color.teal, irlVisible and not na(sInnerLoT), sInnerLoT, false, true)
+    for side = 0 to 1
+        float top = side == 0 ? sBullIrlH : sBearIrlH
+        float bottom = side == 0 ? sBullIrlL : sBearIrlL
+        int zoneTime = side == 0 ? sBullIrlLeft : sBearIrlLeft
+        int zoneEnd = f_indexTime(math.min(bar_index + drawSpan, drawingClipIndex))
+        bool areaVisible = irlVisible and not na(zoneTime) and not na(zoneEnd) and zoneEnd >= zoneTime
+        box area = array.get(htfIrlAreas, side)
+        color zoneColor = side == 0 ? color.teal : color.orange
+        if areaVisible
+            box.set_lefttop(area, zoneTime, top)
+            box.set_rightbottom(area, zoneEnd, bottom)
+        box.set_bgcolor(area, color.new(zoneColor, areaVisible ? 94 : 100))
+        box.set_border_color(area, color.new(zoneColor, areaVisible ? 65 : 100))
+    bool showCrtKey = showLevels and drawActive and sKind == 1 and not na(kCrtKey) and kCrtKey.kind > 0 and biasDir == -sDir
+    f_level(15, showCrtKey ? (kCrtKey.hi + kCrtKey.lo) / 2 : na, showCrtKey ? "K/" + f_keyTag(kCrtKey) : "", color.purple, showCrtKey, showCrtKey ? nz(kCrtKey.leftTime, kCrtKey.born) : na, showCrtKey ? kCrtKey.kind != 3 or kCrtKey.tf != htf : true, true)
+    bool hasIrl = not na(sIrlT)
+    f_layoutLabels()
+    if showPanel
+        string dirText = biasPaused ? "B0!" : biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
+        string stateText = not hasModel ? f_endTag(sReason) : sModelAge > 0 ? "C3 CLOSED" : alreadyEmitted ? "SIGNAL" : "C3"
+        array<string> headings = array.from("TF", "CRT", "BIAS", "REF", "T", "ENTRY", "N", "WHY", "DATA")
+        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (sDir == 1 ? "BUY" : sDir == -1 ? "SELL" : "-") + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? (sIrlKind == 1 ? "FVG" : "OB") : "-", macroNow + (showQt ? " Q" + str.tostring(dayQuarter) + "/" + str.tostring(sessionQuarter) : ""), stateText, "C " + str.tostring(crtSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY))
+        for row = 0 to 8
+            table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
+            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 1 ? "Last model end: " + f_endTag(sReason) + " | TG=target touched; INV=HTF close invalid; TO=timeout; AMB=ambiguous; HIST=outside recovery. Not trade fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 7 ? lastClosedAudit : row == 6 ? "CRT signals on closed LTF bars in C3 only; not fills or a win-rate." : "")
+    array<ClusterCandle> clusterCandles = array.new<ClusterCandle>()
+    if showCluster and clusterActive
+        if array.size(candleTimes) > 0
+            for j = 0 to array.size(candleTimes) - 1
+                int t = array.get(candleTimes, j)
+                if t >= sAT
+                    array.push(clusterCandles, ClusterCandle.new(t, array.get(candleOpens, j), array.get(candleHighs, j), array.get(candleLows, j), array.get(candleCloses, j)))
+        f_insertCluster(clusterCandles, sAT, sAO, sAH, sAL, sAC)
+        f_insertCluster(clusterCandles, sBT, sBO, sBH, sBL, sBC)
+        f_insertCluster(clusterCandles, sCT, sCO, sCH, sCL, sCC)
+        if liveComplete and liveT >= sAT
+            f_insertCluster(clusterCandles, liveT, liveO, liveH, liveL, liveC)
+    int clusterCount = array.size(clusterCandles)
+    array<ClusterCandle> originCandles = array.new<ClusterCandle>()
+    array<ClusterCandle> followCandles = array.new<ClusterCandle>()
+    array<ClusterCandle> endedCandles = array.new<ClusterCandle>()
+    int followTotal = f_splitCluster(clusterCandles, sKind, sAT, sBT, sCT, clusterFollowCount, originCandles, followCandles)
+    bool archiveActive = showCluster and showArchive and not na(sArchived) and not na(sArchived.uid)
+    if archiveActive
+        f_archiveCandles(sArchived, endedCandles)
+    int originCount = array.size(originCandles)
+    int followCount = array.size(followCandles)
+    int endedCount = array.size(endedCandles)
+    int renderCount = originCount + followCount + endedCount
+    // At most 3 source + 12 follow + 3 archived candles; old objects are deleted explicitly.
+    while array.size(clusterBodies) > renderCount
+        box.delete(array.pop(clusterBodies))
+        line.delete(array.pop(clusterWicks))
+        label.delete(array.pop(clusterLabels))
+    while array.size(clusterBodies) < renderCount
+        array.push(clusterBodies, box.new(time, high, time, low, xloc=xloc.bar_time, force_overlay=true))
+        array.push(clusterWicks, line.new(time, high, time, low, xloc=xloc.bar_time, width=1, force_overlay=true))
+        array.push(clusterLabels, label.new(time, low, "", xloc=xloc.bar_time, force_overlay=true, style=label.style_label_up, color=color.new(chart.bg_color, 100), textcolor=chart.fg_color, size=chartFont))
+    int candleWidth = clusterWidth - clusterWidth % 2
+    float clusterStep = candleWidth + 2.0
+    float bodyWidth = candleWidth
+    float groupGap = math.max(8.0, clusterStep * 1.5)
+    int clusterStartTime = time + int((clusterStartIndex - bar_index) * chartSeconds * 1000)
+    bool currentBucketClosed = barstate.isconfirmed and not na(liveEnd) and time_close >= liveEnd
+    float cursor = 0.0
+    int drawSlot = 0
+    for group = 0 to 2
+        array<ClusterCandle> candles = group == 0 ? originCandles : group == 1 ? followCandles : endedCandles
+        int groupCount = array.size(candles)
+        label heading = array.get(groupLabels, group)
+        label.set_text(heading, "")
+        if groupCount > 0
+            float ceiling = na
+            float floorPrice = na
+            for j = 0 to groupCount - 1
+                ClusterCandle item = array.get(candles, j)
+                ceiling := na(ceiling) ? item.h : math.max(ceiling, item.h)
+                floorPrice := na(floorPrice) ? item.l : math.min(floorPrice, item.l)
+            float groupSpan = math.max(ceiling - floorPrice, syminfo.mintick * 8)
+            float captionGap = math.max(visibleLabelGap, groupSpan * 0.12, syminfo.mintick * 8)
+            float labelY = floorPrice - math.max(groupSpan * 0.08, captionGap * 0.6)
+            int groupStartTime = clusterStartTime + int(cursor * chartSeconds * 1000)
+            for i = 0 to groupCount - 1
+                ClusterCandle item = array.get(candles, i)
+                int left = clusterStartTime + int((cursor + i * clusterStep) * chartSeconds * 1000)
+                int right = left + int(bodyWidth * chartSeconds * 1000)
+                int middle = left + int((right - left) / 2)
+                bool archived = group == 2
+                color shade = item.c >= item.o ? color.teal : color.new(#161b22, 0)
+                box body = array.get(clusterBodies, drawSlot)
+                line wick = array.get(clusterWicks, drawSlot)
+                label caption = array.get(clusterLabels, drawSlot)
+                box.set_lefttop(body, left, math.max(item.o, item.c))
+                box.set_rightbottom(body, right, math.min(item.o, item.c))
+                box.set_bgcolor(body, color.new(shade, archived ? 75 : 0))
+                box.set_border_color(body, color.new(item.c >= item.o ? color.teal : color.silver, archived ? 65 : 0))
+                line.set_xy1(wick, middle, item.h)
+                line.set_xy2(wick, middle, item.l)
+                line.set_width(wick, 1)
+                line.set_color(wick, color.new(chart.fg_color, archived ? 70 : 25))
+                string candleCaption = group == 0 or archived ? "C" + str.tostring(i + 1) : item.t == liveT ? (currentBucketClosed ? "N" : "N*") : item.t == sCT ? "C3" : ""
+                label.set_xy(caption, middle, labelY)
+                label.set_text(caption, candleCaption)
+                label.set_textcolor(caption, archived ? color.gray : chart.fg_color)
+                int sourceClose = f_candleEnd(item.t, archived ? sArchived.aT : sAT, archived ? sArchived.aEnd : sAEnd, archived ? sArchived.bT : sBT, archived ? sArchived.bEnd : sConfirmed, archived ? sArchived.cT : sCT, archived ? sArchived.cEnd : sCEnd, liveT, liveEnd, candleTimes, candleEndTimes)
+                string closeCaption = not archived and item.t == liveT and not currentBucketClosed ? "Scheduled close " : "Close "
+                label.set_tooltip(caption, "Open " + str.format_time(item.t, "dd/MM HH:mm", NY) + " NY | " + closeCaption + (not na(sourceClose) ? str.format_time(sourceClose, "dd/MM HH:mm", NY) + " NY" : "-") + " | O " + str.tostring(item.o, format.mintick) + " H " + str.tostring(item.h, format.mintick) + " L " + str.tostring(item.l, format.mintick) + " C " + str.tostring(item.c, format.mintick) + (archived ? " | history only / " + f_endTag(sArchived.endReason) : ""))
+                drawSlot += 1
+            int headingTime = groupStartTime + int((groupCount * clusterStep - clusterStep + bodyWidth) * 0.5 * chartSeconds * 1000)
+            label.set_xy(heading, headingTime, labelY - captionGap * 1.25)
+            string headingText = group == 0 ? tag : group == 1 ? "FOLLOW" + (followTotal > followCount ? " …" + str.tostring(followTotal - followCount) : "") : "LAST / " + f_endTag(sArchived.endReason)
+            label.set_text(heading, headingText)
+            label.set_textcolor(heading, group == 2 ? color.gray : chart.fg_color)
+            label.set_tooltip(heading, group == 2 ? f_tag(sArchived.flags, sArchived.kind, sArchived.phase) + " | End " + str.format_time(sArchived.endedAt, "dd/MM HH:mm", NY) + " NY | historical reference; no entries" : group == 1 ? str.tostring(followCount) + " shown / " + str.tostring(followTotal) + " after model; full series still tracked" : "Frozen model source | age " + str.tostring(sModelAge) + (lifeHtf > 0 ? "/" + str.tostring(lifeHtf) : ""))
+            cursor += groupCount * clusterStep + groupGap
+    int remaining = not na(liveEnd) ? math.max(0, int((liveEnd - timenow) / 1000)) : 0
+    label.set_text(clockLabel, "")
+    if showCluster and clusterActive and originCount > 0
+        // Extra context is kept in the MODEL tooltip to keep the two groups compact.
+        label.set_tooltip(array.get(groupLabels, 0), "Age " + str.tostring(sModelAge) + (lifeHtf > 0 ? "/" + str.tostring(lifeHtf) : "") + " | HTF candles since model confirmation" + (barstate.isrealtime ? " | Next close " + str.tostring(int(math.floor(remaining / 60))) + ":" + str.tostring(remaining % 60, "00") : ""))
+
+bool modelEvent = changedModel and not na(sId) and sModelAge == 0 and barstate.isconfirmed
+alertcondition(modelEvent, "HTF", "TFA CRT: C2 confirmed; observe C3.")
+alertcondition(modelEvent and sPhase == 1, "TS", "TFA CRT: confirmed one-sided HTF sweep and reclaim. Observe C3.")
+alertcondition(entryLong, "E+", "TFA CRT V1: confirmed LTF Buy signal in C3. See tooltip.")
+alertcondition(entryShort, "E-", "TFA CRT V1: confirmed LTF Sell signal in C3. See tooltip.")

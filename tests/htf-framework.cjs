@@ -1,7 +1,7 @@
 // CRT web migration and manual workflow. Not a market/Pine Replay test.
 const assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const Logic=require('../assets/pond-model.js');
-assert.deepEqual(Object.keys(Logic.setups),['5']);assert.equal(Logic.schema,'crt-v1');
+assert.deepEqual(Object.keys(Logic.setups),['5']);assert.equal(Logic.schema,'crt-ts-v2');
 for(const id of [1,2,3,4,6,7])assert.match(Logic.name(id),/cũ/);
 assert.equal(fs.readFileSync('index.html','utf8'),fs.readFileSync('topstep.html','utf8'));
 const {chromium}=require('../.review-tools/node_modules/playwright');
@@ -14,7 +14,7 @@ const {chromium}=require('../.review-tools/node_modules/playwright');
   await ready();
   const seeded=await page.evaluate(()=>{
    const a=getActiveAccount(),record={id:'old-catch',account:a.id,stage:a.stage,setup:6,outcome:'tp',rating:'yes',at:new Date().toISOString(),framework:'htf-v1'};
-   const old={__schema:'htf-v1','chk-s5-1':true,'chk-s5-2':true,'chk-s6-1':true,'chk-risk-tp':true,__riskBySetup:{5:[true,true,true],6:[false,false,true]},__contextBySetup:{5:{executionHtf:'H4',executionNote:'Keep old CRT notes'},6:{executionHtf:'H2',executionNote:'Keep EGF notes'}},__legacy:{state:{'chk-s2-1':true},active:'2'}};
+   const old={__schema:'crt-v1','chk-s5-1':true,'chk-s5-2':true,'chk-s6-1':true,'chk-risk-tp':true,__riskBySetup:{5:[true,true,true],6:[false,false,true]},__contextBySetup:{5:{executionHtf:'H4',executionNote:'Keep old CRT notes'},6:{executionHtf:'H2',executionNote:'Keep EGF notes'}},__legacy:{state:{'chk-s2-1':true},active:'2'}};
    localStorage.setItem('topstep_active_checklist_setup','6');localStorage.setItem('topstep_checklist_state',JSON.stringify(old));
    localStorage.setItem('topstep_pond_outcomes_v1',JSON.stringify({current:{[JSON.stringify([a.id,a.stage,5])]:{...record,setup:5}},history:[record]}));
    localStorage.setItem('topstep_pond_sessions_v1',JSON.stringify({active:{[JSON.stringify([a.id,a.stage])]:{id:'old-session',accountKey:JSON.stringify([a.id,a.stage]),symbol:'MGC',setup:6,window:'morning',framework:'htf-v1',startedAt:new Date().toISOString(),rounds:['old-catch'],changes:[],assessment:'unrated'}},history:[]}));
@@ -25,20 +25,20 @@ const {chromium}=require('../.review-tools/node_modules/playwright');
   assert.equal(await page.evaluate(()=>PondExecution.current()),null,'Old CRT outcome cannot lock the new workflow');assert.equal(await page.evaluate(()=>PondExecution.creel().length),1);
   assert.equal(await page.evaluate(()=>PondLive.active()),null);
   const migrated=await page.evaluate(()=>JSON.parse(localStorage.getItem('topstep_checklist_state')));
-  assert.equal(migrated.__schema,'crt-v1');assert.deepEqual(migrated.__legacy,{state:seeded.old,active:'6'});
+  assert.equal(migrated.__schema,'crt-ts-v2');assert.deepEqual(migrated.__legacy,{state:seeded.old,active:'6'});
   assert.equal(await page.locator('#frameworkMigrationNotice').isVisible(),true);assert.equal(await page.locator('#checklist-setup-6,#checklist-setup-7').count(),0);
   await page.evaluate(()=>{switchChecklistSetup(6);switchChecklistSetup(7);});assert.equal(await page.evaluate(()=>activeChecklistSetup),5);
-  for(const [id,value] of [['executionHtf','H1'],['executionLtf','M5'],['executionEntry','CISD']])await page.locator('#'+id).selectOption(value);
+  for(const [id,value] of [['executionHtf','H1'],['executionLtf','M5'],['executionEntry','TS']])await page.locator('#'+id).selectOption(value);
   await page.locator('#executionNote').fill('C1 / prior key; C2 TS; C3 Pullback');await page.locator('#executionNote').dispatchEvent('change');
   await page.evaluate(()=>{for(let i=1;i<=4;i++)triggerCastStep(i);});assert.equal(await page.evaluate(()=>readPondChecklist().stage),4);
-  await page.locator('#executionEntry').selectOption('OB');assert.deepEqual(await page.evaluate(()=>readPondChecklist().steps),[true,true,false,false]);
+  await page.locator('#executionLtf').selectOption('M3');assert.deepEqual(await page.evaluate(()=>readPondChecklist().steps),[true,true,false,false]);
   await page.reload();await ready();assert.equal(await page.locator('#executionNote').inputValue(),'C1 / prior key; C2 TS; C3 Pullback');
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('topstep_checklist_state')).__legacy),migrated.__legacy,'Reload must not nest/copy the old snapshot again');
-  await page.evaluate(()=>{triggerCastStep(3);triggerCastStep(4);PondExecution.choose('tp');});assert.equal(await page.evaluate(()=>PondExecution.current().framework),'crt-v1');assert.equal(await page.evaluate(()=>PondExecution.creel().length),2);
+  await page.evaluate(()=>{triggerCastStep(3);triggerCastStep(4);PondExecution.choose('tp');});assert.equal(await page.evaluate(()=>PondExecution.current().framework),'crt-ts-v2');assert.equal(await page.evaluate(()=>PondExecution.creel().length),2);
   await page.evaluate(()=>PondExecution.newRound());assert.equal(await page.evaluate(()=>PondExecution.creel().length),2);
   await page.locator('#btnPondStudio').click();assert.deepEqual(await page.locator('#studioSetup option').evaluateAll(o=>o.map(x=>x.value)),['5']);
   await page.locator('#studioCommit').check();await page.locator('#pondStudioStart [type=submit]').click();
-  const sessions=await page.evaluate(()=>JSON.parse(localStorage.getItem('topstep_pond_sessions_v1')));assert.equal(sessions.history[0].id,'old-session');assert.equal(sessions.history[0].setup,6);assert.equal(sessions.history[0].outcomes[0].id,'old-catch');assert.equal(await page.evaluate(()=>PondLive.active().framework),'crt-v1');
+  const sessions=await page.evaluate(()=>JSON.parse(localStorage.getItem('topstep_pond_sessions_v1')));assert.equal(sessions.history[0].id,'old-session');assert.equal(sessions.history[0].setup,6);assert.equal(sessions.history[0].outcomes[0].id,'old-catch');assert.equal(await page.evaluate(()=>PondLive.active().framework),'crt-ts-v2');
   assert.equal(await page.locator('#studioChangeSetup').isVisible(),false);await page.locator('#closePondStudio').click();
   assert.equal(await page.evaluate(()=>localStorage.getItem('topstep_multi_accounts_v3')),seeded.financial,'Migration/pond/studio must not modify financial accounts');
   // History can still be edited with its original category, but new EGF/ISB records are blocked.

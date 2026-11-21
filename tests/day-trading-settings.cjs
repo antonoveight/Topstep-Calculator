@@ -1,3 +1,5 @@
+// HISTORICAL before pure CRT 2026-11-22; excluded from current check runners.
+// Superseded by tests/pure-crt.cjs, crt-liquidity.cjs and crt-context.cjs.
 // Configuration compatibility sweep on deterministic causal fixtures.
 // NOT a backtest or a market-performance optimizer. HTF contexts/pivots are inputs.
 const fs=require('node:fs'),assert=require('node:assert/strict');

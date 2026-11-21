@@ -1,3 +1,5 @@
+// HISTORICAL before pure CRT 2026-11-22; excluded from current check runners.
+// Superseded by tests/pure-crt.cjs, crt-liquidity.cjs and crt-context.cjs.
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const source=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
 const prior=fs.readFileSync('indicators/archive/funded-angler-v6-multimodel-2026-11-21.pine','utf8');

@@ -1,3 +1,5 @@
+// HISTORICAL before pure CRT 2026-11-22; excluded from current check runners.
+// Superseded by tests/pure-crt.cjs, crt-liquidity.cjs and crt-context.cjs.
 // Execute the actual Pine channel on a confirmation that fails before entry.
 // Fixtures provide HTF context/known pivots; not a Pine runtime or market test.
 const assert=require('node:assert/strict'),fs=require('node:fs');

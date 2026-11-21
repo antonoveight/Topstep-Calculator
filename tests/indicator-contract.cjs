@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const source=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
 assert.equal(source,fs.readFileSync('chibao.txt','utf8'));
-assert.match(source,/@version=6/);assert.match(source,/CRT V1/);
+assert.match(source,/@version=6/);assert.match(source,/CRT Pure TS/);
 assert.doesNotMatch(source,/signalModels|egfContext|isbContext|egfResult|isbResult|f_preferContext|f_trackTrigger|EGF|ISB/);
 assert.match(source,/bool crt = tsBull or tsBear/);
 assert.match(source,/if inScan and not na\(time\[1\]\) and crt/);
@@ -37,19 +37,6 @@ assert.match(source,/state.everSent := true/);assert.match(source,/"N\*"/);
 assert.match(source,/overlay=true, scale=scale.none/);
 assert.doesNotMatch(source,/(?:string|float|int|bool)\s+(?:text|range|return|class)\s*[,=)]/);
 assert.doesNotMatch(source,/strategy.entry/);
-const Market=require('../assets/market-hours.js'),QT=require('../assets/market-quarterly.js'),T=require('../assets/market-time.js');
-function evaluate(name,ctx){const m=source.match(new RegExp('^\\s*(?:bool|float|int|string) '+name+' = (.+)$','m'));assert.ok(m);const js=m[1].replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!');return Function(...Object.keys(ctx),'return ('+js+');')(...Object.values(ctx));}
-const f_window=(v,a,b)=>v>=a&&v<b;
-for(let minute=0;minute<1440;minute++){
- const expected=Market.macros.find(m=>f_window(minute,m.startHour*60+m.startMin,m.endHour*60+m.endMin))?.code||'-';
- assert.equal(evaluate('macro',{nyMinute:minute,f_window}),expected);assert.equal(evaluate('macroNow',{nyNowMinute:minute,f_window}),expected);
-}
-for(const date of ['2026-07-14T23:00:00Z','2026-12-14T00:00:00Z','2026-03-08T06:59:59Z','2026-03-08T07:00:00Z','2026-11-01T05:59:59Z','2026-11-01T06:00:00Z']){
- const instant=new Date(date),p=T.parts(instant,T.NY),second=()=>p.second,nyMinute=p.hour*60+p.minute;
- const cycleMinute=evaluate('cycleMinute',{nyNowMinute:nyMinute,second,contextStamp:instant.getTime(),NY:T.NY});
- const state=QT.state(instant),ctx={cycleMinute,int:Math.trunc,math:Math};
- assert.equal(evaluate('dayQuarter',ctx),state.day.quarter);assert.equal(evaluate('sessionQuarter',ctx),state.ninety.quarter);assert.equal(evaluate('microQuarter',ctx),state.micro.quarter);
-}
 const clean=source.replace(/\/\/[^\n]*/g,'').replace(/"(?:[^"\\]|\\.)*"/g,'""'),stack=[],pairs={')':'(',']':'[','}':'{'};
 for(const c of clean){if('([{'.includes(c))stack.push(c);else if(Object.hasOwn(pairs,c))assert.equal(stack.pop(),pairs[c]);}assert.equal(stack.length,0);
-console.log('PASS CRT-only detector/channel, 63 confirmed snapshot fields (76 total request fields), current-bar gates, sync, macros 1440 minutes, DST/QT and delimiters. Not Pine runtime.');
+console.log("PASS CRT detector/channel, 63 confirmed snapshot fields, current-bar gates, canonical sync and delimiters. Not Pine runtime.");
