@@ -38,3 +38,7 @@ Trình kiểm tra Node không mô phỏng Pine realtime rollback, request.securi
 5. Ghi WHY/ID của tín hiệu thiếu/thừa. Chưa nới điều kiện hoặc tối ưu hiệu suất trước khi đối chiếu các ví dụ này.
 
 Web/checklist đã chuyển ở bước tiếp theo, xem [ghi nhận nghiệm thu web](CRT-WEB-VALIDATION.md). Fibo tự động chưa triển khai. Early C2, Model 1/KOD/SMT tiếp tục nằm ở nghiên cứu, không trộn vào Confirmed V1.
+
+## Tiếp nối 22/11/2026
+
+Người dùng tạm chấp nhận Replay baseline để tiếp tục, không phải kết quả kiểm tra chart độc lập của agent. Đã bổ sung [fibo CRT tham chiếu tự động](CRT-FIBO-AUTO.md), nâng bộ kiểm tra hiện hành lên 12 nhóm. Detector, key, bias, điều kiện entry và alert giữ nguyên; phần fibo mới cần quan sát hình thực tế riêng.

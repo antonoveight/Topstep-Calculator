@@ -1,8 +1,8 @@
 # Quy ước fibo cá nhân
 
-> Từ 21/11/2026, phương pháp chính là [CRT V1](CRT-V1-SPEC.md). Các ví dụ EGF/ISB bên dưới được giữ để đối chiếu lịch sử; chưa có fibo/ET tự động hoặc Early C2 trong chỉ báo hiện tại.
+> Từ 21/11/2026, phương pháp chính là [CRT V1](CRT-V1-SPEC.md). Các ví dụ EGF/ISB bên dưới được giữ để đối chiếu lịch sử; từ 22/11/2026 có [lớp vẽ fibo CRT tự động](CRT-FIBO-AUTO.md), chưa có ET fill tự động hoặc Early C2.
 
-Cập nhật theo xác nhận của người dùng ngày 17/11/2026 và hai ảnh mẫu. Đây là quy ước đánh dấu chart, chưa phải yêu cầu thay đổi thuật toán chỉ báo hoặc tự động quản lý lệnh.
+Cập nhật theo xác nhận của người dùng ngày 17/11/2026 và hai ảnh mẫu. Đây là quy ước đánh dấu chart; chỉ báo nay tự vẽ mức tham chiếu CRT nhưng không tự quản lý lệnh.
 
 | Mức fibo | Nhãn hiện hành | Ý nghĩa / thay đổi |
 | --- | --- | --- |
@@ -48,7 +48,7 @@ Không có sweep thì không gọi mức 0 là “đỉnh sweep”. EGF không m
 
 ## Phạm vi thực thi
 
-Các mục trên là quy trình cá nhân được lưu ngày 17/11/2026, chưa phải quy tắc được tối ưu bằng dữ liệu thị trường. Pine hiện vẫn chỉ phát tín hiệu từ model HTF đã xác nhận; **chưa phát Early C2, chưa vẽ fibo/ET, chưa tự đặt lệnh hoặc quản lý BE/TL**. Lần cập nhật này chỉ thay chọn context EGF/ISB theo [range và cụm kích hoạt](MODEL-CONTEXT-PRIORITY.md).
+Quy ước được lưu ngày 17/11/2026, chưa phải quy tắc tối ưu bằng dữ liệu thị trường. Từ 22/11/2026, Pine vẽ [7 mức fibo CRT](CRT-FIBO-AUTO.md) từ snapshot C1/C2 đã đóng, không dùng nến live. **Không phát Early C2, không tự xác nhận ET fill, đặt lệnh hoặc quản lý BE/TL**. EGF/ISB không còn là kênh độc lập; các ví dụ phía trên giữ để đối chiếu lịch sử.
 
 ![CRT fibo và Early C2](images/crt-fibo-early-c2.png)
 

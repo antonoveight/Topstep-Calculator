@@ -29,7 +29,7 @@ Ngày 21/11/2026. Áp dụng cho `indicators/funded-angler-v6.pine` và bản sa
 6. Chạm target hoặc cực trị SL C2 trên một nến LTF đã đóng sẽ khóa phần entry còn lại của setup, kể cả giá quay lại. Nếu cả hai cùng bị chạm, không suy ra thứ tự hay kết quả giao dịch.
 7. Fresh reaction cần pivot hồi mới, xác nhận và tiến triển; gate nhịp được giữ qua lần đổi model để tránh phát nối đuôi. `One per model` chỉ cho một dấu. Tất cả vẫn phải nằm trong C3.
 
-Fibo/ET hiện do người dùng kiểm tra thủ công. **Tam giác không có nghĩa đã chạm ET1/ET2 hoặc khớp lệnh.** Không có bộ lọc R:R ở close tam giác, không tự dời SL/BE/trailing hay chốt một phần. Nếu giá đi luôn không hồi, Pullback bỏ qua thay vì đuổi.
+Fibo được vẽ tự động từ 22/11/2026; phản ứng tại ET và entry thực tế vẫn do người dùng kiểm tra. **Tam giác không có nghĩa đã chạm ET1/ET2 hoặc khớp lệnh.** Không có bộ lọc R:R ở close tam giác, không tự dời SL/BE/trailing hay chốt một phần. Nếu giá đi luôn không hồi, Pullback bỏ qua thay vì đuổi.
 
 ## Vòng đời bối cảnh khác vòng đời entry
 
@@ -54,7 +54,7 @@ Registry giữ các bối cảnh chưa kết thúc. Cặp mới đang mở C3 đ
 - Cụm đầu giữ C1–C2; FOLLOW bắt đầu C3 và giữ đuôi gần nhất, gồm nến live; LAST tùy chọn hiển thị nguồn model đã kết thúc. Giá OHLC dùng dữ liệu chart, không trộn live vào detector.
 - High/Low/TP/INV và ERL bắt đầu từ nến tạo mức; FVG neo nến đầu bộ ba HTF nhưng chỉ xuất hiện sau xác nhận. Chữ trong suốt, có bố trí tránh đè; cần nghiệm thu hình thực tế trên chart.
 - History 100 dấu, Latest tùy chọn; thay đổi giới hạn hiển thị không đổi logic/alert. Macro/QT mặc định chỉ là bối cảnh, không suy hướng.
-- Fibo cá nhân: `0 SL · 0.1 ET2 · 0.2 ET1 · 0.4 break · 0.6 BE · 0.8 TL · 1 TP`. Sell: SL=High C2, TP=Low C1; Buy đối xứng. Chưa tự vẽ fibo.
+- Fibo cá nhân: `0 SL · 0.1 ET2 · 0.2 ET1 · 0.4 break · 0.6 BE · 0.8 TL · 1 TP`. Sell: SL=High C2, TP=Low C1; Buy đối xứng. Có [công tắc fibo tự động](CRT-FIBO-AUTO.md), mặc định bật; không thay gate entry/alert.
 
 ## Kiểm chứng và giới hạn
 
