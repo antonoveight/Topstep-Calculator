@@ -2,7 +2,7 @@
 
 Cập nhật 21/11/2026 theo quyết định của người dùng và [nghiên cứu nguồn Romeotpt](CRT-ROMEOTPT-RESEARCH.md). Chỉ có **CRT là phương pháp giao dịch**. IRL, ERL, key level và TS phục vụ vị trí, hướng đi và xác nhận của CRT; EGF/ISB không còn là phương pháp hay kênh phát tín hiệu độc lập trong bản dự kiến.
 
-Tài liệu này thay thế kế hoạch ba phương pháp cho đợt cải tổ kế tiếp. Cập nhật triển khai: Pine đã chuyển sang [CRT V1](CRT-V1-SPEC.md), có bản lưu multi-model, bộ ca tổng hợp và kiểm tra biên dịch riêng. Web/checklist đã chuyển CRT-only, lưu snapshot cũ và giữ nhật ký EGF/ISB. Ngày 22/11/2026 người dùng tạm chấp nhận Replay baseline; bổ sung [fibo CRT tham chiếu tự động](CRT-FIBO-AUTO.md). Early C2 vẫn ngoài phạm vi.
+Tài liệu này thay thế kế hoạch ba phương pháp cho đợt cải tổ kế tiếp. Cập nhật triển khai: Pine đã chuyển sang [CRT V1](CRT-V1-SPEC.md), có bản lưu multi-model, bộ ca tổng hợp và kiểm tra biên dịch riêng. Web/checklist đã chuyển CRT-only, lưu snapshot cũ và giữ nhật ký EGF/ISB. Ngày 22/11/2026 người dùng tạm chấp nhận Replay baseline; đã gỡ lại fibo tự động theo yêu cầu và giữ quy ước thủ công. Bước tiếp theo đã thực hiện là [nghiên cứu Early C2 và ca kiểm tra](EARLY-C2-RESEARCH.md); chưa đưa Early vào Pine/web.
 
 ## 1 Chuẩn hóa phạm vi trước khi viết lại
 
@@ -44,7 +44,7 @@ Giữ hai mức phân tích **EQ C1** và **biên đối diện C1**. Nguồn Ro
 
 Fibo cá nhân giữ 0=SL cực trị C2, 0.1=ET2, 0.2=ET1, 0.4=break, 0.6=BE, 0.8=TL, 1=TP. Sell neo Low C1 đến High C2; Buy đối xứng. Hiển thị phải kiểm tra 0 đúng SL và 1 đúng TP, không suy từ thao tác kéo của từng nền tảng. EQ C1, CE FVG, fibo0.5 và nhãn BE0.6 là các khái niệm khác nhau.
 
-Lớp fibo tự động đã bổ sung ngày 22/11/2026: chỉ neo các cực trị đã biết, ghi model ID, giữ đúng timestamp và có chính sách khóa neo sau entry. Không tạo lệnh chỉ vì chạm ET; hai ET không mặc định hai vị thế. R:R có thể hiển thị theo entry/ET, SL và TP thực tế; không tự bật lại min R:R theo close tam giác từ thông điệp 1:3 chưa đủ bối cảnh.
+Lớp fibo tự động từng bổ sung rồi được gỡ theo yêu cầu 22/11/2026. Nếu mở lại tính năng về sau: chỉ neo các cực trị đã biết, ghi model ID, giữ đúng timestamp và có chính sách khóa neo sau entry. Không tạo lệnh chỉ vì chạm ET; hai ET không mặc định hai vị thế. R:R có thể hiển thị theo entry/ET, SL và TP thực tế; không tự bật lại min R:R theo close tam giác từ thông điệp 1:3 chưa đủ bối cảnh.
 
 ## 6 Thời gian và vòng đời
 

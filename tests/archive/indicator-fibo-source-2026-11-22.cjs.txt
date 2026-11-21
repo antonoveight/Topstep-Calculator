@@ -1,3 +1,4 @@
+// Historical test for removed auto-fibo feature. Not part of the current runner.
 // Executes fibo and drawing/layout function bodies from the actual Pine source.
 // Drawing APIs are mocks; this is not a TradingView renderer or market backtest.
 const assert=require('node:assert/strict'),fs=require('node:fs');

@@ -42,3 +42,9 @@ Web/checklist đã chuyển ở bước tiếp theo, xem [ghi nhận nghiệm th
 ## Tiếp nối 22/11/2026
 
 Người dùng tạm chấp nhận Replay baseline để tiếp tục, không phải kết quả kiểm tra chart độc lập của agent. Đã bổ sung [fibo CRT tham chiếu tự động](CRT-FIBO-AUTO.md), nâng bộ kiểm tra hiện hành lên 12 nhóm. Detector, key, bias, điều kiện entry và alert giữ nguyên; phần fibo mới cần quan sát hình thực tế riêng.
+
+## Gỡ fibo và nghiên cứu Early C2 — 22/11/2026
+
+Theo yêu cầu mới, đã gỡ input/helper/line fibo và trả renderer về bản trước fibo; giữ các mức RH/RL/EQ/INV/CP/ERL/IRL/key. Không đổi engine/bias/entry C3. Bộ kiểm tra hiện hành có 12 nhóm, gồm test loại bỏ fibo. Quy ước fibo thủ công được giữ. [Early C2](EARLY-C2-RESEARCH.md) có 35 tình huống, 70 lượt đối xứng và 354 kiểm tra prefix; chỉ là giao thức nghiên cứu, chưa được import vào runtime.
+
+Source sau gỡ fibo được biên dịch lại bằng đúng mã cuối trong phiên Pine Editor tạm: `exactSource=true`, `success=true`, `errors=null`, không có warning. Các số ca Early ở trên là kiểm tra giao thức tổng hợp, không phải kết quả Pine hoặc thị trường.

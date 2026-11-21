@@ -1,6 +1,6 @@
 # TFA v6 — CRT V1
 
-Từ 21/11/2026, nguồn chính `indicators/funded-angler-v6.pine` chỉ nhận diện CRT. `chibao.txt` là bản đồng bộ để dán vào Pine Editor. [Đặc tả CRT V1](CRT-V1-SPEC.md) và [26 setting](INDICATOR-SETTINGS.md) thay thế các mô tả detector EGF/ISB trước đây.
+Từ 21/11/2026, nguồn chính `indicators/funded-angler-v6.pine` chỉ nhận diện CRT. `chibao.txt` là bản đồng bộ để dán vào Pine Editor. [Đặc tả CRT V1](CRT-V1-SPEC.md) và [25 setting](INDICATOR-SETTINGS.md) thay thế các mô tả detector EGF/ISB trước đây.
 
 ## Workflow hiện tại
 
@@ -14,7 +14,7 @@ IRL/ERL, FVG, OB và swing vẫn phục vụ vị trí và bối cảnh. CRT ng�
 - Snapshot 61 field, offset riêng từng field; tổng field trong các request là 74/127. Nến live chỉ phục vụ hình ảnh, không vào detector HTF confirmed.
 - Cặp nguồn C1–C2, FOLLOW từ C3 và LAST tùy chọn được vẽ riêng. FVG/OB entry LTF chỉ tính nội bộ.
 - Giữ gate closed-bar, bias, CT, thời gian, target/SL, chống trùng và pivot rearm. Không có điểm xác suất hoặc ranking EGF/ISB.
-- Fibo CRT tự động là lớp vẽ tham chiếu theo râu C1/C2 đã đóng; không có ET fill tự động, Early C2, partial, tự dời BE hay trailing. Xem [fibo CRT](CRT-FIBO-AUTO.md).
+- Đã gỡ fibo tự động; không có ET fill tự động, Early C2, partial, tự dời BE hay trailing. [Quy ước fibo](FIBO-CONVENTION.md) vẫn dùng thủ công. [Early C2](EARLY-C2-RESEARCH.md) mới có đặc tả/ca nghiên cứu, không chạy trong indicator.
 
 ## Bản lưu và kiểm tra
 

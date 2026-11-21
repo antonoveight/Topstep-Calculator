@@ -42,4 +42,4 @@ Các ô +1R/+2R/Full TP trên web chỉ ghi nhận thủ công và điều khi�
 
 `node tests/htf-framework.cjs` kiểm tra migration và workflow trình duyệt. `node tests/liquidity-guide.cjs` kiểm tra hướng dẫn và prompt Gemini qua mock; không gửi ảnh thật. [Báo cáo web](CRT-WEB-VALIDATION.md) tách khỏi [kiểm tra Pine](CRT-V1-VALIDATION.md).
 
-Pine đã biên dịch; người dùng tạm chấp nhận Replay baseline ngày 22/11/2026 để tiếp tục. Agent chưa thực hiện Replay độc lập vì phiên tạm yêu cầu đăng nhập để thêm script. Không coi kiểm tra browser web là kiểm chứng thị trường. Từ 22/11/2026 có [fibo CRT tham chiếu tự động](CRT-FIBO-AUTO.md); Early C2, Model 1/KOD/SMT vẫn chưa triển khai.
+Pine đã biên dịch; người dùng tạm chấp nhận Replay baseline ngày 22/11/2026 để tiếp tục. Agent chưa thực hiện Replay độc lập vì phiên tạm yêu cầu đăng nhập để thêm script. Không coi kiểm tra browser web là kiểm chứng thị trường. Fibo tự động đã gỡ theo yêu cầu 22/11/2026; [Early C2](EARLY-C2-RESEARCH.md) đang ở bước đặc tả/ca nghiên cứu, chưa có tín hiệu Early. Model 1/KOD/SMT vẫn chưa triển khai.

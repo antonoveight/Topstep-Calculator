@@ -1,0 +1,12 @@
+{
+  "date":"2026-11-22",
+  "scope":"Primary-source cross-check and a personal research protocol. No complete transcript review or validated Romeo Early C2 formula.",
+  "sources":[
+    {"url":"https://t.me/s/officialRomeotpt?before=6292","access":"Public indexed primary post text retrieved","supports":"Distinguishes journey to a key from reaction away from the key","doesNotEstablish":"Specific C1/C2 key timestamps, entry conditions or an Early C2 mechanical model"},
+    {"url":"https://t.me/s/officialRomeotpt/6615","access":"Public indexed primary post text retrieved","supports":"Bearish candle-open, old-CRTH visit and subsequent drop example","doesNotEstablish":"That every such example is C2 of the user's three-candle CRT or a guaranteed reversal"},
+    {"url":"https://www.youtube.com/watch?v=U-gNCwbGtTI","access":"Public watch-page metadata/description; previous local metadata; full transcript unavailable","supports":"Official Romeotpt Turtle Soup video identity and topic","doesNotEstablish":"Full Early C2 formula from the video description"},
+    {"url":"https://www.youtube.com/watch?v=h7NCST2wPw8","access":"Public metadata/description and previously captured selected frame at approximately 15:01","supports":"Official Candle 3 lesson identity and displayed HTF range example","doesNotEstablish":"Intrabar timing or the full trading rules from one frame"},
+    {"url":"https://www.youtube.com/watch?v=L87Iy51_ATM&t=481s","access":"Previously captured official player frame re-inspected at approximately 08:01","supports":"Two marked TS events at distinct levels in the displayed diagram","doesNotEstablish":"A universal equivalence between LTF TS and HTF C2 confirmation"}
+  ],
+  "personalRulesNotAttributedToRomeo":["Prior-key knownAt <= C1 open for all Early candidates","One tick minimum raid","Separate closed LTF reclaim and C/M bars","Later Pullback required","LTF close through far key edge blocks Early for the current C2","New pre-entry extreme resets proof","Freeze manually observed entry risk","Never backfill Early entry from final C2 extrema"]
+}

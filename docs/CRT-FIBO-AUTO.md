@@ -1,4 +1,6 @@
-# Fibo CRT tự động — 22/11/2026
+# Bản lưu: fibo CRT tự động — đã gỡ 22/11/2026
+
+> Tính năng đã gỡ theo yêu cầu người dùng. Chỉ báo hiện không có input/helper/line fibo tự động; dùng [quy ước thủ công](FIBO-CONVENTION.md). Nội dung dưới mô tả phiên bản đã bỏ, không dùng để setting bản hiện tại.
 
 Người dùng tạm chấp nhận Replay của baseline CRT V1 để tiếp tục bước fibo. Đây là xác nhận của người dùng, không phải kết quả Replay độc lập do agent thực hiện. Bản bổ sung fibo được kiểm tra toán học, hàm vẽ giả lập và biên dịch riêng; vẫn cần quan sát hình thực tế khi dùng.
 
@@ -43,7 +45,7 @@ Tắt fibo sẽ xóa các nhãn/mức phụ, trả SL/TP về tên INV/CP khi Mo
 
 ## Kiểm tra
 
-`node tests/indicator-fibo.cjs` thực thi thân hàm Pine thực tế: bộ neo râu, 7 tỷ lệ, 1.000 trường hợp đối xứng, loại dữ liệu thiếu/sai/double sweep/target đã bị lấy, gộp mức cùng giá, giữ nguồn/tooltip, 17 slot vẽ, khoảng cách chữ và dọn hình khi tắt. Drawing API được giả lập, không đại diện pixel thật của TradingView.
+Bộ kiểm tra lúc tính năng còn tồn tại (`tests/indicator-fibo.cjs`, nay lưu dạng văn bản tại `tests/archive/indicator-fibo-source-2026-11-22.cjs.txt`) đã thực thi thân hàm Pine thực tế: bộ neo râu, 7 tỷ lệ, 1.000 trường hợp đối xứng, loại dữ liệu thiếu/sai/double sweep/target đã bị lấy, gộp mức cùng giá, giữ nguồn/tooltip, 17 slot vẽ, khoảng cách chữ và dọn hình khi tắt. Drawing API được giả lập, không đại diện pixel thật của TradingView.
 
 `node tools/check-crt.cjs` chạy 12 nhóm, gồm hồi quy detector/key/bias/entry trước đây. Source được đồng bộ sang `chibao.txt` và biên dịch Pine riêng. Không dùng kết quả này để khẳng định hiệu suất thị trường hoặc xác nhận giá đã hồi ET.
 

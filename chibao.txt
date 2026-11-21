@@ -12,7 +12,6 @@ const string G_BIAS = "2. Bias"
 const string G_ENTRY = "3. LTF"
 const string G_TIME = "4. Time"
 const string G_VIEW = "5. Display"
-const int LEVEL_SLOTS = 17
 // Day-trading workflow baseline: verified by tests/day-trading-settings.cjs.
 // Compatibility fixtures, NOT an XAUUSD profit/drawdown optimization.
 const string DEFAULT_ENTRY_MODE = "Auto"
@@ -57,7 +56,6 @@ showArchive = input.bool(false, "Last ended model cluster", group=G_VIEW, toolti
 clusterOffset = input.int(30, "Cluster offset (bars)", minval=3, maxval=80, group=G_VIEW, tooltip="Khoảng cách từ bar chart cuối đến cụm HTF, theo số bar chart. Mặc định 30 bar để cách xa cột chú thích.")
 clusterWidth = input.int(4, "Cluster body width (bars)", minval=2, maxval=16, group=G_VIEW, tooltip="Độ rộng thân nến HTF, mặc định 4 bar. Số lẻ được làm tròn xuống số chẵn để râu luôn đúng tâm thân. Không ảnh hưởng OHLC; râu đồng bộ line mảnh 1 px.")
 showLevels = input.bool(true, "Model range / ERL / CP", group=G_VIEW, tooltip="Các mức nối từ nến tạo cực trị/swing tương ứng, không từ nến tín hiệu. EQ 50% dùng neo tổng quan. Nếu nguồn không có trong dữ liệu chart hoặc chưa có ERL hợp lệ thì không ghim giả. Tắt chỉ ẩn line, không đổi tín hiệu.")
-showFibo = input.bool(true, "CRT fibo (SL / ET / TP)", group=G_VIEW, tooltip="Vẽ 0 SL, 0.1 ET2, 0.2 ET1, 0.4 break, 0.6 BE, 0.8 TL, 1 TP từ râu C1/C2 đã đóng của CRT đang hiển thị. Neo cố định theo từng model, không theo nến live. ET chỉ tham chiếu; không lọc tam giác theo ET, không tự vào lệnh/dời SL/BE/trailing. Tắt Model range vẫn có thể giữ fibo riêng.")
 showIrl = input.bool(true, "HTF internal references", group=G_VIEW, tooltip="FVG, OB và swing nội bộ C1 được hiển thị khi có nguồn HTF hợp lệ. FVG neo nến đầu bộ ba, chỉ biết sau close nến thứ ba. OB neo nến nguồn nhưng chỉ xuất hiện sau xác nhận cấu trúc. Đây là tham chiếu, không tự tạo entry hay đổi hướng CRT.")
 showSecondary = false
 showPanel = input.bool(true, "Compact panel", group=G_VIEW, tooltip="Bảng tổng quan cố định góc trên phải. TF=khung, #1=model ưu tiên, B=bias, REF=loại vùng/mức đang theo dõi, T=thời gian, S=trạng thái.")
@@ -1066,7 +1064,7 @@ int drawAnchorIndex = onHtf ? modelAnchorIndex : lastVisualKey == modelKey and n
 int drawAnchorTime = onHtf ? modelAnchorTime : lastVisualKey == modelKey and not na(lastVisualTime) ? lastVisualTime : modelObservedTime
 int drawSpan = int(math.ceil(drawHtfBars * htfSeconds / chartSeconds))
 int labelLaneBars = chartTextSize == "Huge" ? 48 : chartTextSize == "Large" ? 36 : chartTextSize == "Small" ? 18 : 26
-int clusterStartIndex = bar_index + (showLevels or showFibo or showConfirm or showIrl ? math.max(clusterOffset, labelLaneBars + 12) : clusterOffset)
+int clusterStartIndex = bar_index + (showLevels or showConfirm or showIrl ? math.max(clusterOffset, labelLaneBars + 12) : clusterOffset)
 int drawingClipIndex = showCluster ? clusterStartIndex - labelLaneBars - 2 : bar_index + 498
 int drawEndIndex = not na(drawAnchorIndex) ? math.min(drawAnchorIndex + drawSpan, drawingClipIndex) : na
 bool recentModel = not na(sId) and not na(sModelAge) and sModelAge <= drawHtfBars
@@ -1078,11 +1076,10 @@ bool clusterActive = not na(sId)
 
 var array<line> levelLines = array.new<line>()
 var array<label> levelLabels = array.new<label>()
-var array<float> renderedPrices = array.new<float>(LEVEL_SLOTS, na)
-var array<int> renderedPriorities = array.new<int>(LEVEL_SLOTS, 0)
-var array<int> renderedAnchors = array.new<int>(LEVEL_SLOTS, na)
-var array<int> renderedEnds = array.new<int>(LEVEL_SLOTS, na)
-var array<string> renderedDetails = array.new<string>(LEVEL_SLOTS, "")
+var array<float> renderedPrices = array.new<float>(16, na)
+var array<int> renderedPriorities = array.new<int>(16, 0)
+var array<int> renderedAnchors = array.new<int>(16, na)
+var array<int> renderedEnds = array.new<int>(16, na)
 var array<line> labelLeaders = array.new<line>()
 var array<label> eventLabels = array.new<label>()
 var array<int> eventBuckets = array.new<int>()
@@ -1096,7 +1093,7 @@ var table panel = table.new(position.top_right, 2, 9, bgcolor=color.new(#111820,
 if barstate.isfirst
     for i = 0 to 1
         array.push(htfIrlAreas, box.new(time, high, time, low, xloc=xloc.bar_time, force_overlay=true, bgcolor=color.new(color.gray, 100), border_color=color.new(color.gray, 100)))
-    for i = 0 to LEVEL_SLOTS - 1
+    for i = 0 to 15
         array.push(levelLines, line.new(time, high, time, high, xloc=xloc.bar_time, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
         array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_left, textalign=text.align_left, size=chartFont, color=color.new(chart.bg_color, 100)))
         array.push(labelLeaders, line.new(bar_index, high, bar_index, high, force_overlay=true, style=line.style_dotted, color=color.new(color.gray, 100)))
@@ -1154,19 +1151,6 @@ f_archiveCandles(ModelArchive ended, array<ClusterCandle> candles) =>
 
 f_tag(int flags, int kind, int phase) =>
     "CRT/TS"
-// Confirmed source wicks only. No live bar, fill assumptions or execution rules.
-f_crtFibo(int direction, float c1High, float c1Low, float c2High, float c2Low, float c2Close) =>
-    bool dataReady = not na(c1High) and not na(c1Low) and not na(c2High) and not na(c2Low) and not na(c2Close) and c1High > c1Low and c2High >= c2Low
-    bool inside = dataReady and c2Close > c1Low and c2Close < c1High and c2Close >= c2Low and c2Close <= c2High
-    bool path = inside and (direction == 1 ? c2Low < c1Low and c2High < c1High : direction == -1 ? c2High > c1High and c2Low > c1Low : false)
-    float stopPrice = path ? (direction == 1 ? c2Low : c2High) : na
-    float targetPrice = path ? (direction == 1 ? c1High : c1Low) : na
-    [stopPrice, stopPrice + 0.1 * (targetPrice - stopPrice), stopPrice + 0.2 * (targetPrice - stopPrice), stopPrice + 0.4 * (targetPrice - stopPrice), stopPrice + 0.6 * (targetPrice - stopPrice), stopPrice + 0.8 * (targetPrice - stopPrice), targetPrice]
-
-// Merge only equal prices with overlapping lifetimes; distinct nearby prices stay distinct.
-f_sharedLevel(float price, float priorPrice, int anchor, int priorAnchor, int endpoint, int priorEndpoint, float tickSize) =>
-    not na(priorPrice) and math.abs(price - priorPrice) <= tickSize * 0.000001 and anchor <= priorEndpoint and priorAnchor <= endpoint
-
 f_levelPriority(int slot) =>
     slot == 12 ? 5 : slot == 3 ? 4 : slot == 11 ? 3 : slot == 4 ? 2 : 1
 f_extremeTime(int sourceTime, float price) =>
@@ -1191,7 +1175,7 @@ f_indexTime(int index) =>
         else if bar_index - index <= 4999
             found := time[bar_index - index]
     found
-f_level(int slot, float price, string caption, color shade, bool visible, int sourceTime = na, bool exactTime = false, bool currentProjection = false, string detail = "") =>
+f_level(int slot, float price, string caption, color shade, bool visible, int sourceTime = na, bool exactTime = false, bool currentProjection = false) =>
     line ln = array.get(levelLines, slot)
     label lb = array.get(levelLabels, slot)
     int anchor = na(sourceTime) ? drawAnchorTime : exactTime ? sourceTime : f_extremeTime(sourceTime, price)
@@ -1202,7 +1186,7 @@ f_level(int slot, float price, string caption, color shade, bool visible, int so
     if ok and slot > 0
         for prior = 0 to slot - 1
             float priorPrice = array.get(renderedPrices, prior)
-            if f_sharedLevel(price, priorPrice, anchor, array.get(renderedAnchors, prior), endTime, f_indexTime(array.get(renderedEnds, prior)), syminfo.mintick)
+            if not na(priorPrice) and math.abs(price - priorPrice) < syminfo.mintick * 0.5 and array.get(renderedAnchors, prior) == anchor
                 owner := prior
                 break
     bool standalone = ok and owner == slot
@@ -1211,28 +1195,18 @@ f_level(int slot, float price, string caption, color shade, bool visible, int so
         array.set(renderedAnchors, slot, anchor)
         array.set(renderedEnds, slot, endpoint)
         array.set(renderedPriorities, slot, f_levelPriority(slot))
-        array.set(renderedDetails, slot, detail)
         line.set_xy1(ln, anchor, price)
         line.set_xy2(ln, endTime, price)
         label.set_xy(lb, endpoint + 1, price)
     line.set_color(ln, standalone ? shade : color.new(shade, 100))
     label.set_text(lb, standalone ? caption : "")
     label.set_textcolor(lb, shade)
-    label.set_tooltip(lb, standalone ? caption + " · " + str.tostring(price, format.mintick) + (detail != "" ? "\n" + detail : "") : "")
+    label.set_tooltip(lb, standalone ? caption + " · " + str.tostring(price, format.mintick) : "")
     if ok and owner != slot
         label ownerLabel = array.get(levelLabels, owner)
         string combinedCaption = label.get_text(ownerLabel) + (caption != "" ? " / " + caption : "")
-        string priorDetail = array.get(renderedDetails, owner)
-        string combinedDetail = priorDetail + (detail != "" ? (priorDetail != "" ? "\n" : "") + detail : "")
-        int combinedAnchor = math.min(anchor, array.get(renderedAnchors, owner))
-        int combinedEnd = math.max(endpoint, array.get(renderedEnds, owner))
-        array.set(renderedDetails, owner, combinedDetail)
-        array.set(renderedAnchors, owner, combinedAnchor)
-        array.set(renderedEnds, owner, combinedEnd)
-        line.set_xy1(array.get(levelLines, owner), combinedAnchor, array.get(renderedPrices, owner))
-        line.set_xy2(array.get(levelLines, owner), f_indexTime(combinedEnd), array.get(renderedPrices, owner))
         label.set_text(ownerLabel, combinedCaption)
-        label.set_tooltip(ownerLabel, combinedCaption + " · " + str.tostring(price, format.mintick) + (combinedDetail != "" ? "\n" + combinedDetail : ""))
+        label.set_tooltip(ownerLabel, combinedCaption + " · " + str.tostring(price, format.mintick))
         if f_levelPriority(slot) > array.get(renderedPriorities, owner)
             array.set(renderedPriorities, owner, f_levelPriority(slot))
             line.set_color(array.get(levelLines, owner), shade)
@@ -1246,14 +1220,14 @@ if time >= chart.left_visible_bar_time and time <= chart.right_visible_bar_time
 float fontSpacing = chartTextSize == "Huge" ? 2.0 : chartTextSize == "Large" ? 1.5 : chartTextSize == "Small" ? 0.85 : 1.0
 float visibleLabelGap = math.max(nz(viewHigh - viewLow, high - low) * 0.04 * fontSpacing, nz(ta.atr(14), high - low) * 0.5, syminfo.mintick * 12)
 f_layoutLabels() =>
-    array<bool> placed = array.new<bool>(LEVEL_SLOTS, false)
+    array<bool> placed = array.new<bool>(16, false)
     float previousY = na
-    for slot = 0 to LEVEL_SLOTS - 1
+    for slot = 0 to 15
         line.set_color(array.get(labelLeaders, slot), color.new(color.gray, 100))
-    for pass = 0 to LEVEL_SLOTS - 1
+    for pass = 0 to 15
         int next = na
         float nextPrice = na
-        for slot = 0 to LEVEL_SLOTS - 1
+        for slot = 0 to 15
             float candidate = array.get(renderedPrices, slot)
             if not array.get(placed, slot) and not na(candidate) and (na(nextPrice) or candidate < nextPrice)
                 next := slot
@@ -1338,24 +1312,13 @@ if barstate.islast
     array.fill(renderedPriorities, 0)
     array.fill(renderedAnchors, na)
     array.fill(renderedEnds, na)
-    array.fill(renderedDetails, "")
-    [fiboSl, fiboEt2, fiboEt1, fiboBreak, fiboBe, fiboTl, fiboTp] = f_crtFibo(sDir, sAH, sAL, sBH, sBL, sBC)
-    int fiboSlTime = f_extremeTime(sInvT, sInv)
-    int fiboTpTime = f_extremeTime(sCpT, sCp)
-    bool fiboVisible = showFibo and drawActive and hasModel and sKind == 1 and not na(fiboSl) and not na(fiboTp) and not na(fiboSlTime) and not na(fiboTpTime) and fiboSl == sInv and fiboTp == sCp and sConfirmed <= time_close
-    string fiboInfo = "CRT #" + str.tostring(sId) + " | Fixed C1/C2 wicks | C2 confirmed " + str.format_time(sConfirmed, "dd/MM HH:mm", NY) + " NY | Reference only; ET is not a fill, BE/TL do not move stops"
     f_level(0, sHi, "RH", primaryColor, showLevels and drawActive, sHiT)
     f_level(1, sLo, "RL", primaryColor, showLevels and drawActive, sLoT)
     f_level(2, (sHi + sLo) / 2, sEqTouched ? "EQ*" : "EQ", color.new(chart.fg_color, 35), showLevels and drawActive)
-    f_level(3, sInv, fiboVisible ? "SL" : "INV", fiboVisible ? color.red : color.new(color.red, 15), (showLevels and drawActive) or fiboVisible, fiboVisible ? fiboSlTime : sInvT, fiboVisible, false, fiboVisible ? "0 = SL | Model INV requires HTF close-through\n" + fiboInfo : "")
-    f_level(4, sCp, fiboVisible ? "TP" : "CP", fiboVisible ? chart.fg_color : color.aqua, (showLevels and drawActive) or fiboVisible, fiboVisible ? fiboTpTime : sCpT, fiboVisible, false, fiboVisible ? "1 = TP\n" + fiboInfo : "")
+    f_level(3, sInv, "INV", color.new(color.red, 15), showLevels and drawActive, sInvT)
+    f_level(4, sCp, "CP", color.aqua, showLevels and drawActive, sCpT)
     f_level(5, sErlU, "ERL+", color.new(color.orange, 35), showLevels and drawActive, sErlUT)
     f_level(6, sErlL, "ERL-", color.new(color.teal, 35), showLevels and drawActive, sErlLT)
-    // Intermediate fibo levels are known only after C2 closes, at the start of C3.
-    f_level(7, fiboEt2, "ET2", #2962ff, fiboVisible, sConfirmed, true, false, "0.1 = ET2\n" + fiboInfo)
-    f_level(8, fiboEt1, "ET1", #089981, fiboVisible, sConfirmed, true, false, "0.2 = ET1\n" + fiboInfo)
-    f_level(9, fiboBreak, "break", chart.fg_color, fiboVisible, sConfirmed, true, false, "0.4 = break\n" + fiboInfo)
-    f_level(10, fiboBe, "BE", chart.fg_color, fiboVisible, sConfirmed, true, false, "0.6 = BE (annotation only)\n" + fiboInfo)
     bool irlVisible = showIrl and hasModel and drawActive
     bool bullSelected = not na(sIrlT) and sDir == 1 and sIrlKind != 3
     bool bearSelected = not na(sIrlT) and sDir == -1 and sIrlKind != 3
@@ -1378,7 +1341,6 @@ if barstate.islast
         box.set_border_color(area, color.new(zoneColor, areaVisible ? 65 : 100))
     bool showCrtKey = showLevels and drawActive and sKind == 1 and not na(kCrtKey) and kCrtKey.kind > 0 and biasDir == -sDir
     f_level(15, showCrtKey ? (kCrtKey.hi + kCrtKey.lo) / 2 : na, showCrtKey ? "K/" + f_keyTag(kCrtKey) : "", color.purple, showCrtKey, showCrtKey ? nz(kCrtKey.leftTime, kCrtKey.born) : na, showCrtKey ? kCrtKey.kind != 3 or kCrtKey.tf != htf : true, true)
-    f_level(16, fiboTl, "TL", chart.fg_color, fiboVisible, sConfirmed, true, false, "0.8 = TL (annotation only)\n" + fiboInfo)
     bool hasIrl = not na(sIrlT)
     f_layoutLabels()
     if showPanel

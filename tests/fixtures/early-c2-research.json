@@ -1,0 +1,693 @@
+{
+  "scope": "Synthetic personal research protocol. No trading recommendations, Pine implementation or inferred fills.",
+  "timeUnit": "abstract minutes; bar timestamps are knowledge times, not a real market session",
+  "context": {
+    "direction": -1,
+    "bias": -1,
+    "allowCounter": true,
+    "tick": 0.25,
+    "c1": {
+      "openAt": 0,
+      "closeAt": 60,
+      "open": 104,
+      "high": 110,
+      "low": 100,
+      "close": 108
+    },
+    "c2": {
+      "openAt": 60,
+      "closeAt": 120
+    },
+    "key": {
+      "kind": "FVG",
+      "direction": -1,
+      "low": 110,
+      "high": 112,
+      "knownAt": -5,
+      "sourceAt": -20,
+      "timeframeMinutes": 60
+    },
+    "htfMinutes": 60,
+    "ltfMinutes": 5
+  },
+  "bars": [
+    {
+      "openAt": 60,
+      "at": 65,
+      "open": 108,
+      "high": 111,
+      "low": 107.5,
+      "close": 110.5,
+      "closed": true
+    },
+    {
+      "openAt": 65,
+      "at": 70,
+      "open": 110.5,
+      "high": 110.75,
+      "low": 108.75,
+      "close": 109,
+      "closed": true
+    },
+    {
+      "openAt": 70,
+      "at": 75,
+      "open": 109,
+      "high": 109.25,
+      "low": 107.75,
+      "close": 108,
+      "closed": true,
+      "shift": {
+        "kind": "MSS",
+        "level": 108.5,
+        "sourceAt": 50,
+        "knownAt": 55
+      }
+    },
+    {
+      "openAt": 75,
+      "at": 80,
+      "open": 108,
+      "high": 108.75,
+      "low": 107.5,
+      "close": 108,
+      "closed": true
+    },
+    {
+      "openAt": 115,
+      "at": 120,
+      "open": 108,
+      "high": 108.5,
+      "low": 106.75,
+      "close": 108,
+      "closed": true
+    }
+  ],
+  "cases": [
+    {
+      "id": "mss-pullback",
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "65": "WAIT_KEY_REACTION",
+          "70": "WAIT_CM",
+          "75": "WAIT_PULLBACK",
+          "80": "EARLY_READY"
+        }
+      }
+    },
+    {
+      "id": "cisd-alternative",
+      "edits": [
+        {
+          "at": 75,
+          "shift": {
+            "kind": "CISD",
+            "level": 108.5,
+            "sourceAt": 65,
+            "knownAt": 65
+          }
+        }
+      ],
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": "CONFIRMED"
+      }
+    },
+    {
+      "id": "ob-key",
+      "keyPatch": {
+        "kind": "OB"
+      },
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": "CONFIRMED"
+      }
+    },
+    {
+      "id": "swing-key",
+      "keyPatch": {
+        "kind": "swing",
+        "low": 110.5,
+        "high": 110.5
+      },
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": "CONFIRMED"
+      }
+    },
+    {
+      "id": "no-prior-key",
+      "keyPatch": null,
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "NO_PRIOR_KEY"
+        }
+      }
+    },
+    {
+      "id": "late-key-discovery",
+      "keyPatch": {
+        "sourceAt": -20,
+        "knownAt": 65
+      },
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "NO_PRIOR_KEY"
+        }
+      }
+    },
+    {
+      "id": "wrong-key-side",
+      "keyPatch": {
+        "direction": 1
+      },
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED"
+      }
+    },
+    {
+      "id": "unreached-key",
+      "keyPatch": {
+        "low": 113,
+        "high": 115
+      },
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "WAIT_KEY_REACTION"
+        }
+      }
+    },
+    {
+      "id": "neutral-bias",
+      "contextPatch": {
+        "bias": 0
+      },
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "BIAS"
+        }
+      }
+    },
+    {
+      "id": "counter-bias-enabled",
+      "contextPatch": {
+        "bias": 1
+      },
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": "CONFIRMED"
+      }
+    },
+    {
+      "id": "counter-bias-disabled",
+      "contextPatch": {
+        "bias": 1,
+        "allowCounter": false
+      },
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "BIAS"
+        }
+      }
+    },
+    {
+      "id": "touch-no-sweep",
+      "edits": [
+        {
+          "at": 65,
+          "high": 110,
+          "close": 109.5
+        },
+        {
+          "at": 70,
+          "open": 109.5,
+          "high": 109.75
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "REJECTED",
+        "statuses": {
+          "80": "WAIT_RAID"
+        }
+      }
+    },
+    {
+      "id": "insufficient-tick",
+      "edits": [
+        {
+          "at": 65,
+          "high": 110.1,
+          "close": 110
+        },
+        {
+          "at": 70,
+          "open": 110,
+          "high": 110
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "REJECTED"
+      }
+    },
+    {
+      "id": "unclosed-intrabar-not-evidence",
+      "edits": [
+        {
+          "at": 65,
+          "closed": false
+        },
+        {
+          "at": 70,
+          "open": 109,
+          "high": 109.75
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "REJECTED",
+        "statuses": {
+          "65": "WAIT_CLOSE"
+        }
+      }
+    },
+    {
+      "id": "late-pivot-knowledge",
+      "edits": [
+        {
+          "at": 75,
+          "shift": {
+            "kind": "MSS",
+            "level": 108.5,
+            "sourceAt": 50,
+            "knownAt": 76
+          }
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "WAIT_CM"
+        }
+      }
+    },
+    {
+      "id": "missing-cm",
+      "edits": [
+        {
+          "at": 75,
+          "shift": null
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED"
+      }
+    },
+    {
+      "id": "no-confirmation-close-cross",
+      "edits": [
+        {
+          "at": 75,
+          "close": 108.75
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED"
+      }
+    },
+    {
+      "id": "no-pullback-fast-move",
+      "edits": [
+        {
+          "at": 80,
+          "open": 108,
+          "high": 108.1,
+          "low": 106,
+          "close": 107
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "WAIT_PULLBACK"
+        }
+      }
+    },
+    {
+      "id": "retest-closes-wrong-side",
+      "edits": [
+        {
+          "at": 80,
+          "high": 109,
+          "close": 108.75
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED"
+      }
+    },
+    {
+      "id": "target-before-entry",
+      "edits": [
+        {
+          "at": 80,
+          "low": 100,
+          "close": 105
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "AMBIGUOUS",
+        "statuses": {
+          "80": "TARGET_TAKEN"
+        }
+      }
+    },
+    {
+      "id": "double-sweep",
+      "edits": [
+        {
+          "at": 80,
+          "low": 99.5,
+          "close": 105
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "AMBIGUOUS",
+        "statuses": {
+          "80": "DOUBLE_SWEEP"
+        }
+      }
+    },
+    {
+      "id": "extreme-extension-resets-proof",
+      "edits": [
+        {
+          "at": 80,
+          "high": 111.5
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "WAIT_CM"
+        }
+      }
+    },
+    {
+      "id": "key-close-through",
+      "edits": [
+        {
+          "at": 65,
+          "high": 113,
+          "close": 112.5
+        },
+        {
+          "at": 70,
+          "open": 112.5,
+          "high": 112.75
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "KEY_X"
+        }
+      }
+    },
+    {
+      "id": "early-ready-then-c2-outside",
+      "edits": [
+        {
+          "at": 120,
+          "high": 111,
+          "close": 110.75
+        }
+      ],
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": "REJECTED"
+      }
+    },
+    {
+      "id": "early-ready-then-c2-boundary",
+      "edits": [
+        {
+          "at": 120,
+          "high": 110.25,
+          "close": 110
+        }
+      ],
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": "REJECTED"
+      }
+    },
+    {
+      "id": "pullback-only-at-c2-close",
+      "edits": [
+        {
+          "at": 80,
+          "high": 108.1,
+          "low": 106,
+          "close": 107
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "120": "C2_CONFIRMED"
+        }
+      }
+    },
+    {
+      "id": "no-early-after-c2",
+      "omitAt": [
+        80,
+        120
+      ],
+      "addBars": [
+        {
+          "openAt": 120,
+          "at": 125,
+          "open": 108,
+          "high": 108.75,
+          "low": 107.5,
+          "close": 108,
+          "closed": true
+        }
+      ],
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "EXPIRED",
+        "statuses": {
+          "125": "C2_ENDED"
+        }
+      }
+    },
+    {
+      "id": "manual-entry-freezes-risk",
+      "edits": [
+        {
+          "at": 80,
+          "manualEntry": {
+            "at": 80,
+            "price": 108,
+            "sl": 111,
+            "tp": 100
+          }
+        }
+      ],
+      "addBars": [
+        {
+          "openAt": 80,
+          "at": 85,
+          "open": 108,
+          "high": 111.5,
+          "low": 107.5,
+          "close": 108,
+          "closed": true
+        }
+      ],
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": "CONFIRMED",
+        "frozenSl": 111,
+        "barrier": "SL_REFERENCE_TOUCHED"
+      }
+    },
+    {
+      "id": "ready-before-htf-confirmed",
+      "omitAt": [
+        120
+      ],
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": null,
+        "statuses": {
+          "80": "EARLY_READY"
+        }
+      }
+    },
+    {
+      "id": "ready-then-cm-revoked",
+      "addBars": [
+        {
+          "openAt": 80,
+          "at": 85,
+          "open": 108,
+          "high": 109.25,
+          "low": 107.75,
+          "close": 109,
+          "closed": true
+        }
+      ],
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "85": "CM_REVOKED"
+        },
+        "notReadyAt": [
+          85
+        ]
+      }
+    },
+    {
+      "id": "ready-then-bias-paused",
+      "addBars": [
+        {
+          "openAt": 80,
+          "at": 85,
+          "open": 108,
+          "high": 108.75,
+          "low": 107.75,
+          "close": 108,
+          "closed": true,
+          "bias": 0
+        }
+      ],
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "85": "BIAS"
+        },
+        "notReadyAt": [
+          85
+        ]
+      }
+    },
+    {
+      "id": "ready-then-loses-reclaim",
+      "addBars": [
+        {
+          "openAt": 80,
+          "at": 85,
+          "open": 108,
+          "high": 110.75,
+          "low": 107.75,
+          "close": 110.5,
+          "closed": true
+        }
+      ],
+      "expected": {
+        "readyAt": [
+          80
+        ],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "85": "WAIT_KEY_REACTION"
+        },
+        "notReadyAt": [
+          85
+        ]
+      }
+    },
+    {
+      "id": "impossible-key-source-time",
+      "keyPatch": {
+        "sourceAt": 20,
+        "knownAt": -5
+      },
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "NO_PRIOR_KEY"
+        }
+      }
+    },
+    {
+      "id": "unknown-key-time",
+      "keyPatch": {
+        "knownAt": null
+      },
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "NO_PRIOR_KEY"
+        }
+      }
+    },
+    {
+      "id": "ltf-key-cannot-stand-in-for-htf",
+      "keyPatch": {
+        "timeframeMinutes": 5
+      },
+      "expected": {
+        "readyAt": [],
+        "closeStatus": "CONFIRMED",
+        "statuses": {
+          "80": "NO_PRIOR_KEY"
+        }
+      }
+    }
+  ]
+}

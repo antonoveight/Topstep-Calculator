@@ -1,6 +1,6 @@
 # Cài đặt CRT V1
 
-Áp dụng cho `indicators/funded-angler-v6.pine` và `chibao.txt` từ 21/11/2026. Có 26 input, phần lớn dành cho hiển thị. [Đặc tả logic](CRT-V1-SPEC.md) được ưu tiên; [hướng dẫn multi-model cũ](archive/INDICATOR-SETTINGS-multimodel-2026-11-21.md) chỉ để đối chiếu.
+Áp dụng cho `indicators/funded-angler-v6.pine` và `chibao.txt` từ 21/11/2026. Có 25 input, phần lớn dành cho hiển thị. [Đặc tả logic](CRT-V1-SPEC.md) được ưu tiên; [hướng dẫn multi-model cũ](archive/INDICATOR-SETTINGS-multimodel-2026-11-21.md) chỉ để đối chiếu.
 
 ## Bắt đầu với cấu hình mặc định
 
@@ -8,7 +8,7 @@ Chart M5 tiêu chuẩn → HTF H1 → Bias TF D1 → Bias Auto → LTF Auto → 
 
 Chỉ cần chọn HTF/Bias theo phân tích thực tế. Không nới điều kiện vì ít tam giác: trước tiên xem WHY để biết đang thiếu xác nhận, retest, key ngược bias hay đã hết C3. Một sóng đẹp không hồi có thể không có dấu ở Pullback.
 
-## Ý nghĩa 26 input
+## Ý nghĩa 25 input
 
 | Input | Mặc định và cách dùng |
 | --- | --- |
@@ -29,7 +29,6 @@ Chỉ cần chọn HTF/Bias theo phân tích thực tế. Không nới điều k
 | Cluster offset | 30 bar chart; tăng nếu cần thêm khoảng trống bên phải. |
 | Cluster body width | 4 bar; số lẻ làm tròn xuống chẵn, râu đồng tâm 1 px. |
 | Model range / ERL / CP | Bật RH/RL, EQ, INV, CP và ERL có nguồn. EQ* là EQ đã chạm, không phải full TP. |
-| CRT fibo (SL / ET / TP) | Bật; 7 mức theo râu C1/C2 đã đóng, chỉ tham chiếu. Có thể giữ fibo khi tắt Model range. Không đổi tam giác hoặc tự dời SL. |
 | HTF internal references | Bật FVG/OB/swing trong range. Đây là tham chiếu phân tích; không phải kênh tín hiệu khác. |
 | Compact panel | Bật; HTF/LTF, hướng CRT, bias, reference, giờ, entry, số dấu và WHY. |
 | Signal display | History giữ quá khứ; Latest chỉ giữ dấu mới nhất. Không đổi logic/alert. |
@@ -60,6 +59,6 @@ FVG HTF là gap giữa râu nến 1 và 3, neo từ nến 1 nhưng chỉ biết 
 
 Chart M1/M3/M5 nhỏ hơn và chia hết HTF mới phát entry. Khi chart > HTF đã chọn, chỉ báo dùng chart làm khung VIEW; Bias TF vẫn phải >= khung hiệu lực. Với H2/H4 cần đối chiếu giờ chia nến của feed Topstep và TradingView.
 
-Từ 22/11/2026 có [fibo CRT tự động](CRT-FIBO-AUTO.md) theo [quy ước](FIBO-CONVENTION.md). Bạn vẫn tự xác nhận phản ứng tại ET và entry thực tế; chỉ báo không kiểm tra ET fill, không có Early C2 và không tự quản lý lệnh.
+Fibo tự động đã gỡ ngày 22/11/2026 theo yêu cầu. Bạn đánh dấu fibo thủ công theo [quy ước](FIBO-CONVENTION.md). Chỉ báo không kiểm tra ET fill hoặc tự quản lý lệnh. [Early C2](EARLY-C2-RESEARCH.md) chỉ đang ở bước nghiên cứu, chưa có input/tín hiệu Early.
 
 Kiểm tra: `node tools/check-crt.cjs`. Phân biệt rõ ca tổng hợp, biên dịch Pine và Replay thị trường; kết quả của loại trước không thay thế loại sau.
