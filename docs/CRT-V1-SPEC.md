@@ -1,6 +1,6 @@
 # CRT V1 — đặc tả đang triển khai
 
-Ngày 21/11/2026. Áp dụng cho `indicators/funded-angler-v6.pine` và bản sao `chibao.txt`. Web/checklist hiện vẫn dùng cấu trúc cũ; chuyển đổi web là bước tiếp theo. Đối chiếu nguồn tại [nghiên cứu Romeotpt](CRT-ROMEOTPT-RESEARCH.md).
+Ngày 21/11/2026. Áp dụng cho `indicators/funded-angler-v6.pine` và bản sao `chibao.txt`. Web/checklist và AI Chart Lens đã đồng bộ CRT-only; các ô trên web là ghi nhận thủ công, không tự nhận feed hoặc tam giác Pine. Đối chiếu nguồn tại [nghiên cứu Romeotpt](CRT-ROMEOTPT-RESEARCH.md).
 
 Đây là quy ước CRT ba nến cá nhân để kiểm chứng. Không khẳng định bao quát mọi cách giao dịch CRT của Romeo hoặc bảo đảm xác suất thắng. Các ngưỡng pivot, số tick, độ mạnh displacement và timeout là lựa chọn thuật toán của dự án.
 

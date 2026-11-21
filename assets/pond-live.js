@@ -10,7 +10,7 @@ const PondLive=(()=>{
     }
     function reload(){try{store=validate(JSON.parse(localStorage.getItem(storageKey)||'{"active":{},"history":[]}'));invalid=false;lastEnded=null;}catch{invalid=true;}}
     function key(){const a=getActiveAccount();return JSON.stringify([a.id,a.stage]);}
-    function active(){const s=store.active[key()];return s&&Object.hasOwn(PondLogic.setups,s.setup)?s:null;}
+    function active(){const s=store.active[key()];return s&&s.framework===PondLogic.schema&&Object.hasOwn(PondLogic.setups,s.setup)?s:null;}
     function status(text){if($('pondStudioNotice'))$('pondStudioNotice').textContent=text;}
     function save(next){
         if(invalid){status('Dữ liệu buổi theo dõi bị hỏng; bản gốc được giữ nguyên.');return false;}
@@ -73,11 +73,11 @@ const PondLive=(()=>{
     function start(e){
         e.preventDefault();if(active()||!$('studioCommit').checked)return;
         const symbol=$('studioSymbol').value,setup=Number($('studioSetup').value),window=$('studioWindow').value;
-        if(!['MGC','MNQ','MES','MCLZ26','MCL'].includes(symbol)||![5,6,7].includes(setup)||!PondSchedule.windows.some(w=>w.id===window&&w.active))return;
+        if(!['MGC','MNQ','MES','MCLZ26','MCL'].includes(symbol)||setup!==5||!PondSchedule.windows.some(w=>w.id===window&&w.active))return;
         const next=structuredClone(store);
         const legacy=next.active[key()];
         if(legacy){next.history.push({...legacy,outcomes:results(legacy),endedAt:new Date().toISOString(),endReason:'Chuyển sang cấu trúc HTF; giữ nguyên dữ liệu cũ'});next.history=next.history.slice(-30);}
-        next.active[key()]={id:crypto.randomUUID(),accountKey:key(),symbol,setup,window,framework:'htf-v1',startedAt:new Date().toISOString(),rounds:[],changes:[],assessment:'unrated'};
+        next.active[key()]={id:crypto.randomUUID(),accountKey:key(),symbol,setup,window,framework:PondLogic.schema,startedAt:new Date().toISOString(),rounds:[],changes:[],assessment:'unrated'};
         if(!save(next))return;
         lastEnded=null;baseSwitch(setup);PondExecution.newRound();refresh();status('Buổi theo dõi đã bắt đầu. Studio không tự phát sóng hoặc đặt lệnh.');
     }
@@ -95,7 +95,7 @@ const PondLive=(()=>{
     }
     function askChange(setup=null){$('pondChangeReason').value='';$('pondChangeDialog').dataset.setup=setup||'';$('pondChangeDialog').showModal();}
     const baseSwitch=switchChecklistSetup;
-    window.switchChecklistSetup=function(setup){if(![5,6,7].includes(Number(setup)))return;if(!$('pondChangeDialog')||!checklistLoaded){baseSwitch(active()?.setup||Number(setup));return;}if(active()&&active().setup!==Number(setup)){askChange(Number(setup));return;}baseSwitch(Number(setup));};
+    window.switchChecklistSetup=function(setup){if(Number(setup)!==5)return;if(!$('pondChangeDialog')||!checklistLoaded){baseSwitch(active()?.setup||Number(setup));return;}if(active()&&active().setup!==Number(setup)){askChange(Number(setup));return;}baseSwitch(Number(setup));};
     function hint(){const w=PondSchedule.selected($('studioWindow').value),fits=w.setups.includes(Number($('studioSetup').value))&&w.symbols.includes($('studioSymbol').value);$('pondWindowHint').textContent=fits?'Khớp khung tham chiếu trong playbook.':'Lựa chọn khác khung tham chiếu trong playbook; kiểm tra lại trước khi xác nhận.';}
     function mount(){
         $('btnPondFullscreen').insertAdjacentHTML('afterend','<button type="button" id="btnPondStudio" class="pond-icon-button" title="Mở studio livestream" aria-label="Mở studio livestream"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M6 12h12"/><circle cx="12" cy="7" r="1.5"/></svg></button>');
@@ -109,7 +109,7 @@ const PondLive=(()=>{
           <dialog id="pondChangeDialog" class="ws-dialog"><form id="pondChangeForm"><h2>Ghi nhận thay đổi</h2><p class="ws-muted">Giữ lại lý do để đối chiếu với cam kết ban đầu.</p><label>Lý do<textarea id="pondChangeReason" required maxlength="300" rows="3" style="width:100%"></textarea></label><div class="ws-actions"><button class="b-btn-primary" type="submit">Ghi nhận thay đổi</button><button class="b-btn-secondary" type="button" id="cancelPondChange">Giữ nguyên</button></div></form></dialog>`);
         $('pondStudio').setAttribute('aria-label','Studio livestream hồ câu và chart');
         $('closePondStudio').title='Đóng studio, ngừng chia sẻ và giữ buổi để tiếp tục';
-        $('pondStudioSessionInfo').insertAdjacentHTML('afterend',`<label class="pond-studio-field">Đổi cấu trúc HTF (ghi lý do)<select id="studioChangeSetup">${Object.entries(PondLogic.setups).map(([v,s])=>`<option value="${v}">${esc(s.name)}</option>`).join('')}</select></label>`);
+        $('pondStudioSessionInfo').insertAdjacentHTML('afterend',`<label class="pond-studio-field" hidden>Cấu trúc HTF<select id="studioChangeSetup">${Object.entries(PondLogic.setups).map(([v,s])=>`<option value="${v}">${esc(s.name)}</option>`).join('')}</select></label>`);
         $('studioChangeSetup').onchange=e=>{const setup=Number(e.target.value);e.target.value=String(active()?.setup||activeChecklistSetup);switchChecklistSetup(setup);};
         $('btnPondStudio').onclick=open;$('closePondStudio').onclick=close;$('pondStudio').addEventListener('cancel',e=>{e.preventDefault();close();});
         $('capturePondChart').onclick=capture;$('stopPondCapture').onclick=stopCapture;

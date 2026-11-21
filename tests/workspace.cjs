@@ -39,9 +39,9 @@ assert.equal(rules.payout({...sample,xfaJournalEntries:[...sample.xfaJournalEntr
             await page.locator('#entryNote').fill('Chart <img src=x onerror=alert(1)>');
             await page.locator('#tradeForm [type=submit]').click();
         }
-        await entry(200,'4','yes');await entry(-100,'4','no');
+        await entry(200,'5','yes');await entry(-100,'5','no');
         await page.locator('#setupAnalytics summary').click();
-        assert.match(await page.locator('#statsResults').innerText(),/Break/);
+        assert.match(await page.locator('#statsResults').innerText(),/CRT/);
         assert.match(await page.locator('#statsResults').innerText(),/1.00R/);
         assert.match(await page.locator('#statsResults').innerText(),/50.0%/);
         assert.equal(await page.locator('#trackerTableBody img').count(),0);

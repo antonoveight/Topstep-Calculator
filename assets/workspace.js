@@ -32,7 +32,7 @@ function validateAccountMetadata(acc) {
     const $=id=>document.getElementById(id), esc=escapeHtml, money=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     let editing=null;
     const coreRender=renderTrackerTable, coreLoad=loadActiveAccountState, coreRisk=calculateTradeRisk, coreDelete=deleteEntry;
-    const setupOptions='<option value="">Chưa phân loại</option><optgroup label="Cấu trúc HTF"><option value="5">CRT · HTF</option><option value="6">Engulfing / Outside · HTF</option><option value="7">Inside Bar · HTF</option></optgroup><optgroup label="Lịch sử trước chuẩn hóa"><option value="1" disabled>CRT · FRVP (cũ)</option><option value="2" disabled>Trend (cũ)</option><option value="3" disabled>AMD (cũ)</option><option value="4" disabled>Break (cũ)</option></optgroup>';
+    const setupOptions='<option value="">Chưa phân loại</option><optgroup label="Phương pháp hiện tại"><option value="5">CRT · HTF</option></optgroup><optgroup label="Lịch sử · chỉ giữ khi sửa bản ghi cũ"><option value="6" disabled>Engulfing / Outside · HTF (cũ)</option><option value="7" disabled>Inside Bar · HTF (cũ)</option><option value="1" disabled>CRT · FRVP (cũ)</option><option value="2" disabled>Trend (cũ)</option><option value="3" disabled>AMD (cũ)</option><option value="4" disabled>Break (cũ)</option></optgroup>';
     function context() {const a=getActiveAccount();return a.id+'|'+a.stage;}
     function field(id,label,type='text',extra='') {return `<label>${label}<input id="${id}" type="${type}" ${extra}></label>`;}
     function dialog(title,content) {
@@ -90,6 +90,8 @@ function validateAccountMetadata(acc) {
         if(!isValidTradeDate(date)||!$('inputPnl').value.trim()||!Number.isFinite(pnl)){alert('Nhập ngày và PnL hợp lệ.');return;}
         if(editing&&(editing.context!==context()||JSON.stringify(entries[editing.index])!==editing.original)){alert('Bản ghi đã thay đổi. Hãy mở lại để sửa.');resetEditor();return;}
         const old=editing?entries[editing.index]:null,kind=$('entryKind').value;
+        const selectedSetup=$('entrySetup').value;
+        if(!['','5'].includes(selectedSetup)&&selectedSetup!==String(old?.setup||'')){alert('Lượt mới chỉ dùng CRT. Phân loại cũ chỉ được giữ khi sửa bản ghi lịch sử.');return;}
         const sameDay=entries.filter((e,i)=>e.date===date&&(!editing||i!==editing.index));
         if(sameDay.some(e=>(e.kind||'eod')!==kind)){alert('Không trộn tổng kết EOD với từng lệnh trong cùng ngày. Hãy sửa hoặc xóa tổng kết trước để tránh cộng trùng PnL.');return;}
         if(!editing&&sameDay.length&&kind==='eod'&&!confirm('Ngày này đã có tổng kết. Thêm bản ghi sẽ cộng thêm PnL. Bạn đã kiểm tra không trùng dữ liệu?'))return;

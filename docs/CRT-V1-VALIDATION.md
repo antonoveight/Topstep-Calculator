@@ -37,4 +37,4 @@ Trình kiểm tra Node không mô phỏng Pine realtime rollback, request.securi
 4. Đối chiếu wick OHLC của nguồn/FOLLOW với feed, zoom/di chuyển chart để kiểm tra line, caption và cột nhãn; kiểm tra gap phiên/cuối tuần.
 5. Ghi WHY/ID của tín hiệu thiếu/thừa. Chưa nới điều kiện hoặc tối ưu hiệu suất trước khi đối chiếu các ví dụ này.
 
-Web/checklist và fibo tự động chưa chuyển trong đợt này. Early C2, Model 1/KOD/SMT tiếp tục nằm ở nghiên cứu, không trộn vào Confirmed V1.
+Web/checklist đã chuyển ở bước tiếp theo, xem [ghi nhận nghiệm thu web](CRT-WEB-VALIDATION.md). Fibo tự động chưa triển khai. Early C2, Model 1/KOD/SMT tiếp tục nằm ở nghiên cứu, không trộn vào Confirmed V1.

@@ -1,6 +1,6 @@
 # Audit workflow và tần suất tín hiệu
 
-> Lưu ý 21/11/2026: phần mô tả nhiều model là lịch sử trước CRT V1. Chỉ báo hiện chỉ có CRT, entry trong C3; ưu tiên [đặc tả hiện hành](CRT-V1-SPEC.md) và [setting CRT V1](INDICATOR-SETTINGS.md). Web chưa chuyển đổi.
+> Lưu ý 21/11/2026: phần mô tả nhiều model là lịch sử trước CRT V1. Chỉ báo hiện chỉ có CRT, entry trong C3; ưu tiên [đặc tả hiện hành](CRT-V1-SPEC.md) và [setting CRT V1](INDICATOR-SETTINGS.md). Web hiện đã đồng bộ CRT-only; các mẫu cũ chỉ giữ trong lịch sử.
 
 Mục tiêu: loại các chỗ nghẽn làm bỏ sót xác nhận hợp lệ, không điều chỉnh thuật toán để đạt số dấu gấp ba bằng mọi giá. Chưa có thống kê dữ liệu thị trường chứng minh tỷ lệ tăng hoặc win rate.
 

@@ -23,8 +23,8 @@ const { chromium } = require('../.review-tools/node_modules/playwright');
         await page.evaluate(() => switchAppView('checklist'));
         const before = await page.evaluate(() => JSON.stringify(localStorage));
         assert.equal(await page.locator('#liquidityGuide').getAttribute('open'), null);
-        assert.equal(await page.locator('.setup-liquidity-guide').count(), 3);
-        for (const setup of [5,6,7]) {
+        assert.equal(await page.locator('.setup-liquidity-guide').count(), 1);
+        for (const setup of [5]) {
             await page.evaluate(setup => switchChecklistSetup(setup), setup);
             const guide = page.locator('#checklist-setup-' + setup + ' .setup-liquidity-guide');
             assert.equal(await guide.isVisible(), true);
@@ -50,7 +50,8 @@ const { chromium } = require('../.review-tools/node_modules/playwright');
         const prompt = request.contents.flatMap(c => c.parts).map(p => p.text || '').join('\n');
         assert.match(prompt, /IRL|ERL/);
         assert.match(prompt, /NO_TRADE/);
-        assert.match(prompt, /Outside Bar/);
+        assert.match(prompt, /CRT V1/);
+        assert.match(prompt, /C3/);
         assert.match(prompt, /Turtle Soup/);
         assert.match(await page.locator('#checklist-setup-5').innerText(), /TS/);
         assert.doesNotMatch(prompt, /VÀO LỆNH NGAY/);

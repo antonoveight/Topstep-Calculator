@@ -635,6 +635,7 @@ input:checked + .slider:before {
 <link rel="stylesheet" href="assets/pond-public.css?v=20261015-public">
 <link rel="stylesheet" href="assets/desk-ui.css?v=20261031-desk">
 <link rel="stylesheet" href="assets/market-quarterly.css?v=20261031-cycles">
+<link rel="stylesheet" href="assets/crt-workflow.css?v=20261121-crt-v1">
 </head>
 <body style="display: flex; min-height: 100vh;">
 
@@ -1245,7 +1246,7 @@ input:checked + .slider:before {
                     <div>
                         <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
                             <span>Checklist Thực Chiến</span>
-                            <span class="b-badge b-badge-blue" style="font-size: 9.5px;">3 cấu trúc HTF</span>
+                            <span class="b-badge b-badge-blue" style="font-size: 9.5px;">CRT V1</span>
                         </div>
                         <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
                             Kiểm tra 4 bước FRVP &amp; Trailing SL trước khi vào lệnh
@@ -1489,9 +1490,9 @@ input:checked + .slider:before {
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-inner); padding-bottom: 10px;">
                             <div>
                                 <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-                                    <span class="checklist-panel-title">HTF → KỊCH BẢN → ENTRY LTF</span>
+                                    <span class="checklist-panel-title">CRT · C1 / C2 / C3</span>
                                 </span>
-                                <span style="font-size: 11px; color: var(--text-muted); display: block;">Chọn cấu trúc chính trên HTF</span>
+                                <span style="font-size: 11px; color: var(--text-muted); display: block;">C2 confirmed · entry LTF trong C3</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 6px;">
                                 <span id="checklistProgressText" style="font-size: 10.5px; font-weight: 700; color: var(--color-primary); background: var(--color-primary-light); padding: 2px 8px; border-radius: 5px;">
@@ -1519,7 +1520,7 @@ input:checked + .slider:before {
                                     <strong style="color: var(--text-primary);">1. Cấu trúc D1 hôm qua:</strong><br>
                                     • Thân dài &gt;70% ➔ <em>Tiếp diễn</em><br>
                                     • Rút râu quét PDH/L ➔ <em>Đảo chiều</em><br>
-                                    • Inside bar ➔ <em>Cảnh giác sideway</em>
+                                    • C2 chưa đóng ➔ <em>Chưa xác nhận TS</em>
                                 </div>
                                 <div style="background: var(--bg-card); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-inner);">
                                     <strong style="color: var(--text-primary);">2. Nam châm hút giá (DOL):</strong><br>
@@ -1547,8 +1548,8 @@ input:checked + .slider:before {
                         </div>
 
 <div id="htfExecutionContext" class="b-card-inner" style="padding:10px;margin-bottom:12px;font-size:11.5px;">
-<strong>HTF xác lập kịch bản · LTF chỉ tìm entry</strong>
-<p style="color:var(--text-muted);margin:5px 0 9px;">Các mẫu có thể chồng lên nhau; chọn cấu trúc chính để ghi nhận. Trend/AMD/Break là bối cảnh hoặc hành vi, không còn là phương pháp riêng. Chọn khung và điều kiện trước khi tick xác nhận.</p>
+<strong>CRT · HTF xác nhận, LTF tìm entry trong C3</strong>
+<p style="color:var(--text-muted);margin:5px 0 9px;">Đánh dấu C1 và key, đợi C2 đóng xác nhận TS. C3 chờ xác nhận LTF rồi Pullback; không hồi thì bỏ qua. Các ô là ghi nhận thủ công từ chart.</p>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px;">
 <label style="display:flex;flex-direction:column;gap:4px;min-width:0;">Khung HTF<select id="executionHtf" onchange="onExecutionContextChange(this.id)" style="width:100%;min-width:0;background:var(--bg-card);color:var(--text-primary);padding:7px;border:1px solid var(--border-inner);border-radius:6px;">
 <option value="">Chọn HTF</option>
@@ -1567,127 +1568,57 @@ input:checked + .slider:before {
 </label>
 <label style="display:flex;flex-direction:column;gap:4px;min-width:0;">Điều kiện entry<select id="executionEntry" onchange="onExecutionContextChange(this.id)" style="width:100%;min-width:0;background:var(--bg-card);color:var(--text-primary);padding:7px;border:1px solid var(--border-inner);border-radius:6px;">
 <option value="">Chọn điều kiện</option>
-<option value="POC">POC</option>
-<option value="CISD">CISD / MSS</option>
-<option value="FVG">FVG</option>
-<option value="OB">OB</option>
-<option value="RETEST">Break & retest</option>
-<option value="LINE">Line: touch / break</option>
+
+<option value="CISD">CISD hoặc MSS → Pullback</option>
+<option value="FVG">C/M → FVG retest</option>
+<option value="OB">C/M → OB retest</option>
+
+
 </select>
 </label>
 </div>
 <label style="display:block;margin-top:8px;">Ghi chú điều kiện chờ<textarea id="executionNote" maxlength="600" rows="2" onchange="saveChecklistState()" placeholder="Range, mức chờ, touch/break/close/retest, mục tiêu và vô hiệu…" style="display:block;box-sizing:border-box;width:100%;margin-top:4px;background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-inner);border-radius:6px;padding:7px;">
 </textarea>
 </label>
-<small id="frameworkMigrationNotice" style="display:none;color:var(--text-muted);">Checklist cũ được giữ trong bản sao lưu; các cấu trúc HTF mới bắt đầu chưa xác nhận.</small>
+<details class="crt-fibo-reference"><summary>Fibo cá nhân · mức tham chiếu</summary><p>0 SL · 0.1 ET2 · 0.2 ET1 · 0.4 break · 0.6 BE · 0.8 TL · 1 TP</p><p>Sell: High C2 là SL, Low C1 là TP; Buy đối xứng. High/Low gồm râu. ET cần phản ứng; BE/TL không tự dời SL.</p><a href="docs/CRT-V1-SPEC.md" target="_blank" rel="noopener">Đọc quy trình CRT V1</a></details>
+<small id="frameworkMigrationNotice" style="display:none;color:var(--text-muted);">Checklist trước CRT V1 được giữ nguyên trong snapshot. Lượt mới bắt đầu chưa xác nhận; nhật ký và cá trong giỏ vẫn còn.</small>
 </div>
-<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:12px;">
-<button type="button" id="tab-setup-5" onclick="switchChecklistSetup(5)" class="b-btn-secondary" style="height:auto;min-height:38px;padding:7px 4px;font-size:11px;white-space:normal;" title="Cấu trúc HTF: CRT">CRT</button>
-<button type="button" id="tab-setup-6" onclick="switchChecklistSetup(6)" class="b-btn-secondary" style="height:auto;min-height:38px;padding:7px 4px;font-size:11px;white-space:normal;" title="Cấu trúc HTF: Engulfing / Outside">Engulfing / Outside</button>
-<button type="button" id="tab-setup-7" onclick="switchChecklistSetup(7)" class="b-btn-secondary" style="height:auto;min-height:38px;padding:7px 4px;font-size:11px;white-space:normal;" title="Cấu trúc HTF: Inside Bar">Inside Bar</button>
-</div>
+<div class="crt-workflow-heading"><strong id="tab-setup-5">CRT · Confirmed</strong><span>C1 → C2 / TS → C3</span></div>
 <div id="checklist-setup-5" class="checklist-step-group" style="display:flex;flex-direction:column;gap:8px;">
 <details class="setup-liquidity-guide b-card-inner" style="padding:8px 10px;font-size:11.5px;line-height:1.5;">
 <summary style="cursor:pointer;">CRT / TS trên HTF</summary>
-<p>CRT cần TS (Turtle Soup): C2 quét mức thanh khoản đã chọn rồi lấy lại mức, đóng trở lại trong range C1. Nến chưa đóng chỉ là ứng viên; đóng ngoài hoặc quét cả hai biên chưa cho TS một hướng rõ. Sau TS HTF mới tìm điều kiện entry LTF như CISD, MSS, POC hoặc FVG/OB.</p>
+<p>C1 và C2 gồm cả râu. C2 phải xuyên một biên C1 rồi đóng hẳn trở lại trong range; chạm, close ngoài hoặc quét hai biên không xác nhận CRT một hướng. Trong C3, đợi CISD hoặc MSS đã đóng rồi Pullback. Ngược bias cần key HTF đã biết trước C1.</p>
 </details>
 <label class="chk-step-card">
 <input type="checkbox" id="chk-s5-1" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
 <div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">1. Cấu trúc HTF đã xác nhận</div>
-<div style="font-size:11px;color:var(--text-muted);">Xác nhận TS tại mức HTF: C2 quét rồi reclaim, đóng trở lại C1; ghi mức bị quét và nến xác nhận.</div>
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">1. C1 và key HTF đã đánh dấu</div>
+<div style="font-size:11px;color:var(--text-muted);">C1 đã đóng: High/Low gồm râu, bias tham khảo và key có trước; chưa gọi C2 đang chạy là Confirmed.</div>
 </div>
 </label>
 <label class="chk-step-card">
 <input type="checkbox" id="chk-s5-2" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
 <div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">2. Kịch bản HTF đã rõ</div>
-<div style="font-size:11px;color:var(--text-muted);">Chọn mức bị quét, hướng kỳ vọng, một mục tiêu và điểm vô hiệu HTF.</div>
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">2. C2 đã đóng xác nhận TS</div>
+<div style="font-size:11px;color:var(--text-muted);">Sweep một biên rồi reclaim C1. SL ở cực trị C2, một Full TP ở biên đối diện C1; target chưa bị lấy.</div>
 </div>
 </label>
 <label class="chk-step-card">
 <input type="checkbox" id="chk-s5-3" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
 <div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">3. Điều kiện entry LTF đã xác nhận</div>
-<div style="font-size:11px;color:var(--text-muted);">Chỉ xét điều kiện đã chọn: POC, CISD/MSS, FVG/OB hoặc retest; cùng hướng kịch bản HTF. Không bắt buộc ghép tất cả điều kiện.</div>
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">3. C3 có xác nhận LTF đã đóng</div>
+<div style="font-size:11px;color:var(--text-muted);">CISD hoặc MSS theo hướng CRT; FVG/OB retest cần C/M trước đó. Hết C3 thì dừng tìm entry.</div>
 </div>
 </label>
 <label class="chk-step-card">
 <input type="checkbox" id="chk-s5-4" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
 <div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">4. Đã vào lệnh theo kế hoạch</div>
-<div style="font-size:11px;color:var(--text-muted);">Entry thực tế, SL theo điểm vô hiệu và một Full TP; kiểm tra R:R và khối lượng trước lệnh.</div>
+<div style="font-size:12px;font-weight:700;color:var(--text-primary);">4. Pullback và entry theo kế hoạch</div>
+<div style="font-size:11px;color:var(--text-muted);">Chờ nến sau xác nhận hồi lại mức/vùng và phản ứng; ET1/ET2 kiểm tra thủ công. Không hồi thì không đuổi.</div>
 </div>
 </label>
 </div>
-<div id="checklist-setup-6" class="checklist-step-group" style="display:none;flex-direction:column;gap:8px;">
-<details class="setup-liquidity-guide b-card-inner" style="padding:8px 10px;font-size:11.5px;line-height:1.5;">
-<summary style="cursor:pointer;">Cấu trúc Engulfing / Outside trên HTF</summary>
-<p>Phân biệt Engulfing bao trùm thân với Outside Bar bao trùm High–Low. Ghi rõ mẫu nào xuất hiện trên HTF. Không mặc định mẫu nến là đảo chiều, tạo FVG hoặc có cùng hướng với bias.</p>
-</details>
-<label class="chk-step-card">
-<input type="checkbox" id="chk-s6-1" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
-<div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">1. Cấu trúc HTF đã xác nhận</div>
-<div style="font-size:11px;color:var(--text-muted);">Phân loại Engulfing thân hoặc Outside High–Low trên nến HTF đã đóng.</div>
-</div>
-</label>
-<label class="chk-step-card">
-<input type="checkbox" id="chk-s6-2" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
-<div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">2. Kịch bản HTF đã rõ</div>
-<div style="font-size:11px;color:var(--text-muted);">Xét vị trí trong range, vùng phản ứng và thanh khoản; chọn hướng, mục tiêu, vô hiệu.</div>
-</div>
-</label>
-<label class="chk-step-card">
-<input type="checkbox" id="chk-s6-3" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
-<div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">3. Điều kiện entry LTF đã xác nhận</div>
-<div style="font-size:11px;color:var(--text-muted);">Chỉ xét điều kiện đã chọn: POC, CISD/MSS, FVG/OB hoặc retest; cùng hướng kịch bản HTF. Không bắt buộc ghép tất cả điều kiện.</div>
-</div>
-</label>
-<label class="chk-step-card">
-<input type="checkbox" id="chk-s6-4" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
-<div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">4. Đã vào lệnh theo kế hoạch</div>
-<div style="font-size:11px;color:var(--text-muted);">Entry thực tế, SL theo điểm vô hiệu và một Full TP; kiểm tra R:R và khối lượng trước lệnh.</div>
-</div>
-</label>
-</div>
-<div id="checklist-setup-7" class="checklist-step-group" style="display:none;flex-direction:column;gap:8px;">
-<details class="setup-liquidity-guide b-card-inner" style="padding:8px 10px;font-size:11.5px;line-height:1.5;">
-<summary style="cursor:pointer;">Cấu trúc Inside Bar trên HTF</summary>
-<p>Đánh dấu Mother High/Low và Inside High/Low trên HTF. Khi còn nén lồng nhau, giữ biên mẹ ban đầu. Chọn kịch bản sweep trở lại hoặc đóng phá biên; chưa có sự kiện thì tiếp tục chờ.</p>
-</details>
-<label class="chk-step-card">
-<input type="checkbox" id="chk-s7-1" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
-<div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">1. Cấu trúc HTF đã xác nhận</div>
-<div style="font-size:11px;color:var(--text-muted);">Xác định cặp Mother/Inside trên HTF đã đóng và giữ biên mẹ khi còn nén.</div>
-</div>
-</label>
-<label class="chk-step-card">
-<input type="checkbox" id="chk-s7-2" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
-<div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">2. Kịch bản HTF đã rõ</div>
-<div style="font-size:11px;color:var(--text-muted);">Chọn biên được theo dõi, điều kiện sweep/break, mục tiêu và điểm vô hiệu.</div>
-</div>
-</label>
-<label class="chk-step-card">
-<input type="checkbox" id="chk-s7-3" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
-<div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">3. Điều kiện entry LTF đã xác nhận</div>
-<div style="font-size:11px;color:var(--text-muted);">Chỉ xét điều kiện đã chọn: POC, CISD/MSS, FVG/OB hoặc retest; cùng hướng kịch bản HTF. Không bắt buộc ghép tất cả điều kiện.</div>
-</div>
-</label>
-<label class="chk-step-card">
-<input type="checkbox" id="chk-s7-4" onchange="onChecklistChange()" style="width:17px;height:17px;accent-color:var(--color-primary);flex-shrink:0;">
-<div style="min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--text-primary);">4. Đã vào lệnh theo kế hoạch</div>
-<div style="font-size:11px;color:var(--text-muted);">Entry thực tế, SL theo điểm vô hiệu và một Full TP; kiểm tra R:R và khối lượng trước lệnh.</div>
-</div>
-</label>
-</div>
+
                     </div>
 
                     <div id="pondRiskManagement" class="b-card" style="border-left: 4px solid var(--color-primary);">
@@ -1696,19 +1627,19 @@ input:checked + .slider:before {
                                 <span style="font-size: 13px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.03em; display: flex; align-items: center; gap: 6px;">
                                     <span>🛡️</span> Quản Trị Khi Lệnh Đang Chạy
                                 </span>
-                                <span style="font-size: 11px; color: var(--text-muted); display: block;">Quy tắc thực chiến Playbook 3.0 — Xóa bỏ bẫy dời BE</span>
+                                <span style="font-size: 11px; color: var(--text-muted); display: block;">Ghi nhận thủ công · không tự quản lý lệnh</span>
                             </div>
-                            <span class="b-badge b-badge-blue" style="font-size: 10px; font-weight: 700;">Playbook 3.0</span>
+                            <span class="b-badge b-badge-blue" style="font-size: 10px; font-weight: 700;">CRT V1</span>
                         </div>
 
-                        <p class="pond-management-note">Giữ SL theo điểm vô hiệu của setup; chỉ trailing khi có Swing M5 mới được xác nhận. Một Full TP; đóng tay ghi lý do.</p>
+                        <p class="pond-management-note">Một SL và một Full TP theo kế hoạch. +1R/+2R chỉ ghi nhận quan sát, không tự dời SL. SL hoặc đóng tay dùng nút kết quả tương ứng.</p>
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <label class="chk-risk-card">
                                 <input type="checkbox" id="chk-risk-1r" onchange="onChecklistChange()" style="width: 17px; height: 17px; accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0;">
                                 <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
                                     <span class="b-badge b-badge-blue" style="font-size: 10px; font-weight: 700; padding: 2px 7px; flex-shrink: 0;">BƯỚC 1</span>
                                     <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Không Gian Thở Tự Nhiên</div>
+                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">+1R · ghi nhận quan sát</div>
                                         <div style="font-size: 11px; color: var(--text-muted);">Giữ SL ban đầu theo điểm vô hiệu của setup; không tự dời theo số R</div>
                                     </div>
                                 </div>
@@ -1719,8 +1650,8 @@ input:checked + .slider:before {
                                 <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
                                     <span class="b-badge b-badge-green" style="font-size: 10px; font-weight: 700; padding: 2px 7px; flex-shrink: 0;">BƯỚC 2</span>
                                     <div style="min-width: 0;">
-                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Dời SL Theo Cấu Trúc Mới</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">Chỉ dời SL khi M5 tạo Higher Low / Lower High mới, không dời BE máy móc</div>
+                                        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">+2R · ghi nhận quan sát</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">Không tự dời BE/trailing hoặc chốt một phần; kết quả do bạn xác nhận trên chart</div>
                                     </div>
                                 </div>
                             </label>
@@ -1746,10 +1677,10 @@ input:checked + .slider:before {
                         <div style="margin-top: 10px; color: var(--text-slate);">
                             <p><strong>Cấu trúc HTF → Kịch bản HTF → Entry LTF.</strong> Giữ mục tiêu và vô hiệu của kịch bản HTF; LTF giúp chọn điểm vào và SL thực thi.</p>
                             <p>ERL nằm ngoài range; đỉnh/đáy nội bộ nằm trong range. FVG/OB là vùng phản ứng riêng. <strong>POC ≠ EQ ≠ CE:</strong> khối lượng, trung điểm range và trung điểm vùng mất cân bằng.</p>
-                            <p>Inside Bar biểu thị nén; Outside Bar bao trùm High–Low, Engulfing bao trùm thân. Hình dạng nến chưa tự xác nhận hướng đi hoặc tạo FVG.</p>
+                            <p>CRT không bắt buộc tự tạo FVG. FVG, OB và swing HTF vẫn là tham chiếu; không đồng nhất OB HTF với OB entry LTF.</p>
                             <p><strong>Sweep:</strong> vượt mức rồi đóng trở lại theo khung xác nhận. <strong>Break:</strong> đóng ngoài biên rồi chờ retest theo setup; vẫn có thể thất bại. Macro/QT giúp tập trung quan sát, không thay xác nhận giá.</p>
                             <p>Một mục tiêu <strong>Full TP</strong>; SL theo cấu trúc. Không chốt một phần hoặc tự dời BE theo +1R/+2R. Đóng tay cần ghi lý do.</p>
-                            <a href="docs/CRT-LIQUIDITY-GUIDE.md" target="_blank" rel="noopener">Đọc hướng dẫn đã chuẩn hóa ↗</a><p><a href="docs/INDICATOR-AUTO-MODELS.md" target="_blank" rel="noopener">Chỉ báo Auto HTF · model, bias và entry ↗</a> · <a href="indicators/funded-angler-v6.pine" download>Tải TFA v6 · Auto HTF (ứng viên)</a></p>
+                            <a href="docs/CRT-LIQUIDITY-GUIDE.md" target="_blank" rel="noopener">Đọc hướng dẫn đã chuẩn hóa ↗</a><p><a href="docs/INDICATOR-AUTO-MODELS.md" target="_blank" rel="noopener">Chỉ báo CRT V1 · logic và setting</a> · <a href="indicators/funded-angler-v6.pine" download>Tải TFA v6 · CRT V1</a></p>
                         </div>
                     </details>
 
@@ -1845,7 +1776,7 @@ input:checked + .slider:before {
                                 </div>
                                 <div style="color: var(--text-slate); line-height: 1.4; font-size: 11px;">
                                     • <strong>MGC &amp; MNQ:</strong> Quan sát vùng chờ HTF trong khung sáng.<br>
-                                    • Xét <strong>CRT / Engulfing / Inside Bar trên HTF</strong>; LTF chỉ tìm entry.
+                                    • Xét <strong>CRT / TS trên HTF, entry trong C3</strong>; LTF chỉ tìm entry.
                                 </div>
                             </div>
 
@@ -2611,17 +2542,17 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
 <!-- JavaScript Engine -->
 <script src="assets/trading-rules.js"></script>
 <script src="assets/account-store.js"></script>
-<script src="assets/cockpit.js?v=20261112-ts"></script>
+<script src="assets/cockpit.js?v=20261121-crt-v1"></script>
 <script src="assets/news-radar.js?v=20261020-calendar"></script>
 <script src="assets/market-time.js?v=20261031-cycles"></script>
 <script src="assets/market-quarterly.js?v=20261031-cycles"></script>
 <script src="assets/market-hours.js?v=20261031-cycles"></script>
-<script src="assets/workspace.js?v=20261112-htf"></script>
+<script src="assets/workspace.js?v=20261121-crt-v1"></script>
 
-    <script src="assets/pond-model.js?v=20261112-ts"></script>
+    <script src="assets/pond-model.js?v=20261121-crt-v1"></script>
     <script src="assets/pond-life.js"></script>
     <script src="assets/pond-clock.js"></script>
-    <script src="assets/pond-schedule.js?v=20261112-htf"></script>
+    <script src="assets/pond-schedule.js?v=20261121-crt-v1"></script>
     <script src="assets/pond-loss.js?v=20261015-outcomes"></script>
     <script src="assets/pond-fish.js?v=20261015-outcomes"></script>
     <script src="assets/pond-cast.js?v=20261112-htf"></script>
@@ -2630,10 +2561,10 @@ ightarrow$ <em>Khuyên đứng ngoài.</em>
     <script src="assets/pond-scene.js?v=20261015-motion"></script>
     <script src="assets/pond-water.js?v=20261015-layers2"></script>
     <script src="assets/pond-ambient.js?v=20261015-layers2"></script>
-    <script src="assets/angler.js?v=20261112-htf"></script>
+    <script src="assets/angler.js?v=20261121-crt-v1"></script>
     <script src="assets/pond-fullscreen.js?v=20261015-wide-controls"></script>
-    <script src="assets/pond-execution.js?v=20261112-htf"></script>
-    <script src="assets/pond-live.js?v=20261112-htf"></script>
+    <script src="assets/pond-execution.js?v=20261121-crt-v1"></script>
+    <script src="assets/pond-live.js?v=20261121-crt-v1"></script>
     <script src="assets/pond-public.js?v=20261112-htf"></script>
 
 <!-- ── QUICK SEARCH & COMMAND PALETTE MODAL (CMD+K) ── -->

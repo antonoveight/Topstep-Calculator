@@ -1,6 +1,6 @@
 # EGF: FVG, OB và thanh khoản nội bộ
 
-> Lưu ý 21/11/2026: phần mô tả nhiều model là lịch sử trước CRT V1. Chỉ báo hiện chỉ có CRT, entry trong C3; ưu tiên [đặc tả hiện hành](CRT-V1-SPEC.md) và [setting CRT V1](INDICATOR-SETTINGS.md). Web chưa chuyển đổi.
+> Lưu ý 21/11/2026: phần mô tả nhiều model là lịch sử trước CRT V1. Chỉ báo hiện chỉ có CRT, entry trong C3; ưu tiên [đặc tả hiện hành](CRT-V1-SPEC.md) và [setting CRT V1](INDICATOR-SETTINGS.md). Web hiện đã đồng bộ CRT-only; các mẫu cũ chỉ giữ trong lịch sử.
 
 Hiệu đính 16/11/2026, thay thế nhận định “EGF tự tạo FVG” và “EQ/CE là IRL mặc định” trong cẩm nang gốc.
 

@@ -17,7 +17,7 @@ const PondExecution=(()=>{
         return {...value,reopened:value.reopened||{},fishSeeds:value.fishSeeds||{}};
     }
     function reload(){fallbackSeeds.clear();try{data=validate(JSON.parse(localStorage.getItem(storageKey)||'{"current":{},"history":[]}'));invalid=false;started=-99;}catch{invalid=true;}}
-    function key(setup=activeChecklistSetup){const a=getActiveAccount();return JSON.stringify([a.id,a.stage,Number(setup)]);}
+    function key(setup=activeChecklistSetup){const a=getActiveAccount();return JSON.stringify([a.id,a.stage,Number(setup),PondLogic.schema]);}
     function fishSeed(){
         const k=key();
         if(Number.isInteger(data.fishSeeds[k]))return data.fishSeeds[k];
@@ -41,7 +41,7 @@ const PondExecution=(()=>{
     function finish(outcome) {
         if(!Object.hasOwn(outcomes,outcome)||data.current[key()]||outcome==='manual'&&!canReelManual())return false;
         const a=getActiveAccount(),record={id:data.reopened[key()]||crypto.randomUUID(),account:a.id,stage:a.stage,setup:activeChecklistSetup,
-            framework:'htf-v1',context:structuredClone(checklistContextBySetup[activeChecklistSetup]||{}),
+            framework:PondLogic.schema,context:structuredClone(checklistContextBySetup[activeChecklistSetup]||{}),
             outcome,...(['manual','half','sl'].includes(outcome)?{catchStage:readPondChecklist().stage}:{}),fishSeed:fishSeed(),rating:'unrated',at:new Date().toISOString()};
         const next=structuredClone(data);next.current[key()]=record;delete next.reopened[key()];
         const old=next.history.findIndex(r=>r.id===record.id);if(old>=0)next.history[old]=record;else next.history.push(record);next.history=next.history.slice(-300);

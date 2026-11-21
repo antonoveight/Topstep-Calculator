@@ -1,6 +1,6 @@
 # Range chính và cụm kích hoạt EGF/ISB
 
-> Lưu ý 21/11/2026: phần mô tả nhiều model là lịch sử trước CRT V1. Chỉ báo hiện chỉ có CRT, entry trong C3; ưu tiên [đặc tả hiện hành](CRT-V1-SPEC.md) và [setting CRT V1](INDICATOR-SETTINGS.md). Web chưa chuyển đổi.
+> Lưu ý 21/11/2026: phần mô tả nhiều model là lịch sử trước CRT V1. Chỉ báo hiện chỉ có CRT, entry trong C3; ưu tiên [đặc tả hiện hành](CRT-V1-SPEC.md) và [setting CRT V1](INDICATOR-SETTINGS.md). Web hiện đã đồng bộ CRT-only; các mẫu cũ chỉ giữ trong lịch sử.
 
 Ngày 17/11/2026. Không có thứ tự cố định EGF > ISB hoặc ngược lại; mẫu mới nhất không tự có xác suất tốt nhất. Quy trình dưới đây là đặc tả cá nhân, chưa là bảng xếp hạng win rate.
 

@@ -2,7 +2,7 @@
 
 Cập nhật 21/11/2026 theo quyết định của người dùng và [nghiên cứu nguồn Romeotpt](CRT-ROMEOTPT-RESEARCH.md). Chỉ có **CRT là phương pháp giao dịch**. IRL, ERL, key level và TS phục vụ vị trí, hướng đi và xác nhận của CRT; EGF/ISB không còn là phương pháp hay kênh phát tín hiệu độc lập trong bản dự kiến.
 
-Tài liệu này thay thế kế hoạch ba phương pháp cho đợt cải tổ kế tiếp. Cập nhật triển khai: Pine đã chuyển sang [CRT V1](CRT-V1-SPEC.md), có bản lưu multi-model, bộ ca tổng hợp và kiểm tra biên dịch riêng. Web/checklist chưa chuyển đổi. Replay/forward chart là bước nghiệm thu tiếp theo; fibo tự động và Early C2 chưa thuộc V1.
+Tài liệu này thay thế kế hoạch ba phương pháp cho đợt cải tổ kế tiếp. Cập nhật triển khai: Pine đã chuyển sang [CRT V1](CRT-V1-SPEC.md), có bản lưu multi-model, bộ ca tổng hợp và kiểm tra biên dịch riêng. Web/checklist đã chuyển CRT-only, lưu snapshot cũ và giữ nhật ký EGF/ISB. Replay/forward chart là bước nghiệm thu tiếp theo; fibo tự động và Early C2 chưa thuộc V1.
 
 ## 1 Chuẩn hóa phạm vi trước khi viết lại
 

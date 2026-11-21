@@ -1,6 +1,6 @@
 # The Funded Angler · Trading Desk
 
-Định hướng 21/11/2026: [chỉ giữ phương pháp CRT](docs/CRT-ONLY-REFORM-PLAN.md), dựa trên [đối chiếu nguồn Romeotpt](docs/CRT-ROMEOTPT-RESEARCH.md) và quy ước cá nhân. Pine đã triển khai [CRT V1](docs/CRT-V1-SPEC.md): C2 confirmed, một kênh LTF trong C3. Web/checklist vẫn là bản cũ, sẽ chuyển đổi sau nghiệm thu chart. Chạy `node tools/check-crt.cjs` để kiểm tra chỉ báo; đây không phải backtest lợi nhuận.
+Định hướng 21/11/2026: [chỉ giữ phương pháp CRT](docs/CRT-ONLY-REFORM-PLAN.md), dựa trên [đối chiếu nguồn Romeotpt](docs/CRT-ROMEOTPT-RESEARCH.md) và quy ước cá nhân. Pine đã triển khai [CRT V1](docs/CRT-V1-SPEC.md): C2 confirmed, một kênh LTF trong C3. Web/checklist và AI Chart Lens cũng đã chuyển sang CRT-only; Replay Pine trên chart vẫn chưa nghiệm thu do phiên tạm yêu cầu đăng nhập. Chạy `node tools/check-crt.cjs` để kiểm tra chỉ báo; đây không phải backtest lợi nhuận.
 
 Ứng dụng web tĩnh quản lý nhật ký giao dịch, rủi ro và lịch sử payout cá nhân cho tài khoản Combine/XFA. HTML nằm trong `index.html`; quy tắc, lưu trữ và giao diện nâng cao được tách trong `assets/`. `topstep.html` là bản sao tương thích.
 
@@ -35,7 +35,7 @@ Dữ liệu lưu trong LocalStorage. Hãy dùng cùng trình duyệt và cùng �
 - XFA: số dư bắt đầu $0, MLL ban đầu âm theo gói; khóa MLL tại $0 sau payout đầu tiên.
 - Standard/Consistency payout theo từng chu kỳ: kiểm tra số ngày, lợi nhuận và hạn mức. Đây là **ghi nhận cá nhân**, không gửi yêu cầu rút hay đặt lệnh lên Topstep.
 - Calculator tính Micro và hợp đồng lớn theo ngân sách SL và ticks/points; trả về 0 khi không đủ ngân sách.
-- Checklist ba cấu trúc HTF: CRT, Engulfing/Outside và Inside Bar → kịch bản → entry LTF. Chọn HTF, LTF và điều kiện entry; lưu riêng từng cấu trúc. Mô phỏng hồ câu bằng Canvas.
+- Checklist CRT V1: C1/key → C2 đóng TS → xác nhận LTF trong C3 → Pullback/entry. Giữ snapshot trước chuyển đổi, nhật ký EGF/ISB cũ và cá đã câu; không chuyển ô cũ thành xác nhận CRT mới.
 - Hồ câu có nút **Toàn màn hình 16:9**: hiện cảnh hồ, nút thao tác như “Thả câu” và nút **Đóng lệnh thủ công · Thu cá**. Nhấn **Esc** hoặc chạm đúp mặt hồ để thoát; giữ nguyên tiến độ checkbox. Nếu trình duyệt chặn Fullscreen API, ứng dụng mở chế độ phủ toàn màn hình trong trang. Màn hình khác tỷ lệ 16:9 có viền tối để giữ tỷ lệ cảnh. Tab/Shift+Tab di chuyển giữa các nút đang dùng được.
 - Hồ Câu Tĩnh Tâm dùng cảnh minh họa 2.5D theo mẫu đã duyệt, với cần/dây/phao và gợn nước bằng Canvas. Điều khiển nằm ngoài cảnh; hỗ trợ tạm dừng, giảm chuyển động theo hệ thống và tự dừng khi không hiển thị. Trên điện thoại, checklist nằm ngay sau hồ câu.
 - Hồ có nước dao động, lau nhẹ, cá nền xuất hiện ngẫu nhiên và cá mục tiêu riêng. Các bước vào lệnh đọc theo setup và điều kiện trước đó; tích sai thứ tự không tự hoàn thành bước còn thiếu. Các ô quản lý giữ SL/trailing/Full TP **độc lập**, được lưu riêng theo cấu trúc; ghi nhận kết quả thực tế không bắt buộc trailing trước. TP được ưu tiên khi vẫn có các ô khác được tích.
@@ -51,7 +51,9 @@ Dữ liệu lưu trong LocalStorage. Hãy dùng cùng trình duyệt và cùng �
 
 ## Hệ thống HTF → kịch bản → entry LTF
 
-[Bản chuẩn hóa hiện hành](docs/TRADING-FRAMEWORK.md) quy định ba nhóm cấu trúc HTF, điều kiện entry LTF và dữ liệu cần đặc tả cho chỉ báo sau này. Trend/AMD/Break không còn là lựa chọn phương pháp mới; bản ghi cũ giữ nguyên tên và mã. Checklist cũ được giữ trong snapshot `__legacy`, không được chuyển thành xác nhận cấu trúc mới. Chuyển động/cỡ cá là minh họa, các ô quản trị không tự đo số R.
+Kiểm tra web CRT-only: `node tools/check-crt-web.cjs`. Xem [migration và nghiệm thu web](docs/CRT-WEB-VALIDATION.md); bộ kiểm tra này không thay thế Replay chỉ báo trên chart.
+
+[Bản chuẩn hóa hiện hành](docs/TRADING-FRAMEWORK.md) quy định CRT-only, điều kiện C2/C3 và entry LTF theo CRT V1. Trend/AMD/Break không còn là lựa chọn phương pháp mới; bản ghi cũ giữ nguyên tên và mã. Checklist cũ được giữ trong snapshot `__legacy`, không được chuyển thành xác nhận cấu trúc mới. Chuyển động/cỡ cá là minh họa, các ô quản trị không tự đo số R.
 
 ## Bổ sung CRT và bối cảnh thanh khoản
 
@@ -59,9 +61,9 @@ CRT có TS (Turtle Soup) ở tầng HTF: quét mức đã đánh dấu rồi rec
 
 [Hướng dẫn setting chỉ báo](docs/INDICATOR-SETTINGS.md): cấu hình khởi đầu theo HTF → LTF, bảng tra toàn bộ Inputs và cách kiểm tra khi không có tam giác. Chữ chart mặc định Normal, dashboard Small, tùy chỉnh độc lập trong Display.
 
-Chỉ báo cá nhân: [TFA v6 · Context Signals](indicators/funded-angler-v6.pine), bản sao [chibao.txt](chibao.txt), [26 setting và cách dùng](docs/INDICATOR-SETTINGS.md), [model/bias/kiểm tra](docs/INDICATOR-AUTO-MODELS.md). CRT/TS và Inside Bar theo sự kiện xác nhận; EGF dựng kịch bản theo bias, không ép theo màu nến. ERL và các mức nối từ nến nguồn; không vẽ entry OB/FVG LTF hoặc line C/M, nhưng giữ bộ lọc LTF nội bộ. Chỉ tam giác cố định xấp xỉ nửa Tiny Buy/Sell để bạn tự chọn entry. CRT ngược bias chỉ có ngoại lệ tại key HTF được xác nhận trước C1, vẫn cần C/M và timing hợp lệ; xem [CT](docs/CRT-COUNTER-BIAS.md). Signal timing mặc định Pullback đợi hồi sau xác nhận; có Confirmation close cho cách market. History mặc định giữ 100 tam giác, All chạy ba kênh CRT/EGF/ISB riêng, có Fresh reaction/One per model và dashboard đếm/lý do chờ. Cụm MODEL/FOLLOW mặc định 30/4, đuôi 6 nến; LAST lịch sử tùy chọn giữ model đã kết thúc. Chưa chứng minh xác suất thắng cao. Chỉnh source rồi chạy node tools/sync-indicator.cjs để đồng bộ chibao.txt.
+Chỉ báo cá nhân: [TFA v6 · CRT V1](indicators/funded-angler-v6.pine), bản sao [chibao.txt](chibao.txt), [25 setting](docs/INDICATOR-SETTINGS.md). Chỉ một kênh CRT sau C2 đã đóng, entry trong C3; mặc định Auto/Pullback/Fresh reaction. FVG/OB/swing HTF, IRL/ERL và ngoại lệ CT tại key có trước được giữ. History mặc định 100 dấu; cụm nguồn C1–C2, FOLLOW từ C3, LAST tùy chọn. Chưa có fibo tự động hoặc Early C2; chưa kiểm định hiệu suất thị trường. Chỉnh source rồi chạy `node tools/sync-indicator.cjs` và `node tools/check-crt.cjs`.
 
-[Hướng dẫn đã chuẩn hóa](docs/CRT-LIQUIDITY-GUIDE.md) bổ sung range tham chiếu, IRL/ERL, Mother/Inside Bar và phân biệt sweep/break cho ba cấu trúc HTF. Trong Checklist, mở hướng dẫn **Cấu trúc** HTF hoặc **Bản đồ thanh khoản · IRL / ERL** để đọc khi cần; các hướng dẫn mặc định thu gọn, không xuất hiện trong khung live. AI Chart Lens dùng cùng quy ước, ghi rõ khi ảnh thiếu dữ liệu FRVP/nến đóng/giá thay vì tự tạo mức.
+[Hướng dẫn đã chuẩn hóa](docs/CRT-LIQUIDITY-GUIDE.md) bổ sung range tham chiếu, IRL/ERL, key và sweep/reclaim cho CRT; các ví dụ EGF/ISB còn lại chỉ là lịch sử. Trong Checklist, mở hướng dẫn **Cấu trúc** HTF hoặc **Bản đồ thanh khoản · IRL / ERL** để đọc khi cần; các hướng dẫn mặc định thu gọn, không xuất hiện trong khung live. AI Chart Lens dùng cùng quy ước, ghi rõ khi ảnh thiếu dữ liệu FRVP/nến đóng/giá thay vì tự tạo mức.
 
 Giữ một mục tiêu Full TP, SL theo cấu trúc và ghi lý do đóng tay. Không tích hợp chốt một phần, BE theo số R hoặc indicator Pine chưa kiểm chứng từ cẩm nang gốc. Đây là bổ sung kiến thức; không tự hoàn thành checkbox, xác nhận tín hiệu hoặc thay đổi PnL.
 
@@ -113,7 +115,7 @@ assets/pond-fullscreen.js         Toàn màn hình 16:9, điều khiển bàn ph
 assets/pond-ambient.js            Chuyển động môi trường và nhân vật
 assets/pond-scene.js              Ghép lớp cảnh, tư thế, tay/cần và chất lượng
 assets/pond-water.js              Sóng, phản chiếu và gợn mặt hồ
-assets/pond-behavior.js           Hành vi cá theo ba cấu trúc HTF đã xác nhận
+assets/pond-behavior.js           Hành vi cá; lượt mới dùng CRT V1
 assets/pond-schedule.js           Lịch dùng chung theo mục 7 của playbook
 assets/pond-execution.js          Kết quả lượt câu, đánh giá và lưu khôi phục
 assets/pond-live.js               Studio, nguồn chart và cam kết/tổng kết buổi
@@ -192,7 +194,7 @@ Kế hoạch phiên đã được loại khỏi giao diện và phép tính. D�
 1. Trong Checklist, bấm biểu tượng điện thoại trên thanh hồ câu để mở **Studio livestream**. Cả Studio và Fullscreen 16:9 đều có nút thao tác chính và **Đóng lệnh thủ công · Thu cá** ngay trên cảnh hồ.
 2. Studio có khung dọc 9:16 chia hai nửa hồ/chart; có thể đổi vị trí hai phần. Nút **Chọn chart Topstep** dùng bộ chọn cửa sổ của trình duyệt, không iframe hoặc yêu cầu mật khẩu Topstep. Nguồn chỉ được xem trước, không tự ghi hình/phát sóng. Nếu không hỗ trợ chọn nguồn, có thể ghép chart riêng trong phần mềm live.
 3. Kiểm tra thông tin cá nhân trong nguồn trước khi phát. Chọn vùng crop chỉ gồm khung xem trước, không lấy bảng điều khiển. Có thể chọn xem toàn bộ nguồn hoặc cắt viền; chart nhỏ nên chọn cửa sổ chart hẹp hơn.
-4. Trước buổi chỉ chọn sản phẩm, setup, khung giờ và xác nhận nguyên tắc chờ đủ điều kiện. Đây là ghi nhận riêng của studio, không đưa lại bảng Kế hoạch phiên trên dashboard. Lịch theo mục 7 playbook: sáng 07:45–10:00, chiều 14:00–16:00 ưu tiên MGC, Mỹ 20:15–22:30; mỗi khung xét ba cấu trúc HTF theo chart, mùa đông lùi một giờ. Ngoài khung có nhãn quan sát; giờ không tự tạo tín hiệu.
+4. Trước buổi chỉ chọn sản phẩm, setup, khung giờ và xác nhận nguyên tắc chờ đủ điều kiện. Đây là ghi nhận riêng của studio, không đưa lại bảng Kế hoạch phiên trên dashboard. Lịch theo mục 7 playbook: sáng 07:45–10:00, chiều 14:00–16:00 ưu tiên MGC, Mỹ 20:15–22:30; mỗi khung chỉ xét CRT theo chart, mùa đông lùi một giờ. Ngoài khung có nhãn quan sát; giờ không tự tạo tín hiệu.
 5. Ghi kết quả thực tế và tự đánh giá quy trình. Nếu đổi setup hoặc tiếp tục sau điều kiện nghỉ, phải ghi lý do. Theo playbook hiện tại, Full TP hoặc hai kết quả −1R liên tiếp chuyển buổi sang nghỉ và chặn bắt đầu lượt mới trong hồ; không can thiệp tài khoản Topstep. Có thể ghi lý do thay đổi để tiếp tục.
 6. **Kết thúc buổi** lưu tổng kết tự đánh giá, kể cả không có lệnh. Chưa đánh giá sẽ giữ là chưa đánh giá. Đóng studio/Esc ngừng nguồn chia sẻ và giữ buổi đang theo dõi để mở lại; không tự kết thúc buổi.
 7. Dữ liệu lưu cục bộ: tối đa 300 kết quả lượt gần nhất và 30 buổi đã kết thúc. Tổng kết buổi giữ ảnh chụp dữ liệu kết quả khi kết thúc. Có nút tải nhật ký buổi JSON; bản sao lưu JSON đầy đủ cũng bao gồm kết quả và buổi theo dõi, không gồm nguồn video. Dữ liệu buổi tách theo tài khoản/vòng, không cộng vào nhật ký tài chính.
@@ -203,9 +205,9 @@ Trong hồ câu, cá dưới nước luôn là cùng một bóng mờ với kíc
 
 Nút **Đóng lệnh thủ công · Thu cá** dùng sau khi đã đóng lệnh trên chart, từ bước vào lệnh hoặc khi đang ở +1R/+2R. Nút thu cá theo mức đang chọn, giữ nguyên ô TP và không tự ghi lợi nhuận hay gửi lệnh giao dịch. Lượt được lưu là **Đóng lệnh thủ công**, tách với Full TP; tải lại trang giữ nguyên loại cá và không phát lại động tác. Studio cũng có lựa chọn này trong nhóm kết quả. Kiểm tra bằng `node tests/pond-fish.cjs` và `node tests/pond-manual.cjs`.
 
-Ba nhịp câu được phân biệt: **bước 3** cá thăm mồi, phao nhấp hai nhịp ngắn rồi nghỉ, cần gần như đứng yên; **bước 4** đóng lưỡi một lần rồi cá kéo ngang, phao nghiêng chìm, dây căng và cần chịu lực; **+1R** nâng cần rồi hạ cần thu dây, cá dịu hơn và dần về gần bến, vẫn ở dưới nước. Chuyển bước có nội suy tư thế; tải lại không lặp cú đóng lưỡi. Nhịp này dùng cho cả ba cấu trúc HTF, giữ khác biệt hành vi tiếp cận/xác nhận của từng setup. Kiểm tra bằng `node tests/pond-stages.cjs`.
+Ba nhịp câu được phân biệt: **bước 3** cá thăm mồi, phao nhấp hai nhịp ngắn rồi nghỉ, cần gần như đứng yên; **bước 4** đóng lưỡi một lần rồi cá kéo ngang, phao nghiêng chìm, dây căng và cần chịu lực; **+1R** nâng cần rồi hạ cần thu dây, cá dịu hơn và dần về gần bến, vẫn ở dưới nước. Chuyển bước có nội suy tư thế; tải lại không lặp cú đóng lưỡi. Lượt mới dùng nhịp CRT; diễn hoạt chỉ minh họa checkbox thủ công. Kiểm tra bằng `node tests/pond-stages.cjs`.
 
-Lần thả đầu có nhịp đưa cần ra sau, vẫy tới và bung dây theo phao; chỉ tạo vòng nước khi phao đáp xuống. Cán cần đi qua điểm nắm tay và được các ngón tay che lên, kể cả khi đã thu cá hoặc nghỉ. CRT rê mồi quanh vùng chờ; Engulfing/Outside cho mồi trôi về; Inside Bar thả xa, kéo một nhịp rồi giữ ổn định. Mỗi setup có vị trí thả, biên độ vung và nhịp giữ cá riêng. Những chuyển động này không thay đổi điều kiện checklist hay dữ liệu giao dịch. Kiểm tra bằng `node tests/pond-cast.cjs`.
+Lần thả đầu có nhịp đưa cần ra sau, vẫy tới và bung dây theo phao; chỉ tạo vòng nước khi phao đáp xuống. Cán cần đi qua điểm nắm tay và được các ngón tay che lên, kể cả khi đã thu cá hoặc nghỉ. CRT rê mồi quanh vùng chờ; các nhánh diễn hoạt cũ chỉ giữ để tương thích, không còn là lựa chọn phương pháp mới. Những chuyển động này không thay đổi điều kiện checklist hay dữ liệu giao dịch. Kiểm tra bằng `node tests/pond-cast.cjs`.
 
 Khung Studio và fullscreen dùng chữ tiếng Anh ngắn: **PERSONAL TRADING JOURNAL**, **COMBINE/XFA · SIMULATED**, trạng thái như **Watching**, **Managing**, **Close logged**, và hai nút ghi nhận thao tác. Một dòng ngắn nhắc rằng các bước do người dùng ghi nhận; hướng dẫn dài vẫn nằm ngoài khung phát. Chế độ sử dụng thông thường giữ nhãn tiếng Việt.
 

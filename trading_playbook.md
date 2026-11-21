@@ -1,6 +1,6 @@
 # SỔ TAY GIAO DỊCH THỰC CHIẾN (TRADING PLAYBOOK) — THAM KHẢO 3.0
 
-> **Hệ thống web hiện hành:** [Cấu trúc HTF → kịch bản HTF → entry LTF](docs/TRADING-FRAMEWORK.md). Chỉ giữ CRT, Engulfing/Outside Bar và Inside Bar trên HTF. Trend/AMD/Break ở các mục cũ chỉ là bối cảnh/hành vi; POC, CISD/MSS, FVG/OB và retest là điều kiện entry LTF, không còn là phương pháp ngang hàng. Các mục lịch sử dưới đây chỉ áp dụng khi tương thích bản chuẩn hóa.
+> **Hệ thống web hiện hành:** [Cấu trúc HTF → kịch bản HTF → entry LTF](docs/TRADING-FRAMEWORK.md). Từ 21/11/2026 chỉ giữ CRT V1: C1/key → C2 sweep/reclaim đã đóng → xác nhận và Pullback LTF trong C3. IRL/ERL, TS, FVG/OB/swing giữ vai trò hỗ trợ. EGF/ISB và các nhánh cũ bên dưới là lịch sử, không còn là lựa chọn phương pháp mới. Các mục lịch sử dưới đây chỉ áp dụng khi tương thích bản chuẩn hóa.
 ### Hệ Thống: Độc Chiêu CRT Fractal (C1 – C4) & FRVP Chuẩn Hóa
 **Thị Trường:** Futures CME / NYMEX (Tập trung tối đa **MGC** và **MNQ**, dự phòng **MES**, **MCLZ26**)  
 **Tài Khoản:** Topstep® 50K DLL Express (Daily Loss Limit: -$1,000)  
