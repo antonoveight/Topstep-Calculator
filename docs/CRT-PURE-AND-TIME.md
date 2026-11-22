@@ -50,10 +50,12 @@ Web giữ phiên thị trường, lịch tin và thêm đồng hồ C3 với hai
 
 ## Cài đặt và kiểm tra
 
-Mặc định: HTF H1, Bias TF D1, Auto bias, Pullback, Fresh reaction, History 100. Còn 23 input, gồm công tắc Early C2 thử nghiệm bật sẵn theo yêu cầu mới; HTF tùy H1/H2/H4/D1. Không còn chọn loại xác nhận hoặc bộ lọc giờ cũ.
+Mặc định: HTF H1, Bias TF D1, Auto bias, Pullback, Fresh reaction, History 100. Còn 24 input, gồm công tắc Early C2 thử nghiệm bật sẵn theo yêu cầu mới; HTF tùy H1/H2/H4/D1. Không còn chọn loại xác nhận hoặc bộ lọc giờ cũ.
 
 Checklist schema `crt-v1` → `crt-ts-v2`: snapshot cũ giữ nguyên, các ô mới bắt đầu chưa xác nhận. Nhật ký, kết quả cũ, giỏ cá và tài khoản vẫn giữ. Early C2 nay đã được cho phép bật thử theo [đặc tả thuần CRT riêng](EARLY-C2-EXPERIMENT.md). Dấu E chưa phải HTF Confirmed, không trộn vào tam giác C3 hay bộ audit Confirmed. Nghiên cứu cũ không còn là đặc tả đang chạy.
 
 Chạy `node tools/check-crt.cjs` và `node tools/check-crt-web.cjs`. Kiểm tra thân hàm Pine giới hạn và trình duyệt không thay Pine runtime/Replay dữ liệu giá. Các bài test của bộ lọc đã bỏ chỉ còn giá trị lịch sử.
 
 Vòng đời setup hiện hành: [Range C1, attempt, INV/TG và xác nhận lại](CRT-SETUP-LIFECYCLE.md).
+
+Cập nhật hai nhánh Confirmed: [H1/H4 độc lập, nguồn tam giác và giới hạn khung](CRT-DUAL-HTF.md). Đối chiếu entry sau TS từ [nguồn Romeotpt](CRT-ENTRY-ROMEOTPT.md); Pullback trong code vẫn là quy ước cá nhân.

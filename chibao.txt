@@ -15,14 +15,14 @@ const string G_VIEW = "4. Display"
 const string DEFAULT_SIGNAL_TIMING = "Pullback"
 const string DEFAULT_SIGNAL_CADENCE = "Fresh reaction"
 htfInput = input.timeframe("60", "HTF", options=["60", "120", "240", "1D"], group=G_HTF, tooltip="Khung xác nhận C1/C2 CRT/TS: H1, H2, H4 hoặc D1. Mặc định H1; entry LTF chỉ trong C3.")
-// CRT Pure TS: one confirmed TS model and one causal LTF channel.
+// CRT Pure TS: independent confirmed main/higher models and causal LTF channels.
 // A higher chart uses its own timeframe for context-only overview.
 bool overviewMode = timeframe.in_seconds() > timeframe.in_seconds(htfInput)
 string htf = overviewMode ? timeframe.period : htfInput
 minSweepTicks = 1
 scanDepth = 1000
 queueLimit = 12
-// Setups retire at INV/TP or the end of C3; no stale context timeout/fallback.
+// INV/TP retire attempts; C3 closes entry only. No stale invalid-parent fallback.
 lifeHtf = 0
 htfPivotLength = 2
 tsReference = "C1 range"
@@ -44,11 +44,12 @@ minRR = 0.0
 retestTicks = 1
 showConfirm = false
 showCluster = input.bool(true, "CRT HTF candle groups", group=G_VIEW, tooltip="Cụm nguồn giữ C1–C2. FOLLOW bắt đầu từ C3 và có N* live, không trộn vào cặp gốc. LAST là model đã kết thúc, chỉ tham khảo.")
-showLargerCluster = input.bool(true, "Larger HTF candle cluster", group=G_VIEW, tooltip="Thêm cụm OHLC HTF lớn hơn bên cạnh cụm chính; chỉ quan sát, không tự lọc tín hiệu hay đổi bias. Wick và body lấy đúng nguồn giá.")
+showLargerCluster = input.bool(true, "Larger HTF candle cluster", group=G_VIEW, tooltip="Thêm cụm OHLC HTF lớn hơn bên cạnh cụm chính; bật/tắt hình không đổi nhánh tín hiệu Larger HTF signals hoặc bias. Wick và body lấy đúng nguồn giá.")
 largerTfChoice = input.string("Auto", "Larger HTF", options=["Auto", "H2", "H4", "D1", "W1"], group=G_VIEW, tooltip="Auto: H1/H2 → H4; H4 → D1; D1 → W1. Chọn khung lớn hơn HTF chính; nếu khung chọn không lớn hơn thì dùng Auto.")
 string autoLargerTf = timeframe.in_seconds(htf) < 14400 ? "240" : timeframe.in_seconds(htf) < 86400 ? "1D" : "1W"
 string requestedLargerTf = largerTfChoice == "H2" ? "120" : largerTfChoice == "H4" ? "240" : largerTfChoice == "D1" ? "1D" : largerTfChoice == "W1" ? "1W" : autoLargerTf
 string largerTf = timeframe.in_seconds(requestedLargerTf) > timeframe.in_seconds(htf) ? requestedLargerTf : autoLargerTf
+enableLargerSignals = input.bool(true, "Larger HTF signals", group=G_ENTRY, tooltip="Chạy nhánh CRT độc lập trên Larger HTF; cùng LTF/Signal timing, range/C3/SL/TP và khóa nhịp riêng. Chỉ chạy khi Larger HTF <= Bias TF. Tắt cụm nến không tắt tín hiệu; tắt tại đây.")
 clusterFollowCount = input.int(6, "Follow candles to show", minval=2, maxval=12, group=G_VIEW, tooltip="Cụm MODEL giữ nến gốc; cụm FOLLOW hiển thị số nến diễn biến gần nhất, mặc định 6. Nến cũ bị lược hiển thị được báo bằng dấu … và số lượng. Không đổi timeout hoặc tín hiệu.")
 showArchive = input.bool(false, "Last ended model cluster", group=G_VIEW, tooltip="Cụm LAST giữ nến nguồn của model vừa kết thúc và mã TG/INV/TO/AMB/HIST. Chỉ để tham khảo lịch sử, không khôi phục hiệu lực hoặc phát tín hiệu. Mặc định tắt.")
 clusterOffset = input.int(30, "Cluster offset (bars)", minval=3, maxval=80, group=G_VIEW, tooltip="Khoảng cách từ bar chart cuối đến cụm HTF, theo số bar chart. Mặc định 30 bar để cách xa cột chú thích.")
@@ -60,7 +61,7 @@ showPanel = input.bool(true, "Compact panel", group=G_VIEW, tooltip="Bảng tổ
 historyMode = input.string("History", "Signal display", options=["History", "Latest"], group=G_VIEW, tooltip="History giữ dấu quá khứ theo giới hạn bên dưới, không xóa vì cửa sổ 3 HTF của các line. Latest chỉ giữ dấu gần nhất. Không đổi điều kiện tính toán hoặc alert.")
 historyMarks = input.int(100, "Historical signals to keep (0 = hide)", minval=0, maxval=200, group=G_VIEW, tooltip="Mặc định 100, tối đa 200 tam giác lịch sử. 0 ẩn dấu. Các bộ đếm dashboard tính toàn bộ dữ liệu chart đã tải, có thể lớn hơn số dấu được giữ.")
 bool retainHistory = historyMode == "History"
-int markLimit = historyMarks == 0 ? 0 : retainHistory ? historyMarks : 1
+int markLimit = historyMarks == 0 ? 0 : retainHistory ? historyMarks : 2
 recentOnly = input.bool(true, "Hide drawings without a recent signal", group=G_VIEW, tooltip="Ẩn phần vẽ quá cửa sổ gần nhất. Cụm HTF gần đây có thể hiện trước entry LTF để xem tổng quan; không có nghĩa đã có lệnh.")
 drawHtfBars = input.int(3, "Drawing horizon / recency (HTF bars)", minval=1, maxval=12, group=G_VIEW, tooltip="Giới hạn phần chiếu về trước và tuổi hình, mặc định 3 HTF. Đầu line vẫn nối về swing nguồn cũ. Không hủy hiệu lực model.")
 showEntryTriangles = true
@@ -429,7 +430,7 @@ f_revalidateRange(Model m, float opening, float barHigh, float barLow, float clo
 f_preferCrt(int candidateBorn, int candidateRoot, int selectedBorn, int selectedRoot, int currentIndex) =>
     na(selectedRoot) or (candidateBorn == currentIndex and selectedBorn != currentIndex) or ((candidateBorn == currentIndex) == (selectedBorn == currentIndex) and candidateRoot > selectedRoot)
 
-f_engine() =>
+f_engine(string sourceTf) =>
     [higherBias, higherBiasAge, higherBiasHigh, higherBiasLow, higherGuardHigh, higherGuardLow, higherKeyMap] = request.security(syminfo.tickerid, biasTf, f_biasBundle(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
     var array<Model> models = array.new<Model>()
     var array<Liquidity> swings = array.new<Liquidity>()
@@ -445,10 +446,10 @@ f_engine() =>
     bool inScan = time >= scanStart
     float ph = ta.pivothigh(high, htfPivotLength, htfPivotLength)
     float pl = ta.pivotlow(low, htfPivotLength, htfPivotLength)
-    KeyMap parentReferences = f_parentKeys(swings, higherKeyMap, usedHigherKeys, time[1], htf)
-    CrtKey priorBuyKey = f_findCrtKey(swings, time[1], 1, high, low, close, htf)
-    CrtKey priorSellKey = f_findCrtKey(swings, time[1], -1, high, low, close, htf)
-    if biasTf != htf and not na(higherKeyMap) and not na(higherKeyMap.levels)
+    KeyMap parentReferences = f_parentKeys(swings, higherKeyMap, usedHigherKeys, time[1], sourceTf)
+    CrtKey priorBuyKey = f_findCrtKey(swings, time[1], 1, high, low, close, sourceTf)
+    CrtKey priorSellKey = f_findCrtKey(swings, time[1], -1, high, low, close, sourceTf)
+    if biasTf != sourceTf and not na(higherKeyMap) and not na(higherKeyMap.levels)
         if priorBuyKey.kind == 0
             priorBuyKey := f_matchKeyMap(higherKeyMap, usedHigherKeys, time[1], 1, high, low, close)
         if priorSellKey.kind == 0
@@ -572,13 +573,38 @@ f_engine() =>
 // Every snapshot field is individually offset; live OHLC is display-only.
 // C3 receives the previous confirmed C2 snapshot (age 0); C4 receives age 1.
 f_snapshot(bool previous) =>
-    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60, v61, v62, v63] = f_engine()
+    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60, v61, v62, v63] = f_engine(htf)
     [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57, previous ? v58[1] : v58, previous ? v59[1] : v59, previous ? v60[1] : v60, previous ? v61[1] : v61, previous ? v62[1] : v62, previous ? v63[1] : v63]
 
 [sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft, sInnerHi, sInnerLo, sInnerHiT, sInnerLoT, sArchived, kCrtKey, sEqTouched, sAEnd, sCEnd, sBEnd] = if onHtf
     f_snapshot(not barstate.isconfirmed)
 else
     request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+
+// Packed UDT avoids exceeding Pine's combined 127 request tuple elements.
+type HigherSnapshot
+    int id = na
+    int flags = 0
+    int phase = 0
+    int dir = 0
+    float hi = na
+    float lo = na
+    float inv = na
+    float cp = na
+    int confirmed = na
+    int resolved = na
+    int age = 0
+    int aT = na
+    int reason = 0
+    CrtKey key = na
+f_higherSnapshot() =>
+    [q0, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14, q15, q16, q17, q18, q19, q20, q21, q22, q23, q24, q25, q26, q27, q28, q29, q30, q31, q32, q33, q34, q35, q36, q37, q38, q39, q40, q41, q42, q43, q44, q45, q46, q47, q48, q49, q50, q51, q52, q53, q54, q55, q56, q57, q58, q59, q60, q61, q62, q63] = f_engine(largerTf)
+    HigherSnapshot.new(id=q0[1], flags=q1[1], phase=q3[1], dir=q4[1], hi=q5[1], lo=q6[1], inv=q7[1], cp=q8[1], confirmed=q15[1], resolved=q16[1], age=q37[1], aT=q22[1], reason=q34[1], key=q59[1])
+bool higherSignalTfValid = isLtf and timeframe.in_seconds(largerTf) > htfSeconds and timeframe.in_seconds(largerTf) % chartSeconds == 0 and timeframe.in_seconds(biasTf) >= timeframe.in_seconds(largerTf)
+HigherSnapshot higher = if enableLargerSignals and higherSignalTfValid
+    request.security(syminfo.tickerid, largerTf, f_higherSnapshot(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+else
+    HigherSnapshot.new()
 
 // Independent bias from the chosen reference TF: confirmed reclaim or range close-through.
 [autoBias, autoBiasAge, autoBiasHigh, autoBiasLow, autoGuardHigh, autoGuardLow] = if chartSeconds == timeframe.in_seconds(biasTf)
@@ -721,6 +747,10 @@ if focusEndedNow != 0
     focusLife.archived := ModelArchive.new(confirmedAt=sConfirmed, aEnd=sAEnd, bEnd=sBEnd, uid=sId, flags=sFlags, kind=sKind, phase=sPhase, aO=sAO, aH=sAH, aL=sAL, aC=sAC, aT=sAT, bO=sBO, bH=sBH, bL=sBL, bC=sBC, bT=sBT, endReason=focusEndedNow, endedAt=time_close)
 bool rangeAvailable = not na(sId) and not (focusLife.uid == sId and focusLife.rangeDone)
 bool focusAvailable = rangeAvailable and sPhase == 1 and focusLife.uid == sId and focusLife.confirmation == sConfirmed and focusLife.reason == 0
+var FocusLifecycle higherLife = FocusLifecycle.new()
+int higherEndedNow = f_stepFocus(higherLife, higher.id, higher.dir, higher.confirmed, higher.inv, higher.cp, higher.age, time, time_close, high, low, barstate.isconfirmed, higher.phase == 1)
+bool higherAvailable = enableLargerSignals and higherSignalTfValid and not na(higher.id) and higher.phase == 1 and not higherLife.rangeDone and higherLife.uid == higher.id and higherLife.confirmation == higher.confirmed and higherLife.reason == 0
+
 ModelArchive visibleArchive = f_visibleArchive(focusLife.archived, sArchived)
 int lastSetupEnd = not na(visibleArchive) and not na(visibleArchive.uid) ? visibleArchive.endReason : sReason
 
@@ -895,6 +925,27 @@ if crtResult.hit and crtResult.dir == 1
 if crtResult.hit and crtResult.dir == -1
     lastSellTime := time
     lastSellBar := bar_index
+// Independent higher-TF channel: it never writes main/Early wave latches.
+var ReactionState higherState = ReactionState.new()
+var int higherLastBuyTime = na
+var int higherLastSellTime = na
+var int higherLastBuyBar = na
+var int higherLastSellBar = na
+SignalContext higherCtx = SignalContext.new(age=higher.age, crtKey=higher.key, kind=1, id=higherAvailable ? higher.id : na, flags=higher.flags, phase=higher.phase, dir=higher.dir, confirmed=higher.confirmed, resolved=higher.resolved, hi=higher.hi, lo=higher.lo, inv=higher.inv, cp=higher.cp)
+string higherModelKey = f_contextKey(higherAvailable ? higher.id : na, higher.resolved, higher.dir)
+if barstate.isconfirmed and higherState.key != higherModelKey
+    higherState := ReactionState.new(key=higherModelKey, activatedAt=higher.confirmed, phaseAt=higher.confirmed)
+bool higherWaveAllowed = higher.dir == 1 ? na(higherLastBuyTime) or bar_index == higherLastBuyBar or (not na(lastPivotLowTime) and lastPivotLowTime > higherLastBuyTime) : na(higherLastSellTime) or bar_index == higherLastSellBar or (not na(lastPivotHighTime) and lastPivotHighTime > higherLastSellTime)
+ChannelResult higherResult = f_stepChannel(higherCtx, higherState, lastPivotHigh, lastPivotLow, pivotHigh, pivotLow, higherWaveAllowed)
+if not higherAvailable
+    higherResult.status := not enableLargerSignals ? "OFF" : not higherSignalTfValid ? "TF/Bias" : higherLife.uid == higher.id and higherLife.reason != 0 ? f_endTag(higherLife.reason) : "WAIT CRT"
+if higherResult.hit and higherResult.dir == 1
+    higherLastBuyTime := time
+    higherLastBuyBar := bar_index
+if higherResult.hit and higherResult.dir == -1
+    higherLastSellTime := time
+    higherLastSellBar := bar_index
+
 // Cache by attempt: switching focus and returning during TRACK must not erase
 // the evidence collected in that attempt's original C3. No trading gate reads it.
 type SignalAudit
@@ -904,22 +955,33 @@ type SignalAudit
     int signals = 0
     string blocked = "-"
     string last = "-"
+f_getSignalAudit(map<string, SignalAudit> records, string token) =>
+    if barstate.isconfirmed and token != "" and not map.contains(records, token)
+        map.put(records, token, SignalAudit.new())
+        if map.size(records) > 128
+            map.remove(records, array.get(map.keys(records), 0))
+    map.contains(records, token) ? map.get(records, token) : SignalAudit.new()
+f_recordSignalAudit(SignalAudit data, ChannelResult event) =>
+    if event.evaluated
+        data.bars += 1
+        data.ts += event.tsDetected ? 1 : 0
+        data.retests += event.retestDetected ? 1 : 0
+        data.signals += event.hit ? 1 : 0
+        data.last := event.status
+        if event.entryDetected and not event.hit
+            data.blocked := event.status
+    data
+f_signalAuditText(SignalAudit data) =>
+    "C3 bars " + str.tostring(data.bars) + " | TS " + str.tostring(data.ts) + " | Retests " + str.tostring(data.retests) + " | Signals " + str.tostring(data.signals) + " | Blocked " + data.blocked + " | Last C3 " + data.last
 var map<string, SignalAudit> signalAudits = map.new<string, SignalAudit>()
-string diagnosticToken = f_contextKey(sId, sResolved, sDir)
-if barstate.isconfirmed and diagnosticToken != "" and not map.contains(signalAudits, diagnosticToken)
-    map.put(signalAudits, diagnosticToken, SignalAudit.new())
-    if map.size(signalAudits) > 128
-        map.remove(signalAudits, array.get(map.keys(signalAudits), 0))
-SignalAudit diagnostic = map.contains(signalAudits, diagnosticToken) ? map.get(signalAudits, diagnosticToken) : SignalAudit.new()
-if crtResult.evaluated
-    diagnostic.bars += 1
-    diagnostic.ts += crtResult.tsDetected ? 1 : 0
-    diagnostic.retests += crtResult.retestDetected ? 1 : 0
-    diagnostic.signals += crtResult.hit ? 1 : 0
-    diagnostic.last := crtResult.status
-    if crtResult.entryDetected and not crtResult.hit
-        diagnostic.blocked := crtResult.status
-string diagnosticSummary = "Selected HTF " + htf + " | C1 " + (not na(sAT) ? str.format_time(sAT, "dd/MM HH:mm", NY) : "-") + " NY | Confirmed " + (not na(sConfirmed) ? str.format_time(sConfirmed, "dd/MM HH:mm", NY) : "-") + " NY | C3 closed LTF bars " + str.tostring(diagnostic.bars) + " | TS shapes " + str.tostring(diagnostic.ts) + " | Retests " + str.tostring(diagnostic.retests) + " | Signals " + str.tostring(diagnostic.signals) + " | Entry blocked " + diagnostic.blocked + " | Last C3 status " + diagnostic.last + " | Larger HTF is display only, not a signal engine."
+string diagnosticToken = htf + ":" + f_contextKey(sId, sResolved, sDir)
+string higherDiagnosticToken = largerTf + ":" + f_contextKey(higher.id, higher.resolved, higher.dir)
+SignalAudit diagnostic = f_getSignalAudit(signalAudits, not na(sId) ? diagnosticToken : "")
+SignalAudit higherDiagnostic = f_getSignalAudit(signalAudits, not na(higher.id) ? higherDiagnosticToken : "")
+diagnostic := f_recordSignalAudit(diagnostic, crtResult)
+higherDiagnostic := f_recordSignalAudit(higherDiagnostic, higherResult)
+string diagnosticSummary = "Main HTF " + htf + " | C1 " + (not na(sAT) ? str.format_time(sAT, "dd/MM HH:mm", NY) : "-") + " NY | Confirmed " + (not na(sConfirmed) ? str.format_time(sConfirmed, "dd/MM HH:mm", NY) : "-") + " NY | " + f_signalAuditText(diagnostic) + "\nHigher HTF " + largerTf + " | " + higherResult.status + " | C1 " + (not na(higher.aT) ? str.format_time(higher.aT, "dd/MM HH:mm", NY) : "-") + " NY | " + f_signalAuditText(higherDiagnostic) + " | Last end " + f_endTag(higher.reason)
+
 // Experimental Early C2 uses only completed chart bars; no final C2 OHLC is read.
 type EarlyReference
     int start = na
@@ -1091,9 +1153,10 @@ if earlyResult.hit and earlyResult.dir == -1
 
 
 array<ChannelResult> channelResults = array.from(crtResult)
+array<ChannelResult> markerResults = array.from(crtResult, higherResult)
 bool entryEvent = crtResult.hit
-bool entryLong = entryEvent and crtResult.dir == 1
-bool entryShort = entryEvent and crtResult.dir == -1
+bool entryLong = (entryEvent and crtResult.dir == 1) or (higherResult.hit and higherResult.dir == 1)
+bool entryShort = (entryEvent and crtResult.dir == -1) or (higherResult.hit and higherResult.dir == -1)
 bool focusSignal = entryEvent
 string auditSummary = "CRT: " + crtResult.status + (sEqTouched ? " | EQ touched (not TP)" : "") + " | Entry C3 only | Model " + str.tostring(sId)
 string signalStatus = crtResult.status
@@ -1346,11 +1409,19 @@ f_keyTag(CrtKey key) =>
     key.dir == 1 ? "SSL" : "BSL"
 string buyHint = ""
 string sellHint = ""
-for i = 0 to 0
-    ChannelResult hit = array.get(channelResults, i)
+// Latest means the latest EVENT BAR: keep both directions if sources conflict.
+// Early + one independent higher signal can also share that bar (max two marks).
+if not retainHistory and markLimit > 0 and (entryLong or entryShort or earlyResult.hit)
+    while array.size(eventLabels) > 0
+        f_dropMark(0)
+for i = 0 to 1
+    ChannelResult hit = array.get(markerResults, i)
     if hit.hit
-        string hint = f_tag(hit.flags, hit.kind, hit.phase) + " / " + hit.tag + " / " + signalTiming + "\nConfirm bar " + str.format_time(hit.confirmTime, "dd/MM HH:mm", NY) + " NY | Trigger bar " + str.format_time(time, "dd/MM HH:mm", NY) + " NY | Signal CLOSE " + str.format_time(time_close, "dd/MM HH:mm:ss", NY) + " NY | Bias " + str.tostring(biasDir) + " | Close " + str.tostring(close, format.mintick) + " | CP " + str.tostring(hit.cp, format.mintick) + " | INV " + str.tostring(hit.inv, format.mintick)
-        hint += "\nCRT #" + str.tostring(hit.id) + " | C1 " + str.format_time(sAT, "dd/MM HH:mm", NY) + " NY O " + str.tostring(sAO, format.mintick) + " H " + str.tostring(sAH, format.mintick) + " L " + str.tostring(sAL, format.mintick) + " C " + str.tostring(sAC, format.mintick) + "\nC2 " + str.format_time(sBT, "dd/MM HH:mm", NY) + " NY O " + str.tostring(sBO, format.mintick) + " H " + str.tostring(sBH, format.mintick) + " L " + str.tostring(sBL, format.mintick) + " C " + str.tostring(sBC, format.mintick) + " | HTF confirmed " + str.format_time(sConfirmed, "dd/MM HH:mm", NY) + " NY | C3 only; ET is manual"
+        string sourceTf = i == 0 ? htf : largerTf
+        string hint = "HTF " + f_tfName(sourceTf) + " | " + f_tag(hit.flags, hit.kind, hit.phase) + " / " + hit.tag + " / " + signalTiming + "\nConfirm bar " + str.format_time(hit.confirmTime, "dd/MM HH:mm", NY) + " NY | Trigger bar " + str.format_time(time, "dd/MM HH:mm", NY) + " NY | Signal CLOSE " + str.format_time(time_close, "dd/MM HH:mm:ss", NY) + " NY | Bias " + str.tostring(biasDir) + " | Close " + str.tostring(close, format.mintick) + " | CP " + str.tostring(hit.cp, format.mintick) + " | INV " + str.tostring(hit.inv, format.mintick)
+        int sourceC1 = i == 0 ? sAT : higher.aT
+        int sourceConfirmed = i == 0 ? sConfirmed : higher.confirmed
+        hint += "\nCRT #" + str.tostring(hit.id) + " | C1 " + str.format_time(sourceC1, "dd/MM HH:mm", NY) + " NY | HTF confirmed " + str.format_time(sourceConfirmed, "dd/MM HH:mm", NY) + " NY | C3 only; ET is manual"
         if hit.counterBias
             hint += "\nCT | " + hit.keyRef.tf + " " + f_keyTag(hit.keyRef) + " | Key " + str.tostring(hit.keyRef.lo, format.mintick) + "-" + str.tostring(hit.keyRef.hi, format.mintick) + " | Known " + str.format_time(hit.keyRef.knownAt, "dd/MM HH:mm", NY) + " NY | before CRT C1 " + str.format_time(hit.keyRef.beforeTime, "dd/MM HH:mm", NY) + " NY"
         if hit.dir == 1
@@ -1381,6 +1452,7 @@ var int dataStart = math.max(time, last_bar_time - int(htfSeconds * 1000) * scan
 var string lastClosedStatus = "WAIT"
 var string lastClosedAudit = ""
 var int crtSignals = 0
+var int higherSignals = 0
 var int earlySignals = 0
 if earlyResult.hit
     earlySignals += 1
@@ -1389,6 +1461,8 @@ if barstate.isconfirmed
     lastClosedAudit := auditSummary
 if barstate.isconfirmed and entryEvent
     crtSignals += crtResult.hit ? 1 : 0
+if barstate.isconfirmed and higherResult.hit
+    higherSignals += 1
 plot(crtResult.hit ? crtResult.dir : na, "CRT direction +1/-1", display=display.data_window)
 plot(crtResult.hit ? crtResult.cp : na, "CRT target at signal", display=display.data_window)
 plot(crtResult.hit ? crtResult.inv : na, "CRT invalidation at signal", display=display.data_window)
@@ -1415,6 +1489,13 @@ plot(entryEvent ? liveEnd : na, "TFA audit C3 close ms", display=display.data_wi
 plot(entryEvent ? sModelAge : na, "TFA audit model age", display=display.data_window)
 plot(entryEvent ? crtState.confirmLevel : na, "TFA audit reclaim level", display=display.data_window)
 plot(entryEvent ? crtState.localExtreme : na, "TFA audit TS extreme", display=display.data_window)
+
+// Higher-TF evidence has its own columns; main CSV contracts remain main-only.
+plot(higherResult.hit ? higherResult.dir : na, "Higher CRT direction +1/-1", display=display.data_window)
+plot(higherResult.hit ? higherResult.cp : na, "Higher CRT target at signal", display=display.data_window)
+plot(higherResult.hit ? higherResult.inv : na, "Higher CRT invalidation at signal", display=display.data_window)
+plot(higherResult.hit ? higher.confirmed : na, "Higher CRT confirmed ms", display=display.data_window)
+plot(enableLargerSignals and higherSignalTfValid ? timeframe.in_seconds(largerTf) : na, "Higher CRT TF seconds", display=display.data_window)
 
 // Early events are exported separately and never relabelled as C3 evidence.
 plot(enableEarlyC2 ? 1 : 0, "Early C2 enabled", display=display.data_window)
@@ -1451,10 +1532,10 @@ if barstate.islast
         string dirText = biasPaused ? "B0!" : biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
         string stateText = not hasModel ? "SEARCH" : not focusAvailable ? "WATCH" : sModelAge > 0 ? "TRACK" : alreadyEmitted ? "SIGNAL" : "ENTRY"
         array<string> headings = array.from("TF", "CRT", "BIAS", "REF", "T", "ENTRY", "N", "WHY", "DATA", "EARLY")
-        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (hasModel ? (sDir == 1 ? "BUY" : "SELL") : "-") + " | " + str.tostring(hasModel ? sCount : 0), dirText + " / " + biasTf, hasModel and hasIrl ? "IRL" : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals))
+        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (hasModel ? (sDir == 1 ? "BUY" : "SELL") : "-") + " | " + str.tostring(hasModel ? sCount : 0), dirText + " / " + biasTf, hasModel and hasIrl ? "IRL" : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals) + " H " + str.tostring(higherSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals))
         for row = 0 to 9
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
-            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | Parent C1 stays until its target is taken. INV ends only this attempt; Only original C3 can replace the raid once, with original key and close inside C1. TRACK after entry window; no automatic C3 expiry. Not fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C1. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit + "\n" + diagnosticSummary : row == 6 ? "CRT signals on closed LTF bars in C3 only; not fills or a win-rate." : "")
+            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | Parent C1 stays until its target is taken. INV ends only this attempt; Only original C3 can replace the raid once, with original key and close inside C1. TRACK after entry window; no automatic C3 expiry. Not fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C1. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit + "\n" + diagnosticSummary : row == 6 ? "C = main HTF, H = larger HTF. Separate source event counts; a merged marker may count once in each source. Closed LTF C3 only; not fills or win-rate." : "")
     array<ClusterCandle> clusterCandles = array.new<ClusterCandle>()
     if showCluster and clusterActive
         if array.size(candleTimes) > 0
@@ -1566,7 +1647,7 @@ if barstate.islast
                 label.set_textcolor(caption, archived ? color.gray : chart.fg_color)
                 int sourceClose = group == 3 ? (item.t == h3T ? h3End : item.t == h2T ? h2End : item.t == h1T ? h1End : item.t == largerLiveT ? largerEnd : na) : f_candleEnd(item.t, archived ? visibleArchive.aT : sAT, archived ? visibleArchive.aEnd : sAEnd, archived ? visibleArchive.bT : sBT, archived ? visibleArchive.bEnd : sBEnd, archived ? visibleArchive.cT : sCT, archived ? visibleArchive.cEnd : sCEnd, liveT, liveEnd, candleTimes, candleEndTimes)
                 string closeCaption = not archived and liveItem and not sourceClosed ? "Scheduled close " : "Close "
-                label.set_tooltip(caption, "Open " + str.format_time(item.t, "dd/MM HH:mm", NY) + " NY | " + closeCaption + (not na(sourceClose) ? str.format_time(sourceClose, "dd/MM HH:mm", NY) + " NY" : "-") + " | O " + str.tostring(item.o, format.mintick) + " H " + str.tostring(item.h, format.mintick) + " L " + str.tostring(item.l, format.mintick) + " C " + str.tostring(item.c, format.mintick) + (archived ? " | LAST / " + f_endTag(visibleArchive.endReason) : group == 3 ? " | Larger HTF context only; candle colour is not bias" : rawContext ? " | OHLC context; no confirmed parent selected" : " | Parent C1 " + str.format_time(sAT, "dd/MM HH:mm", NY) + " | Attempt confirmed " + str.format_time(sConfirmed, "dd/MM HH:mm", NY)))
+                label.set_tooltip(caption, "Open " + str.format_time(item.t, "dd/MM HH:mm", NY) + " NY | " + closeCaption + (not na(sourceClose) ? str.format_time(sourceClose, "dd/MM HH:mm", NY) + " NY" : "-") + " | O " + str.tostring(item.o, format.mintick) + " H " + str.tostring(item.h, format.mintick) + " L " + str.tostring(item.l, format.mintick) + " C " + str.tostring(item.c, format.mintick) + (archived ? " | LAST / " + f_endTag(visibleArchive.endReason) : group == 3 ? " | Larger HTF OHLC; its signal engine is controlled separately; candle colour is not bias" : rawContext ? " | OHLC context; no confirmed parent selected" : " | Parent C1 " + str.format_time(sAT, "dd/MM HH:mm", NY) + " | Attempt confirmed " + str.format_time(sConfirmed, "dd/MM HH:mm", NY)))
                 drawSlot += 1
             float headingSpan = group == 0 ? (originCount + followCount) * clusterStep - clusterStep + bodyWidth + (followCount > 0 ? groupGap : 0) : groupCount * clusterStep - clusterStep + bodyWidth
             int headingTime = groupStartTime + int(headingSpan * 0.5 * chartSeconds * 1000)
@@ -1575,7 +1656,7 @@ if barstate.islast
             string headingText = group == 0 ? f_tfName(htf) : group == 3 ? f_tfName(largerTf) : ""
             label.set_text(heading, headingText)
             label.set_textcolor(heading, group == 2 ? color.gray : chart.fg_color)
-            label.set_tooltip(heading, group == 2 ? "Ended attempt only | " + f_endTag(visibleArchive.endReason) + " | End " + str.format_time(visibleArchive.endedAt, "dd/MM HH:mm", NY) + " NY" : group == 3 ? "Larger HTF " + largerTf + " | confirmed candles + forming N* | observational, no entry gate" : contextOnlyCluster ? "Main HTF OHLC context only" : "Parent C1 " + str.format_time(sAT, "dd/MM HH:mm", NY) + " NY | Attempt " + str.tostring(int((sFlags + 1) / 2)) + " confirmed " + str.format_time(sConfirmed, "dd/MM HH:mm", NY) + " NY | entry window only after that confirmation")
+            label.set_tooltip(heading, group == 2 ? "Ended attempt only | " + f_endTag(visibleArchive.endReason) + " | End " + str.format_time(visibleArchive.endedAt, "dd/MM HH:mm", NY) + " NY" : group == 3 ? "Larger HTF " + largerTf + " | confirmed candles + live OHLC | signal engine controlled by Larger HTF signals" : contextOnlyCluster ? "Main HTF OHLC context only" : "Parent C1 " + str.format_time(sAT, "dd/MM HH:mm", NY) + " NY | Attempt " + str.tostring(int((sFlags + 1) / 2)) + " confirmed " + str.format_time(sConfirmed, "dd/MM HH:mm", NY) + " NY | entry window only after that confirmation")
             cursor += groupCount * clusterStep + groupGap
     int remaining = not na(liveEnd) ? math.max(0, int((liveEnd - timenow) / 1000)) : 0
     label.set_text(clockLabel, "")
@@ -1586,6 +1667,9 @@ alertcondition(modelEvent, "HTF", "TFA CRT: C2 confirmed; observe C3.")
 alertcondition(modelEvent and sPhase == 1, "TS", "TFA CRT: confirmed one-sided HTF sweep and reclaim. Observe C3.")
 alertcondition(entryLong, "E+", "TFA CRT Pure TS: confirmed LTF Buy signal in C3. See tooltip.")
 alertcondition(entryShort, "E-", "TFA CRT Pure TS: confirmed LTF Sell signal in C3. See tooltip.")
+
+alertcondition(higherResult.hit and higherResult.dir == 1, "Higher HTF E+", "TFA: independent higher HTF Buy confirmation. See source timeframe tooltip.")
+alertcondition(higherResult.hit and higherResult.dir == -1, "Higher HTF E-", "TFA: independent higher HTF Sell confirmation. See source timeframe tooltip.")
 
 alertcondition(earlyResult.hit and earlyResult.dir == 1, "Early C2 E+ · experimental", "TFA Early C2 Buy: provisional C2, not HTF confirmed. See E tooltip.")
 alertcondition(earlyResult.hit and earlyResult.dir == -1, "Early C2 E- · experimental", "TFA Early C2 Sell: provisional C2, not HTF confirmed. See E tooltip.")

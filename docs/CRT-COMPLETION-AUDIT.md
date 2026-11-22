@@ -4,7 +4,7 @@ Quy tắc hiện hành: [CRT thuần & thời gian](CRT-PURE-AND-TIME.md).
 
 Đã thực hiện: bỏ các bộ xác nhận và lớp giờ cũ trong chỉ báo/web/AI/checklist; CRT HTF có C2 đóng; TS LTF và retest trong cửa sổ sau xác nhận; IRL/ERL theo swing HTF; key ngược bias có trước C1; TG/INV/AMB và TRACK/WATCH; nhóm C1–raid và FOLLOW; giờ nến từ feed; đồng hồ C3 web nhập từ chart; migration giữ snapshot, nhật ký và cá cũ.
 
-Kiểm tra hiện hành: 16 nhóm trong node tools/check-crt.cjs và 13 nhóm trình duyệt trong node tools/check-crt-web.cjs. Có fixture đối xứng, thân hàm Pine thực tế được chuyển đổi giới hạn sang JS, kiểm tra DST và giữ dữ liệu tài chính. Đây không phải backtest lợi nhuận. Kết quả biên dịch và giới hạn Replay được ghi ở báo cáo bàn giao.
+Kiểm tra hiện hành: 18 nhóm trong node tools/check-crt.cjs và 13 nhóm trình duyệt trong node tools/check-crt-web.cjs. Có fixture đối xứng, thân hàm Pine thực tế được chuyển đổi giới hạn sang JS, kiểm tra DST và giữ dữ liệu tài chính. Đây không phải backtest lợi nhuận. Kết quả biên dịch và giới hạn Replay được ghi ở báo cáo bàn giao.
 
 Đã chuẩn bị bước nghiệm thu: [quy trình Replay CRT thuần](CRT-PURE-REPLAY.md), cột Data Window/CSV và công cụ đối chiếu dữ liệu xuất trước/sau reload. Kiểm tra parser, biên thời gian, ca đối xứng, dữ liệu thiếu và khác OHLC bằng fixture tổng hợp đã có; không tính chúng là Replay thị trường.
 
@@ -23,3 +23,7 @@ Sửa regression chọn C1: bỏ tái xác nhận từ raid xa và tái xác nh�
 Nghiệm thu bản sửa C1 trên cùng BTCUSD M5/H1 trong Brave: nguồn khớp canonical; Update on chart thành công, không có cảnh báo runtime. Cụm cũ Buy/R xa đã chuyển sang cặp Sell C1/C2 liền nhau. Tooltip C1 mở 21/11 08:00 NY, đóng 09:00 NY; attempt xác nhận lúc 10:00 NY. 16 suite CRT và kiểm tra web clock đạt; TradingView biên dịch exact source không lỗi/cảnh báo. Chưa có Replay thị trường.
 
 Nâng cấp giao diện/chẩn đoán tiếp theo: tên H1/H4 phía trên, hai countdown riêng dưới nến live, bỏ các nhãn giải thích cụm. 17 suite CRT đạt; biên dịch TradingView không lỗi/cảnh báo. Runtime tooltip WHY trên setup Sell nêu trên ghi 12 nến M5 C3, 2 mẫu TS, 0 retest, 0 signal, WAIT RETEST. H4 vẫn là display-only. Xem [báo cáo chẩn đoán](CRT-SIGNAL-DIAGNOSTICS.md); chưa đổi điều kiện entry để tăng số dấu.
+
+Đã triển khai Larger HTF signals: engine/snapshot/state/rào cản/khóa nhịp riêng, gộp marker theo bar/hướng và giữ nguồn trong tooltip, CSV chính vẫn cô lập. 24 input, 18 suite CRT; không đổi mặc định Pullback, không thêm Early H4. Nghiên cứu entry đối chiếu ảnh gốc bài 6219; phụ đề video vẫn chưa truy cập được nên không gán thuật toán TS/retest cho Romeo. Xem [nghiên cứu entry](CRT-ENTRY-ROMEOTPT.md) và [đặc tả hai nhánh](CRT-DUAL-HTF.md).
+
+Đã biên dịch exact source hai nhánh không lỗi/cảnh báo; cập nhật Brave bằng Update on chart sau so khớp mã. Kiểm tra công tắc Larger HTF signals: C9/H4 → C9/H0 → C9/H4, nhánh chính giữ nguyên. Latest giữ tối đa hai dấu cùng nến sự kiện gần nhất để không mất nguồn trái hướng. Các kiểm tra này không thay nghiệm thu Replay hai nhánh hoặc kiểm chứng hiệu suất.

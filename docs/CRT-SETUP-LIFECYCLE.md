@@ -35,10 +35,12 @@ Cụm chính giữ C1 + nến raid và FOLLOW. Chưa chọn parent thì hiện b
 
 **Larger HTF = Auto**: H1/H2 → H4; H4 → D1; D1 → W1. Có thể chọn H2/H4/D1/W1; lựa chọn không lớn hơn HTF chính quay về Auto. W1 chỉ là khung quan sát bổ sung; HTF model vẫn H1/H2/H4/D1. Nến đóng lấy offset xác nhận; N* tổng hợp OHLC chart hiện tại. Bucket đầu thiếu dữ liệu không giả là nến hoàn chỉnh.
 
-Cụm lớn hơn chỉ đối chiếu đồng pha bằng mắt, chưa lọc entry hay nhận diện CRT thứ hai. Màu nến không phải bias. Màn hình hẹp có thể cần tăng khoảng trống phải hoặc giảm FOLLOW; không co body để nhét hình.
+Nhánh Larger HTF signals nay có engine CRT/entry độc lập, bật sẵn; công tắc cụm nến chỉ điều khiển OHLC. Màu nến không phải bias. Xem [hai nhánh CRT](CRT-DUAL-HTF.md) để phân biệt cửa sổ và nguồn dấu. Màn hình hẹp có thể cần tăng khoảng trống phải hoặc giảm FOLLOW; không co body để nhét hình.
 
 ## Early C2 và kiểm tra
 
 [Early C2 thử nghiệm](EARLY-C2-EXPERIMENT.md) vẫn dùng C1 ngay trước bucket C2 hiện tại; chưa vào sớm cho lần tái xác nhận của parent cũ. Mỗi E khóa SL/TP riêng, không tự hồi sinh sau hủy. Confirmed/Early không trộn dấu.
 
-Chạy node tools/check-crt.cjs: 16 nhóm, có 18 ca parent Buy/Sell (gồm từ chối raid xa/raid dây chuyền), kiểm tra ưu tiên C1 từ hàm Pine thực tế, 34 trace vòng đời, 74 trace Early và kiểm tra nguồn OHLC/hình vẽ. Test tổng hợp/biên dịch không thay Replay thị trường. Brave Basic vẫn bị chặn Replay intraday. Chưa có backtest hiệu suất cho thay đổi này.
+Chạy node tools/check-crt.cjs: 18 nhóm, có 18 ca parent Buy/Sell (gồm từ chối raid xa/raid dây chuyền), kiểm tra ưu tiên C1 từ hàm Pine thực tế, 34 trace vòng đời, 74 trace Early và kiểm tra nguồn OHLC/hình vẽ. Test tổng hợp/biên dịch không thay Replay thị trường. Brave Basic vẫn bị chặn Replay intraday. Chưa có backtest hiệu suất cho thay đổi này.
+
+Cập nhật hai nhánh Confirmed: [H1/H4 độc lập, nguồn tam giác và giới hạn khung](CRT-DUAL-HTF.md). Đối chiếu entry sau TS từ [nguồn Romeotpt](CRT-ENTRY-ROMEOTPT.md); Pullback trong code vẫn là quy ước cá nhân.

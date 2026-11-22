@@ -9,5 +9,5 @@ assert.match(s,/headingText = group == 0 \? f_tfName\(htf\) : group == 3 \? f_tf
 assert.match(s,/label.set_style\(heading, label.style_label_down\)/);
 assert.match(s,/not archived and liveItem \? f_countdown/);
 assert.doesNotMatch(s,/string candleCaption =[^\n]*"(?:C1|C2|N\*|R|F)"/);
-assert.match(s,/diagnostic.bars \+= 1/);assert.match(s,/map.get\(signalAudits, diagnosticToken\)/);assert.match(s,/row == 7 \? lastClosedAudit \+ "\\n" \+ diagnosticSummary/);
+assert.match(s,/data.bars \+= 1/);assert.match(s,/map.get\(records, token\)/);assert.match(s,/row == 7 \? lastClosedAudit \+ "\\n" \+ diagnosticSummary/);
 console.log('PASS actual countdown function: rounding, elapsed/unknown/long sessions; timeframe-only headers, live-only clocks and diagnostic tooltip.');

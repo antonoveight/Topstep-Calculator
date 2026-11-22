@@ -1,0 +1,52 @@
+{
+  "reviewDate": "2026-11-22",
+  "channelId": "UCYCbFixbl2KcyLuH6cOfL2g",
+  "post": {
+    "url": "https://t.me/officialRomeotpt/6219",
+    "publicContext": "https://t.me/s/officialRomeotpt/6221",
+    "attachedImagesReviewed": 2,
+    "interpretation": "Separate CRTL / TS and C3 entry annotations, no verified universal M5-retest algorithm"
+  },
+  "videos": [
+    {
+      "videoId": "U-gNCwbGtTI",
+      "title": "What is turtle soup?",
+      "url": "https://www.youtube.com/watch?v=U-gNCwbGtTI",
+      "channelId": "UCYCbFixbl2KcyLuH6cOfL2g",
+      "metadataVerified": true,
+      "captionBytes": 0,
+      "fullTranscriptReviewed": false,
+      "technicalPlayerFrameVerified": false
+    },
+    {
+      "videoId": "T7udbrWlARI",
+      "title": "CRT secrets ep.1: One CRT model for life",
+      "url": "https://www.youtube.com/watch?v=T7udbrWlARI",
+      "channelId": "UCYCbFixbl2KcyLuH6cOfL2g",
+      "metadataVerified": true,
+      "captionBytes": 0,
+      "fullTranscriptReviewed": false,
+      "technicalPlayerFrameVerified": false
+    },
+    {
+      "videoId": "h7NCST2wPw8",
+      "title": "CRT secrets ep.7: Candle 3",
+      "url": "https://www.youtube.com/watch?v=h7NCST2wPw8",
+      "channelId": "UCYCbFixbl2KcyLuH6cOfL2g",
+      "metadataVerified": true,
+      "captionBytes": 0,
+      "fullTranscriptReviewed": false,
+      "technicalPlayerFrameVerified": false
+    },
+    {
+      "videoId": "2sxdsgcIeYA",
+      "title": "CRT secrets ep.9: Connecting the dots",
+      "url": "https://www.youtube.com/watch?v=2sxdsgcIeYA",
+      "channelId": "UCYCbFixbl2KcyLuH6cOfL2g",
+      "metadataVerified": true,
+      "captionBytes": 0,
+      "fullTranscriptReviewed": false,
+      "technicalPlayerFrameVerified": false
+    }
+  ]
+}

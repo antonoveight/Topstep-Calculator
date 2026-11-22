@@ -1,6 +1,6 @@
 # Early C2 · bản thử quan sát
 
-Ngày 22/11/2026: người dùng cho phép bật Early C2 để quan sát thực tế và phản hồi, thay phạm vi trước đây chỉ nghiên cứu. Input **Early C2 · experimental** mặc định bật; có thể tắt để chỉ xem tín hiệu Confirmed. Chỉ báo có 23 input, gồm hai tùy chọn cụm HTF lớn hơn.
+Ngày 22/11/2026: người dùng cho phép bật Early C2 để quan sát thực tế và phản hồi, thay phạm vi trước đây chỉ nghiên cứu. Input **Early C2 · experimental** mặc định bật; có thể tắt để chỉ xem tín hiệu Confirmed. Chỉ báo có 24 input, gồm hai tùy chọn cụm HTF lớn hơn.
 
 Đây là quy ước cá nhân của công cụ, không tuyên bố một thuật toán đã được Romeotpt xác nhận, không phải kết quả backtest và không tự đặt lệnh.
 
