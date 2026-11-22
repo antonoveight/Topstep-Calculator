@@ -1,6 +1,6 @@
 # Hai nhánh CRT Confirmed · 22/11/2026
 
-**Larger HTF signals** mặc định bật. **Larger HTF** dùng lựa chọn đã có ở Display: Auto H1/H2 → H4, H4 → D1, D1 → W1. Tổng cộng 24 input. Mỗi nhánh tìm CRT trên feed khung của mình, dùng snapshot chỉ từ nến đã đóng; nhánh lớn đóng gói object để tránh vượt giới hạn tổng 127 trường tuple request của Pine.
+**Larger HTF signals** mặc định bật. **Larger HTF** dùng lựa chọn đã có ở Display: Auto H1/H2 → H4, H4 → D1, D1 → W1. Tổng cộng 30 input. Mỗi nhánh tìm CRT trên feed khung của mình, dùng snapshot chỉ từ nến đã đóng; nhánh lớn đóng gói object để tránh vượt giới hạn tổng 127 trường tuple request của Pine.
 
 ## Phạm vi độc lập
 
@@ -36,3 +36,7 @@ Các cột CSV/audit Confirmed cũ vẫn chỉ ghi nhánh chính, không đưa s
 Nghiệm thu Brave trên BTCUSD CRYPTO M5, main H1 / larger Auto H4 / bias D1, Pullback/Fresh reaction: mã editor so khớp canonical, Update on chart chạy không có thông báo lỗi runtime. Dữ liệu đang tải ghi C9/H4; tắt riêng Larger HTF signals về C9/H0, bật lại C9/H4. Đây là số sự kiện của từng nguồn trên tập dữ liệu đang tải, không phải số lệnh khớp hay win rate. Không tính kiểm tra này là Replay; chưa có ảnh hover của từng tam giác H4 hoặc đối chiếu CSV thị trường cho toàn bộ nhánh lớn.
 
 Nền tảng entry và giới hạn đối chiếu tác giả: [Entry Romeotpt](CRT-ENTRY-ROMEOTPT.md). Quy tắc C1 và C3 thay raid vẫn theo [vòng đời setup](CRT-SETUP-LIFECYCLE.md).
+
+
+Cập nhật tích hợp 22/11/2026: R1 đã có trong Pine dưới lựa chọn **Signal timing → R1 first leg · experimental**, mặc định vẫn Pullback. Vùng hồi còn khai báo thủ công, độc lập cho Main/Larger HTF. Xem [hướng dẫn R1](CRT-FIRST-LEG-SPEC.md#sử-dụng-r1-trong-chỉ-báo).
+R1 thay kênh Confirmed của cả hai nguồn khi được chọn; trạng thái và vùng khai báo riêng. Early không đổi sang R1.

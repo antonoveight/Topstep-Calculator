@@ -32,7 +32,7 @@ assert.match(source,/"C3 CLOSED"/);
 assert.match(source,/bool modelEvent = changedModel and focusAvailable and sModelAge == 0 and barstate.isconfirmed/,'Retired context must not generate a fresh TS alert');
 assert.match(source,/if selectedEntry and risk > 0 and not na\(target\) and reward > 0 and biasAllowed and timeAllowed/);
 assert.match(source,/not invalidBar and not localTargetTaken and not alreadyEmitted and waveAllowed/);
-assert.equal((source.match(/ChannelResult crtResult = f_stepChannel/g)||[]).length,1);
+assert.equal((source.match(/ChannelResult crtResult = r1Mode \?/g)||[]).length,1);
 assert.match(source,/state.everSent := true/);assert.match(source,/f_countdown\(group == 3 \? largerEnd : liveEnd, timenow\)/);
 assert.match(source,/overlay=true, scale=scale.none/);
 assert.doesNotMatch(source,/(?:string|float|int|bool)\s+(?:text|range|return|class)\s*[,=)]/);

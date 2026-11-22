@@ -15,6 +15,7 @@ for(const dir of [1,-1]){
  };
  assert.deepEqual(run().hits.map(x=>x.time),[103]);
  assert.deepEqual(run(base,{timing:'Confirmation close'}).hits.map(x=>x.time),[102]);
+ assert.deepEqual(run(base,{timing:'R1 first leg · experimental',r1Mode:true}).hits.map(x=>x.time),[103],'Early remains TS/Pullback when confirmed channels use R1');
  assert.deepEqual(run(base,{enabled:false}).hits,[]);
  assert.deepEqual(run(base,{confirmed:false}).hits,[]);
  assert.deepEqual(run(base,{isLtf:false}).hits,[]);

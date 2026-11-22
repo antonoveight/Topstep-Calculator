@@ -62,4 +62,4 @@ Báo cáo mặc định output/crt-entry-study/report.json có hash source/fixtu
 
 **Quyết định hiện tại:** tiếp tục dùng hai nhánh và Pullback mặc định để quan sát. Chưa triển khai Model 1/OTE/True MSS, chưa đổi bộ lọc hoặc mức TP/SL. Nghiên cứu tiếp cần lấy ví dụ xác nhận nhịp đầu và nhịp hồi từ bài giảng gốc có lời giải đủ rõ, cùng ít nhất một ca bị loại. Chỉ sau đó mới đặc tả một nhánh thử tách biệt để đối chiếu; không thay baseline vì vài nhịp đã đi tới target.
 
-Người dùng đã chọn bước **đặc tả và kiểm tra ngoài chart trước**: [R1 xác nhận nhịp đầu và vùng hồi khai báo](CRT-FIRST-LEG-SPEC.md). Đã có module giả thuyết cá nhân và 64 ca tổng hợp, chưa tích hợp Pine. R1 chưa tự tìm vùng OTE hoặc gán thành Model 1; các giới hạn nguồn ở trên vẫn còn hiệu lực.
+Người dùng đã chọn bước **đặc tả và kiểm tra ngoài chart trước**: [R1 xác nhận nhịp đầu và vùng hồi khai báo](CRT-FIRST-LEG-SPEC.md). Đã có module giả thuyết cá nhân và 64 ca tổng hợp; sau yêu cầu tiếp theo, Pine đã có lựa chọn R1 thử nghiệm với vùng hồi khai báo, mặc định tắt. Xem phần sử dụng trong đặc tả R1. R1 chưa tự tìm vùng OTE hoặc gán thành Model 1; các giới hạn nguồn ở trên vẫn còn hiệu lực.
