@@ -57,7 +57,7 @@ assert.ok(audit(withEarly([null,null,null,1],0)).issues.some(x=>x.rule==='invali
 const s=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
 for(const title of Object.values(C))assert.ok(s.includes('"'+title+'"'),'Actual plot missing '+title);
 for(const line of s.split(/\r?\n/).filter(l=>l.startsWith('plot(')&&l.includes('"TFA audit ')))assert.ok(line.includes('display=display.data_window'));
-assert.equal((s.match(/= input\./g)||[]).length,22,'One explicit experimental Early switch; audit adds no settings');
+assert.equal((s.match(/= input\./g)||[]).length,21,'Early switch retained; obsolete context timeout removed; audit adds no settings');
 assert.equal(s,fs.readFileSync('chibao.txt','utf8'));
 // Exercise CLI exit codes/report output without touching the user's real report.
 const path=require('node:path'),{spawnSync}=require('node:child_process');
@@ -74,4 +74,4 @@ const empty=tape().map(x=>({...x,dir:null}));fs.writeFileSync(reload,csv(empty))
 assert.equal(cli(input,reload).status,1);assert.equal(report().comparison.status,'differences');
 assert.equal(cli(reload).status,2);assert.equal(report().replay.status,'incomplete');
 assert.equal(cli().status,1);
-console.log(`PASS ${checked} symmetric export audit cases; strict CSV/time parsing, partial/no-signal coverage, reload differences, changed OHLC/feed, actual plot wiring and 22 inputs. Synthetic only.`);
+console.log(`PASS ${checked} symmetric export audit cases; strict CSV/time parsing, partial/no-signal coverage, reload differences, changed OHLC/feed, actual plot wiring and 21 inputs. Synthetic only.`);

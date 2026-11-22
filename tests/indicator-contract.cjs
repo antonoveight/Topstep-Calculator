@@ -29,7 +29,7 @@ assert.match(source,/bool armed = not na\(ctx.id\) and ctx.kind == 1/);
 assert.match(source,/SignalContext.new\(age=sModelAge/);
 assert.match(source,/bool entryWindow = ctx.age == 0/);
 assert.match(source,/"C3 CLOSED"/);
-assert.match(source,/bool modelEvent = changedModel and not na\(sId\) and sModelAge == 0 and barstate.isconfirmed/,'Context fallback must not generate a fresh TS alert');
+assert.match(source,/bool modelEvent = changedModel and focusAvailable and sModelAge == 0 and barstate.isconfirmed/,'Retired context must not generate a fresh TS alert');
 assert.match(source,/if selectedEntry and risk > 0 and not na\(target\) and reward > 0 and biasAllowed and timeAllowed/);
 assert.match(source,/not invalidBar and not localTargetTaken and not alreadyEmitted and waveAllowed/);
 assert.equal((source.match(/ChannelResult crtResult = f_stepChannel/g)||[]).length,1);

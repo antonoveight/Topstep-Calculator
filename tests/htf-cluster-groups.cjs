@@ -17,7 +17,7 @@ const nested=h.split(tape,1,100,101,102,6);
 assert.equal(nested.total,38,'C3 stays in FOLLOW; source pair never expands');
 assert.deepEqual(h.split([],1,null,null,null).origin,[],'No active model means no source/follow');
 const m={uid:101,flags:1,kind:1,phase:1,aT:100,aO:200,aH:204,aL:198,aC:202,bT:101,bO:202,bH:206,bL:201,bC:204,cT:102,cO:204,cH:210,cL:203,cC:209};
-for(const reason of [1,2,3,4,5,6]){
+for(const reason of [1,2,3,4,5,6,7]){
  const model={...m},ended=h.archive(model,reason,130);
  model.aH=999;model.uid=999;
  assert.equal(ended.uid,101);assert.equal(ended.aH,204,'Archive owns copied primitive OHLC, independent of later model updates');

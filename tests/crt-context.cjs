@@ -10,7 +10,7 @@ for(let i=0;i<3000;i++){const l=98-rand()*5,hi=102+rand()*15,c2={o:104,h:hi,l,c:
 // Execute the actual source lifecycle helper, not a parallel registry implementation.
 const body=source.match(/f_crtEnd\([^\n]+=>\n([\s\S]*?)\n\n/)[1].trim().split('\n').filter(l=>l.trim()&&!l.trim().startsWith('//'));
 const endCode=body.map((l,i)=>i===body.length-1?'return '+js(l.trim())+';':js(l.trim().replace(/^bool /,'let '))+';').join('\n');
-const end=Function('direction','invalidation','targetLevel','barHigh','barLow','closing','older','outsideHistory','timedOut',endCode);
+const end=Function('direction','invalidation','targetLevel','barHigh','barLow','closing','older','outsideHistory','timedOut','entryExpired',endCode);
 for(const dir of [1,-1])for(const [high,low,close,older,hist,timeout,want] of [[109,101,105,true,false,false,0],[111,101,109,true,false,false,2],[109,98,98,true,false,false,1],[111,98,98,true,false,false,4],[109,101,105,true,false,true,3],[109,101,105,true,true,true,5],[111,98,98,false,false,false,0],[111,101,109,true,false,true,2]]){
  assert.equal(dir===1?end(1,99,110,high,low,close,older,hist,timeout):end(-1,101,90,200-low,200-high,200-close,older,hist,timeout),want);
 }

@@ -30,9 +30,9 @@ for(const dir of [1,-1]){
  assert.deepEqual(run(base.filter(x=>x.t!==101)).hits,[],'Missing a candle inside C2 invalidates the observed path');
  assert.deepEqual(run(base,{}, {finish:104}).hits,[],'Last C2 LTF close is not an Early signal');
  const touch=base.map(x=>({...x,l:Math.max(90,x.l)}));assert.deepEqual(run(touch).hits,[]);
- const double=base.map((x,i)=>i===0?{...x,h:111}:x);assert.deepEqual(run(double).hits,[]);
- const target=base.map((x,i)=>i===0?{...x,h:110}:x);assert.deepEqual(run(target).hits,[]);
- const lost=base.map((x,i)=>i===1?{...x,l:89.5,c:89.75}:x);assert.deepEqual(run(lost).hits,[]);
+ const double=base.map((x,i)=>i===0?{...x,h:111}:x),doubleRun=run(double);assert.deepEqual(doubleRun.hits,[]);assert.equal(doubleRun.state.status,'E DOUBLE');
+ const target=base.map((x,i)=>i===0?{...x,h:110}:x),targetRun=run(target);assert.deepEqual(targetRun.hits,[]);assert.equal(targetRun.state.status,'E TP TAKEN');
+ const lost=base.map((x,i)=>i===1?{...x,l:89.5,c:89.75}:x),lostRun=run(lost);assert.deepEqual(lostRun.hits,[]);assert.equal(lostRun.state.status,'E KEY LOST');
  const extension=[...base.slice(0,2),b(102,98,99,88,96),b(103,96,100,94,98),b(104,98,99,93,96),b(105,96,98,94,96)];
  const reset=run(extension);assert.deepEqual(reset.hits.map(x=>x.time),[105]);assert.equal(reset.state.attempts,2);assert.equal(reset.state.lockedSl,dir===1?88:112);
  const post=[...base.slice(0,4),b(104,96,100,88,95)];const frozen=run(post);assert.equal(frozen.hits.length,1);assert.equal(frozen.state.lockedSl,dir===1?89:111);assert.equal(frozen.state.status,'E SL REF');

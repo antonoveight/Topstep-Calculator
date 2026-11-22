@@ -12,7 +12,7 @@ Công cụ `tools/audit-crt-replay.cjs` đọc CSV để kiểm tra bằng chứ
 
 ## Cố định mẫu trước khi nhìn kết quả
 
-Khởi đầu theo cấu hình hiện tại: H1/M5, Bias TF D1, Auto bias, Pullback, Fresh reaction, timeout 8. Ghi nguyên mã và feed, loại phiên hiển thị, ngày giờ NY/VN, tick size, cấu hình và phiên bản mã. Không ghép XAUUSD CFD với MGC futures thành một mẫu; không đổi nhà cung cấp giữa hai lần xuất.
+Khởi đầu theo cấu hình hiện tại: H1/M5, Bias TF D1, Auto bias, Pullback, Fresh reaction. Ghi nguyên mã và feed, loại phiên hiển thị, ngày giờ NY/VN, tick size, cấu hình và phiên bản mã. Không ghép XAUUSD CFD với MGC futures thành một mẫu; không đổi nhà cung cấp giữa hai lần xuất.
 
 Chọn trước một đoạn nhiều phiên liên tiếp có đủ lịch sử để bias/pivot khởi tạo. Sau đó rà hết các model CRT trong đoạn, gồm cả model không có tam giác. Mục tiêu đầu tiên là đúng logic và dễ giải thích; không chỉnh setting theo vài lệnh thắng đẹp. Chỉ chuyển sang đánh giá lợi nhuận sau khi đã có quy tắc khớp lệnh, chi phí và SL/TP cụ thể.
 
@@ -57,3 +57,5 @@ Exit code 0: các kiểm tra có bằng chứng đã qua; 1: đầu vào lỗi h
 Chỉ chốt sau khi đã có chart/CSV thực và các ca quan sát được giải thích. Ghi rõ ca chưa gặp hoặc chưa kiểm tra; không ép đủ số ca bằng dữ liệu tổng hợp rồi gọi là nghiệm thu thị trường.
 
 Early C2 hiện là thử nghiệm riêng đã được người dùng cho phép bật. Cột Early có tên riêng; công cụ ghi các sự kiện này là chưa kiểm chứng bởi bộ audit Confirmed C3. So reload vẫn kiểm tra E thay đổi trên các nến chung và phân biệt đổi công tắc Early với khác biệt tín hiệu. Không coi Confirmation close của C3 là Early C2.
+
+Vòng đời setup hiện hành: [INV / TG / EXP và tìm model mới](CRT-SETUP-LIFECYCLE.md).

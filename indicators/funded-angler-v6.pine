@@ -22,8 +22,8 @@ string htf = overviewMode ? timeframe.period : htfInput
 minSweepTicks = 1
 scanDepth = 1000
 queueLimit = 12
-lifeHtf = input.int(8, "Context timeout (HTF bars, 0 = off)", minval=0, maxval=48, group=G_HTF, tooltip="Giới hạn lưu bối cảnh sau C2. Entry chỉ trong C3, độc lập với timeout. TG=chạm target; INV=close HTF qua cực trị C2; TO=hết thời gian quan sát, không phải kết quả lệnh. 0 tắt timeout.")
-invalidMode = "Close"
+// Setups retire at INV/TP or the end of C3; no stale context timeout/fallback.
+lifeHtf = 0
 htfPivotLength = 2
 tsReference = "C1 range"
 manualSsl = 0.0
@@ -74,7 +74,7 @@ if barstate.isfirst and (not chart.is_standard or na(chartSeconds) or chartSecon
     runtime.error("Use a standard chart TF dividing HTF; effective HTF <= Bias TF. Higher charts use their own TF as VIEW.")
 
 f_endTag(int reason) =>
-    reason == 1 ? "INV" : reason == 2 ? "TG" : reason == 3 ? "TO" : reason == 4 ? "AMB" : reason == 5 ? "HIST" : reason == 6 ? "CAP" : "WAIT"
+    reason == 1 ? "INV" : reason == 2 ? "TG" : reason == 3 ? "TO" : reason == 4 ? "AMB" : reason == 5 ? "HIST" : reason == 6 ? "CAP" : reason == 7 ? "EXP" : "WAIT"
 f_has(int flags, int bit) =>
     int(math.floor(flags / bit)) % 2 == 1
 f_patterns(float c1o, float c1h, float c1l, float c1c, float c2o, float c2h, float c2l, float c2c) =>
@@ -267,10 +267,10 @@ f_archiveAllowed(int kind) =>
     kind == 1
 
 // Context outcomes, not executed trade outcomes. OHLC cannot order both barriers.
-f_crtEnd(int direction, float invalidation, float targetLevel, float barHigh, float barLow, float closing, bool older, bool outsideHistory, bool timedOut) =>
-    bool bad = older and (direction == 1 ? closing < invalidation : closing > invalidation)
+f_crtEnd(int direction, float invalidation, float targetLevel, float barHigh, float barLow, float closing, bool older, bool outsideHistory, bool timedOut, bool entryExpired = false) =>
+    bool bad = older and (direction == 1 ? barLow <= invalidation : barHigh >= invalidation)
     bool reached = older and (direction == 1 ? barHigh >= targetLevel : barLow <= targetLevel)
-    bad and reached ? 4 : bad ? 1 : reached ? 2 : outsideHistory ? 5 : timedOut ? 3 : 0
+    bad and reached ? 4 : bad ? 1 : reached ? 2 : entryExpired ? 7 : outsideHistory ? 5 : timedOut ? 3 : 0
 
 // References are matched BEFORE current-bar pool consumption/creation.
 f_keyReact(CrtKey k, int beforeTime, int direction, float barHigh, float barLow, float barClose) =>
@@ -397,7 +397,7 @@ f_engine() =>
         float equilibrium = (m.hi + m.lo) / 2
         if older and (m.dir == 1 ? high >= equilibrium : low <= equilibrium)
             m.eqTouched := true
-        int endingReason = f_crtEnd(m.dir, m.inv, m.cp, high, low, close, older, m.uid < scanStart, lifeHtf > 0 and bar_index - m.bornIndex >= lifeHtf)
+        int endingReason = f_crtEnd(m.dir, m.inv, m.cp, high, low, close, older, m.uid < scanStart, false, older and bar_index > m.bornIndex)
         if endingReason != 0
             lastRetired := m.uid
             retiredReason := endingReason
@@ -476,18 +476,13 @@ f_engine() =>
                 m.irlL := na
                 m.irlKind := 0
             f_refreshIrl(m, swings)
-    // Prefer the oldest entry-open CRT. Expired entry windows remain context only.
+    // Only an entry-open CRT may be active. Ended contexts belong exclusively to LAST.
     Model selected = Model.new()
-    Model fallback = Model.new()
     if array.size(models) > 0
         for i = 0 to array.size(models) - 1
             Model candidate = array.get(models, i)
-            if na(fallback.uid)
-                fallback := candidate
             if na(selected.uid) and bar_index == candidate.bornIndex
                 selected := candidate
-    if na(selected.uid)
-        selected := fallback
     priorFocusId := selected.uid
     bool historyReady = firstSeen <= scanStart
     [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft, selected.innerHi, selected.innerLo, selected.innerHiT, selected.innerLoT, lastEnded, selected.crtKey, selected.eqTouched, selected.aEnd, selected.cEnd]
@@ -574,10 +569,49 @@ else
     liveL := math.min(liveL, low)
     liveC := close
 
+// The HTF snapshot is immutable. A chart-side latch retires it on CLOSED LTF
+// evidence without waiting for the forming HTF candle to close or rewriting history.
+type FocusLifecycle
+    int uid = na
+    int reason = 0
+    int endedAt = na
+    ModelArchive archived = na
+
+f_stepFocus(FocusLifecycle state, int uid, int direction, int confirmedAt, float invalidation, float targetLevel, int age, int barOpen, int barClose, float barHigh, float barLow, bool closedBar) =>
+    int endedNow = 0
+    if not na(uid) and (na(state.uid) or state.uid != uid)
+        state.uid := uid
+        state.reason := 0
+        state.endedAt := na
+    if not na(uid) and state.reason == 0 and closedBar
+        bool older = barOpen >= confirmedAt
+        int reason = f_crtEnd(direction, invalidation, targetLevel, barHigh, barLow, na, older, false, false, age > 0)
+        if reason != 0
+            state.reason := reason
+            state.endedAt := barClose
+            endedNow := reason
+    endedNow
+
+f_visibleArchive(ModelArchive localArchive, ModelArchive htfArchive) =>
+    bool localReady = not na(localArchive) and not na(localArchive.uid)
+    bool htfReady = not na(htfArchive) and not na(htfArchive.uid)
+    bool preferLocal = localReady and (not htfReady or localArchive.uid == htfArchive.uid or localArchive.endedAt >= htfArchive.endedAt)
+    preferLocal ? localArchive : htfArchive
+
+var FocusLifecycle focusLife = FocusLifecycle.new()
+int focusEndedNow = f_stepFocus(focusLife, sId, sDir, sConfirmed, sInv, sCp, sModelAge, time, time_close, high, low, barstate.isconfirmed)
+if focusEndedNow != 0
+    // The local event may be mid-HTF: preserve C1/C2, never fabricate a closed C3.
+    focusLife.archived := ModelArchive.new(aEnd=sAEnd, bEnd=sConfirmed, uid=sId, flags=sFlags, kind=sKind, phase=sPhase, aO=sAO, aH=sAH, aL=sAL, aC=sAC, aT=sAT, bO=sBO, bH=sBH, bL=sBL, bC=sBC, bT=sBT, endReason=focusEndedNow, endedAt=time_close)
+bool focusAvailable = not na(sId) and focusLife.uid == sId and focusLife.reason == 0 and sModelAge == 0
+ModelArchive visibleArchive = f_visibleArchive(focusLife.archived, sArchived)
+int lastSetupEnd = not na(visibleArchive) and not na(visibleArchive.uid) ? visibleArchive.endReason : sReason
+
+
 // CRT time follows the actual feed candle boundaries, including session gaps.
 // No clock-hour gate: the confirmed-C2 / C3-only lifecycle gates entries.
 bool timeAllowed = true
-string crtTimeText = na(liveEnd) ? "-" : (na(sId) ? "HTF " : sModelAge == 0 ? "C3 " : "CTX ") + str.format_time(liveEnd, "HH:mm", NY) + " NY"
+string crtTimeText = na(liveEnd) ? "-" : (focusAvailable ? "C3 " : "HTF ") + str.format_time(liveEnd, "HH:mm", NY) + " NY"
 
 type SignalContext
     int age = 0
@@ -722,12 +756,14 @@ if barstate.isconfirmed
         lastPivotLow := pivotLow
         lastPivotLowTime := time[pivotLength]
 var ReactionState crtState = ReactionState.new()
-SignalContext ctx = SignalContext.new(age=sModelAge, crtKey=kCrtKey, kind=1, id=sId, flags=sFlags, phase=sPhase, dir=sDir, confirmed=sConfirmed, resolved=sResolved, hi=sHi, lo=sLo, inv=sInv, cp=sCp, irlH=sIrlH, irlL=sIrlL, irlT=sIrlT)
-string modelKey = f_contextKey(sId, sResolved, sDir)
+SignalContext ctx = SignalContext.new(age=sModelAge, crtKey=kCrtKey, kind=1, id=focusAvailable ? sId : na, flags=sFlags, phase=sPhase, dir=sDir, confirmed=sConfirmed, resolved=sResolved, hi=sHi, lo=sLo, inv=sInv, cp=sCp, irlH=sIrlH, irlL=sIrlL, irlT=sIrlT)
+string modelKey = f_contextKey(focusAvailable ? sId : na, sResolved, sDir)
 if barstate.isconfirmed and crtState.key != modelKey
     crtState := ReactionState.new(key=modelKey, activatedAt=sConfirmed, phaseAt=sConfirmed)
 bool waveAllowed = sDir == 1 ? na(lastBuyTime) or bar_index == lastBuyBar or (not na(lastPivotLowTime) and lastPivotLowTime > lastBuyTime) : na(lastSellTime) or bar_index == lastSellBar or (not na(lastPivotHighTime) and lastPivotHighTime > lastSellTime)
 ChannelResult crtResult = f_stepChannel(ctx, crtState, lastPivotHigh, lastPivotLow, pivotHigh, pivotLow, waveAllowed)
+if not focusAvailable
+    crtResult.status := focusLife.uid == sId and focusLife.reason != 0 ? f_endTag(focusLife.reason) : "WAIT CRT"
 if crtResult.hit and crtResult.dir == 1
     lastBuyTime := time
     lastBuyBar := bar_index
@@ -760,6 +796,7 @@ type EarlyState
     CrtKey key = na
     ReactionState channel = na
     string status = "WAIT C2"
+    string terminalReason = ""
 type EarlyResult
     bool hit = false
     int dir = 0
@@ -793,6 +830,7 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
             state.lockedTp := na
             state.key := CrtKey.new()
             state.channel := ReactionState.new()
+            state.terminalReason := ""
         if not newWindow and time != state.lastClose
             state.complete := false
         state.lastClose := time_close
@@ -817,16 +855,19 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
             if not state.blocked and (stopped or reached)
                 state.blocked := true
                 state.status := stopped and reached ? "E AMB" : stopped ? "E SL REF" : "E TP REF"
+                state.terminalReason := state.status
             else if not state.blocked
                 state.status := time_close >= ref.finish ? "E C2 ENDED" : "E SENT"
+        else if state.blocked
+            state.status := state.terminalReason
         else if time_close >= ref.finish
             state.blocked := true
             state.status := both ? "E DOUBLE" : targetTaken ? "E TP TAKEN" : state.dir != 0 and inside ? "E C2 CONFIRMED" : "E C2 REJECTED"
-        else if state.blocked
-            state.status := "E BLOCKED"
+            state.terminalReason := state.status
         else if both or targetTaken
             state.blocked := true
             state.status := both ? "E DOUBLE" : "E TP TAKEN"
+            state.terminalReason := state.status
         else if state.dir == 0
             state.status := "E WAIT RAID"
         else if not biasOk
@@ -846,6 +887,7 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
             if hasKey and not keyHeld
                 state.blocked := true
                 state.status := "E KEY LOST"
+                state.terminalReason := state.status
             else if not hasKey or not inside
                 state.status := not hasKey ? "E NO KEY" : "E WAIT RECLAIM"
             else if na(state.reclaimedAt)
@@ -921,8 +963,8 @@ var int modelObservedIndex = na
 var int modelObservedTime = na
 if changedModel
     selectedKey := modelKey
-    modelObservedIndex := not na(sId) ? bar_index : na
-    modelObservedTime := not na(sId) ? time : na
+    modelObservedIndex := focusAvailable ? bar_index : na
+    modelObservedTime := focusAvailable ? time : na
     lastVisualTime := na
     lastVisualIndex := na
     lastVisualBucket := na
@@ -941,7 +983,7 @@ f_sourceIndex(int sourceTime) =>
                 break
     found
 int modelAnchorTime = not na(sResolved) and sResolved > sConfirmed and not na(sCT) ? sCT : sBT
-int modelAnchorIndex = onHtf and barstate.islast and not na(sId) and (not recentOnly or sModelAge <= drawHtfBars) ? f_sourceIndex(modelAnchorTime) : na
+int modelAnchorIndex = onHtf and barstate.islast and focusAvailable and (not recentOnly or sModelAge <= drawHtfBars) ? f_sourceIndex(modelAnchorTime) : na
 int drawAnchorIndex = onHtf ? modelAnchorIndex : lastVisualKey == modelKey and not na(lastVisualIndex) ? lastVisualIndex : modelObservedIndex
 int drawAnchorTime = onHtf ? modelAnchorTime : lastVisualKey == modelKey and not na(lastVisualTime) ? lastVisualTime : modelObservedTime
 int drawSpan = int(math.ceil(drawHtfBars * htfSeconds / chartSeconds))
@@ -949,10 +991,10 @@ int labelLaneBars = chartTextSize == "Huge" ? 48 : chartTextSize == "Large" ? 36
 int clusterStartIndex = bar_index + (showLevels or showConfirm or showIrl ? math.max(clusterOffset, labelLaneBars + 12) : clusterOffset)
 int drawingClipIndex = showCluster ? clusterStartIndex - labelLaneBars - 2 : bar_index + 498
 int drawEndIndex = not na(drawAnchorIndex) ? math.min(drawAnchorIndex + drawSpan, drawingClipIndex) : na
-bool recentModel = not na(sId) and not na(sModelAge) and sModelAge <= drawHtfBars
+bool recentModel = focusAvailable and not na(sModelAge) and sModelAge <= drawHtfBars
 bool recentLtfSignal = lastVisualKey == modelKey and not na(lastVisualBucket) and bucketCounter - lastVisualBucket <= drawHtfBars
-bool drawActive = not na(sId) and not na(drawAnchorIndex) and drawAnchorIndex >= bar_index - 9999 and drawEndIndex >= drawAnchorIndex and (not recentOnly or (onHtf ? recentModel : recentModel or recentLtfSignal))
-bool clusterActive = not na(sId)
+bool drawActive = focusAvailable and not na(drawAnchorIndex) and drawAnchorIndex >= bar_index - 9999 and drawEndIndex >= drawAnchorIndex and (not recentOnly or (onHtf ? recentModel : recentModel or recentLtfSignal))
+bool clusterActive = focusAvailable
 
 // Finite drawings use real chart bar indices and real prices, on the main price pane.
 
@@ -1225,7 +1267,7 @@ plot(earlyResult.hit ? earlyResult.bucket : na, "Early C2 window open ms", displ
 plot(earlyResult.hit ? bucketEnd : na, "Early C2 window close ms", display=display.data_window)
 
 if barstate.islast
-    bool hasModel = not na(sId)
+    bool hasModel = focusAvailable
     color primaryColor = sDir == 1 ? color.teal : sDir == -1 ? color.orange : color.silver
     string tag = hasModel ? f_tag(sFlags, sKind, sPhase) : "-"
     array.fill(renderedPrices, na)
@@ -1248,12 +1290,12 @@ if barstate.islast
     f_layoutLabels()
     if showPanel
         string dirText = biasPaused ? "B0!" : biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
-        string stateText = not hasModel ? f_endTag(sReason) : sModelAge > 0 ? "C3 CLOSED" : alreadyEmitted ? "SIGNAL" : "C3"
+        string stateText = not hasModel ? "SEARCH" : alreadyEmitted ? "SIGNAL" : "C3"
         array<string> headings = array.from("TF", "CRT", "BIAS", "REF", "T", "ENTRY", "N", "WHY", "DATA", "EARLY")
-        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (sDir == 1 ? "BUY" : sDir == -1 ? "SELL" : "-") + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? "IRL" : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals))
+        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (hasModel ? (sDir == 1 ? "BUY" : "SELL") : "-") + " | " + str.tostring(hasModel ? sCount : 0), dirText + " / " + biasTf, hasModel and hasIrl ? "IRL" : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals))
         for row = 0 to 9
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
-            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 1 ? "Last model end: " + f_endTag(sReason) + " | TG=target touched; INV=HTF close invalid; TO=timeout; AMB=ambiguous; HIST=outside recovery. Not trade fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C1. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit : row == 6 ? "CRT signals on closed LTF bars in C3 only; not fills or a win-rate." : "")
+            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | TG=target touch; INV=wick touches C2 extreme; EXP=C3 ended. Closed chart-bar evidence retires focus immediately; LAST is history only. Not trade fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C1. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit : row == 6 ? "CRT signals on closed LTF bars in C3 only; not fills or a win-rate." : "")
     array<ClusterCandle> clusterCandles = array.new<ClusterCandle>()
     if showCluster and clusterActive
         if array.size(candleTimes) > 0
@@ -1271,9 +1313,9 @@ if barstate.islast
     array<ClusterCandle> followCandles = array.new<ClusterCandle>()
     array<ClusterCandle> endedCandles = array.new<ClusterCandle>()
     int followTotal = f_splitCluster(clusterCandles, sKind, sAT, sBT, sCT, clusterFollowCount, originCandles, followCandles)
-    bool archiveActive = showCluster and showArchive and not na(sArchived) and not na(sArchived.uid)
+    bool archiveActive = showCluster and showArchive and not na(visibleArchive) and not na(visibleArchive.uid)
     if archiveActive
-        f_archiveCandles(sArchived, endedCandles)
+        f_archiveCandles(visibleArchive, endedCandles)
     int originCount = array.size(originCandles)
     int followCount = array.size(followCandles)
     int endedCount = array.size(endedCandles)
@@ -1333,16 +1375,16 @@ if barstate.islast
                 label.set_xy(caption, middle, labelY)
                 label.set_text(caption, candleCaption)
                 label.set_textcolor(caption, archived ? color.gray : chart.fg_color)
-                int sourceClose = f_candleEnd(item.t, archived ? sArchived.aT : sAT, archived ? sArchived.aEnd : sAEnd, archived ? sArchived.bT : sBT, archived ? sArchived.bEnd : sConfirmed, archived ? sArchived.cT : sCT, archived ? sArchived.cEnd : sCEnd, liveT, liveEnd, candleTimes, candleEndTimes)
+                int sourceClose = f_candleEnd(item.t, archived ? visibleArchive.aT : sAT, archived ? visibleArchive.aEnd : sAEnd, archived ? visibleArchive.bT : sBT, archived ? visibleArchive.bEnd : sConfirmed, archived ? visibleArchive.cT : sCT, archived ? visibleArchive.cEnd : sCEnd, liveT, liveEnd, candleTimes, candleEndTimes)
                 string closeCaption = not archived and item.t == liveT and not currentBucketClosed ? "Scheduled close " : "Close "
-                label.set_tooltip(caption, "Open " + str.format_time(item.t, "dd/MM HH:mm", NY) + " NY | " + closeCaption + (not na(sourceClose) ? str.format_time(sourceClose, "dd/MM HH:mm", NY) + " NY" : "-") + " | O " + str.tostring(item.o, format.mintick) + " H " + str.tostring(item.h, format.mintick) + " L " + str.tostring(item.l, format.mintick) + " C " + str.tostring(item.c, format.mintick) + (archived ? " | history only / " + f_endTag(sArchived.endReason) : ""))
+                label.set_tooltip(caption, "Open " + str.format_time(item.t, "dd/MM HH:mm", NY) + " NY | " + closeCaption + (not na(sourceClose) ? str.format_time(sourceClose, "dd/MM HH:mm", NY) + " NY" : "-") + " | O " + str.tostring(item.o, format.mintick) + " H " + str.tostring(item.h, format.mintick) + " L " + str.tostring(item.l, format.mintick) + " C " + str.tostring(item.c, format.mintick) + (archived ? " | history only / " + f_endTag(visibleArchive.endReason) : ""))
                 drawSlot += 1
             int headingTime = groupStartTime + int((groupCount * clusterStep - clusterStep + bodyWidth) * 0.5 * chartSeconds * 1000)
             label.set_xy(heading, headingTime, labelY - captionGap * 1.25)
-            string headingText = group == 0 ? tag : group == 1 ? "FOLLOW" + (followTotal > followCount ? " …" + str.tostring(followTotal - followCount) : "") : "LAST / " + f_endTag(sArchived.endReason)
+            string headingText = group == 0 ? tag : group == 1 ? "FOLLOW" + (followTotal > followCount ? " …" + str.tostring(followTotal - followCount) : "") : "LAST / " + f_endTag(visibleArchive.endReason)
             label.set_text(heading, headingText)
             label.set_textcolor(heading, group == 2 ? color.gray : chart.fg_color)
-            label.set_tooltip(heading, group == 2 ? f_tag(sArchived.flags, sArchived.kind, sArchived.phase) + " | End " + str.format_time(sArchived.endedAt, "dd/MM HH:mm", NY) + " NY | historical reference; no entries" : group == 1 ? str.tostring(followCount) + " shown / " + str.tostring(followTotal) + " after model; full series still tracked" : "Frozen model source | age " + str.tostring(sModelAge) + (lifeHtf > 0 ? "/" + str.tostring(lifeHtf) : ""))
+            label.set_tooltip(heading, group == 2 ? f_tag(visibleArchive.flags, visibleArchive.kind, visibleArchive.phase) + " | End " + str.format_time(visibleArchive.endedAt, "dd/MM HH:mm", NY) + " NY | historical reference; no entries" : group == 1 ? str.tostring(followCount) + " shown / " + str.tostring(followTotal) + " after model; full series still tracked" : "Frozen model source | age " + str.tostring(sModelAge) + (lifeHtf > 0 ? "/" + str.tostring(lifeHtf) : ""))
             cursor += groupCount * clusterStep + groupGap
     int remaining = not na(liveEnd) ? math.max(0, int((liveEnd - timenow) / 1000)) : 0
     label.set_text(clockLabel, "")
@@ -1350,7 +1392,7 @@ if barstate.islast
         // Extra context is kept in the MODEL tooltip to keep the two groups compact.
         label.set_tooltip(array.get(groupLabels, 0), "Age " + str.tostring(sModelAge) + (lifeHtf > 0 ? "/" + str.tostring(lifeHtf) : "") + " | HTF candles since model confirmation" + (barstate.isrealtime ? " | Next close " + str.tostring(int(math.floor(remaining / 60))) + ":" + str.tostring(remaining % 60, "00") : ""))
 
-bool modelEvent = changedModel and not na(sId) and sModelAge == 0 and barstate.isconfirmed
+bool modelEvent = changedModel and focusAvailable and sModelAge == 0 and barstate.isconfirmed
 alertcondition(modelEvent, "HTF", "TFA CRT: C2 confirmed; observe C3.")
 alertcondition(modelEvent and sPhase == 1, "TS", "TFA CRT: confirmed one-sided HTF sweep and reclaim. Observe C3.")
 alertcondition(entryLong, "E+", "TFA CRT Pure TS: confirmed LTF Buy signal in C3. See tooltip.")
