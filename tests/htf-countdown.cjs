@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const s=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
+const lines=s.match(/f_countdown\([^\n]+\) =>\r?\n([\s\S]*?)\r?\nf_tag/)[1].trim().split(/\r?\n/);
+const code=lines.map((l,i)=>i===lines.length-1?'return '+l.trim()+';':l.trim().replace(/^int /,'let ')+';').join('\n');
+const actual=Function('na','math','int','str','closesAt','nowAt',code);
+const countdown=(end,now)=>actual(x=>x==null,Math,Math.trunc,{tostring:(v,fmt)=>fmt==='00'?String(v).padStart(2,'0'):String(v)},end,now);
+for(const [end,now,want] of [[null,0,'-'],[0,1,'Closed'],[1000,1000,'Closed'],[1001,1000,'00:00:01'],[3601000,1000,'01:00:00'],[14401000,1000,'04:00:00'],[90001000,1000,'1d 01:00:00']])assert.equal(countdown(end,now),want);
+assert.match(s,/headingText = group == 0 \? f_tfName\(htf\) : group == 3 \? f_tfName\(largerTf\) : ""/);
+assert.match(s,/label.set_style\(heading, label.style_label_down\)/);
+assert.match(s,/not archived and liveItem \? f_countdown/);
+assert.doesNotMatch(s,/string candleCaption =[^\n]*"(?:C1|C2|N\*|R|F)"/);
+assert.match(s,/diagnostic.bars \+= 1/);assert.match(s,/map.get\(signalAudits, diagnosticToken\)/);assert.match(s,/row == 7 \? lastClosedAudit \+ "\\n" \+ diagnosticSummary/);
+console.log('PASS actual countdown function: rounding, elapsed/unknown/long sessions; timeframe-only headers, live-only clocks and diagnostic tooltip.');

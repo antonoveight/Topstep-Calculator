@@ -15,3 +15,5 @@ Early C2 thử nghiệm đã bật mặc định theo yêu cầu mới: [quy t�
 Vòng đời setup hiện hành: [Range C1, attempt, INV/TG và xác nhận lại](CRT-SETUP-LIFECYCLE.md).
 
 Cụm HTF lớn hơn bật sẵn: Auto H1/H2 → H4, H4 → D1, D1 → W1; chỉ quan sát OHLC, không lọc entry. LAST dùng cùng màu thân/râu, giữ độ mờ. Xem hướng dẫn vòng đời để hiểu hai cụm.
+
+Các cụm chỉ ghi tên timeframe phía trên và đếm ngược dưới nến live; bỏ nhãn giải thích. Hover WHY trên dashboard để xem số nến/TS/retest của đúng attempt. Xem [phân tích trường hợp không có Sell và cách đọc chẩn đoán](CRT-SIGNAL-DIAGNOSTICS.md).

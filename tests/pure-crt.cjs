@@ -14,7 +14,8 @@ function run(tape,dir=1,options={},ctxExtra={}){
 let cases=0;
 for(const dir of [1,-1]){
  const transform=t=>dir===1?t:t.map(mirror),test=(t=base,o={},c={})=>{cases++;return run(transform(t),dir,o,c);};
- assert.deepEqual(test().hits,[102],'Pullback emits on retest close, never sweep candle');
+ const diagnosed=test();assert.deepEqual(diagnosed.hits,[102],'Pullback emits on retest close, never sweep candle');
+ assert.equal(diagnosed.out[0].evaluated,true);assert.equal(diagnosed.out[1].tsDetected,true);assert.equal(diagnosed.out[1].entryDetected,false);assert.equal(diagnosed.out[2].retestDetected,true);assert.equal(diagnosed.out[2].entryDetected,true);
  assert.deepEqual(test(base,{timing:'Confirmation close'}).hits,[101]);
  assert.deepEqual(test(base,{confirmed:false}).hits,[]);
  assert.deepEqual(test(base,{isLtf:false}).hits,[]);

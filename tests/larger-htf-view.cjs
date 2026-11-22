@@ -19,8 +19,8 @@ assert.match(render,/label.delete\(array.pop\(clusterLabels\)\)/);
 for(const setter of ['box.set_bgcolor(body, color.new(shade, archived ? 75 : 0))','box.set_border_color(body, color.new(shade, archived ? 65 : 0))','line.set_color(wick, color.new(shade, archived ? 70 : 25))'])assert.ok(render.includes(setter));
 assert.match(render,/interHtfGap = math.max\(clusterOffset, labelLaneBars \+ 12\)/);
 assert.match(render,/float bodyWidth = candleWidth/);
-assert.match(render,/captionBase - captionRow \* captionGap/);
-assert.match(render,/headingRow = group == 3 \? 3.2 : 3.2 \+ group \* 0.9/);
+assert.match(render,/f_countdown\(group == 3 \? largerEnd : liveEnd, timenow\)/);
+assert.match(render,/headingText = group == 0 \? f_tfName\(htf\) : group == 3 \? f_tfName\(largerTf\) : ""/);
 // Display additions may not become hidden trading gates.
 const signal=s.slice(s.indexOf('type FocusLifecycle'),s.indexOf('f_tfName('));
 assert.doesNotMatch(signal,/largerLive|h[123][TOHLC]|showLargerCluster/);
