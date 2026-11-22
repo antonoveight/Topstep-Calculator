@@ -41,7 +41,7 @@ for(const dir of [1,-1]){
  for(let n=1;n<base.length;n++){const prefix=test(base.slice(0,n));assert.deepEqual(prefix.hits,test().hits.filter(t=>t<=base[n-1].t),'Appending future bars does not backfill historical signals');}
 }
 const fields=s.match(/^    \[selected.uid,.+$/m)[0].trim().slice(1,-1).split(', ');
-assert.equal(fields.length,63);assert.ok(fields.length+7+6<=127);
+assert.equal(fields.length,64);assert.ok(fields.length+7+6+7+18<=127);
 assert.match(s,/bool entryWindow = ctx.age == 0/);
 assert.match(s,/bool timeAllowed = true/);
 assert.match(s,/str.format_time\(liveEnd, "HH:mm", NY\)/);

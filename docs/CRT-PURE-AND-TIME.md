@@ -1,6 +1,6 @@
 # CRT thuần & thời gian · 22/11/2026
 
-Nhánh chính Confirmed trong tài liệu này chỉ phát C3; nhánh [Early C2 thử nghiệm](EARLY-C2-EXPERIMENT.md) có cửa sổ và dấu E riêng.
+Nhánh Confirmed phát trong nến HTF đầu tiên sau mỗi lần xác nhận: C3 ở attempt đầu, hoặc nến sau raid/reclaim mới của cùng C1. Hết cửa sổ không xóa range. Nhánh [Early C2 thử nghiệm](EARLY-C2-EXPERIMENT.md) có dấu E riêng; xem [vòng đời range/attempt](CRT-SETUP-LIFECYCLE.md).
 
 Đây là đặc tả hiện hành, thay thế phần entry/key/time trong tài liệu trước ngày này. Người dùng đã chọn bỏ cả CISD/MSS, FVG/OB, ICT Macros, Quarterly Theory và True Open. Bản Pine cũ giữ riêng trong `indicators/archive/funded-angler-v6-crt-support-2026-11-22.pine` để đối chiếu, không chạy trên web.
 
@@ -35,10 +35,10 @@ Thay bộ xác nhận sẽ thay vị trí và tần suất dấu. Chưa có Repl
 | C2 đóng | Xác nhận TS nếu đạt điều kiện; theo dõi C3 thực tế kế tiếp. |
 | C3 đang chạy | Cửa sổ duy nhất để tìm TS/retest LTF. |
 | C3 đóng | Hết quyền entry; không mang pending sang C4. |
-| EXP | Hết C3 thì kết thúc setup; không phải kết quả lệnh. Không còn input Context timeout. |
+| TRACK / WATCH | Hết C3 chỉ đóng entry; INV kết thúc attempt. C1 còn để theo dõi/tái xác nhận đến khi target bị lấy hoặc bị loại khỏi bộ nhớ. |
 | TG / INV / AMB | Target chạm / wick chạm cực trị C2 trên nến đã đóng / không phân biệt được thứ tự hai rào cản trong cùng nến. |
 
-Pine lấy giờ mở/đóng và OHLC từ feed. Panel T hiển thị giờ đóng HTF hiện tại theo America/New_York có DST; C3 là entry window; khi đã kết thúc chỉ hiển thị giờ HTF và SEARCH, không dùng CTX cũ làm model active. Tooltip giữ giờ nguồn, không cộng cứng số giờ qua khoảng nghỉ.
+Pine lấy giờ mở/đóng và OHLC từ feed. Panel T hiển thị giờ đóng HTF hiện tại theo America/New_York có DST; C3 là entry window đầu tiên; sau đó TRACK giữ range, WATCH chờ raid/key/reclaim mới, SEARCH khi không còn parent. Tooltip giữ giờ nguồn, không cộng cứng số giờ qua khoảng nghỉ.
 
 Web giữ phiên thị trường, lịch tin và thêm đồng hồ C3 với hai mốc **nhập từ chart**, múi giờ chart rõ ràng. Web chưa nhận model/feed từ Pine. Không đến một giờ cố định rồi tự coi là có TS. Lưu đồng hồ tách khỏi tài khoản. Từ chối giờ DST không tồn tại hoặc lặp chưa phân biệt; dùng UTC trong giờ lặp. Lịch sinh hoạt cá nhân vẫn chỉ là lịch quan sát.
 
@@ -50,10 +50,10 @@ Web giữ phiên thị trường, lịch tin và thêm đồng hồ C3 với hai
 
 ## Cài đặt và kiểm tra
 
-Mặc định: HTF H1, Bias TF D1, Auto bias, Pullback, Fresh reaction, History 100. Còn 21 input, gồm công tắc Early C2 thử nghiệm bật sẵn theo yêu cầu mới; HTF tùy H1/H2/H4/D1. Không còn chọn loại xác nhận hoặc bộ lọc giờ cũ.
+Mặc định: HTF H1, Bias TF D1, Auto bias, Pullback, Fresh reaction, History 100. Còn 23 input, gồm công tắc Early C2 thử nghiệm bật sẵn theo yêu cầu mới; HTF tùy H1/H2/H4/D1. Không còn chọn loại xác nhận hoặc bộ lọc giờ cũ.
 
 Checklist schema `crt-v1` → `crt-ts-v2`: snapshot cũ giữ nguyên, các ô mới bắt đầu chưa xác nhận. Nhật ký, kết quả cũ, giỏ cá và tài khoản vẫn giữ. Early C2 nay đã được cho phép bật thử theo [đặc tả thuần CRT riêng](EARLY-C2-EXPERIMENT.md). Dấu E chưa phải HTF Confirmed, không trộn vào tam giác C3 hay bộ audit Confirmed. Nghiên cứu cũ không còn là đặc tả đang chạy.
 
 Chạy `node tools/check-crt.cjs` và `node tools/check-crt-web.cjs`. Kiểm tra thân hàm Pine giới hạn và trình duyệt không thay Pine runtime/Replay dữ liệu giá. Các bài test của bộ lọc đã bỏ chỉ còn giá trị lịch sử.
 
-Vòng đời setup hiện hành: [INV / TG / EXP và tìm model mới](CRT-SETUP-LIFECYCLE.md).
+Vòng đời setup hiện hành: [Range C1, attempt, INV/TG và xác nhận lại](CRT-SETUP-LIFECYCLE.md).

@@ -18,10 +18,10 @@ assert.ok(na(close(600,100,155,200,260,300,355,400,460,[500,600],[552])),'No fab
 assert.match(source,/aEnd=time_close\[1\]/);assert.match(source,/m.cEnd := time_close/);
 assert.match(source,/array.push\(candleEndTimes, liveEnd\)/);assert.match(source,/array.shift\(candleEndTimes\)/);
 assert.match(source,/previous \? v61\[1\] : v61/);assert.match(source,/previous \? v62\[1\] : v62/);
-assert.match(source,/ModelArchive.new\(aEnd=m.aEnd, bEnd=m.confirmedAt, cEnd=m.cEnd/);
+assert.match(source,/ModelArchive.new\(confirmedAt=m.confirmedAt, aEnd=m.aEnd, bEnd=m.bEnd, cEnd=m.cEnd/);
 const cluster=require('./helpers/pine-cluster-harness.cjs').createClusterHarness(source);
-const model={uid:1,aT:100,aEnd:155,bT:200,confirmedAt:260,cT:300,cEnd:355};
-const archived=cluster.archive(model,3,400);model.aEnd=999;model.confirmedAt=999;model.cEnd=999;
+const model={uid:1,aT:100,aEnd:155,bT:200,bEnd:260,confirmedAt:280,cT:300,cEnd:355};
+const archived=cluster.archive(model,3,400);model.aEnd=999;model.confirmedAt=999;model.bEnd=999;model.cEnd=999;
 assert.deepEqual([archived.aEnd,archived.bEnd,archived.cEnd],[155,260,355],'Archive freezes all three close times independently of later model changes');
 assert.match(source,/"Scheduled close "/);assert.match(source,/"Open " \+ str.format_time\(item.t/);
 const channel=source.slice(source.indexOf('f_stepChannel('),source.indexOf('var float lastPivotHigh'));

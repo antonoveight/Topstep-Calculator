@@ -11,8 +11,8 @@ function createFocusHarness(source){
   }while(blocks.length){code+='}\n';blocks.pop();}return code;
  }
  const end=Function('direction','invalidation','targetLevel','barHigh','barLow','closing','older','outsideHistory','timedOut','entryExpired',translate('f_crtEnd'));
- const step=Function('na','f_crtEnd','state','uid','direction','confirmedAt','invalidation','targetLevel','age','barOpen','barClose','barHigh','barLow','closedBar',translate('f_stepFocus'));
+ const step=Function('na','f_crtEnd','state','uid','direction','confirmedAt','invalidation','targetLevel','age','barOpen','barClose','barHigh','barLow','closedBar','attemptOpen',translate('f_stepFocus'));
  const archive=Function('na','localArchive','htfArchive',translate('f_visibleArchive'));
- return {end,step:(state,args)=>step(na,end,state,...args),archive:(local,htf)=>archive(na,local,htf),state:()=>({uid:null,reason:0,endedAt:null,archived:null})};
+ return {end,step:(state,args)=>step(na,end,state,...args.slice(0,11),args.length>11?args[11]:true),archive:(local,htf)=>archive(na,local,htf),state:()=>({uid:null,reason:0,confirmation:null,rangeDone:false,endedAt:null,archived:null})};
 }
 module.exports={createFocusHarness};

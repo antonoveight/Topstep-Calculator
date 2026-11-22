@@ -26,7 +26,7 @@ function createKeyHarness(source){
    if(s.startsWith('while ')){code+='while('+expr(s.slice(6))+'){\n';blocks.push(indent);continue;}
    const loop=s.match(/^for (\w+) = (.+) to (.+?)(?: by (\d+))?$/);
    if(loop){code+=`for(let ${loop[1]}=${expr(loop[2])};${loop[1]}<=${expr(loop[3])};${loop[1]}+=${loop[4]||1}){\n`;blocks.push(indent);continue;}
-   s=s.replace('array.new<CrtKey>()','array.new()').replace(/^(?:array<CrtKey>|CrtKey|Zone|Liquidity|bool|int|string) (\w+) = /,'let $1 = ').replace(/:=/g,'=');
+   s=s.replace('array.new<CrtKey>()','array.new()').replace(/^(?:array<CrtKey>|CrtKey|KeyMap|Zone|Liquidity|bool|int|float|string) (\w+) = /,'let $1 = ').replace(/:=/g,'=');
    code+=(returnLast&&i===input.length-1?'return ':'')+expr(s)+';\n';
   }
   while(blocks.length){code+='}\n';blocks.pop();}return code;
@@ -39,6 +39,10 @@ function createKeyHarness(source){
  const match=Function('array','makeKey','f_keyReact','f_keyIdentity','keyMap','usedKeys','beforeTime','direction','barHigh','barLow','barClose',translate('f_matchKeyMap'));
  const mark=Function('array','f_keyIdentity','keyMap','usedKeys','barStart','barHigh','barLow',translate('f_markHigherUsed',false));
  const collect=Function('array','makeKey','zones','swings','sourceTf',translate('f_collectKeyMap'));
- return {reaction,find:(z,q,t,d,h,l,c,tf='60')=>find(array,makeKey,reaction,z,q,t,d,h,l,c,tf),match:(m,t,d,h,l,c,used=[])=>match(array,makeKey,reaction,identify,m,used,t,d,h,l,c),mark:(m,used,t,h,l)=>mark(array,identify,m,used,t,h,l),collect:(z,q,tf='1D')=>collect(array,makeKey,z,q,tf),makeKey};
+ const parent=Function('array','makeKey','na','f_keyIdentity','swings','higherMap','consumed','beforeTime','sourceTf',translate('f_parentKeys'));
+ const rangeReact=Function('array','makeKey','na','f_keyReact','references','beforeTime','direction','raidHigh','raidLow','closing',translate('f_rangeReaction'));
+ const rangeReaction=(refs,t,d,h,l,c)=>rangeReact(array,makeKey,na,reaction,refs,t,d,h,l,c);
+ const renew=Function('makeKey','na','sweepSize','f_rangeReaction','m','opening','barHigh','barLow','closing','barTime','barEnd','currentIndex',translate('f_revalidateRange'));
+ return {reaction,find:(z,q,t,d,h,l,c,tf='60')=>find(array,makeKey,reaction,z,q,t,d,h,l,c,tf),match:(m,t,d,h,l,c,used=[])=>match(array,makeKey,reaction,identify,m,used,t,d,h,l,c),mark:(m,used,t,h,l)=>mark(array,identify,m,used,t,h,l),collect:(z,q,tf='1D')=>collect(array,makeKey,z,q,tf),makeKey,parent:(q,h,used,t,tf='60')=>parent(array,makeKey,na,identify,q,h,used,t,tf),rangeReaction,renew:(m,b,i)=>renew(makeKey,na,.25,rangeReaction,m,b.o,b.h,b.l,b.c,b.t,b.end,i)};
 }
 module.exports={createKeyHarness};

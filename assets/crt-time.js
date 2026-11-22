@@ -21,7 +21,7 @@
   const host=document.getElementById('crtTimeContext');if(!host)return;
   host.innerHTML=`<div class="b-card" style="margin-top:16px;padding:18px;font-size:14px;line-height:1.6">
    <strong style="font-size:18px">CRT · Candle time</strong>
-   <p>C1 tạo range · C2 đóng xác nhận TS · C3 chờ retest. Chạm INV/TP hoặc hết C3: kết thúc setup và chờ model mới.</p>
+   <p>C1 tạo range · C2 đóng xác nhận TS · C3 chờ retest. Hết C3: dừng entry, vẫn theo dõi range. INV kết thúc attempt; raid/key/reclaim mới có thể xác nhận lại C1. Chạm TP: đóng range.</p>
    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:end">
     <label>Múi giờ chart <select id="crtClockZone" class="b-input"><option value="America/New_York">New York (DST)</option><option value="Asia/Ho_Chi_Minh">Việt Nam</option><option value="UTC">UTC</option></select></label>
     <label>C3 mở · từ chart <input id="crtC3Open" class="b-input" type="datetime-local"></label>

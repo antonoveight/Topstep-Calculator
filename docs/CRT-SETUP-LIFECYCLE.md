@@ -1,37 +1,44 @@
-# Vòng đời setup CRT · 22/11/2026
+# Range C1 và từng attempt CRT · 22/11/2026
 
-Thay đổi này xử lý trường hợp model Buy vẫn chiếm chart sau khi giá xuyên INV. Quy tắc cũ đợi HTF đóng xuyên mức, và còn dùng model đã hết C3 làm bối cảnh dự phòng. Hai cơ chế này đã được thay thế.
+Range gốc C1 và lần xác nhận/giao dịch (**attempt**) là hai vòng đời khác nhau. Hết C3 không tự làm range mất hiệu lực. C4/C5 vẫn có thể đi tới biên đối diện C1. Đây là quy ước thực thi của công cụ cá nhân, không khẳng định một thuật toán do Romeo công bố.
 
 | Sự kiện | Trạng thái | Hành động |
 | --- | --- | --- |
-| C2 đóng xác nhận CRT, đường target còn hợp lệ | C3 | Theo dõi TS/retest LTF theo hướng model. |
-| Buy chạm hoặc xuyên Low C2; Sell chạm hoặc xuyên High C2 | INV | Hủy setup, dừng entry và bỏ cụm/line active. |
-| Chạm biên đối diện C1 | TG | Hoàn thành đường target, dừng tìm entry cho setup đó. EQ không phải full TP. |
-| Cả INV và TP trong một nến quan sát | AMB | Kết thúc, không đoán thứ tự chạm hoặc kết quả lệnh. |
-| C3 kết thúc mà chưa có sự kiện giá khác | EXP | Hết hạn setup, chuyển sang chờ CRT mới. Không đồng nghĩa thua lệnh hay đóng vị thế thực tế. |
+| C2 đóng sweep một biên và reclaim C1 | ENTRY | Tìm TS/retest LTF trong nến HTF ngay sau xác nhận. |
+| Hết nến HTF đầu tiên sau xác nhận, chưa chạm rào cản | TRACK | Đóng entry; vẫn theo dõi range/attempt, không mang pending sang nến sau. |
+| Buy chạm Low raid; Sell chạm High raid | INV / WATCH | Kết thúc attempt cũ; giữ C1 để chờ xác nhận mới. Không coi lệnh cũ được cứu. |
+| Chạm biên đối diện C1 | TG | Kết thúc parent range; tìm range mới. EQ không phải full TP. |
+| INV và target trong cùng nến quan sát, không rõ thứ tự | AMB | Không chọn kết quả thuận lợi. Target bị tiêu thụ nên parent không tái dùng. |
+| Không có parent phù hợp | SEARCH | Chờ CRT mới. Có thể vẫn hiện cụm OHLC CTX để quan sát. |
 
-## Không đợi HTF đóng để bỏ focus
+## Xác nhận lại cùng C1
 
-Trên M1/M3/M5, điểm kết thúc bằng giá được chốt bằng High/Low của **nến LTF đã đóng**. Chỉ cần wick chạm INV; không yêu cầu close xuyên INV và không đợi H1/H2/H4/D1 đóng. Nến LTF đang chạy chưa cam kết kết thúc; khi nó đóng, cực trị đã chạm vẫn được ghi nhận dù close hồi vào range.
+Sau INV cần **raid mới vượt cực trị attempt trước ít nhất một tick**, phản ứng sweep/reclaim tại key swing HTF đã biết **trước khi C1 mở**. Key được chụp lúc tạo parent, không lấy key xuất hiện muộn để hợp thức hóa quá khứ.
 
-HTF registry cũng dùng cùng rào cản wick/target và loại model sau C3. Không còn fallback chọn model cũ khi không có model mới. Đã bỏ input Context timeout 8 nến vì nó không còn phù hợp với vòng đời C3; chỉ báo hiện có 21 input, vẫn giữ công tắc Early C2.
+Nến HTF phải đóng hẳn trong **C1 gốc**. Chỉ đóng trong C2 nhưng còn ngoài C1 không đủ. Có thể nến raid đóng ngoài C1 rồi nến sau mới reclaim; timestamp/OHLC raid tách riêng khỏi thời điểm xác nhận. Target phải chưa bị lấy cả trên nến raid lẫn nến xác nhận.
 
-Nến C2 nguồn không tự hủy vì chính râu tạo sweep của nó. Nến cuối C3 vẫn được xét entry nếu đáp ứng điều kiện và chưa chạm rào cản; bước sang C4 không tiếp tục pending.
+Ví dụ Sell: C3 quét High C2, chạm key cũ, đóng lại trong C1 → attempt C2 đã INV; C1 được cấp attempt mới, SL tại High raid mới. Entry window mới là nến HTF ngay sau xác nhận, vẫn cần TS/retest LTF đóng. Không phát Buy/Sell chỉ vì có attempt mới. Nếu chỉ quay vào range mà thiếu raid/key/reclaim thì còn WATCH.
 
-## Model mới và hiển thị
+UID parent giữ timestamp C1; token attempt dùng thời điểm xác nhận mới. Dấu/SL và kết quả attempt trước không bị sửa. Khóa sóng, bias/key ngược bias và điều kiện LTF vẫn áp dụng.
 
-Model đã kết thúc không còn tham gia signal context, line mức giá, cụm active hoặc alert xác nhận mới. Dashboard hiện `SEARCH` nếu chưa có model hợp lệ. Chỉ một CRT mới đã đáp ứng điều kiện mới được chọn tiếp; việc hủy model cũ không tự tạo Buy/Sell đối diện.
+## Nến đóng, lịch sử và focus
 
-Bật **Last ended model cluster** nếu muốn giữ tham chiếu lịch sử. Model cũ chỉ xuất hiện với nhãn `LAST / INV`, `LAST / TG`, `LAST / EXP`…; không phát entry. Nếu kết thúc giữa nến HTF, snapshot local giữ C1/C2 đã đóng, không dựng giả C3 đã đóng. Archive HTF vẫn giữ C3 thật khi có đủ dữ liệu.
+LTF chốt INV/target từ wick nến **đã đóng**, không đợi HTF đóng. Nến đang chạy chưa cam kết kết thúc. Nến raid nguồn không tự hủy mình. Nếu LTF đã thấy INV trước rồi TP ở nến khác, archive giữ INV, không đổi thành thắng vì nến HTF tổng hợp chạm cả hai.
 
-Khi đã thấy INV trước rồi TP ở nến LTF khác, không đổi ngược kết quả setup thành TG/AMB vì HTF tổng hợp chạm cả hai. Cùng model thì bằng chứng kết thúc LTF đầu tiên được giữ. Đây là phân loại setup tham khảo, không phải PnL hay xác nhận khớp SL/TP.
+Ưu tiên attempt sống lâu nhất. Không có attempt sống thì hiển thị parent WATCH mới nhất. Target đóng parent kể cả khi attempt đã INV; không sửa kết quả INV cũ. Không còn timeout thị trường; giới hạn kỹ thuật là scan 1.000 nến HTF và hàng đợi 12 parent. HIST/CAP là loại khỏi bộ nhớ, không phải SL.
 
-## Early C2
+**Last ended model cluster** giữ snapshot attempt cuối, tách khỏi entry. Thân/viền/râu cùng màu tăng/giảm, giữ độ mờ 75/65/70. Nhãn nến/tiêu đề lệch hàng, nền chữ trong suốt. LAST không phải toàn bộ nhật ký lệnh.
 
-Early tiếp tục quét mỗi cửa sổ C2 mới, độc lập với model Confirmed cũ đã hủy. Nó vẫn cần key có trước, raid/reclaim và TS/retest theo [đặc tả Early](EARLY-C2-EXPERIMENT.md). Terminal reason như `E DOUBLE`, `E TP TAKEN`, `E KEY LOST` được giữ đến hết cửa sổ thay vì biến thành `E BLOCKED` chung chung. Không tái dùng cùng C2 sau khi đã hủy/phát E; C2 mới bắt đầu state mới. Khóa sóng và ưu tiên tín hiệu Confirmed vẫn giữ để tránh trùng nhịp.
+## Hai cụm HTF
 
-## Kiểm tra
+Cụm chính giữ C1 + nến raid và FOLLOW. Chưa chọn parent thì hiện ba nến HTF đã đóng cùng nến đang chạy, nhãn CTX. **Show larger HTF cluster** thêm ba nến đã đóng và nến đang chạy của khung lớn hơn, cùng chiều rộng body/nhịp nến và có khoảng cách riêng.
 
-Chạy `node tools/check-crt.cjs`: 14 nhóm, gồm 34 trace vòng đời Buy/Sell đối xứng từ thân hàm Pine, ca tương tự ảnh BTCUSD, wick bằng đúng INV, hồi lại sau INV, TG, AMB, EXP, chuyển UID mới, chống hồi sinh cùng model, không hủy trên C2 nguồn và chọn archive đúng thứ tự. Bộ Early có 74 trace riêng.
+**Larger HTF = Auto**: H1/H2 → H4; H4 → D1; D1 → W1. Có thể chọn H2/H4/D1/W1; lựa chọn không lớn hơn HTF chính quay về Auto. W1 chỉ là khung quan sát bổ sung; HTF model vẫn H1/H2/H4/D1. Nến đóng lấy offset xác nhận; N* tổng hợp OHLC chart hiện tại. Bucket đầu thiếu dữ liệu không giả là nến hoàn chỉnh.
 
-Test tổng hợp và biên dịch không thay Replay thị trường. Tài khoản Brave Basic đã kiểm tra trước đây vẫn bị chặn Replay intraday; không coi thay đổi này là một kết quả backtest hiệu suất.
+Cụm lớn hơn chỉ đối chiếu đồng pha bằng mắt, chưa lọc entry hay nhận diện CRT thứ hai. Màu nến không phải bias. Màn hình hẹp có thể cần tăng khoảng trống phải hoặc giảm FOLLOW; không co body để nhét hình.
+
+## Early C2 và kiểm tra
+
+[Early C2 thử nghiệm](EARLY-C2-EXPERIMENT.md) vẫn dùng C1 ngay trước bucket C2 hiện tại; chưa vào sớm cho lần tái xác nhận của parent cũ. Mỗi E khóa SL/TP riêng, không tự hồi sinh sau hủy. Confirmed/Early không trộn dấu.
+
+Chạy node tools/check-crt.cjs: 16 nhóm, có 14 ca tái xác nhận Buy/Sell, 34 trace vòng đời, 74 trace Early và kiểm tra nguồn OHLC/hình vẽ. Test tổng hợp/biên dịch không thay Replay thị trường. Brave Basic vẫn bị chặn Replay intraday. Chưa có backtest hiệu suất cho thay đổi này.

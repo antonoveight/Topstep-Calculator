@@ -17,7 +17,7 @@ for(const dir of [1,-1]){
  assert.equal(step(1,101,111,95),0);assert.equal(state.reason,1,'A later TP cannot rewrite an earlier INV');assert.equal(state.endedAt,101);
  assert.equal(step(null,102,109,95),0);assert.equal(step(1,103,109,95),0);assert.equal(state.reason,1,'An empty snapshot then same UID cannot revive a setup');
  assert.equal(step(2,104,109,95),0);assert.equal(state.uid,2);assert.equal(state.reason,0,'A fresh UID is eligible immediately');
- assert.equal(step(2,105,109,95,true,1),7);assert.equal(state.reason,7);
+ assert.equal(step(2,105,109,95,true,1),0);assert.equal(state.reason,0,'C3 close alone does not end an attempt or its parent');
  assert.equal(step(3,106,110,95),2);assert.equal(state.reason,2,'New UID can complete on its first observed post-C2 bar');
  const targetFirst=h.state();assert.equal(h.step(targetFirst,[9,dir,100,dir===1?90:110,dir===1?110:90,0,100,101,...prices(110,95),true]),2);
  h.step(targetFirst,[9,dir,100,dir===1?90:110,dir===1?110:90,0,101,102,...prices(108,89),true]);assert.equal(targetFirst.reason,2);
@@ -28,12 +28,12 @@ const local={uid:1,endReason:1,endedAt:150},laterSame={uid:1,endReason:4,endedAt
 assert.equal(h.archive(local,laterSame),local,'Keep first observed LTF chronology for the same setup');
 assert.equal(h.archive(local,newer),newer);assert.equal(h.archive(local,null),local);assert.equal(h.archive(null,newer),newer);
 assert.ok(!h.archive(null,null));
-assert.match(s,/false, older and bar_index > m.bornIndex\)/,'The HTF registry expires C3 contexts before selecting a model');
+assert.doesNotMatch(s,/older and bar_index > m.bornIndex\)/,'No automatic parent expiry at C3');
 assert.doesNotMatch(s,/Model fallback|selected := fallback|Context timeout \(HTF/);
-assert.match(s,/bool clusterActive = focusAvailable/);assert.match(s,/bool drawActive = focusAvailable/);assert.match(s,/bool hasModel = focusAvailable/);
+assert.match(s,/bool clusterActive = rangeAvailable/);assert.match(s,/bool drawActive = rangeAvailable/);assert.match(s,/bool hasModel = rangeAvailable/);
 assert.match(s,/f_contextKey\(focusAvailable \? sId : na/);assert.match(s,/id=focusAvailable \? sId : na/);
 assert.match(s,/"SEARCH"/);assert.match(s,/reason == 7 \? "EXP"/);
 const localArchive=s.match(/focusLife.archived := ModelArchive.new\((.+)\)/)[1];assert.doesNotMatch(localArchive,/(?:cO|cH|cL|cC|cT|cEnd)=/,'A mid-HTF event must not invent closed C3 OHLC');
 assert.match(s,/f_archiveCandles\(visibleArchive, endedCandles\)/);assert.match(s,/bool archiveActive = showCluster and showArchive/);
 assert.equal(s,fs.readFileSync('chibao.txt','utf8'));
-console.log(`PASS ${traces} symmetric actual-source lifecycle traces: wick/equality INV, target, C3 expiry, ambiguity, no self-invalidation, closed-bar latch, fresh setup handoff, first-event archive and screenshot regression. Not market Replay.`);
+console.log(`PASS ${traces} symmetric actual-source lifecycle traces: wick/equality INV, target, entry expiry separate from parent, ambiguity, no self-invalidation, closed-bar latch, fresh setup handoff, first-event archive and screenshot regression. Not market Replay.`);

@@ -44,6 +44,11 @@ minRR = 0.0
 retestTicks = 1
 showConfirm = false
 showCluster = input.bool(true, "CRT HTF candle groups", group=G_VIEW, tooltip="Cụm nguồn giữ C1–C2. FOLLOW bắt đầu từ C3 và có N* live, không trộn vào cặp gốc. LAST là model đã kết thúc, chỉ tham khảo.")
+showLargerCluster = input.bool(true, "Larger HTF candle cluster", group=G_VIEW, tooltip="Thêm cụm OHLC HTF lớn hơn bên cạnh cụm chính; chỉ quan sát, không tự lọc tín hiệu hay đổi bias. Wick và body lấy đúng nguồn giá.")
+largerTfChoice = input.string("Auto", "Larger HTF", options=["Auto", "H2", "H4", "D1", "W1"], group=G_VIEW, tooltip="Auto: H1/H2 → H4; H4 → D1; D1 → W1. Chọn khung lớn hơn HTF chính; nếu khung chọn không lớn hơn thì dùng Auto.")
+string autoLargerTf = timeframe.in_seconds(htf) < 14400 ? "240" : timeframe.in_seconds(htf) < 86400 ? "1D" : "1W"
+string requestedLargerTf = largerTfChoice == "H2" ? "120" : largerTfChoice == "H4" ? "240" : largerTfChoice == "D1" ? "1D" : largerTfChoice == "W1" ? "1W" : autoLargerTf
+string largerTf = timeframe.in_seconds(requestedLargerTf) > timeframe.in_seconds(htf) ? requestedLargerTf : autoLargerTf
 clusterFollowCount = input.int(6, "Follow candles to show", minval=2, maxval=12, group=G_VIEW, tooltip="Cụm MODEL giữ nến gốc; cụm FOLLOW hiển thị số nến diễn biến gần nhất, mặc định 6. Nến cũ bị lược hiển thị được báo bằng dấu … và số lượng. Không đổi timeout hoặc tín hiệu.")
 showArchive = input.bool(false, "Last ended model cluster", group=G_VIEW, tooltip="Cụm LAST giữ nến nguồn của model vừa kết thúc và mã TG/INV/TO/AMB/HIST. Chỉ để tham khảo lịch sử, không khôi phục hiệu lực hoặc phát tín hiệu. Mặc định tắt.")
 clusterOffset = input.int(30, "Cluster offset (bars)", minval=3, maxval=80, group=G_VIEW, tooltip="Khoảng cách từ bar chart cuối đến cụm HTF, theo số bar chart. Mặc định 30 bar để cách xa cột chú thích.")
@@ -147,6 +152,14 @@ type CrtKey
 type KeyMap
     array<CrtKey> levels = na
 type Model
+    KeyMap rangeKeys = na
+    int bEnd = na
+    int raidTime = na
+    int raidEnd = na
+    float raidO = na
+    float raidH = na
+    float raidL = na
+    float raidC = na
     int aEnd = na
     int cEnd = na
     CrtKey crtKey = na
@@ -208,6 +221,7 @@ type Model
     float cC = na
     int cT = na
 type ModelArchive
+    int confirmedAt = na
     int aEnd = na
     int bEnd = na
     int cEnd = na
@@ -262,7 +276,7 @@ f_refreshIrl(Model m, array<Liquidity> swings) =>
     m.irlDir := m.dir
 
 f_archive(Model m, int reason, int endedAt) =>
-    ModelArchive.new(aEnd=m.aEnd, bEnd=m.confirmedAt, cEnd=m.cEnd, uid=m.uid, flags=m.flags, kind=m.kind, phase=m.phase, aO=m.aO, aH=m.aH, aL=m.aL, aC=m.aC, aT=m.aT, bO=m.bO, bH=m.bH, bL=m.bL, bC=m.bC, bT=m.bT, cO=m.cO, cH=m.cH, cL=m.cL, cC=m.cC, cT=m.cT, endReason=reason, endedAt=endedAt)
+    ModelArchive.new(confirmedAt=m.confirmedAt, aEnd=m.aEnd, bEnd=m.bEnd, cEnd=m.cEnd, uid=m.uid, flags=m.flags, kind=m.kind, phase=m.phase, aO=m.aO, aH=m.aH, aL=m.aL, aC=m.aC, aT=m.aT, bO=m.bO, bH=m.bH, bL=m.bL, bC=m.bC, bT=m.bT, cO=m.cO, cH=m.cH, cL=m.cL, cC=m.cC, cT=m.cT, endReason=reason, endedAt=endedAt)
 f_archiveAllowed(int kind) =>
     kind == 1
 
@@ -354,6 +368,78 @@ f_biasBundle() =>
     KeyMap keyMap = f_higherKeyMap(biasTf)
     [direction, age, swingHigh, swingLow, guardHigh, guardLow, keyMap[1]]
 
+// Freeze the references that existed before C1. They are evidence for this parent,
+// not a claim that liquidity can be traded repeatedly without a new raid/reclaim.
+f_parentKeys(array<Liquidity> swings, KeyMap higherMap, array<string> consumed, int beforeTime, string sourceTf) =>
+    array<CrtKey> levels = array.new<CrtKey>()
+    if array.size(swings) > 0
+        for i = 0 to array.size(swings) - 1
+            Liquidity q = array.get(swings, i)
+            if q.knownAt <= beforeTime
+                array.push(levels, CrtKey.new(kind=3, dir=-q.side, hi=q.price, lo=q.price, born=q.born, leftTime=q.born, knownAt=q.knownAt, beforeTime=beforeTime, tf=sourceTf))
+    if not na(higherMap) and not na(higherMap.levels)
+        if array.size(higherMap.levels) > 0
+            for i = 0 to array.size(higherMap.levels) - 1
+                CrtKey k = array.get(higherMap.levels, i)
+                if k.knownAt <= beforeTime and not array.includes(consumed, f_keyIdentity(k))
+                    CrtKey copy = k.copy()
+                    copy.beforeTime := beforeTime
+                    array.push(levels, copy)
+    KeyMap.new(levels)
+
+f_rangeReaction(KeyMap references, int beforeTime, int direction, float raidHigh, float raidLow, float closing) =>
+    CrtKey found = CrtKey.new()
+    if not na(references) and not na(references.levels)
+        if array.size(references.levels) > 0
+            for i = 0 to array.size(references.levels) - 1
+                CrtKey k = array.get(references.levels, i)
+                if found.kind == 0 and f_keyReact(k, beforeTime, direction, raidHigh, raidLow, closing)
+                    found := k.copy()
+    found
+
+// Price-based attempt failure is sticky. Revalidation below creates a new attempt,
+// with a new confirmation token, and never rewrites the previous archive or SL.
+f_revalidateRange(Model m, float opening, float barHigh, float barLow, float closing, int barTime, int barEnd, int currentIndex) =>
+    bool extended = m.dir == 1 ? barLow <= m.inv - sweepSize : barHigh >= m.inv + sweepSize
+    bool newerExtreme = na(m.raidTime) or (m.dir == 1 ? barLow < m.raidL : barHigh > m.raidH)
+    if extended and newerExtreme
+        m.raidTime := barTime
+        m.raidEnd := barEnd
+        m.raidO := opening
+        m.raidH := barHigh
+        m.raidL := barLow
+        m.raidC := closing
+    bool inside = closing > m.lo and closing < m.hi
+    CrtKey key = not na(m.raidTime) and inside ? f_rangeReaction(m.rangeKeys, m.aT, m.dir, m.raidH, m.raidL, closing) : CrtKey.new()
+    bool pathOpen = m.dir == 1 ? barHigh < m.cp and m.raidH < m.cp : barLow > m.cp and m.raidL > m.cp
+    bool renewed = m.phase == 0 and inside and pathOpen and not na(m.raidTime) and key.kind == 3
+    if renewed
+        m.flags += 2
+        m.phase := 1
+        m.bornIndex := currentIndex
+        m.confirmedAt := barEnd
+        m.resolvedAt := barEnd
+        m.resolvedIndex := currentIndex
+        m.inv := m.dir == 1 ? m.raidL : m.raidH
+        m.invT := m.raidTime
+        m.crtKey := key
+        m.bO := m.raidO
+        m.bH := m.raidH
+        m.bL := m.raidL
+        m.bC := m.raidC
+        m.bT := m.raidTime
+        m.bEnd := m.raidEnd
+        m.cT := na
+        m.cEnd := na
+        m.cO := na
+        m.cH := na
+        m.cL := na
+        m.cC := na
+        m.raidTime := na
+        m.raidEnd := na
+    renewed
+
+
 f_engine() =>
     [higherBias, higherBiasAge, higherBiasHigh, higherBiasLow, higherGuardHigh, higherGuardLow, higherKeyMap] = request.security(syminfo.tickerid, biasTf, f_biasBundle(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
     var array<Model> models = array.new<Model>()
@@ -370,6 +456,7 @@ f_engine() =>
     bool inScan = time >= scanStart
     float ph = ta.pivothigh(high, htfPivotLength, htfPivotLength)
     float pl = ta.pivotlow(low, htfPivotLength, htfPivotLength)
+    KeyMap parentReferences = f_parentKeys(swings, higherKeyMap, usedHigherKeys, time[1], htf)
     CrtKey priorBuyKey = f_findCrtKey(swings, time[1], 1, high, low, close, htf)
     CrtKey priorSellKey = f_findCrtKey(swings, time[1], -1, high, low, close, htf)
     if biasTf != htf and not na(higherKeyMap) and not na(higherKeyMap.levels)
@@ -380,36 +467,38 @@ f_engine() =>
         f_markHigherUsed(higherKeyMap, usedHigherKeys, time, high, low)
     f_updateKeyPools(swings, scanStart, inScan, ph, pl)
 
-    // Retire context outcomes first; entry permission is independently restricted to C3.
+    // A parent C1 outlives any individual attempt. Goal completion ends the parent.
     int mi = array.size(models) - 1
     while mi >= 0
         Model m = array.get(models, mi)
-        if na(m.cT) and time > m.bT and m.dir != 0
+        bool older = time_close > m.confirmedAt
+        if na(m.cT) and time >= m.confirmedAt and m.dir != 0
             m.cO := open
             m.cH := high
             m.cL := low
             m.cC := close
             m.cT := time
             m.cEnd := time_close
-        bool older = time_close > m.confirmedAt
-        if older and m.kind == 1 and not na(m.crtKey) and m.crtKey.kind > 0 and (m.dir == 1 ? close < m.crtKey.lo : close > m.crtKey.hi)
-            m.crtKey := CrtKey.new()
         float equilibrium = (m.hi + m.lo) / 2
         if older and (m.dir == 1 ? high >= equilibrium : low <= equilibrium)
             m.eqTouched := true
-        int endingReason = f_crtEnd(m.dir, m.inv, m.cp, high, low, close, older, m.uid < scanStart, false, older and bar_index > m.bornIndex)
+        int endingReason = m.phase == 1 ? f_crtEnd(m.dir, m.inv, m.cp, high, low, close, older, false, false) : 0
+        bool goalTaken = older and (m.dir == 1 ? high >= m.cp : low <= m.cp)
+        bool outsideHistory = m.aT < scanStart
         if endingReason != 0
             lastRetired := m.uid
             retiredReason := endingReason
             if f_archiveAllowed(m.kind) and (m.uid == priorFocusId or not archivedThisBar)
                 lastEnded := f_archive(m, endingReason, time_close)
                 archivedThisBar := true
+            m.phase := 0
+        if goalTaken or outsideHistory
+            lastRetired := m.uid
+            retiredReason := goalTaken ? 2 : 5
             array.remove(models, mi)
-        else if not na(m.irlT) and time > m.irlT and (m.irlDir == 1 ? close < m.irlL : close > m.irlH)
-            m.irlH := na
-            m.irlL := na
-            m.irlT := na
-            m.irlKind := 0
+        else
+            // A wick beyond the old SL may become a NEW raid; it never repairs the old attempt.
+            bool renewed = older and f_revalidateRange(m, open, high, low, close, time, time_close, bar_index)
         mi -= 1
 
     [tsBull, tsBear] = f_patterns(open[1], high[1], low[1], close[1], open, high, low, close)
@@ -428,7 +517,7 @@ f_engine() =>
             int direction = tsBull ? 1 : -1
             float rh = high[1]
             float rl = low[1]
-            Model fresh = Model.new(aEnd=time_close[1], uid=time, flags=1, kind=1, phase=1, dir=direction, bornIndex=bar_index, confirmedAt=time_close, resolvedAt=time_close, hi=rh, lo=rl, inv=direction == 1 ? low : high, cp=direction == 1 ? rh : rl, aO=open[1], aH=high[1], aL=low[1], aC=close[1], aT=time[1], bO=open, bH=high, bL=low, bC=close, bT=time)
+            Model fresh = Model.new(rangeKeys=parentReferences, bEnd=time_close, aEnd=time_close[1], uid=time[1], flags=1, kind=1, phase=1, dir=direction, bornIndex=bar_index, confirmedAt=time_close, resolvedAt=time_close, hi=rh, lo=rl, inv=direction == 1 ? low : high, cp=direction == 1 ? rh : rl, aO=open[1], aH=high[1], aL=low[1], aC=close[1], aT=time[1], bO=open, bH=high, bL=low, bC=close, bT=time)
             fresh.crtKey := direction == 1 ? priorBuyKey : priorSellKey
             fresh.hiT := time[1]
             fresh.loT := time[1]
@@ -476,24 +565,29 @@ f_engine() =>
                 m.irlL := na
                 m.irlKind := 0
             f_refreshIrl(m, swings)
-    // Only an entry-open CRT may be active. Ended contexts belong exclusively to LAST.
+    // Oldest still-live attempt has priority. Otherwise show the newest WATCH range.
     Model selected = Model.new()
+    Model watching = Model.new()
     if array.size(models) > 0
         for i = 0 to array.size(models) - 1
             Model candidate = array.get(models, i)
-            if na(selected.uid) and bar_index == candidate.bornIndex
+            if candidate.phase == 0
+                watching := candidate
+            if na(selected.uid) and candidate.phase == 1
                 selected := candidate
+    if na(selected.uid)
+        selected := watching
     priorFocusId := selected.uid
     bool historyReady = firstSeen <= scanStart
-    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft, selected.innerHi, selected.innerLo, selected.innerHiT, selected.innerLoT, lastEnded, selected.crtKey, selected.eqTouched, selected.aEnd, selected.cEnd]
+    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft, selected.innerHi, selected.innerLo, selected.innerHiT, selected.innerLoT, lastEnded, selected.crtKey, selected.eqTouched, selected.aEnd, selected.cEnd, selected.bEnd]
 
 // Every snapshot field is individually offset; live OHLC is display-only.
 // C3 receives the previous confirmed C2 snapshot (age 0); C4 receives age 1.
 f_snapshot(bool previous) =>
-    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60, v61, v62] = f_engine()
-    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57, previous ? v58[1] : v58, previous ? v59[1] : v59, previous ? v60[1] : v60, previous ? v61[1] : v61, previous ? v62[1] : v62]
+    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60, v61, v62, v63] = f_engine()
+    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57, previous ? v58[1] : v58, previous ? v59[1] : v59, previous ? v60[1] : v60, previous ? v61[1] : v61, previous ? v62[1] : v62, previous ? v63[1] : v63]
 
-[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft, sInnerHi, sInnerLo, sInnerHiT, sInnerLoT, sArchived, kCrtKey, sEqTouched, sAEnd, sCEnd] = if onHtf
+[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft, sInnerHi, sInnerLo, sInnerHiT, sInnerLoT, sArchived, kCrtKey, sEqTouched, sAEnd, sCEnd, sBEnd] = if onHtf
     f_snapshot(not barstate.isconfirmed)
 else
     request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
@@ -569,23 +663,57 @@ else
     liveL := math.min(liveL, low)
     liveC := close
 
+// Confirmed larger-TF bars use explicit history offsets. The forming bar is
+// aggregated from this chart only; an incomplete first bucket is omitted.
+f_largerClosed() =>
+    [time[3], open[3], high[3], low[3], close[3], time_close[3], time[2], open[2], high[2], low[2], close[2], time_close[2], time[1], open[1], high[1], low[1], close[1], time_close[1]]
+[h3T, h3O, h3H, h3L, h3C, h3End, h2T, h2O, h2H, h2L, h2C, h2End, h1T, h1O, h1H, h1L, h1C, h1End] = request.security(syminfo.tickerid, largerTf, f_largerClosed(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+int largerBucket = time(largerTf)
+int largerEnd = time_close(largerTf)
+var int largerLiveT = na
+var float largerLiveO = na
+var float largerLiveH = na
+var float largerLiveL = na
+var float largerLiveC = na
+var bool largerComplete = false
+if na(largerLiveT) or largerLiveT != largerBucket
+    largerLiveT := largerBucket
+    largerLiveO := open
+    largerLiveH := high
+    largerLiveL := low
+    largerLiveC := close
+    largerComplete := time == largerBucket
+else
+    largerLiveH := math.max(largerLiveH, high)
+    largerLiveL := math.min(largerLiveL, low)
+    largerLiveC := close
+
+
 // The HTF snapshot is immutable. A chart-side latch retires it on CLOSED LTF
 // evidence without waiting for the forming HTF candle to close or rewriting history.
 type FocusLifecycle
     int uid = na
     int reason = 0
+    int confirmation = na
+    bool rangeDone = false
     int endedAt = na
     ModelArchive archived = na
 
-f_stepFocus(FocusLifecycle state, int uid, int direction, int confirmedAt, float invalidation, float targetLevel, int age, int barOpen, int barClose, float barHigh, float barLow, bool closedBar) =>
+f_stepFocus(FocusLifecycle state, int uid, int direction, int confirmedAt, float invalidation, float targetLevel, int age, int barOpen, int barClose, float barHigh, float barLow, bool closedBar, bool attemptOpen = true) =>
     int endedNow = 0
     if not na(uid) and (na(state.uid) or state.uid != uid)
         state.uid := uid
+        state.rangeDone := false
+        state.confirmation := na
+    if not na(uid) and (na(state.confirmation) or state.confirmation != confirmedAt)
+        state.confirmation := confirmedAt
         state.reason := 0
         state.endedAt := na
-    if not na(uid) and state.reason == 0 and closedBar
+    if not na(uid) and closedBar and barOpen >= confirmedAt and (direction == 1 ? barHigh >= targetLevel : barLow <= targetLevel)
+        state.rangeDone := true
+    if not na(uid) and state.reason == 0 and closedBar and attemptOpen
         bool older = barOpen >= confirmedAt
-        int reason = f_crtEnd(direction, invalidation, targetLevel, barHigh, barLow, na, older, false, false, age > 0)
+        int reason = f_crtEnd(direction, invalidation, targetLevel, barHigh, barLow, na, older, false, false, false)
         if reason != 0
             state.reason := reason
             state.endedAt := barClose
@@ -595,15 +723,16 @@ f_stepFocus(FocusLifecycle state, int uid, int direction, int confirmedAt, float
 f_visibleArchive(ModelArchive localArchive, ModelArchive htfArchive) =>
     bool localReady = not na(localArchive) and not na(localArchive.uid)
     bool htfReady = not na(htfArchive) and not na(htfArchive.uid)
-    bool preferLocal = localReady and (not htfReady or localArchive.uid == htfArchive.uid or localArchive.endedAt >= htfArchive.endedAt)
+    bool preferLocal = localReady and (not htfReady or (localArchive.uid == htfArchive.uid and localArchive.confirmedAt == htfArchive.confirmedAt) or localArchive.endedAt >= htfArchive.endedAt)
     preferLocal ? localArchive : htfArchive
 
 var FocusLifecycle focusLife = FocusLifecycle.new()
-int focusEndedNow = f_stepFocus(focusLife, sId, sDir, sConfirmed, sInv, sCp, sModelAge, time, time_close, high, low, barstate.isconfirmed)
+int focusEndedNow = f_stepFocus(focusLife, sId, sDir, sConfirmed, sInv, sCp, sModelAge, time, time_close, high, low, barstate.isconfirmed, sPhase == 1)
 if focusEndedNow != 0
     // The local event may be mid-HTF: preserve C1/C2, never fabricate a closed C3.
-    focusLife.archived := ModelArchive.new(aEnd=sAEnd, bEnd=sConfirmed, uid=sId, flags=sFlags, kind=sKind, phase=sPhase, aO=sAO, aH=sAH, aL=sAL, aC=sAC, aT=sAT, bO=sBO, bH=sBH, bL=sBL, bC=sBC, bT=sBT, endReason=focusEndedNow, endedAt=time_close)
-bool focusAvailable = not na(sId) and focusLife.uid == sId and focusLife.reason == 0 and sModelAge == 0
+    focusLife.archived := ModelArchive.new(confirmedAt=sConfirmed, aEnd=sAEnd, bEnd=sBEnd, uid=sId, flags=sFlags, kind=sKind, phase=sPhase, aO=sAO, aH=sAH, aL=sAL, aC=sAC, aT=sAT, bO=sBO, bH=sBH, bL=sBL, bC=sBC, bT=sBT, endReason=focusEndedNow, endedAt=time_close)
+bool rangeAvailable = not na(sId) and not (focusLife.uid == sId and focusLife.rangeDone)
+bool focusAvailable = rangeAvailable and sPhase == 1 and focusLife.uid == sId and focusLife.confirmation == sConfirmed and focusLife.reason == 0
 ModelArchive visibleArchive = f_visibleArchive(focusLife.archived, sArchived)
 int lastSetupEnd = not na(visibleArchive) and not na(visibleArchive.uid) ? visibleArchive.endReason : sReason
 
@@ -611,7 +740,7 @@ int lastSetupEnd = not na(visibleArchive) and not na(visibleArchive.uid) ? visib
 // CRT time follows the actual feed candle boundaries, including session gaps.
 // No clock-hour gate: the confirmed-C2 / C3-only lifecycle gates entries.
 bool timeAllowed = true
-string crtTimeText = na(liveEnd) ? "-" : (focusAvailable ? "C3 " : "HTF ") + str.format_time(liveEnd, "HH:mm", NY) + " NY"
+string crtTimeText = na(liveEnd) ? "-" : (rangeAvailable ? (focusAvailable ? "HTF " : "WATCH ") : "HTF ") + str.format_time(liveEnd, "HH:mm", NY) + " NY"
 
 type SignalContext
     int age = 0
@@ -954,7 +1083,8 @@ bool alreadyEmitted = crtState.sent
 
 // Drawing focus and the single signal context always refer to the same CRT.
 var string selectedKey = ""
-bool changedModel = modelKey != selectedKey
+string visualKey = f_contextKey(sId, sResolved, sDir)
+bool changedModel = visualKey != selectedKey
 var int lastVisualTime = na
 var int lastVisualIndex = na
 var int lastVisualBucket = na
@@ -962,9 +1092,9 @@ var string lastVisualKey = ""
 var int modelObservedIndex = na
 var int modelObservedTime = na
 if changedModel
-    selectedKey := modelKey
-    modelObservedIndex := focusAvailable ? bar_index : na
-    modelObservedTime := focusAvailable ? time : na
+    selectedKey := visualKey
+    modelObservedIndex := rangeAvailable ? bar_index : na
+    modelObservedTime := rangeAvailable ? time : na
     lastVisualTime := na
     lastVisualIndex := na
     lastVisualBucket := na
@@ -983,18 +1113,18 @@ f_sourceIndex(int sourceTime) =>
                 break
     found
 int modelAnchorTime = not na(sResolved) and sResolved > sConfirmed and not na(sCT) ? sCT : sBT
-int modelAnchorIndex = onHtf and barstate.islast and focusAvailable and (not recentOnly or sModelAge <= drawHtfBars) ? f_sourceIndex(modelAnchorTime) : na
+int modelAnchorIndex = onHtf and barstate.islast and rangeAvailable ? f_sourceIndex(modelAnchorTime) : na
 int drawAnchorIndex = onHtf ? modelAnchorIndex : lastVisualKey == modelKey and not na(lastVisualIndex) ? lastVisualIndex : modelObservedIndex
 int drawAnchorTime = onHtf ? modelAnchorTime : lastVisualKey == modelKey and not na(lastVisualTime) ? lastVisualTime : modelObservedTime
 int drawSpan = int(math.ceil(drawHtfBars * htfSeconds / chartSeconds))
 int labelLaneBars = chartTextSize == "Huge" ? 48 : chartTextSize == "Large" ? 36 : chartTextSize == "Small" ? 18 : 26
 int clusterStartIndex = bar_index + (showLevels or showConfirm or showIrl ? math.max(clusterOffset, labelLaneBars + 12) : clusterOffset)
 int drawingClipIndex = showCluster ? clusterStartIndex - labelLaneBars - 2 : bar_index + 498
-int drawEndIndex = not na(drawAnchorIndex) ? math.min(drawAnchorIndex + drawSpan, drawingClipIndex) : na
-bool recentModel = focusAvailable and not na(sModelAge) and sModelAge <= drawHtfBars
+int drawEndIndex = not na(drawAnchorIndex) ? math.min(bar_index + drawSpan, drawingClipIndex) : na
+bool recentModel = rangeAvailable
 bool recentLtfSignal = lastVisualKey == modelKey and not na(lastVisualBucket) and bucketCounter - lastVisualBucket <= drawHtfBars
-bool drawActive = focusAvailable and not na(drawAnchorIndex) and drawAnchorIndex >= bar_index - 9999 and drawEndIndex >= drawAnchorIndex and (not recentOnly or (onHtf ? recentModel : recentModel or recentLtfSignal))
-bool clusterActive = focusAvailable
+bool drawActive = rangeAvailable and not na(drawAnchorIndex) and drawAnchorIndex >= bar_index - 9999 and drawEndIndex >= drawAnchorIndex and (not recentOnly or (onHtf ? recentModel : recentModel or recentLtfSignal))
+bool clusterActive = rangeAvailable
 
 // Finite drawings use real chart bar indices and real prices, on the main price pane.
 
@@ -1018,7 +1148,7 @@ if barstate.isfirst
         array.push(levelLines, line.new(time, high, time, high, xloc=xloc.bar_time, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
         array.push(levelLabels, label.new(bar_index, high, "", xloc=xloc.bar_index, force_overlay=true, style=label.style_label_left, textalign=text.align_left, size=chartFont, color=color.new(chart.bg_color, 100)))
         array.push(labelLeaders, line.new(bar_index, high, bar_index, high, force_overlay=true, style=line.style_dotted, color=color.new(color.gray, 100)))
-    for i = 0 to 2
+    for i = 0 to 3
         array.push(groupLabels, label.new(time, low, "", xloc=xloc.bar_time, force_overlay=true, style=label.style_label_up, color=color.new(chart.bg_color, 100), textcolor=chart.fg_color, size=size.small))
 type ClusterCandle
     int t
@@ -1075,6 +1205,8 @@ f_candleEnd(int sourceTime, int aTime, int aClose, int bTime, int bClose, int cT
     int cached = array.indexof(cachedTimes, sourceTime)
     not na(sourceTime) ? (sourceTime == aTime ? aClose : sourceTime == bTime ? bClose : sourceTime == cTime ? cClose : sourceTime == liveTime ? liveClose : cached >= 0 and cached < array.size(cachedEnds) ? array.get(cachedEnds, cached) : na) : na
 
+f_tfName(string tf) =>
+    tf == "60" ? "H1" : tf == "120" ? "H2" : tf == "240" ? "H4" : tf == "1D" ? "D1" : tf == "1W" ? "W1" : tf
 f_tag(int flags, int kind, int phase) =>
     "CRT/TS"
 f_levelPriority(int slot) =>
@@ -1267,7 +1399,7 @@ plot(earlyResult.hit ? earlyResult.bucket : na, "Early C2 window open ms", displ
 plot(earlyResult.hit ? bucketEnd : na, "Early C2 window close ms", display=display.data_window)
 
 if barstate.islast
-    bool hasModel = focusAvailable
+    bool hasModel = rangeAvailable
     color primaryColor = sDir == 1 ? color.teal : sDir == -1 ? color.orange : color.silver
     string tag = hasModel ? f_tag(sFlags, sKind, sPhase) : "-"
     array.fill(renderedPrices, na)
@@ -1277,7 +1409,7 @@ if barstate.islast
     f_level(0, sHi, "RH", primaryColor, showLevels and drawActive, sHiT)
     f_level(1, sLo, "RL", primaryColor, showLevels and drawActive, sLoT)
     f_level(2, (sHi + sLo) / 2, sEqTouched ? "EQ*" : "EQ", color.new(chart.fg_color, 35), showLevels and drawActive)
-    f_level(3, sInv, "INV", color.new(color.red, 15), showLevels and drawActive, sInvT)
+    f_level(3, sInv, "INV", color.new(color.red, 15), showLevels and drawActive and focusAvailable, sInvT)
     f_level(4, sCp, "CP", color.aqua, showLevels and drawActive, sCpT)
     f_level(5, sErlU, "ERL+", color.new(color.orange, 35), showLevels and drawActive, sErlUT)
     f_level(6, sErlL, "ERL-", color.new(color.teal, 35), showLevels and drawActive, sErlLT)
@@ -1290,12 +1422,12 @@ if barstate.islast
     f_layoutLabels()
     if showPanel
         string dirText = biasPaused ? "B0!" : biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
-        string stateText = not hasModel ? "SEARCH" : alreadyEmitted ? "SIGNAL" : "C3"
+        string stateText = not hasModel ? "SEARCH" : not focusAvailable ? "WATCH" : sModelAge > 0 ? "TRACK" : alreadyEmitted ? "SIGNAL" : "ENTRY"
         array<string> headings = array.from("TF", "CRT", "BIAS", "REF", "T", "ENTRY", "N", "WHY", "DATA", "EARLY")
         array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (hasModel ? (sDir == 1 ? "BUY" : "SELL") : "-") + " | " + str.tostring(hasModel ? sCount : 0), dirText + " / " + biasTf, hasModel and hasIrl ? "IRL" : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals))
         for row = 0 to 9
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
-            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | TG=target touch; INV=wick touches C2 extreme; EXP=C3 ended. Closed chart-bar evidence retires focus immediately; LAST is history only. Not trade fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C1. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit : row == 6 ? "CRT signals on closed LTF bars in C3 only; not fills or a win-rate." : "")
+            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | Parent C1 stays until its target is taken. INV ends only this attempt; WATCH needs a new extended raid, original key and close inside C1. TRACK after entry window; no automatic C3 expiry. Not fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C1. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit : row == 6 ? "CRT signals on closed LTF bars in C3 only; not fills or a win-rate." : "")
     array<ClusterCandle> clusterCandles = array.new<ClusterCandle>()
     if showCluster and clusterActive
         if array.size(candleTimes) > 0
@@ -1312,15 +1444,30 @@ if barstate.islast
     array<ClusterCandle> originCandles = array.new<ClusterCandle>()
     array<ClusterCandle> followCandles = array.new<ClusterCandle>()
     array<ClusterCandle> endedCandles = array.new<ClusterCandle>()
+    array<ClusterCandle> largerCandles = array.new<ClusterCandle>()
     int followTotal = f_splitCluster(clusterCandles, sKind, sAT, sBT, sCT, clusterFollowCount, originCandles, followCandles)
+    bool contextOnlyCluster = showCluster and not clusterActive
+    if contextOnlyCluster
+        int first = math.max(0, array.size(candleTimes) - 3)
+        if array.size(candleTimes) > 0
+            for j = first to array.size(candleTimes) - 1
+                f_insertCluster(originCandles, array.get(candleTimes, j), array.get(candleOpens, j), array.get(candleHighs, j), array.get(candleLows, j), array.get(candleCloses, j))
+        if liveComplete
+            f_insertCluster(originCandles, liveT, liveO, liveH, liveL, liveC)
     bool archiveActive = showCluster and showArchive and not na(visibleArchive) and not na(visibleArchive.uid)
     if archiveActive
         f_archiveCandles(visibleArchive, endedCandles)
+    if showCluster and showLargerCluster
+        f_insertCluster(largerCandles, h3T, h3O, h3H, h3L, h3C)
+        f_insertCluster(largerCandles, h2T, h2O, h2H, h2L, h2C)
+        f_insertCluster(largerCandles, h1T, h1O, h1H, h1L, h1C)
+        if largerComplete
+            f_insertCluster(largerCandles, largerLiveT, largerLiveO, largerLiveH, largerLiveL, largerLiveC)
     int originCount = array.size(originCandles)
     int followCount = array.size(followCandles)
     int endedCount = array.size(endedCandles)
-    int renderCount = originCount + followCount + endedCount
-    // At most 3 source + 12 follow + 3 archived candles; old objects are deleted explicitly.
+    int largerCount = array.size(largerCandles)
+    int renderCount = originCount + followCount + endedCount + largerCount
     while array.size(clusterBodies) > renderCount
         box.delete(array.pop(clusterBodies))
         line.delete(array.pop(clusterWicks))
@@ -1333,25 +1480,29 @@ if barstate.islast
     float clusterStep = candleWidth + 2.0
     float bodyWidth = candleWidth
     float groupGap = math.max(8.0, clusterStep * 1.5)
+    float interHtfGap = math.max(clusterOffset, labelLaneBars + 12)
     int clusterStartTime = time + int((clusterStartIndex - bar_index) * chartSeconds * 1000)
     bool currentBucketClosed = barstate.isconfirmed and not na(liveEnd) and time_close >= liveEnd
+    bool largerBucketClosed = barstate.isconfirmed and time_close >= largerEnd
+    float commonFloor = na
+    for pass = 0 to 3
+        array<ClusterCandle> scan = pass == 0 ? originCandles : pass == 1 ? followCandles : pass == 2 ? endedCandles : largerCandles
+        if array.size(scan) > 0
+            for j = 0 to array.size(scan) - 1
+                ClusterCandle item = array.get(scan, j)
+                commonFloor := na(commonFloor) ? item.l : math.min(commonFloor, item.l)
+    float captionGap = math.max(visibleLabelGap, syminfo.mintick * 12)
+    float captionBase = nz(commonFloor, low) - captionGap * 0.65
     float cursor = 0.0
     int drawSlot = 0
-    for group = 0 to 2
-        array<ClusterCandle> candles = group == 0 ? originCandles : group == 1 ? followCandles : endedCandles
+    for group = 0 to 3
+        array<ClusterCandle> candles = group == 0 ? originCandles : group == 1 ? followCandles : group == 2 ? endedCandles : largerCandles
         int groupCount = array.size(candles)
         label heading = array.get(groupLabels, group)
         label.set_text(heading, "")
+        if group == 3 and groupCount > 0
+            cursor += interHtfGap - (cursor > 0 ? groupGap : 0)
         if groupCount > 0
-            float ceiling = na
-            float floorPrice = na
-            for j = 0 to groupCount - 1
-                ClusterCandle item = array.get(candles, j)
-                ceiling := na(ceiling) ? item.h : math.max(ceiling, item.h)
-                floorPrice := na(floorPrice) ? item.l : math.min(floorPrice, item.l)
-            float groupSpan = math.max(ceiling - floorPrice, syminfo.mintick * 8)
-            float captionGap = math.max(visibleLabelGap, groupSpan * 0.12, syminfo.mintick * 8)
-            float labelY = floorPrice - math.max(groupSpan * 0.08, captionGap * 0.6)
             int groupStartTime = clusterStartTime + int(cursor * chartSeconds * 1000)
             for i = 0 to groupCount - 1
                 ClusterCandle item = array.get(candles, i)
@@ -1366,31 +1517,34 @@ if barstate.islast
                 box.set_lefttop(body, left, math.max(item.o, item.c))
                 box.set_rightbottom(body, right, math.min(item.o, item.c))
                 box.set_bgcolor(body, color.new(shade, archived ? 75 : 0))
-                box.set_border_color(body, color.new(item.c >= item.o ? color.teal : color.silver, archived ? 65 : 0))
+                box.set_border_color(body, color.new(shade, archived ? 65 : 0))
                 line.set_xy1(wick, middle, item.h)
                 line.set_xy2(wick, middle, item.l)
                 line.set_width(wick, 1)
-                line.set_color(wick, color.new(chart.fg_color, archived ? 70 : 25))
-                string candleCaption = group == 0 or archived ? "C" + str.tostring(i + 1) : item.t == liveT ? (currentBucketClosed ? "N" : "N*") : item.t == sCT ? "C3" : ""
-                label.set_xy(caption, middle, labelY)
+                line.set_color(wick, color.new(shade, archived ? 70 : 25))
+                bool rawContext = group == 3 or (group == 0 and contextOnlyCluster)
+                bool liveItem = group == 3 ? item.t == largerLiveT : item.t == liveT
+                bool sourceClosed = group == 3 ? largerBucketClosed : currentBucketClosed
+                string candleCaption = rawContext ? (liveItem ? (sourceClosed ? "N" : "N*") : "") : archived or group == 0 ? (i == 0 ? "C1" : i == 1 ? ((archived ? visibleArchive.flags : sFlags) > 1 ? "R" : "C2") : "F") : liveItem ? (sourceClosed ? "N" : "N*") : item.t == sCT ? (sFlags > 1 ? "F" : "C3") : ""
+                float captionRow = rawContext ? 0.0 : group == 1 ? (liveItem ? 1.0 : 0.0) : i
+                label.set_xy(caption, middle, captionBase - captionRow * captionGap)
                 label.set_text(caption, candleCaption)
                 label.set_textcolor(caption, archived ? color.gray : chart.fg_color)
-                int sourceClose = f_candleEnd(item.t, archived ? visibleArchive.aT : sAT, archived ? visibleArchive.aEnd : sAEnd, archived ? visibleArchive.bT : sBT, archived ? visibleArchive.bEnd : sConfirmed, archived ? visibleArchive.cT : sCT, archived ? visibleArchive.cEnd : sCEnd, liveT, liveEnd, candleTimes, candleEndTimes)
-                string closeCaption = not archived and item.t == liveT and not currentBucketClosed ? "Scheduled close " : "Close "
-                label.set_tooltip(caption, "Open " + str.format_time(item.t, "dd/MM HH:mm", NY) + " NY | " + closeCaption + (not na(sourceClose) ? str.format_time(sourceClose, "dd/MM HH:mm", NY) + " NY" : "-") + " | O " + str.tostring(item.o, format.mintick) + " H " + str.tostring(item.h, format.mintick) + " L " + str.tostring(item.l, format.mintick) + " C " + str.tostring(item.c, format.mintick) + (archived ? " | history only / " + f_endTag(visibleArchive.endReason) : ""))
+                int sourceClose = group == 3 ? (item.t == h3T ? h3End : item.t == h2T ? h2End : item.t == h1T ? h1End : item.t == largerLiveT ? largerEnd : na) : f_candleEnd(item.t, archived ? visibleArchive.aT : sAT, archived ? visibleArchive.aEnd : sAEnd, archived ? visibleArchive.bT : sBT, archived ? visibleArchive.bEnd : sBEnd, archived ? visibleArchive.cT : sCT, archived ? visibleArchive.cEnd : sCEnd, liveT, liveEnd, candleTimes, candleEndTimes)
+                string closeCaption = not archived and liveItem and not sourceClosed ? "Scheduled close " : "Close "
+                label.set_tooltip(caption, "Open " + str.format_time(item.t, "dd/MM HH:mm", NY) + " NY | " + closeCaption + (not na(sourceClose) ? str.format_time(sourceClose, "dd/MM HH:mm", NY) + " NY" : "-") + " | O " + str.tostring(item.o, format.mintick) + " H " + str.tostring(item.h, format.mintick) + " L " + str.tostring(item.l, format.mintick) + " C " + str.tostring(item.c, format.mintick) + (archived ? " | LAST / " + f_endTag(visibleArchive.endReason) : group == 3 ? " | Larger HTF context only; candle colour is not bias" : rawContext ? " | OHLC context; no confirmed parent selected" : " | Parent C1 " + str.format_time(sAT, "dd/MM HH:mm", NY) + " | Attempt confirmed " + str.format_time(sConfirmed, "dd/MM HH:mm", NY)))
                 drawSlot += 1
             int headingTime = groupStartTime + int((groupCount * clusterStep - clusterStep + bodyWidth) * 0.5 * chartSeconds * 1000)
-            label.set_xy(heading, headingTime, labelY - captionGap * 1.25)
-            string headingText = group == 0 ? tag : group == 1 ? "FOLLOW" + (followTotal > followCount ? " …" + str.tostring(followTotal - followCount) : "") : "LAST / " + f_endTag(visibleArchive.endReason)
+            float headingRow = group == 3 ? 3.2 : 3.2 + group * 0.9
+            label.set_xy(heading, headingTime, captionBase - captionGap * headingRow)
+            string headingText = group == 0 ? f_tfName(htf) + " · " + (contextOnlyCluster ? "CTX" : not focusAvailable ? "WATCH" : sModelAge > 0 ? "TRACK" : "CRT") : group == 1 ? "FOLLOW" + (followTotal > followCount ? " …" + str.tostring(followTotal - followCount) : "") : group == 2 ? "LAST / " + f_endTag(visibleArchive.endReason) : f_tfName(largerTf)
             label.set_text(heading, headingText)
             label.set_textcolor(heading, group == 2 ? color.gray : chart.fg_color)
-            label.set_tooltip(heading, group == 2 ? f_tag(visibleArchive.flags, visibleArchive.kind, visibleArchive.phase) + " | End " + str.format_time(visibleArchive.endedAt, "dd/MM HH:mm", NY) + " NY | historical reference; no entries" : group == 1 ? str.tostring(followCount) + " shown / " + str.tostring(followTotal) + " after model; full series still tracked" : "Frozen model source | age " + str.tostring(sModelAge) + (lifeHtf > 0 ? "/" + str.tostring(lifeHtf) : ""))
+            label.set_tooltip(heading, group == 2 ? "Ended attempt only | " + f_endTag(visibleArchive.endReason) + " | End " + str.format_time(visibleArchive.endedAt, "dd/MM HH:mm", NY) + " NY" : group == 3 ? "Larger HTF " + largerTf + " | confirmed candles + forming N* | observational, no entry gate" : contextOnlyCluster ? "Main HTF OHLC context only" : "Parent C1 " + str.format_time(sAT, "dd/MM HH:mm", NY) + " NY | Attempt " + str.tostring(int((sFlags + 1) / 2)) + " confirmed " + str.format_time(sConfirmed, "dd/MM HH:mm", NY) + " NY | entry window only after that confirmation")
             cursor += groupCount * clusterStep + groupGap
     int remaining = not na(liveEnd) ? math.max(0, int((liveEnd - timenow) / 1000)) : 0
     label.set_text(clockLabel, "")
-    if showCluster and clusterActive and originCount > 0
-        // Extra context is kept in the MODEL tooltip to keep the two groups compact.
-        label.set_tooltip(array.get(groupLabels, 0), "Age " + str.tostring(sModelAge) + (lifeHtf > 0 ? "/" + str.tostring(lifeHtf) : "") + " | HTF candles since model confirmation" + (barstate.isrealtime ? " | Next close " + str.tostring(int(math.floor(remaining / 60))) + ":" + str.tostring(remaining % 60, "00") : ""))
+
 
 bool modelEvent = changedModel and focusAvailable and sModelAge == 0 and barstate.isconfirmed
 alertcondition(modelEvent, "HTF", "TFA CRT: C2 confirmed; observe C3.")

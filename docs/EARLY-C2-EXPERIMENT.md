@@ -1,6 +1,6 @@
 # Early C2 · bản thử quan sát
 
-Ngày 22/11/2026: người dùng cho phép bật Early C2 để quan sát thực tế và phản hồi, thay phạm vi trước đây chỉ nghiên cứu. Input **Early C2 · experimental** mặc định bật; có thể tắt để chỉ xem tín hiệu C3. Chỉ báo có 21 input.
+Ngày 22/11/2026: người dùng cho phép bật Early C2 để quan sát thực tế và phản hồi, thay phạm vi trước đây chỉ nghiên cứu. Input **Early C2 · experimental** mặc định bật; có thể tắt để chỉ xem tín hiệu Confirmed. Chỉ báo có 23 input, gồm hai tùy chọn cụm HTF lớn hơn.
 
 Đây là quy ước cá nhân của công cụ, không tuyên bố một thuật toán đã được Romeotpt xác nhận, không phải kết quả backtest và không tự đặt lệnh.
 
@@ -45,4 +45,4 @@ Công cụ audit CSV hiện chỉ kiểm tra chi tiết nhánh Confirmed. Khi c�
 
 Khi phản hồi một dấu E, ghi mã/feed, HTF/LTF, Bias, Signal timing, thời gian theo NY hoặc VN và ảnh trước/sau. Đối chiếu ba thời điểm: reclaim đã đóng → TS LTF đã đóng → nến phát E. Một E thất bại sau đó không tự chứng minh dấu sớm sai logic; cần xem dữ kiện đã có tại lúc phát.
 
-Vòng đời setup hiện hành: [INV / TG / EXP và tìm model mới](CRT-SETUP-LIFECYCLE.md).
+Vòng đời setup hiện hành: [Range C1, attempt, INV/TG và xác nhận lại](CRT-SETUP-LIFECYCLE.md).
