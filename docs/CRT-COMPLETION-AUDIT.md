@@ -4,7 +4,7 @@ Quy tắc hiện hành: [CRT thuần & thời gian](CRT-PURE-AND-TIME.md).
 
 Đã thực hiện: bỏ các bộ xác nhận và lớp giờ cũ trong chỉ báo/web/AI/checklist; CRT HTF có C2 đóng; TS LTF và retest trong cửa sổ sau xác nhận; IRL/ERL theo swing HTF; key ngược bias có trước C1; TG/INV/AMB và TRACK/WATCH; nhóm C1–raid và FOLLOW; giờ nến từ feed; đồng hồ C3 web nhập từ chart; migration giữ snapshot, nhật ký và cá cũ.
 
-Kiểm tra hiện hành: 19 nhóm trong node tools/check-crt.cjs và 13 nhóm trình duyệt trong node tools/check-crt-web.cjs. Có fixture đối xứng, thân hàm Pine thực tế được chuyển đổi giới hạn sang JS, kiểm tra DST và giữ dữ liệu tài chính. Đây không phải backtest lợi nhuận. Kết quả biên dịch và giới hạn Replay được ghi ở báo cáo bàn giao.
+Kiểm tra hiện hành: 20 nhóm trong node tools/check-crt.cjs và 13 nhóm trình duyệt trong node tools/check-crt-web.cjs. Có fixture đối xứng, thân hàm Pine thực tế được chuyển đổi giới hạn sang JS, kiểm tra DST và giữ dữ liệu tài chính. Đây không phải backtest lợi nhuận. Kết quả biên dịch và giới hạn Replay được ghi ở báo cáo bàn giao.
 
 Đã chuẩn bị bước nghiệm thu: [quy trình Replay CRT thuần](CRT-PURE-REPLAY.md), cột Data Window/CSV và công cụ đối chiếu dữ liệu xuất trước/sau reload. Kiểm tra parser, biên thời gian, ca đối xứng, dữ liệu thiếu và khác OHLC bằng fixture tổng hợp đã có; không tính chúng là Replay thị trường.
 
@@ -29,3 +29,5 @@ Nâng cấp giao diện/chẩn đoán tiếp theo: tên H1/H4 phía trên, hai c
 Đã biên dịch exact source hai nhánh không lỗi/cảnh báo; cập nhật Brave bằng Update on chart sau so khớp mã. Kiểm tra công tắc Larger HTF signals: C9/H4 → C9/H0 → C9/H4, nhánh chính giữ nguyên. Latest giữ tối đa hai dấu cùng nến sự kiện gần nhất để không mất nguồn trái hướng. Các kiểm tra này không thay nghiệm thu Replay hai nhánh hoặc kiểm chứng hiệu suất.
 
 Nghiên cứu tiếp theo đã xác minh thêm hai bài X gốc (đúng author/id qua platform embed) về biến thể thận trọng và cấp khung Model 1. Bổ sung công cụ đối chiếu hai timing hiện có, 22 fixture tổng hợp, trace và hash nguồn; test causal prefix, gate và đầu vào đạt. [Báo cáo và giới hạn](CRT-ENTRY-FOLLOWUP.md). Lần nghiên cứu này giữ nguyên mã Pine, setting và chart đang chạy; chưa mã hóa Model 1/OTE/True MSS và chưa có dữ liệu thị trường mới.
+
+Theo lựa chọn người dùng, đã làm [đặc tả R1 ngoài chart](CRT-FIRST-LEG-SPEC.md): reference swing trước TS, close xác nhận trong C3, vùng hồi khai báo sau xác nhận và phản ứng trên nến sau. Module giả thuyết có 64 case Buy/Sell, mọi prefix giữ nguyên, không dùng pivot/zone biết muộn, không vượt barrier/gap/gate/window. R1 chưa tự tìm OTE/Model 1 hoặc tái dùng nhịp trong C2; dữ liệu HTF, reference, zone và gate được cấp bằng annotation. CLI/report/tests đã có; Pine và setting không đổi, chưa nghiệm thu thị trường.

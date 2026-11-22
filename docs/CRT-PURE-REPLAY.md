@@ -63,3 +63,5 @@ Vòng đời setup hiện hành: [Range C1, attempt, INV/TG và xác nhận lạ
 ## Nghiên cứu ngoài chart khi chưa có Replay/CSV
 
 Đã có [nghiên cứu entry bổ sung](CRT-ENTRY-FOLLOWUP.md) và tools/study-crt-entry.cjs để đối chiếu hai timing hiện có bằng 22 fixture tổng hợp. Đây là nghiên cứu về điều kiện và thứ tự sự kiện từ thân hàm channel, không thay bước nghiệm thu thị trường trong tài liệu này. Không dùng kết quả fixture để chọn timing tốt nhất hoặc tự điều chỉnh mặc định. Nhánh Higher CRT vẫn có cột riêng theo [đặc tả hai HTF](CRT-DUAL-HTF.md); công cụ audit CSV chính chưa kiểm chứng đầy đủ causal trace của nhánh lớn.
+
+Bản nghiên cứu R1 tiếp theo: [nhịp đầu, mốc biết trước và vùng hồi khai báo](CRT-FIRST-LEG-SPEC.md), chạy bằng tools/study-crt-first-leg.cjs. Nó kiểm tra giả thuyết cá nhân với context/reference/zone/gate được cấp từ ngoài, không chạy source Pine hay thay nghiệm thu chart. Không gọi sự kiện R1 là tín hiệu của chỉ báo đang chạy.
