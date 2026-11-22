@@ -59,3 +59,7 @@ Chỉ chốt sau khi đã có chart/CSV thực và các ca quan sát được gi
 Early C2 hiện là thử nghiệm riêng đã được người dùng cho phép bật. Cột Early có tên riêng; công cụ ghi các sự kiện này là chưa kiểm chứng bởi bộ audit Confirmed C3. So reload vẫn kiểm tra E thay đổi trên các nến chung và phân biệt đổi công tắc Early với khác biệt tín hiệu. Không coi Confirmation close của C3 là Early C2.
 
 Vòng đời setup hiện hành: [Range C1, attempt, INV/TG và xác nhận lại](CRT-SETUP-LIFECYCLE.md).
+
+## Nghiên cứu ngoài chart khi chưa có Replay/CSV
+
+Đã có [nghiên cứu entry bổ sung](CRT-ENTRY-FOLLOWUP.md) và tools/study-crt-entry.cjs để đối chiếu hai timing hiện có bằng 22 fixture tổng hợp. Đây là nghiên cứu về điều kiện và thứ tự sự kiện từ thân hàm channel, không thay bước nghiệm thu thị trường trong tài liệu này. Không dùng kết quả fixture để chọn timing tốt nhất hoặc tự điều chỉnh mặc định. Nhánh Higher CRT vẫn có cột riêng theo [đặc tả hai HTF](CRT-DUAL-HTF.md); công cụ audit CSV chính chưa kiểm chứng đầy đủ causal trace của nhánh lớn.

@@ -1,0 +1,1107 @@
+{
+  "kind": "synthetic-channel-fixtures",
+  "version": 1,
+  "timeUnits": "ordered synthetic integers, not exchange timestamps",
+  "cases": [
+    {
+      "id": "valid-retest-buy",
+      "purpose": "Both timings: TS close and later valid retest",
+      "bars": [
+        {
+          "t": 99,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 100,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 101,
+          "o": 105,
+          "h": 107,
+          "l": 101,
+          "c": 104
+        },
+        {
+          "t": 102,
+          "o": 104,
+          "h": 106,
+          "l": 102,
+          "c": 105
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": 1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 120,
+        "lo": 90,
+        "inv": 90,
+        "cp": 120
+      }
+    },
+    {
+      "id": "valid-retest-sell",
+      "purpose": "Both timings: TS close and later valid retest",
+      "bars": [
+        {
+          "t": 99,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 100,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 101,
+          "o": 115,
+          "h": 119,
+          "l": 113,
+          "c": 116
+        },
+        {
+          "t": 102,
+          "o": 116,
+          "h": 118,
+          "l": 114,
+          "c": 115
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": -1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 130,
+        "lo": 100,
+        "inv": 130,
+        "cp": 100
+      }
+    },
+    {
+      "id": "straight-run-buy",
+      "purpose": "Price leaves after TS without touching the reclaimed boundary",
+      "bars": [
+        {
+          "t": 99,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 100,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 101,
+          "o": 105,
+          "h": 107,
+          "l": 101,
+          "c": 104
+        },
+        {
+          "t": 102,
+          "o": 104,
+          "h": 110,
+          "l": 103,
+          "c": 109
+        },
+        {
+          "t": 103,
+          "o": 109,
+          "h": 115,
+          "l": 108,
+          "c": 114
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": 1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 120,
+        "lo": 90,
+        "inv": 90,
+        "cp": 120
+      }
+    },
+    {
+      "id": "straight-run-sell",
+      "purpose": "Price leaves after TS without touching the reclaimed boundary",
+      "bars": [
+        {
+          "t": 99,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 100,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 101,
+          "o": 115,
+          "h": 119,
+          "l": 113,
+          "c": 116
+        },
+        {
+          "t": 102,
+          "o": 116,
+          "h": 117,
+          "l": 110,
+          "c": 111
+        },
+        {
+          "t": 103,
+          "o": 111,
+          "h": 112,
+          "l": 105,
+          "c": 106
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": -1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 130,
+        "lo": 100,
+        "inv": 130,
+        "cp": 100
+      }
+    },
+    {
+      "id": "target-before-retest-buy",
+      "purpose": "Target consumed after TS; no late pullback entry",
+      "bars": [
+        {
+          "t": 99,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 100,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 101,
+          "o": 105,
+          "h": 107,
+          "l": 101,
+          "c": 104
+        },
+        {
+          "t": 102,
+          "o": 104,
+          "h": 121,
+          "l": 102,
+          "c": 115
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": 1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 120,
+        "lo": 90,
+        "inv": 90,
+        "cp": 120
+      }
+    },
+    {
+      "id": "target-before-retest-sell",
+      "purpose": "Target consumed after TS; no late pullback entry",
+      "bars": [
+        {
+          "t": 99,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 100,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 101,
+          "o": 115,
+          "h": 119,
+          "l": 113,
+          "c": 116
+        },
+        {
+          "t": 102,
+          "o": 116,
+          "h": 118,
+          "l": 99,
+          "c": 105
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": -1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 130,
+        "lo": 100,
+        "inv": 130,
+        "cp": 100
+      }
+    },
+    {
+      "id": "ts-extreme-retested-buy",
+      "purpose": "TS close can trigger, later wick equality invalidates that pending",
+      "bars": [
+        {
+          "t": 99,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 100,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 101,
+          "o": 105,
+          "h": 107,
+          "l": 101,
+          "c": 104
+        },
+        {
+          "t": 102,
+          "o": 104,
+          "h": 106,
+          "l": 101,
+          "c": 105
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": 1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 120,
+        "lo": 90,
+        "inv": 90,
+        "cp": 120
+      }
+    },
+    {
+      "id": "ts-extreme-retested-sell",
+      "purpose": "TS close can trigger, later wick equality invalidates that pending",
+      "bars": [
+        {
+          "t": 99,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 100,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 101,
+          "o": 115,
+          "h": 119,
+          "l": 113,
+          "c": 116
+        },
+        {
+          "t": 102,
+          "o": 116,
+          "h": 119,
+          "l": 114,
+          "c": 115
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": -1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 130,
+        "lo": 100,
+        "inv": 130,
+        "cp": 100
+      }
+    },
+    {
+      "id": "window-ended-buy",
+      "purpose": "Valid-looking later retest is outside C3",
+      "bars": [
+        {
+          "t": 99,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 100,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 101,
+          "o": 105,
+          "h": 107,
+          "l": 101,
+          "c": 104
+        },
+        {
+          "t": 102,
+          "o": 104,
+          "h": 106,
+          "l": 102,
+          "c": 105
+        }
+      ],
+      "ageByTime": {
+        "102": 1
+      },
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": 1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 120,
+        "lo": 90,
+        "inv": 90,
+        "cp": 120
+      }
+    },
+    {
+      "id": "window-ended-sell",
+      "purpose": "Valid-looking later retest is outside C3",
+      "bars": [
+        {
+          "t": 99,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 100,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 101,
+          "o": 115,
+          "h": 119,
+          "l": 113,
+          "c": 116
+        },
+        {
+          "t": 102,
+          "o": 116,
+          "h": 118,
+          "l": 114,
+          "c": 115
+        }
+      ],
+      "ageByTime": {
+        "102": 1
+      },
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": -1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 130,
+        "lo": 100,
+        "inv": 130,
+        "cp": 100
+      }
+    },
+    {
+      "id": "neutral-bias-buy",
+      "purpose": "Neither timing bypasses neutral bias",
+      "bars": [
+        {
+          "t": 99,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 100,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 101,
+          "o": 105,
+          "h": 107,
+          "l": 101,
+          "c": 104
+        },
+        {
+          "t": 102,
+          "o": 104,
+          "h": 106,
+          "l": 102,
+          "c": 105
+        }
+      ],
+      "options": {
+        "bias": 0
+      },
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": 1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 120,
+        "lo": 90,
+        "inv": 90,
+        "cp": 120
+      }
+    },
+    {
+      "id": "neutral-bias-sell",
+      "purpose": "Neither timing bypasses neutral bias",
+      "bars": [
+        {
+          "t": 99,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 100,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 101,
+          "o": 115,
+          "h": 119,
+          "l": 113,
+          "c": 116
+        },
+        {
+          "t": 102,
+          "o": 116,
+          "h": 118,
+          "l": 114,
+          "c": 115
+        }
+      ],
+      "options": {
+        "bias": 0
+      },
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": -1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 130,
+        "lo": 100,
+        "inv": 130,
+        "cp": 100
+      }
+    },
+    {
+      "id": "counter-without-key-buy",
+      "purpose": "Neither timing bypasses counter-bias prior-key requirement",
+      "bars": [
+        {
+          "t": 99,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 100,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 101,
+          "o": 105,
+          "h": 107,
+          "l": 101,
+          "c": 104
+        },
+        {
+          "t": 102,
+          "o": 104,
+          "h": 106,
+          "l": 102,
+          "c": 105
+        }
+      ],
+      "options": {
+        "bias": -1
+      },
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": 1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 120,
+        "lo": 90,
+        "inv": 90,
+        "cp": 120
+      }
+    },
+    {
+      "id": "counter-without-key-sell",
+      "purpose": "Neither timing bypasses counter-bias prior-key requirement",
+      "bars": [
+        {
+          "t": 99,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 100,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 101,
+          "o": 115,
+          "h": 119,
+          "l": 113,
+          "c": 116
+        },
+        {
+          "t": 102,
+          "o": 116,
+          "h": 118,
+          "l": 114,
+          "c": 115
+        }
+      ],
+      "options": {
+        "bias": 1
+      },
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": -1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 130,
+        "lo": 100,
+        "inv": 130,
+        "cp": 100
+      }
+    },
+    {
+      "id": "wave-locked-buy",
+      "purpose": "Neither timing bypasses the duplicate-wave guard",
+      "bars": [
+        {
+          "t": 99,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 100,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 101,
+          "o": 105,
+          "h": 107,
+          "l": 101,
+          "c": 104
+        },
+        {
+          "t": 102,
+          "o": 104,
+          "h": 106,
+          "l": 102,
+          "c": 105
+        }
+      ],
+      "options": {
+        "waveAllowed": false
+      },
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": 1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 120,
+        "lo": 90,
+        "inv": 90,
+        "cp": 120
+      }
+    },
+    {
+      "id": "wave-locked-sell",
+      "purpose": "Neither timing bypasses the duplicate-wave guard",
+      "bars": [
+        {
+          "t": 99,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 100,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 101,
+          "o": 115,
+          "h": 119,
+          "l": 113,
+          "c": 116
+        },
+        {
+          "t": 102,
+          "o": 116,
+          "h": 118,
+          "l": 114,
+          "c": 115
+        }
+      ],
+      "options": {
+        "waveAllowed": false
+      },
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": -1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 130,
+        "lo": 100,
+        "inv": 130,
+        "cp": 100
+      }
+    },
+    {
+      "id": "pre-confirmation-source-buy",
+      "purpose": "Local source pair crosses the HTF confirmation boundary",
+      "bars": [
+        {
+          "t": 99,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 100,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 101,
+          "o": 105,
+          "h": 107,
+          "l": 101,
+          "c": 104
+        },
+        {
+          "t": 102,
+          "o": 104,
+          "h": 106,
+          "l": 102,
+          "c": 105
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": 1,
+        "age": 0,
+        "confirmed": 101,
+        "resolved": 101,
+        "hi": 120,
+        "lo": 90,
+        "inv": 90,
+        "cp": 120
+      }
+    },
+    {
+      "id": "pre-confirmation-source-sell",
+      "purpose": "Local source pair crosses the HTF confirmation boundary",
+      "bars": [
+        {
+          "t": 99,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 100,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 101,
+          "o": 115,
+          "h": 119,
+          "l": 113,
+          "c": 116
+        },
+        {
+          "t": 102,
+          "o": 116,
+          "h": 118,
+          "l": 114,
+          "c": 115
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": -1,
+        "age": 0,
+        "confirmed": 101,
+        "resolved": 101,
+        "hi": 130,
+        "lo": 100,
+        "inv": 130,
+        "cp": 100
+      }
+    },
+    {
+      "id": "double-sweep-buy",
+      "purpose": "Local candle sweeps both sides; no directional TS",
+      "bars": [
+        {
+          "t": 99,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 100,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 101,
+          "o": 105,
+          "h": 109,
+          "l": 101,
+          "c": 104
+        },
+        {
+          "t": 102,
+          "o": 104,
+          "h": 106,
+          "l": 102,
+          "c": 105
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": 1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 120,
+        "lo": 90,
+        "inv": 90,
+        "cp": 120
+      }
+    },
+    {
+      "id": "double-sweep-sell",
+      "purpose": "Local candle sweeps both sides; no directional TS",
+      "bars": [
+        {
+          "t": 99,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 100,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 101,
+          "o": 115,
+          "h": 119,
+          "l": 111,
+          "c": 116
+        },
+        {
+          "t": 102,
+          "o": 116,
+          "h": 118,
+          "l": 114,
+          "c": 115
+        }
+      ],
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": -1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 130,
+        "lo": 100,
+        "inv": 130,
+        "cp": 100
+      }
+    },
+    {
+      "id": "unclosed-bars-buy",
+      "purpose": "Open bars never commit an event",
+      "bars": [
+        {
+          "t": 99,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 100,
+          "o": 105,
+          "h": 108,
+          "l": 102,
+          "c": 106
+        },
+        {
+          "t": 101,
+          "o": 105,
+          "h": 107,
+          "l": 101,
+          "c": 104
+        },
+        {
+          "t": 102,
+          "o": 104,
+          "h": 106,
+          "l": 102,
+          "c": 105
+        }
+      ],
+      "options": {
+        "confirmed": false
+      },
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": 1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 120,
+        "lo": 90,
+        "inv": 90,
+        "cp": 120
+      }
+    },
+    {
+      "id": "unclosed-bars-sell",
+      "purpose": "Open bars never commit an event",
+      "bars": [
+        {
+          "t": 99,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 100,
+          "o": 115,
+          "h": 118,
+          "l": 112,
+          "c": 114
+        },
+        {
+          "t": 101,
+          "o": 115,
+          "h": 119,
+          "l": 113,
+          "c": 116
+        },
+        {
+          "t": 102,
+          "o": 116,
+          "h": 118,
+          "l": 114,
+          "c": 115
+        }
+      ],
+      "options": {
+        "confirmed": false
+      },
+      "context": {
+        "id": 1,
+        "kind": 1,
+        "flags": 1,
+        "phase": 1,
+        "dir": -1,
+        "age": 0,
+        "confirmed": 100,
+        "resolved": 100,
+        "hi": 130,
+        "lo": 100,
+        "inv": 130,
+        "cp": 100
+      }
+    }
+  ]
+}

@@ -24,3 +24,5 @@ Model 1, cách giao dịch C3 và các cách thực thi khác là chủ đề ng
 - Early C2 vẫn chỉ thuộc HTF chính. Chưa thêm Model 1, KOD, OTE hoặc Early H4 từ các nguồn chưa xác minh đủ.
 
 Việc thêm nhánh khung lớn giải quyết độ bao phủ giữa các khung; nó không thay bằng chứng kiểm thử thị trường cho quy tắc entry. Cần đối chiếu thêm các setup thực tế trước khi thay bộ xác nhận cá nhân.
+
+Nghiên cứu bổ sung đã xác minh thêm hai bài X gốc về biến thể thận trọng và cấp khung Model 1: [framework, điểm chưa đủ đặc tả và bộ đối chiếu 22 ca](CRT-ENTRY-FOLLOWUP.md). Điều này bổ sung bằng chứng về trình tự entry, chưa thay thế giới hạn phụ đề nêu ở trên hoặc biến bộ Pullback hiện tại thành công thức tác giả.

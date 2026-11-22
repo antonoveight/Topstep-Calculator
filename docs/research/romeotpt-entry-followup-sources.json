@@ -1,0 +1,46 @@
+{
+  "reviewDate": "2026-11-22",
+  "timezone": "Asia/Saigon",
+  "scope": "Additional original-source entry research; active indicator unchanged",
+  "sources": [
+    {
+      "id": "S04",
+      "url": "https://x.com/Romeotpt/status/1965071465973535023",
+      "author": "Romeotpt",
+      "publishedUtc": "2025-09-08T15:15:21.000Z",
+      "access": "Public platform syndication response; discovery mirror was not treated as final evidence",
+      "authorAndIdVerified": true,
+      "textSha256": "56388dd6e8c44bcb74cc32a4738d45b074dcacb6ab0ab2514c3dcbe98d7821c4",
+      "claim": "One conservative sequence distinguishes HTF TS, first expansion/structure confirmation, OTE execution and the following leg",
+      "notEstablished": [
+        "complete mechanical Model 1 definition",
+        "precise OTE anchors and acceptance levels",
+        "fills, stop buffer, profitability"
+      ]
+    },
+    {
+      "id": "S05",
+      "url": "https://x.com/Romeotpt/status/1789709341857034487",
+      "author": "Romeotpt",
+      "publishedUtc": "2024-05-12T17:28:52.000Z",
+      "access": "Public platform syndication response; discovery mirror was not treated as final evidence",
+      "authorAndIdVerified": true,
+      "textSha256": "b4fdb36d75def71f21ce59f5a52131d281b529b76705fb5488ee80ea8254d0af",
+      "claim": "A contextual reply mentions H4/H1 candles and M15–M5 Model 1, not a universal pairing matrix",
+      "notEstablished": [
+        "complete mechanical Model 1 definition",
+        "precise OTE anchors and acceptance levels",
+        "fills, stop buffer, profitability"
+      ]
+    },
+    {
+      "id": "S06",
+      "url": "https://t.me/officialRomeotpt/6180",
+      "publicContext": "https://t.me/s/officialRomeotpt?before=6198",
+      "author": "officialRomeotpt",
+      "access": "Read public official channel page and followed its message permalink",
+      "claim": "Author directs learners to Model 1 and OTE; no complete mechanical rules in that short post",
+      "fullVideoOrTranscriptReviewed": false
+    }
+  ]
+}
