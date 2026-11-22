@@ -8,7 +8,7 @@ if(require.main===module){
   const a=audit(fs.readFileSync(args[0],'utf8'));result.replay={...a};delete result.replay.rows;
   if(args[1]){const b=audit(fs.readFileSync(args[1],'utf8'));result.reload={...b};delete result.reload.rows;result.comparison=compare(a,b);}
   fs.mkdirSync('output/crt-replay',{recursive:true});fs.writeFileSync('output/crt-replay/audit.json',JSON.stringify(result,null,2)+'\n');
-  console.log(`Replay export: ${a.closedBars} closed bars, ${a.signals.length} signals, ${a.issues.length} issues, ${a.incomplete.length} incomplete checks.`);
+  console.log(`Replay export: ${a.closedBars} closed bars, ${a.signals.length} C3 signals, ${a.earlySignals.length} experimental Early events, ${a.issues.length} issues, ${a.incomplete.length} incomplete checks.`);
   if(result.comparison)console.log('Reload comparison: '+result.comparison.status);
   console.log('Report: output/crt-replay/audit.json. This does not measure profitability or certify market Replay.');
   const bad=[result.replay,result.reload].filter(Boolean).some(x=>x.issues.length)||result.comparison?.differences.length||result.comparison?.incomparable.length;

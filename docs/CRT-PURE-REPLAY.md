@@ -1,6 +1,6 @@
 # Nghiệm thu Replay · CRT thuần
 
-Ngày 22/11/2026. Bước hiện tại là đối chiếu **bản TS/retest mới**, trước khi nghiên cứu lại Early C2. Đặc tả giao dịch hiện hành: [CRT thuần & thời gian](CRT-PURE-AND-TIME.md).
+Ngày 22/11/2026. Người dùng đã cho phép bật [Early C2 thử nghiệm](EARLY-C2-EXPERIMENT.md) để quan sát; tài khoản Basic trong Brave đã kiểm tra và bị chặn Replay intraday. Quy trình dưới đây giữ cho lúc có CSV/quyền Replay, không tự coi đã hoàn tất. Đặc tả giao dịch hiện hành: [CRT thuần & thời gian](CRT-PURE-AND-TIME.md).
 
 ## Hiện đã làm được gì
 
@@ -56,4 +56,4 @@ Exit code 0: các kiểm tra có bằng chứng đã qua; 1: đầu vào lỗi h
 
 Chỉ chốt sau khi đã có chart/CSV thực và các ca quan sát được giải thích. Ghi rõ ca chưa gặp hoặc chưa kiểm tra; không ép đủ số ca bằng dữ liệu tổng hợp rồi gọi là nghiệm thu thị trường.
 
-Sau đó mới thiết kế lại **nghiên cứu Early C2 thuần CRT**, dựa trên key swing có trước, raid thật biên C1 và TS/retest LTF. Early C2 vẫn tắt; không tự bật bằng lựa chọn Confirmation close của entry C3.
+Early C2 hiện là thử nghiệm riêng đã được người dùng cho phép bật. Cột Early có tên riêng; công cụ ghi các sự kiện này là chưa kiểm chứng bởi bộ audit Confirmed C3. So reload vẫn kiểm tra E thay đổi trên các nến chung và phân biệt đổi công tắc Early với khác biệt tín hiệu. Không coi Confirmation close của C3 là Early C2.

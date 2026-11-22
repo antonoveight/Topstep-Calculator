@@ -26,9 +26,14 @@ function load(text){
   const hits=headers.flatMap((h,i)=>h.toLowerCase()===title.toLowerCase()||(name in C&&h.endsWith(': '+title))?[i]:[]);
   if(hits.length!==1)throw Error(`Expected one column: ${title}; found ${hits.length}`);indexes[name]=hits[0];
  }
+ for(const [name,title] of [['earlyDir','Early C2 direction +1/-1'],['earlyEnabled','Early C2 enabled']]){
+  const hits=headers.flatMap((h,i)=>h===title||h.endsWith(': '+title)?[i]:[]);
+  if(hits.length>1)throw Error('Duplicate Early C2 columns');if(hits.length)indexes[name]=hits[0];
+ }
+ if(('earlyDir' in indexes)!==('earlyEnabled' in indexes))throw Error('Incomplete Early C2 export columns');
  const numeric=(v,key,line)=>{if(v.trim()===''||/^(?:na|nan|n\/a)$/i.test(v.trim()))return null;const n=Number(v);if(!Number.isFinite(n))throw Error(`Row ${line}: invalid ${key}`);return n;};
  return rows.map((r,i)=>{
-  const b={time:timestamp(r[indexes.time]),line:i+2};
+  const b={time:timestamp(r[indexes.time]),line:i+2,earlyDir:null,earlyEnabled:null};
   if(!Number.isSafeInteger(b.time)||b.time<=0)throw Error(`Row ${i+2}: invalid timestamp`);
   for(const key of Object.keys(indexes))if(key!=='time')b[key]=numeric(r[indexes[key]],key,i+2);
   if(i&&b.time<=timestamp(rows[i-1][indexes.time]))throw Error(`Row ${i+2}: duplicate or unordered time`);
@@ -36,15 +41,19 @@ function load(text){
   if(![b.open,b.high,b.low,b.close].every(Number.isFinite)||b.high<Math.max(b.open,b.close,b.low)||b.low>Math.min(b.open,b.close,b.high))throw Error(`Row ${i+2}: invalid OHLC`);
   if(b.end!==null&&(!Number.isSafeInteger(b.end)||b.end<=b.time))throw Error(`Row ${i+2}: invalid bar close timestamp`);
   if(![60,180,300].includes(b.ltf)||!Number.isFinite(b.htf)||b.htf<=b.ltf||b.htf%b.ltf!==0||b.tick<=0||![0,1].includes(b.pullback))throw Error(`Row ${i+2}: invalid or unsupported audit settings`);
+  if('earlyEnabled' in indexes&&![0,1].includes(b.earlyEnabled))throw Error(`Row ${i+2}: invalid Early switch`);
   return b;
  });
 }
 const almost=(a,b)=>Math.abs(a-b)<=Math.max(1,Math.abs(a),Math.abs(b))*1e-10;
 function audit(text){
  const rows=load(text),at=new Map(rows.map((b,i)=>[b.time,i])),issues=[],incomplete=[],signals=[],closed=rows.filter(b=>b.end!==null);
+ const earlySignals=rows.filter(b=>b.earlyDir!==null).map(b=>({time:b.time,dir:b.earlyDir}));
  const issue=(b,rule)=>issues.push({time:b.time,line:b.line,rule});
  const missing=(b,rule)=>incomplete.push({time:b.time,line:b.line,rule});
  for(const b of rows){
+  if(b.earlyEnabled!==rows[0].earlyEnabled)throw Error('Early switch changed within one CSV');
+  if(b.earlyDir!==null&&(![1,-1].includes(b.earlyDir)||b.end===null||b.earlyEnabled!==1))issue(b,'invalid_early_export_event');
   if([b.htf,b.ltf,b.pullback,b.tick].some((v,i)=>v!==[rows[0].htf,rows[0].ltf,rows[0].pullback,rows[0].tick][i]))throw Error('Settings changed within one CSV');
   if(b.dir===null)continue;
   if(![1,-1].includes(b.dir)){issue(b,'direction_must_be_buy_or_sell');continue;}
@@ -78,14 +87,16 @@ function audit(text){
  }
  if(!closed.length)incomplete.push({rule:'no_closed_bars'});
  if(!signals.length)incomplete.push({rule:'no_signal_evidence'});
- return {kind:'exported-evidence-audit',marketReplayVerified:false,status:issues.length?'issues':incomplete.length?'incomplete':'checks_passed',bars:rows.length,closedBars:closed.length,signals,issues,incomplete,rows};
+ if(earlySignals.length)incomplete.push({rule:'experimental_early_events_not_validated_by_confirmed_c3_audit',count:earlySignals.length});
+ return {kind:'exported-evidence-audit',marketReplayVerified:false,status:issues.length?'issues':incomplete.length?'incomplete':'checks_passed',bars:rows.length,closedBars:closed.length,signals,earlySignals,issues,incomplete,rows};
 }
 function compare(a,b){
  // Compare only closed bars shared by both exports. Different history coverage is explicit.
  const map=new Map(b.rows.filter(x=>x.end!==null).map(x=>[x.time,x])),differences=[],incomparable=[];let common=0;
  for(const x of a.rows.filter(x=>x.end!==null)){
   const y=map.get(x.time);if(!y)continue;common++;
-  if(['open','high','low','close','htf','ltf','tick','pullback','end'].some(k=>x[k]!==y[k])){incomparable.push({time:x.time,rule:'ohlc_settings_or_feed_changed'});continue;}
+  if(['open','high','low','close','htf','ltf','tick','pullback','end','earlyEnabled'].some(k=>x[k]!==y[k])){incomparable.push({time:x.time,rule:'ohlc_settings_or_feed_changed'});continue;}
+  if(x.earlyDir!==y.earlyDir)differences.push({time:x.time,rule:'closed_bar_early_signal_changed'});
   const key=x.dir!==null||y.dir!==null?['dir','model','ts','confirmed','start','finish','age','level','extreme','target','inv','reference']:['dir'];
   if(key.some(k=>x[k]!==y[k]))differences.push({time:x.time,rule:'closed_bar_signal_changed'});
  }

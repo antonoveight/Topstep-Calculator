@@ -1,5 +1,7 @@
 # CRT thuần & thời gian · 22/11/2026
 
+Nhánh chính Confirmed trong tài liệu này chỉ phát C3; nhánh [Early C2 thử nghiệm](EARLY-C2-EXPERIMENT.md) có cửa sổ và dấu E riêng.
+
 Đây là đặc tả hiện hành, thay thế phần entry/key/time trong tài liệu trước ngày này. Người dùng đã chọn bỏ cả CISD/MSS, FVG/OB, ICT Macros, Quarterly Theory và True Open. Bản Pine cũ giữ riêng trong `indicators/archive/funded-angler-v6-crt-support-2026-11-22.pine` để đối chiếu, không chạy trên web.
 
 ## HTF và thanh khoản
@@ -48,8 +50,8 @@ Web giữ phiên thị trường, lịch tin và thêm đồng hồ C3 với hai
 
 ## Cài đặt và kiểm tra
 
-Mặc định: HTF H1, Bias TF D1, Auto bias, Pullback, Fresh reaction, timeout 8, History 100. Còn 21 input; HTF tùy H1/H2/H4/D1. Không còn chọn loại xác nhận hoặc bộ lọc giờ cũ.
+Mặc định: HTF H1, Bias TF D1, Auto bias, Pullback, Fresh reaction, timeout 8, History 100. Còn 22 input, gồm công tắc Early C2 thử nghiệm bật sẵn theo yêu cầu mới; HTF tùy H1/H2/H4/D1. Không còn chọn loại xác nhận hoặc bộ lọc giờ cũ.
 
-Checklist schema `crt-v1` → `crt-ts-v2`: snapshot cũ giữ nguyên, các ô mới bắt đầu chưa xác nhận. Nhật ký, kết quả cũ, giỏ cá và tài khoản vẫn giữ. Early C2 vẫn chưa bật; nghiên cứu theo bộ xác nhận cũ không còn là đặc tả triển khai và phải thiết kế lại trước khi tiếp tục.
+Checklist schema `crt-v1` → `crt-ts-v2`: snapshot cũ giữ nguyên, các ô mới bắt đầu chưa xác nhận. Nhật ký, kết quả cũ, giỏ cá và tài khoản vẫn giữ. Early C2 nay đã được cho phép bật thử theo [đặc tả thuần CRT riêng](EARLY-C2-EXPERIMENT.md). Dấu E chưa phải HTF Confirmed, không trộn vào tam giác C3 hay bộ audit Confirmed. Nghiên cứu cũ không còn là đặc tả đang chạy.
 
 Chạy `node tools/check-crt.cjs` và `node tools/check-crt-web.cjs`. Kiểm tra thân hàm Pine giới hạn và trình duyệt không thay Pine runtime/Replay dữ liệu giá. Các bài test của bộ lọc đã bỏ chỉ còn giá trị lịch sử.

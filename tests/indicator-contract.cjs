@@ -21,7 +21,7 @@ assert.equal(fields[names.indexOf('kCrtKey')],'selected.crtKey');
 assert.equal(fields[names.indexOf('sEqTouched')],'selected.eqTouched');
 assert.equal(fields[names.indexOf('sAEnd')],'selected.aEnd');
 assert.equal(fields[names.indexOf('sCEnd')],'selected.cEnd');
-assert.ok(fields.length+7+6<=127,'All nested request tuple fields fit Pine budget');
+assert.ok(fields.length+7+6+7<=127,'83 fields including the Early reference request fit Pine budget');
 const engine=source.slice(source.indexOf('f_engine() =>'),source.indexOf('// Every snapshot'));
 assert.doesNotMatch(engine,/\blive[OHLC]\b/);
 assert.match(source,/if armed and barstate.isconfirmed and isLtf and entryWindow and time >= activatedAt/);

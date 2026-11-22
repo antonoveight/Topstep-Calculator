@@ -45,10 +45,19 @@ assert.throws(()=>timestamp('2026-11-16T10:00:00'),/explicit UTC offset/);
 assert.equal(timestamp('2026-11-16T17:00:00+07:00'),base);
 assert.deepEqual(parseCsv('a,b\n"a,b","He said ""yes"""').rows,[['a,b','He said "yes"']]);
 assert.throws(()=>parseCsv('a,b\n"broken,1'),/Unclosed/);
+const withEarly=(events,enabled=1)=>{
+ const raw=csv(tape()).split('\r\n');raw[0]+=',"Early C2 direction +1/-1","Early C2 enabled"';
+ return raw.map((line,i)=>i?line+','+(events[i-1]??'')+','+enabled:line).join('\r\n');
+};
+const early=audit(withEarly([null,null,null,1]));
+assert.equal(early.earlySignals.length,1);assert.equal(early.status,'incomplete');assert.ok(early.incomplete.some(x=>x.rule==='experimental_early_events_not_validated_by_confirmed_c3_audit'));
+assert.equal(compare(early,audit(withEarly([]))).status,'differences');
+assert.equal(compare(audit(withEarly([],0)),audit(withEarly([],1))).status,'incomparable');
+assert.ok(audit(withEarly([null,null,null,1],0)).issues.some(x=>x.rule==='invalid_early_export_event'));
 const s=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
 for(const title of Object.values(C))assert.ok(s.includes('"'+title+'"'),'Actual plot missing '+title);
 for(const line of s.split(/\r?\n/).filter(l=>l.startsWith('plot(')&&l.includes('"TFA audit ')))assert.ok(line.includes('display=display.data_window'));
-assert.equal((s.match(/= input\./g)||[]).length,21,'Audit must not add settings');
+assert.equal((s.match(/= input\./g)||[]).length,22,'One explicit experimental Early switch; audit adds no settings');
 assert.equal(s,fs.readFileSync('chibao.txt','utf8'));
 // Exercise CLI exit codes/report output without touching the user's real report.
 const path=require('node:path'),{spawnSync}=require('node:child_process');
@@ -65,4 +74,4 @@ const empty=tape().map(x=>({...x,dir:null}));fs.writeFileSync(reload,csv(empty))
 assert.equal(cli(input,reload).status,1);assert.equal(report().comparison.status,'differences');
 assert.equal(cli(reload).status,2);assert.equal(report().replay.status,'incomplete');
 assert.equal(cli().status,1);
-console.log(`PASS ${checked} symmetric export audit cases; strict CSV/time parsing, partial/no-signal coverage, reload differences, changed OHLC/feed, actual plot wiring and unchanged 21 inputs. Synthetic only.`);
+console.log(`PASS ${checked} symmetric export audit cases; strict CSV/time parsing, partial/no-signal coverage, reload differences, changed OHLC/feed, actual plot wiring and 22 inputs. Synthetic only.`);

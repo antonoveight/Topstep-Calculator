@@ -34,6 +34,7 @@ filterBias = true
 allowCrtCounter = input.bool(true, "CRT reversal at prior HTF key", group=G_ENTRY, tooltip="CRT ngược bias cần sweep/reclaim swing HTF đã biết trước C1. Sau đó cần TS LTF và retest trong C3. Không đổi bias tổng thể; B0/B0! vẫn chặn.")
 signalCadence = input.string(DEFAULT_SIGNAL_CADENCE, "Signal cadence", options=["Fresh reaction", "One per model"], group=G_ENTRY, tooltip="Fresh reaction cần TS LTF mới sau dấu trước, tiến triển cực trị và pivot hồi mới đã xác nhận. One per model chỉ một dấu trong C3.")
 signalTiming = input.string(DEFAULT_SIGNAL_TIMING, "Signal timing", options=["Pullback", "Confirmation close"], group=G_ENTRY, tooltip="Pullback: sau TS LTF đã đóng, đợi nến sau retest biên C1 LTF và đóng đúng phía, giữ cực trị TS. Confirmation close: dấu ngay nến TS đóng. Hai nến TS đều phải nằm trong C3 HTF.")
+enableEarlyC2 = input.bool(true, "Early C2 · experimental", group=G_ENTRY, tooltip="Bật thử theo yêu cầu: key swing cùng HTF đã biết trước C1, C2 raid/reclaim thật rồi TS LTF và retest. Chỉ dùng nến LTF đã đóng trước lúc C2 đóng, tối đa một dấu E mỗi C2. Chưa xác nhận CRT HTF; E không đổi thành dấu C3 hồi tố. Tắt để chỉ xem C3.")
 pivotLength = 2
 manualPoc = 0.0
 manualLine = 0.0
@@ -340,17 +341,17 @@ f_collectKeyMap(array<Liquidity> swings, string sourceTf) =>
     KeyMap.new(levels)
 
 // A compact, immutable snapshot: two recent references per kind/direction (max 12).
-f_higherKeyMap() =>
+f_higherKeyMap(string sourceTf) =>
     var array<Liquidity> swings = array.new<Liquidity>()
     int scanStart = last_bar_time - int(timeframe.in_seconds() * 1000) * scanDepth
     float ph = ta.pivothigh(high, htfPivotLength, htfPivotLength)
     float pl = ta.pivotlow(low, htfPivotLength, htfPivotLength)
     f_updateKeyPools(swings, scanStart, time >= scanStart, ph, pl)
-    f_collectKeyMap(swings, biasTf)
+    f_collectKeyMap(swings, sourceTf)
 
 f_biasBundle() =>
     [direction, age, swingHigh, swingLow, guardHigh, guardLow] = f_biasSnapshot(true)
-    KeyMap keyMap = f_higherKeyMap()
+    KeyMap keyMap = f_higherKeyMap(biasTf)
     [direction, age, swingHigh, swingLow, guardHigh, guardLow, keyMap[1]]
 
 f_engine() =>
@@ -733,6 +734,170 @@ if crtResult.hit and crtResult.dir == 1
 if crtResult.hit and crtResult.dir == -1
     lastSellTime := time
     lastSellBar := bar_index
+// Experimental Early C2 uses only completed chart bars; no final C2 OHLC is read.
+type EarlyReference
+    int start = na
+    int finish = na
+    int c1Time = na
+    float c1O = na
+    float c1H = na
+    float c1L = na
+    float c1C = na
+type EarlyState
+    int bucket = na
+    int lastClose = na
+    int dir = 0
+    float hi = na
+    float lo = na
+    bool complete = false
+    bool blocked = false
+    bool emitted = false
+    int attempts = 0
+    int reclaimedAt = na
+    float attemptSl = na
+    float lockedSl = na
+    float lockedTp = na
+    CrtKey key = na
+    ReactionState channel = na
+    string status = "WAIT C2"
+type EarlyResult
+    bool hit = false
+    int dir = 0
+    int bucket = na
+    int c1Time = na
+    int confirmTime = na
+    int reclaimedAt = na
+    int attempt = 0
+    float inv = na
+    float cp = na
+    CrtKey keyRef = na
+    string status = "WAIT C2"
+
+f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey, bool buyWave, bool sellWave, bool confirmedHit) =>
+    EarlyResult result = EarlyResult.new(bucket=ref.start, c1Time=ref.c1Time)
+    if enableEarlyC2 and isLtf and barstate.isconfirmed and not na(ref.c1Time) and time >= ref.start
+        bool newWindow = na(state.bucket) or state.bucket != ref.start
+        if newWindow
+            state.bucket := ref.start
+            state.lastClose := ref.start
+            state.dir := 0
+            state.hi := high
+            state.lo := low
+            state.complete := time == ref.start
+            state.blocked := false
+            state.emitted := false
+            state.attempts := 0
+            state.reclaimedAt := na
+            state.attemptSl := na
+            state.lockedSl := na
+            state.lockedTp := na
+            state.key := CrtKey.new()
+            state.channel := ReactionState.new()
+        if not newWindow and time != state.lastClose
+            state.complete := false
+        state.lastClose := time_close
+        bool extended = state.dir == 1 ? low < state.lo : state.dir == -1 ? high > state.hi : false
+        state.hi := math.max(state.hi, high)
+        state.lo := math.min(state.lo, low)
+        bool raidLow = state.lo <= ref.c1L - sweepSize
+        bool raidHigh = state.hi >= ref.c1H + sweepSize
+        bool both = raidLow and raidHigh
+        bool inside = close > ref.c1L and close < ref.c1H
+        if state.dir == 0 and not both
+            state.dir := raidLow ? 1 : raidHigh ? -1 : 0
+        bool bullish = state.dir == 1
+        float target = bullish ? ref.c1H : ref.c1L
+        bool targetTaken = state.dir != 0 and (bullish ? state.hi >= target : state.lo <= target)
+        bool biasOk = biasDir == state.dir or (allowCrtCounter and biasDir == -state.dir and biasDir != 0)
+        if not state.complete
+            state.status := "E DATA"
+        else if state.emitted
+            bool stopped = bullish ? low <= state.lockedSl : high >= state.lockedSl
+            bool reached = bullish ? high >= state.lockedTp : low <= state.lockedTp
+            if not state.blocked and (stopped or reached)
+                state.blocked := true
+                state.status := stopped and reached ? "E AMB" : stopped ? "E SL REF" : "E TP REF"
+            else if not state.blocked
+                state.status := time_close >= ref.finish ? "E C2 ENDED" : "E SENT"
+        else if time_close >= ref.finish
+            state.blocked := true
+            state.status := both ? "E DOUBLE" : targetTaken ? "E TP TAKEN" : state.dir != 0 and inside ? "E C2 CONFIRMED" : "E C2 REJECTED"
+        else if state.blocked
+            state.status := "E BLOCKED"
+        else if both or targetTaken
+            state.blocked := true
+            state.status := both ? "E DOUBLE" : "E TP TAKEN"
+        else if state.dir == 0
+            state.status := "E WAIT RAID"
+        else if not biasOk
+            state.reclaimedAt := na
+            state.channel := ReactionState.new()
+            state.status := "E BIAS"
+        else
+            if extended or not inside
+                state.reclaimedAt := na
+                state.channel := ReactionState.new()
+            CrtKey candidate = bullish ? buyKey : sellKey
+            if na(state.key) or state.key.kind == 0
+                if not na(candidate) and candidate.kind == 3 and candidate.dir == state.dir and not na(candidate.knownAt) and candidate.knownAt <= ref.c1Time and candidate.beforeTime == ref.c1Time
+                    state.key := candidate.copy()
+            bool hasKey = not na(state.key) and state.key.kind == 3 and state.key.dir == state.dir and state.key.knownAt <= ref.c1Time
+            bool keyHeld = hasKey and (bullish ? close > state.key.hi : close < state.key.lo)
+            if hasKey and not keyHeld
+                state.blocked := true
+                state.status := "E KEY LOST"
+            else if not hasKey or not inside
+                state.status := not hasKey ? "E NO KEY" : "E WAIT RECLAIM"
+            else if na(state.reclaimedAt)
+                state.attempts += 1
+                state.reclaimedAt := time_close
+                state.attemptSl := bullish ? state.lo : state.hi
+                state.channel := ReactionState.new(activatedAt=time_close, phaseAt=time_close)
+                state.status := "E WAIT LTF TS"
+            else
+                SignalContext local = SignalContext.new(age=0, crtKey=state.key, kind=1, id=ref.start, flags=1, phase=1, dir=state.dir, confirmed=state.reclaimedAt, resolved=state.reclaimedAt, hi=ref.c1H, lo=ref.c1L, inv=state.attemptSl, cp=target)
+                ChannelResult entry = f_stepChannel(local, state.channel, na, na, na, na, (bullish ? buyWave : sellWave) and not confirmedHit)
+                state.status := confirmedHit ? "E C3 PRIORITY" : "E " + entry.status
+                if entry.hit and not confirmedHit
+                    state.emitted := true
+                    state.lockedSl := state.attemptSl
+                    state.lockedTp := target
+                    state.status := "E SIGNAL"
+                    result.hit := true
+                    result.dir := state.dir
+                    result.inv := state.lockedSl
+                    result.cp := state.lockedTp
+                    result.confirmTime := entry.confirmTime
+                    result.reclaimedAt := state.reclaimedAt
+                    result.attempt := state.attempts
+                    result.keyRef := state.key
+    result.status := not enableEarlyC2 ? "E OFF" : not isLtf ? "E VIEW TF" : state.status
+    result
+
+// Both OHLC and key map come from the completed C1, never the forming C2.
+// The key matcher separately excludes keys learned after C1 opened.
+f_earlyReference() =>
+    KeyMap priorMap = f_higherKeyMap(htf)
+    [open[1], high[1], low[1], close[1], time[1], time_close[1], priorMap[1]]
+[earlyC1O, earlyC1H, earlyC1L, earlyC1C, earlyC1T, earlyC1End, earlyKeys] = request.security(syminfo.tickerid, htf, f_earlyReference(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+var EarlyState earlyState = EarlyState.new()
+var array<string> earlyUnused = array.new<string>()
+float earlyHigh = earlyState.bucket == bucketTime ? math.max(earlyState.hi, high) : high
+float earlyLow = earlyState.bucket == bucketTime ? math.min(earlyState.lo, low) : low
+CrtKey earlyBuyKey = not na(earlyKeys) and not na(earlyKeys.levels) ? f_matchKeyMap(earlyKeys, earlyUnused, earlyC1T, 1, earlyHigh, earlyLow, close) : CrtKey.new()
+CrtKey earlySellKey = not na(earlyKeys) and not na(earlyKeys.levels) ? f_matchKeyMap(earlyKeys, earlyUnused, earlyC1T, -1, earlyHigh, earlyLow, close) : CrtKey.new()
+bool earlyBuyWave = na(lastBuyTime) or (not na(lastPivotLowTime) and lastPivotLowTime > lastBuyTime)
+bool earlySellWave = na(lastSellTime) or (not na(lastPivotHighTime) and lastPivotHighTime > lastSellTime)
+EarlyReference earlyRef = EarlyReference.new(start=bucketTime, finish=bucketEnd, c1Time=earlyC1T, c1O=earlyC1O, c1H=earlyC1H, c1L=earlyC1L, c1C=earlyC1C)
+EarlyResult earlyResult = f_stepEarly(earlyRef, earlyState, earlyBuyKey, earlySellKey, earlyBuyWave, earlySellWave, crtResult.hit)
+if earlyResult.hit and earlyResult.dir == 1
+    lastBuyTime := time
+    lastBuyBar := bar_index
+if earlyResult.hit and earlyResult.dir == -1
+    lastSellTime := time
+    lastSellBar := bar_index
+
+
 array<ChannelResult> channelResults = array.from(crtResult)
 bool entryEvent = crtResult.hit
 bool entryLong = entryEvent and crtResult.dir == 1
@@ -805,7 +970,7 @@ var array<line> clusterWicks = array.new<line>()
 var array<label> clusterLabels = array.new<label>()
 var array<label> groupLabels = array.new<label>()
 var label clockLabel = label.new(bar_index, high, "", force_overlay=true, style=label.style_label_up, color=color.new(chart.bg_color, 100), textcolor=chart.fg_color, size=chartFont)
-var table panel = table.new(position.top_right, 2, 9, bgcolor=color.new(#111820, 12), border_width=0)
+var table panel = table.new(position.top_right, 2, 10, bgcolor=color.new(#111820, 12), border_width=0)
 if barstate.isfirst
     for i = 0 to 15
         array.push(levelLines, line.new(time, high, time, high, xloc=xloc.bar_time, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
@@ -996,6 +1161,13 @@ if entryLong and showEntryTriangles
 if entryShort and showEntryTriangles
     f_note(false, sellHint)
 
+if earlyResult.hit and showEntryTriangles and markLimit > 0
+    string earlyHint = "EARLY C2 · EXPERIMENTAL | Not HTF confirmed\n" + (earlyResult.dir == 1 ? "BUY" : "SELL") + " | C1 " + str.format_time(earlyResult.c1Time, "dd/MM HH:mm", NY) + " NY | C2 " + str.format_time(earlyResult.bucket, "dd/MM HH:mm", NY) + " NY | Attempt " + str.tostring(earlyResult.attempt) + "\nReclaim closed " + str.format_time(earlyResult.reclaimedAt, "HH:mm:ss", NY) + " | LTF TS " + str.format_time(earlyResult.confirmTime, "HH:mm", NY) + " | Signal close " + str.format_time(time_close, "HH:mm:ss", NY) + " NY\nSL ref " + str.tostring(earlyResult.inv, format.mintick) + " | TP ref " + str.tostring(earlyResult.cp, format.mintick) + " | Frozen at this signal; not a fill."
+    array.push(eventLabels, label.new(bar_index, na, "E", xloc=xloc.bar_index, yloc=earlyResult.dir == 1 ? yloc.belowbar : yloc.abovebar, style=earlyResult.dir == 1 ? label.style_label_up : label.style_label_down, color=color.new(earlyResult.dir == 1 ? color.lime : color.red, 88), textcolor=earlyResult.dir == 1 ? color.lime : color.red, size=size.small, force_overlay=true, tooltip=earlyHint))
+    array.push(eventBuckets, bucketCounter)
+    while array.size(eventLabels) > markLimit
+        f_dropMark(0)
+
 if not retainHistory and recentOnly and barstate.islast
     int markIndex = array.size(eventLabels) - 1
     while markIndex >= 0
@@ -1008,6 +1180,9 @@ var int dataStart = math.max(time, last_bar_time - int(htfSeconds * 1000) * scan
 var string lastClosedStatus = "WAIT"
 var string lastClosedAudit = ""
 var int crtSignals = 0
+var int earlySignals = 0
+if earlyResult.hit
+    earlySignals += 1
 if barstate.isconfirmed
     lastClosedStatus := signalStatus
     lastClosedAudit := auditSummary
@@ -1040,6 +1215,15 @@ plot(entryEvent ? sModelAge : na, "TFA audit model age", display=display.data_wi
 plot(entryEvent ? crtState.confirmLevel : na, "TFA audit reclaim level", display=display.data_window)
 plot(entryEvent ? crtState.localExtreme : na, "TFA audit TS extreme", display=display.data_window)
 
+// Early events are exported separately and never relabelled as C3 evidence.
+plot(enableEarlyC2 ? 1 : 0, "Early C2 enabled", display=display.data_window)
+plot(earlyResult.hit ? earlyResult.dir : na, "Early C2 direction +1/-1", display=display.data_window)
+plot(earlyResult.hit ? earlyResult.inv : na, "Early C2 locked SL", display=display.data_window)
+plot(earlyResult.hit ? earlyResult.cp : na, "Early C2 locked TP", display=display.data_window)
+plot(earlyResult.hit ? earlyResult.confirmTime : na, "Early C2 TS open ms", display=display.data_window)
+plot(earlyResult.hit ? earlyResult.bucket : na, "Early C2 window open ms", display=display.data_window)
+plot(earlyResult.hit ? bucketEnd : na, "Early C2 window close ms", display=display.data_window)
+
 if barstate.islast
     bool hasModel = not na(sId)
     color primaryColor = sDir == 1 ? color.teal : sDir == -1 ? color.orange : color.silver
@@ -1065,11 +1249,11 @@ if barstate.islast
     if showPanel
         string dirText = biasPaused ? "B0!" : biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
         string stateText = not hasModel ? f_endTag(sReason) : sModelAge > 0 ? "C3 CLOSED" : alreadyEmitted ? "SIGNAL" : "C3"
-        array<string> headings = array.from("TF", "CRT", "BIAS", "REF", "T", "ENTRY", "N", "WHY", "DATA")
-        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (sDir == 1 ? "BUY" : sDir == -1 ? "SELL" : "-") + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? "IRL" : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY))
-        for row = 0 to 8
+        array<string> headings = array.from("TF", "CRT", "BIAS", "REF", "T", "ENTRY", "N", "WHY", "DATA", "EARLY")
+        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (sDir == 1 ? "BUY" : sDir == -1 ? "SELL" : "-") + " | " + str.tostring(sCount), dirText + " / " + biasTf, hasIrl ? "IRL" : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals))
+        for row = 0 to 9
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
-            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 1 ? "Last model end: " + f_endTag(sReason) + " | TG=target touched; INV=HTF close invalid; TO=timeout; AMB=ambiguous; HIST=outside recovery. Not trade fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 7 ? lastClosedAudit : row == 6 ? "CRT signals on closed LTF bars in C3 only; not fills or a win-rate." : "")
+            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 1 ? "Last model end: " + f_endTag(sReason) + " | TG=target touched; INV=HTF close invalid; TO=timeout; AMB=ambiguous; HIST=outside recovery. Not trade fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C1. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit : row == 6 ? "CRT signals on closed LTF bars in C3 only; not fills or a win-rate." : "")
     array<ClusterCandle> clusterCandles = array.new<ClusterCandle>()
     if showCluster and clusterActive
         if array.size(candleTimes) > 0
@@ -1171,3 +1355,6 @@ alertcondition(modelEvent, "HTF", "TFA CRT: C2 confirmed; observe C3.")
 alertcondition(modelEvent and sPhase == 1, "TS", "TFA CRT: confirmed one-sided HTF sweep and reclaim. Observe C3.")
 alertcondition(entryLong, "E+", "TFA CRT Pure TS: confirmed LTF Buy signal in C3. See tooltip.")
 alertcondition(entryShort, "E-", "TFA CRT Pure TS: confirmed LTF Sell signal in C3. See tooltip.")
+
+alertcondition(earlyResult.hit and earlyResult.dir == 1, "Early C2 E+ · experimental", "TFA Early C2 Buy: provisional C2, not HTF confirmed. See E tooltip.")
+alertcondition(earlyResult.hit and earlyResult.dir == -1, "Early C2 E- · experimental", "TFA Early C2 Sell: provisional C2, not HTF confirmed. See E tooltip.")
