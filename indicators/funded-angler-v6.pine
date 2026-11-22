@@ -1023,6 +1023,23 @@ plot(biasDir, "Bias effective +1/0/-1", display=display.data_window)
 plot(autoGuardHigh, "Bias guard high", display=display.data_window)
 plot(autoGuardLow, "Bias guard low", display=display.data_window)
 
+// Export-only evidence for causal Replay review. No drawing, entry or alert changes.
+// Numeric plot titles become CSV headers; timestamps are Unix milliseconds.
+plot(1, "TFA audit schema", display=display.data_window)
+plot(barstate.isconfirmed ? time_close : na, "TFA audit bar close ms", display=display.data_window)
+plot(htfSeconds, "TFA audit HTF seconds", display=display.data_window)
+plot(chartSeconds, "TFA audit LTF seconds", display=display.data_window)
+plot(signalTiming == "Pullback" ? 1 : 0, "TFA audit Pullback", display=display.data_window)
+plot(sweepSize, "TFA audit tick", display=display.data_window)
+plot(entryEvent ? crtResult.id : na, "TFA audit model id", display=display.data_window)
+plot(entryEvent ? crtResult.confirmTime : na, "TFA audit TS open ms", display=display.data_window)
+plot(entryEvent ? sConfirmed : na, "TFA audit HTF confirmed ms", display=display.data_window)
+plot(entryEvent ? liveT : na, "TFA audit C3 open ms", display=display.data_window)
+plot(entryEvent ? liveEnd : na, "TFA audit C3 close ms", display=display.data_window)
+plot(entryEvent ? sModelAge : na, "TFA audit model age", display=display.data_window)
+plot(entryEvent ? crtState.confirmLevel : na, "TFA audit reclaim level", display=display.data_window)
+plot(entryEvent ? crtState.localExtreme : na, "TFA audit TS extreme", display=display.data_window)
+
 if barstate.islast
     bool hasModel = not na(sId)
     color primaryColor = sDir == 1 ? color.teal : sDir == -1 ? color.orange : color.silver

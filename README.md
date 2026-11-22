@@ -1,5 +1,7 @@
 # The Funded Angler · Trading Desk
 
+Bước kiểm chứng hiện tại: [nghiệm thu Replay CRT thuần](docs/CRT-PURE-REPLAY.md). Chỉ báo đã có cột CSV phục vụ đối chiếu; chạy `node tools/audit-crt-replay.cjs replay.csv reload.csv` sau khi có dữ liệu thực.
+
 Hệ thống hiện hành 22/11/2026: [CRT thuần & thời gian](docs/CRT-PURE-AND-TIME.md). CRT HTF đã đóng, TS/retest LTF chỉ trong C3; IRL/ERL theo swing HTF. Web, checklist và AI Chart Lens đã đồng bộ. Bộ xác nhận mới cần Replay lại; chưa có đánh giá lợi nhuận.
 
 Ứng dụng web tĩnh quản lý nhật ký giao dịch, rủi ro và lịch sử payout cá nhân cho tài khoản Combine/XFA. HTML nằm trong `index.html`; quy tắc, lưu trữ và giao diện nâng cao được tách trong `assets/`. `topstep.html` là bản sao tương thích.
