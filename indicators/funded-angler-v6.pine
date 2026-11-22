@@ -154,12 +154,6 @@ type KeyMap
 type Model
     KeyMap rangeKeys = na
     int bEnd = na
-    int raidTime = na
-    int raidEnd = na
-    float raidO = na
-    float raidH = na
-    float raidL = na
-    float raidC = na
     int aEnd = na
     int cEnd = na
     CrtKey crtKey = na
@@ -400,19 +394,14 @@ f_rangeReaction(KeyMap references, int beforeTime, int direction, float raidHigh
 // Price-based attempt failure is sticky. Revalidation below creates a new attempt,
 // with a new confirmation token, and never rewrites the previous archive or SL.
 f_revalidateRange(Model m, float opening, float barHigh, float barLow, float closing, int barTime, int barEnd, int currentIndex) =>
+    // Only the ORIGINAL C3 may replace the original C2 raid. Never pair a stale
+    // C1 with an unrelated raid hours/days later or chain renewals indefinitely.
+    bool originalC3 = m.flags == 1 and currentIndex == m.bornIndex + 1 and barTime >= m.bEnd
     bool extended = m.dir == 1 ? barLow <= m.inv - sweepSize : barHigh >= m.inv + sweepSize
-    bool newerExtreme = na(m.raidTime) or (m.dir == 1 ? barLow < m.raidL : barHigh > m.raidH)
-    if extended and newerExtreme
-        m.raidTime := barTime
-        m.raidEnd := barEnd
-        m.raidO := opening
-        m.raidH := barHigh
-        m.raidL := barLow
-        m.raidC := closing
     bool inside = closing > m.lo and closing < m.hi
-    CrtKey key = not na(m.raidTime) and inside ? f_rangeReaction(m.rangeKeys, m.aT, m.dir, m.raidH, m.raidL, closing) : CrtKey.new()
-    bool pathOpen = m.dir == 1 ? barHigh < m.cp and m.raidH < m.cp : barLow > m.cp and m.raidL > m.cp
-    bool renewed = m.phase == 0 and inside and pathOpen and not na(m.raidTime) and key.kind == 3
+    CrtKey key = originalC3 and extended and inside ? f_rangeReaction(m.rangeKeys, m.aT, m.dir, barHigh, barLow, closing) : CrtKey.new()
+    bool pathOpen = m.dir == 1 ? barHigh < m.cp : barLow > m.cp
+    bool renewed = m.phase == 0 and originalC3 and extended and inside and pathOpen and key.kind == 3
     if renewed
         m.flags += 2
         m.phase := 1
@@ -420,25 +409,25 @@ f_revalidateRange(Model m, float opening, float barHigh, float barLow, float clo
         m.confirmedAt := barEnd
         m.resolvedAt := barEnd
         m.resolvedIndex := currentIndex
-        m.inv := m.dir == 1 ? m.raidL : m.raidH
-        m.invT := m.raidTime
+        m.inv := m.dir == 1 ? barLow : barHigh
+        m.invT := barTime
         m.crtKey := key
-        m.bO := m.raidO
-        m.bH := m.raidH
-        m.bL := m.raidL
-        m.bC := m.raidC
-        m.bT := m.raidTime
-        m.bEnd := m.raidEnd
+        m.bO := opening
+        m.bH := barHigh
+        m.bL := barLow
+        m.bC := closing
+        m.bT := barTime
+        m.bEnd := barEnd
         m.cT := na
         m.cEnd := na
         m.cO := na
         m.cH := na
         m.cL := na
         m.cC := na
-        m.raidTime := na
-        m.raidEnd := na
     renewed
 
+f_preferCrt(int candidateBorn, int candidateRoot, int selectedBorn, int selectedRoot, int currentIndex) =>
+    na(selectedRoot) or (candidateBorn == currentIndex and selectedBorn != currentIndex) or ((candidateBorn == currentIndex) == (selectedBorn == currentIndex) and candidateRoot > selectedRoot)
 
 f_engine() =>
     [higherBias, higherBiasAge, higherBiasHigh, higherBiasLow, higherGuardHigh, higherGuardLow, higherKeyMap] = request.security(syminfo.tickerid, biasTf, f_biasBundle(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
@@ -499,6 +488,10 @@ f_engine() =>
         else
             // A wick beyond the old SL may become a NEW raid; it never repairs the old attempt.
             bool renewed = older and f_revalidateRange(m, open, high, low, close, time, time_close, bar_index)
+            // A failed attempt without a valid immediate C3 replacement is over.
+            // Do not retain it as a parent waiting for an unrelated future raid.
+            if m.phase == 0
+                array.remove(models, mi)
         mi -= 1
 
     [tsBull, tsBear] = f_patterns(open[1], high[1], low[1], close[1], open, high, low, close)
@@ -565,18 +558,13 @@ f_engine() =>
                 m.irlL := na
                 m.irlKind := 0
             f_refreshIrl(m, swings)
-    // Oldest still-live attempt has priority. Otherwise show the newest WATCH range.
+    // Entry-open CRT first; otherwise the nearest still-valid C1 for tracking.
     Model selected = Model.new()
-    Model watching = Model.new()
     if array.size(models) > 0
         for i = 0 to array.size(models) - 1
             Model candidate = array.get(models, i)
-            if candidate.phase == 0
-                watching := candidate
-            if na(selected.uid) and candidate.phase == 1
+            if candidate.phase == 1 and f_preferCrt(candidate.bornIndex, candidate.aT, selected.bornIndex, selected.aT, bar_index)
                 selected := candidate
-    if na(selected.uid)
-        selected := watching
     priorFocusId := selected.uid
     bool historyReady = firstSeen <= scanStart
     [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft, selected.innerHi, selected.innerLo, selected.innerHiT, selected.innerLoT, lastEnded, selected.crtKey, selected.eqTouched, selected.aEnd, selected.cEnd, selected.bEnd]

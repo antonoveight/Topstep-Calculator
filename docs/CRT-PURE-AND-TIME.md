@@ -38,7 +38,7 @@ Thay bộ xác nhận sẽ thay vị trí và tần suất dấu. Chưa có Repl
 | TRACK / WATCH | Hết C3 chỉ đóng entry; INV kết thúc attempt. C1 còn để theo dõi/tái xác nhận đến khi target bị lấy hoặc bị loại khỏi bộ nhớ. |
 | TG / INV / AMB | Target chạm / wick chạm cực trị C2 trên nến đã đóng / không phân biệt được thứ tự hai rào cản trong cùng nến. |
 
-Pine lấy giờ mở/đóng và OHLC từ feed. Panel T hiển thị giờ đóng HTF hiện tại theo America/New_York có DST; C3 là entry window đầu tiên; sau đó TRACK giữ range, WATCH chờ raid/key/reclaim mới, SEARCH khi không còn parent. Tooltip giữ giờ nguồn, không cộng cứng số giờ qua khoảng nghỉ.
+Pine lấy giờ mở/đóng và OHLC từ feed. Panel T hiển thị giờ đóng HTF hiện tại theo America/New_York có DST; C3 là entry window đầu tiên; sau đó TRACK giữ range, WATCH tạm đợi C3 gốc đóng, SEARCH khi không còn parent. Tooltip giữ giờ nguồn, không cộng cứng số giờ qua khoảng nghỉ.
 
 Web giữ phiên thị trường, lịch tin và thêm đồng hồ C3 với hai mốc **nhập từ chart**, múi giờ chart rõ ràng. Web chưa nhận model/feed từ Pine. Không đến một giờ cố định rồi tự coi là có TS. Lưu đồng hồ tách khỏi tài khoản. Từ chối giờ DST không tồn tại hoặc lặp chưa phân biệt; dùng UTC trong giờ lặp. Lịch sinh hoạt cá nhân vẫn chỉ là lịch quan sát.
 
