@@ -1,25 +1,27 @@
-# Cài đặt chỉ báo CRT thuần
+# Cài đặt CRT Key Reactions
 
-**Cập nhật thực thi 24/11/2026:** MPS before entry bật mặc định cho Main, Larger và Early C2. Có 31 setting khai báo và ô Calculated bars tích hợp của TradingView (mặc định 600); Pullback vẫn là timing mặc định. MPS là bước xác nhận trước entry, không phải tam giác vào lệnh. Xem [quy tắc MPS đang triển khai](CRT-FIRST-LEG-SPEC.md#mps-trước-entry--triển-khai-24112026).
+Cập nhật 25/11/2026. [Đặc tả hiện hành và nguồn gốc](CRT-FIRST-LEG-SPEC.md). [Cài đặt trước migration](archive/INDICATOR-SETTINGS-before-key-reactions-2026-11-25.md) chỉ dùng đối chiếu lịch sử.
 
-Cập nhật tích hợp 22/11/2026: R1 đã có trong Pine dưới lựa chọn **Signal timing → R1 first leg · experimental**, mặc định vẫn Pullback. Vùng hồi còn khai báo thủ công, độc lập cho Main/Larger HTF. Xem [hướng dẫn R1](CRT-FIRST-LEG-SPEC.md#sử-dụng-r1-trong-chỉ-báo).
+Mặc định có 27 input khai báo và ô Calculated bars tích hợp của TradingView. MPS gate chung và sáu ô R1 nhập tay đã bỏ. Không có fibo hay vùng entry LTF tự vẽ.
 
-Thay đổi 22/11/2026: chỉ giữ CRT, Turtle Soup, IRL/ERL theo swing HTF; entry TS LTF đã đóng và retest trong C3.
+| Mục | Mặc định / cách dùng |
+| --- | --- |
+| HTF / chart | H1 / M5 để bắt đầu; HTF có H1/H2/H4/D1. Engine entry ở M1/M3/M5 chia hết HTF. |
+| Bias TF / Bias | D1 / Auto. Bias cấu trúc dùng nến đã đóng; có Long/Short/Neutral chủ động. |
+| CRT reversal at prior HTF key | Bật. Cho phép CRT phản ứng key ngược bias; không đổi bias tổng thể và không vượt B0/B0!. |
+| Entry branches | TS + FVG + OTE. Chọn TS close để chỉ xem nến sweep; FVG / OTE để chỉ xem nhánh hồi. |
+| Signal cadence | Fresh reaction: ngân sách riêng từng nhánh/nhịp/attempt. One per model để xem thưa hơn. |
+| Require prior HTF key reaction | Bật. Tắt chỉ để chẩn đoán sự khác biệt; không tự cho phép CRT ngược bias thiếu key. |
+| Key types | All. Có thể đối chiếu riêng Swing, Swing + FVG, Swing + OB hoặc Open / Close. |
+| SMT comparison | Trống = tắt. Tự chọn mã so sánh và Direct/Inverse phù hợp; chỉ hiển thị bằng chứng, không tạo tam giác riêng. |
+| Early C2 | Bật thử nghiệm theo yêu cầu. Dấu E tại close sweep/reclaim còn C2 live, chưa xác nhận CRT HTF. |
+| Larger HTF / signals | Auto và bật. H1/H2 → H4, H4 → D1, D1 → W1. Engine Larger chỉ chạy khi khung đó <= Bias TF. |
+| History / historical signals | History / 100. Latest chỉ giữ sự kiện gần nhất; 0 ẩn marker. |
+| CRT range / target / HTF key | Bật. CRTH/CRTL, EQ, INV, TGT và KEY có loại/khung nguồn; không còn IRL/ERL. |
+| Cluster / follow / last ended | Hai cụm bật; follow 6 nến; LAST mặc định tắt. Không thay logic hiệu lực setup. |
+| Drawing horizon / recency | 3 HTF; giới hạn hình/line, không làm setup hết hạn. |
+| Calculated bars | 600 chart bar, có thể tăng khi cần lịch sử; theo dõi giới hạn runtime tài khoản. |
 
-Đọc đầy đủ tại [CRT thuần & thời gian](CRT-PURE-AND-TIME.md). Bản tài liệu trước thay đổi được lưu trong thư mục archive, không còn là cấu hình hiện hành.
+Key FVG, OB và open/close phải đủ quy tắc xác nhận của mã, không phải mọi hình tự đánh dấu thủ công. SMT là detector giới hạn trên hai range HTF đã đóng với timestamp đồng bộ. Xem công thức, invalidation và phạm vi chưa triển khai trong đặc tả.
 
-Mặc định: H1 / M5, Bias TF D1, Auto bias, Pullback, Fresh reaction, History 100. Có 31 input, gồm 6 ô vùng/thời gian R1 chỉ dùng khi chọn chế độ thử nghiệm. Hết C3 đóng cửa sổ entry, range vẫn được theo dõi; INV kết thúc attempt, chỉ C3 gốc sweep/key/reclaim hợp lệ mới được thay raid trên cùng C1. Bật LAST để xem lịch sử. Counter-bias cần sweep/reclaim key swing HTF đã được biết trước C1.
-
-Time panel dùng giờ đóng nến HTF từ feed, hiển thị New York có DST. Web có đồng hồ C3 nhập mốc từ chart, không tự nhận giá hay model từ Pine. Không có bộ lọc giờ thay xác nhận giá.
-
-Kiểm tra bằng node tools/check-crt.cjs và node tools/check-crt-web.cjs. Chưa có Replay thị trường cho bộ xác nhận mới.
-
-Early C2 thử nghiệm đã bật mặc định theo yêu cầu mới: [quy tắc, dấu E và cách tắt](EARLY-C2-EXPERIMENT.md). Các mô tả C3 ở trên là nhánh Confirmed.
-
-Vòng đời setup hiện hành: [Range C1, attempt, INV/TG và xác nhận lại](CRT-SETUP-LIFECYCLE.md).
-
-Cụm HTF lớn hơn bật sẵn: Auto H1/H2 → H4, H4 → D1, D1 → W1; tín hiệu chạy bằng engine riêng khi Larger HTF signals bật và khung không vượt Bias TF. Tắt hình không tắt engine. LAST dùng cùng màu thân/râu, giữ độ mờ. Xem hướng dẫn vòng đời để hiểu hai cụm.
-
-Các cụm chỉ ghi tên timeframe phía trên và đếm ngược dưới nến live; bỏ nhãn giải thích. Hover WHY trên dashboard để xem số nến/TS/retest của đúng attempt. Xem [phân tích trường hợp không có Sell và cách đọc chẩn đoán](CRT-SIGNAL-DIAGNOSTICS.md).
-
-Cập nhật hai nhánh Confirmed: [H1/H4 độc lập, nguồn tam giác và giới hạn khung](CRT-DUAL-HTF.md). Đối chiếu entry sau TS từ [nguồn Romeotpt](CRT-ENTRY-ROMEOTPT.md); Pullback trong code vẫn là quy ước cá nhân.
+Khi thay phiên bản, xem lại Inputs vì timing cũ đã đổi thành Entry branches. Các alert TradingView cũ là snapshot script cũ; tạo lại nếu muốn chạy điều kiện mới. CSV schema 4 chưa có auditor thị trường đầy đủ; công cụ TS-only cũ chủ động từ chối.

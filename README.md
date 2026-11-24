@@ -1,12 +1,12 @@
 # The Funded Angler · Trading Desk
 
-[Vòng đời setup hiện hành](docs/CRT-SETUP-LIFECYCLE.md): INV/TP trên nến LTF đã đóng hoặc hết C3 thì kết thúc setup, bỏ focus cũ và chờ model mới. LAST chỉ giữ lịch sử.
+[Đặc tả chỉ báo hiện hành](docs/CRT-FIRST-LEG-SPEC.md): CRT tại key HTF → TS close, FVG retest hoặc MPS/OTE. INV/TGT kết thúc attempt; C3 đóng không tự hủy setup còn sống.
 
 Đã có [Early C2 thử nghiệm](docs/EARLY-C2-EXPERIMENT.md), bật sẵn theo yêu cầu để quan sát. E được tách khỏi tín hiệu Confirmed C3.
 
-Bước kiểm chứng hiện tại: [nghiệm thu Replay CRT thuần](docs/CRT-PURE-REPLAY.md). Chỉ báo đã có cột CSV phục vụ đối chiếu; chạy `node tools/audit-crt-replay.cjs replay.csv reload.csv` sau khi có dữ liệu thực.
+Kiểm tra chỉ báo bằng node tools/check-crt.cjs và trình biên dịch Pine. CSV schema 4 thay schema TS-only cũ; chưa có nghiệm thu Replay thị trường cho bộ ba nhánh mới.
 
-Hệ thống hiện hành 22/11/2026: [CRT thuần & thời gian](docs/CRT-PURE-AND-TIME.md). Nhánh Confirmed: CRT HTF đã đóng, TS/retest LTF chỉ trong C3; IRL/ERL theo swing HTF. Web, checklist và AI Chart Lens đã đồng bộ. Bộ xác nhận mới cần Replay lại; chưa có đánh giá lợi nhuận.
+Chỉ báo cập nhật 25/11/2026: [CRT keys và entry](docs/CRT-FIRST-LEG-SPEC.md), [27 cài đặt](docs/INDICATOR-SETTINGS.md). Swing/FVG/OB/open-close là key HTF; SMT bổ trợ tùy chọn. Web/checklist còn giữ một số quy tắc phiên bản trước, chưa đồng bộ trong lần sửa indicator này.
 
 Ứng dụng web tĩnh quản lý nhật ký giao dịch, rủi ro và lịch sử payout cá nhân cho tài khoản Combine/XFA. HTML nằm trong `index.html`; quy tắc, lưu trữ và giao diện nâng cao được tách trong `assets/`. `topstep.html` là bản sao tương thích.
 
@@ -64,7 +64,7 @@ CRT có TS (Turtle Soup) ở tầng HTF: quét mức đã đánh dấu rồi rec
 
 [Hướng dẫn setting chỉ báo](docs/INDICATOR-SETTINGS.md): cấu hình khởi đầu theo HTF → LTF, bảng tra toàn bộ Inputs và cách kiểm tra khi không có tam giác. Chữ chart mặc định Normal, dashboard Small, tùy chỉnh độc lập trong Display.
 
-Chỉ báo cá nhân: [TFA v6 · CRT thuần](indicators/funded-angler-v6.pine), bản sao [chibao.txt](chibao.txt), [21 setting](docs/INDICATOR-SETTINGS.md). Chỉ một kênh CRT sau C2 đã đóng, entry trong C3; mặc định TS/Pullback/Fresh reaction. IRL/ERL theo swing HTF và ngoại lệ CT tại key swing có trước được giữ. History mặc định 100 dấu; cụm nguồn C1–C2, FOLLOW từ C3, LAST tùy chọn. Fibo tự động đã gỡ theo yêu cầu; quy ước fibo thủ công được giữ. [Early C2 đang bật thử](docs/EARLY-C2-EXPERIMENT.md), chưa kiểm định hiệu suất thị trường. Chỉnh source rồi chạy `node tools/sync-indicator.cjs` và `node tools/check-crt.cjs`.
+Chỉ báo cá nhân: [TFA v6 · CRT Key Reactions](indicators/funded-angler-v6.pine), mirror [chibao.txt](chibao.txt). H1/M5, Bias D1, TS + FVG + OTE, Fresh reaction, key All; Main/Larger độc lập, Early C2 thử nghiệm. Không vẽ fibo hoặc IRL/ERL. Chỉnh source rồi chạy node tools/sync-indicator.cjs và node tools/check-crt.cjs.
 
 [Hướng dẫn đã chuẩn hóa](docs/CRT-LIQUIDITY-GUIDE.md) bổ sung range tham chiếu, IRL/ERL, key và sweep/reclaim cho CRT; các ví dụ EGF/ISB còn lại chỉ là lịch sử. Trong Checklist, mở hướng dẫn **Cấu trúc** HTF hoặc **Bản đồ thanh khoản · IRL / ERL** để đọc khi cần; các hướng dẫn mặc định thu gọn, không xuất hiện trong khung live. AI Chart Lens dùng cùng quy ước, ghi rõ khi ảnh thiếu dữ liệu FRVP/nến đóng/giá thay vì tự tạo mức.
 

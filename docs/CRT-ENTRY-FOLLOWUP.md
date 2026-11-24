@@ -1,5 +1,7 @@
 # Nghiên cứu entry bổ sung · 22/11/2026
 
+> Cập nhật 25/11/2026: quy tắc Pine hiện hành ở [CRT key và ba nhánh entry](CRT-FIRST-LEG-SPEC.md). Các phần universal MPS, R1 nhập tay, IRL/ERL hoặc C3-only bên dưới là lịch sử của phiên bản trước. CSV hiện dùng schema 4; auditor TS-only cũ không chứng nhận bản mới. Web chưa được migration trong lần sửa indicator này.
+
 ## Ca XAUUSD của người dùng · 7 hình ngày 24/11/2026
 
 **Kết luận nghiên cứu:** bản 54f7a88 đã áp MPS như một cổng chung trước mọi entry, không khớp ba nhánh người dùng đang dùng. Chuỗi cần theo dõi là **key HTF → CRT/TS địa phương → một trong các cách thực thi**, với MPS là điều kiện của nhánh hồi OTE. Cần sửa đặc tả trước khi nới ngưỡng hoặc tăng tần suất tam giác. Lần này chỉ nghiên cứu, chưa sửa Pine.

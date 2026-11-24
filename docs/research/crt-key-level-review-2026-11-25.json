@@ -1,0 +1,86 @@
+{
+  "reviewDate": "2026-11-25",
+  "channelId": "UCYCbFixbl2KcyLuH6cOfL2g",
+  "videos": [
+    {
+      "id": "p8UYOgVn1-g",
+      "title": "CRT secrets ep.5: Key level",
+      "channel": "UCYCbFixbl2KcyLuH6cOfL2g",
+      "seconds": "1079",
+      "published": "2025-08-17T15:44:50-07:00",
+      "url": "https://www.youtube.com/watch?v=p8UYOgVn1-g",
+      "access": "Original YouTube Show transcript DOM; English ASR. Page AI summary and comments excluded. No continuous audiovisual review claimed.",
+      "cueCount": 130,
+      "firstCue": 2,
+      "lastCue": 1066,
+      "transcriptSha256": "6ac0a7e2f9c5574ecc8e5dfbe490c462a1a6bc0e19e1b6c9657098e1c418ae1a",
+      "reviewedTechnicalRanges": [
+        [
+          352,
+          1079
+        ]
+      ]
+    },
+    {
+      "id": "3IWgc52Dqsg",
+      "title": "CRT secrets ep.6: SMT",
+      "channel": "UCYCbFixbl2KcyLuH6cOfL2g",
+      "seconds": "1926",
+      "published": "2025-09-07T13:56:40-07:00",
+      "url": "https://www.youtube.com/watch?v=3IWgc52Dqsg",
+      "access": "Original YouTube Show transcript DOM; English ASR. Page AI summary and comments excluded. No continuous audiovisual review claimed.",
+      "cueCount": 235,
+      "firstCue": 0,
+      "lastCue": 1919,
+      "transcriptSha256": "06f06001c76640b1a56c33adcf266f62eb52501b4d5b41695e2276bff68c032f",
+      "reviewedTechnicalRanges": [
+        [
+          129,
+          221
+        ],
+        [
+          791,
+          850
+        ],
+        [
+          1015,
+          1134
+        ],
+        [
+          1651,
+          1919
+        ]
+      ]
+    },
+    {
+      "id": "n2GF8kCpgVg",
+      "title": "CRT secrets ep.4: Candle anatomy",
+      "channel": "UCYCbFixbl2KcyLuH6cOfL2g",
+      "seconds": "948",
+      "published": "2025-08-14T18:17:41-07:00",
+      "url": "https://www.youtube.com/watch?v=n2GF8kCpgVg",
+      "access": "Original YouTube Show transcript DOM; English ASR. Page AI summary and comments excluded. No continuous audiovisual review claimed.",
+      "cueCount": 117,
+      "firstCue": 1,
+      "lastCue": 936,
+      "transcriptSha256": "0df8c1f59ede09463a26453169a333c5081e2be465dc307dae972e92c2f1c716",
+      "reviewedTechnicalRanges": [
+        [
+          297,
+          580
+        ]
+      ]
+    }
+  ],
+  "conclusions": [
+    "A key is an expected HTF reaction location, not FVG-only. Approach versus rejection are different hypotheses.",
+    "Opening-price support/resistance and prior highs/lows occur explicitly in the original SMT lecture.",
+    "SMT is cross-market evidence and needs price confirmation; it is not a standalone price level."
+  ],
+  "implementationConventions": [
+    "Automated swing/FVG/OB/open-close qualification is a personal, testable approximation; no complete original key taxonomy or profitability claim.",
+    "Previous-candle SMT raid divergence with exact paired HTF timestamps is a limited supporting detector, not all forms of original SMT.",
+    "Key known by C2 open; snapshot, source wick, invalidation and lifetime explicit."
+  ],
+  "marketReplayVerified": false
+}

@@ -1,5 +1,7 @@
 # CRT thuần & thời gian · 22/11/2026
 
+> Cập nhật 25/11/2026: quy tắc Pine hiện hành ở [CRT key và ba nhánh entry](CRT-FIRST-LEG-SPEC.md). Các phần universal MPS, R1 nhập tay, IRL/ERL hoặc C3-only bên dưới là lịch sử của phiên bản trước. CSV hiện dùng schema 4; auditor TS-only cũ không chứng nhận bản mới. Web chưa được migration trong lần sửa indicator này.
+
 **Cập nhật thực thi 24/11/2026:** MPS before entry bật mặc định cho Main, Larger và Early C2. Có 31 setting khai báo và ô Calculated bars tích hợp của TradingView (mặc định 600); Pullback vẫn là timing mặc định. MPS là bước xác nhận trước entry, không phải tam giác vào lệnh. Xem [quy tắc MPS đang triển khai](CRT-FIRST-LEG-SPEC.md#mps-trước-entry--triển-khai-24112026).
 
 Nhánh Confirmed phát trong nến HTF đầu tiên sau mỗi lần xác nhận: C3 ở attempt đầu, hoặc nến sau raid/reclaim mới của cùng C1. Hết cửa sổ không xóa range. Nhánh [Early C2 thử nghiệm](EARLY-C2-EXPERIMENT.md) có dấu E riêng; xem [vòng đời range/attempt](CRT-SETUP-LIFECYCLE.md).

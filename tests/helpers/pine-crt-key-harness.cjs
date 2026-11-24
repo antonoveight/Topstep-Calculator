@@ -2,7 +2,7 @@
 function createKeyHarness(source){
  const lines=source.split(/\r?\n/),na=x=>x==null||Number.isNaN(x);
  const makeKey=args=>{const k={kind:0,dir:0,hi:null,lo:null,born:null,knownAt:null,beforeTime:null,tf:'',...args};Object.defineProperty(k,'copy',{value:()=>makeKey(k)});return k;};
- const array={size:a=>a.length,get:(a,i)=>a[i],push:(a,k)=>a.push(k),new:()=>[],includes:(a,k)=>a.includes(k),shift:a=>a.shift()};
+ const array={size:a=>a.length,get:(a,i)=>a[i],push:(a,k)=>a.push(k),new:()=>[],includes:(a,k)=>a.includes(k),shift:a=>a.shift(),remove:(a,i)=>a.splice(i,1)};
  function body(name){const at=lines.findIndex(l=>l.startsWith(name+'('));let end=at+1;while(end<lines.length&&(!lines[end].trim()||/^\s/.test(lines[end])))end++;return lines.slice(at+1,end).filter(l=>l.trim()&&!l.trim().startsWith('//'));}
  function calls(s){
   for(const name of ['CrtKey.new','KeyMap.new']){
@@ -17,7 +17,7 @@ function createKeyHarness(source){
   }
   return s;
  }
- function expr(s){return calls(s).replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!').replace(/\bna\b(?!\s*\()/g,'null');}
+ function expr(s){return calls(s).replace(/\bint\(/g,'Math.trunc(').replace(/\b(open|high|low|close|time)\[([^\]]+)\]/g,(_,f,n)=>`history('${f}',${n})`).replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!').replace(/\bna\b(?!\s*\()/g,'null');}
  function translate(name,returnLast=true){const input=body(name);let code='',blocks=[];
   for(let i=0;i<input.length;i++){
    const raw=input[i],indent=raw.match(/^\s*/)[0].length;let s=raw.trim();
@@ -31,8 +31,8 @@ function createKeyHarness(source){
   }
   while(blocks.length){code+='}\n';blocks.pop();}return code;
  }
- const react=Function('na','sweepSize','k','beforeTime','direction','barHigh','barLow','barClose',translate('f_keyReact'));
- const reaction=(k,t,d,h,l,c)=>react(na,.25,k,t,d,h,l,c);
+ const react=Function('na','sweepSize','keyTypes','k','beforeTime','direction','barHigh','barLow','barClose',translate('f_keyReact'));
+ const reaction=(k,t,d,h,l,c,types='All')=>react(na,.25,types,k,t,d,h,l,c);
  const find=Function('array','makeKey','f_keyReact','zones','swings','beforeTime','direction','barHigh','barLow','barClose','sourceTf',translate('f_findCrtKey'));
  const identity=Function('str','key','return '+body('f_keyIdentity')[0].trim());
  const identify=k=>identity({tostring:String},k);
@@ -43,6 +43,9 @@ function createKeyHarness(source){
  const rangeReact=Function('array','makeKey','na','f_keyReact','references','beforeTime','direction','raidHigh','raidLow','closing',translate('f_rangeReaction'));
  const rangeReaction=(refs,t,d,h,l,c)=>rangeReact(array,makeKey,na,reaction,refs,t,d,h,l,c);
  const renew=Function('makeKey','na','sweepSize','f_rangeReaction','m','opening','barHigh','barLow','closing','barTime','barEnd','currentIndex',translate('f_revalidateRange'));
- return {reaction,find:(z,q,t,d,h,l,c,tf='60')=>find(array,makeKey,reaction,z,q,t,d,h,l,c,tf),match:(m,t,d,h,l,c,used=[])=>match(array,makeKey,reaction,identify,m,used,t,d,h,l,c),mark:(m,used,t,h,l)=>mark(array,identify,m,used,t,h,l),collect:(z,q,tf='1D')=>collect(array,makeKey,z,q,tf),makeKey,parent:(q,h,used,t,tf='60')=>parent(array,makeKey,na,identify,q,h,used,t,tf),rangeReaction,renew:(m,b,i)=>renew(makeKey,na,.25,rangeReaction,m,b.o,b.h,b.l,b.c,b.t,b.end,i)};
+ const push=Function('array','makeKey','time_close','zones','kind','direction','hi','lo','left','sourceTf',translate('f_pushKey',false));
+ const zone=Function('array','makeKey','na','history','timeframe','time','time_close','open','high','low','close','f_pushKey','zones','sourceTf',translate('f_zoneKeys'));
+ function zoneStep(zones,tape,tfSeconds=3600){const b=tape.at(-1),names={open:'o',high:'h',low:'l',close:'c',time:'t'},history=(f,n)=>tape.at(-1-n)?.[names[f]]??null;return zone(array,makeKey,na,history,{in_seconds:()=>tfSeconds},b.t,b.end??b.t+1,b.o,b.h,b.l,b.c,(...args)=>push(array,makeKey,b.end??b.t+1,...args),zones,String(tfSeconds/60));}
+ return {reaction,zoneStep,find:(z,q,t,d,h,l,c,tf='60')=>find(array,makeKey,reaction,z,q,t,d,h,l,c,tf),match:(m,t,d,h,l,c,used=[])=>match(array,makeKey,reaction,identify,m,used,t,d,h,l,c),mark:(m,used,t,h,l)=>mark(array,identify,m,used,t,h,l),collect:(z,q,tf='1D')=>collect(array,makeKey,z,q,tf),makeKey,parent:(q,h,used,t,tf='60')=>parent(array,makeKey,na,identify,q,h,used,t,tf),rangeReaction,renew:(m,b,i)=>renew(makeKey,na,.25,rangeReaction,m,b.o,b.h,b.l,b.c,b.t,b.end,i)};
 }
 module.exports={createKeyHarness};

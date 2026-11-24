@@ -1,9 +1,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const s=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
 assert.equal(s,fs.readFileSync('chibao.txt','utf8'));
-assert.doesNotMatch(s,/showFibo|f_crtFibo|fiboVisible|fiboEt|fiboSl|fiboTp|CRT fibo|LEVEL_SLOTS/);
-assert.equal((s.match(/= input\./g)||[]).length,31);
-for(const [slot,caption] of [[0,'RH'],[1,'RL'],[3,'INV'],[4,'CP'],[5,'ERL+'],[6,'ERL-']])assert.ok(s.includes(`f_level(${slot}, `)&&s.match(new RegExp(`f_level\\(${slot},[^\\n]+"${caption.replace('+','\\+')}"`)),'Preserve '+caption);
-assert.match(s,/showIrl = input.bool\(true/);assert.match(s,/f_level\(15, showCrtKey/);
-assert.match(s,/bool entryWindow = ctx.age == 0/);
-console.log('PASS no auto-fibo or stale context timeout; 31 settings including Early; range/ERL/IRL/key levels, C3 restriction and canonical sync preserved.');
+assert.doesNotMatch(s,/showFibo|f_crtFibo|fiboEt|fiboSl|fiboTp|CRT fibo|r1MainLow|r1HigherLow|showIrl/);
+for(const [slot,caption] of [[0,'CRTH'],[1,'CRTL'],[3,'INV'],[4,'TGT']])assert.match(s,new RegExp(`f_level\\(${slot},[^\\n]+"${caption}"`));
+assert.match(s,/f_level\(15, showCrtKey/);
+assert.doesNotMatch(s,/f_level\([^\n]*"(?:IRL|ERL|iBSL|iSSL)/);
+assert.match(s,/span \* 0.8/);assert.match(s,/span \* 0.5/);
+console.log('PASS no fibo drawings/manual zone settings; automatic OTE is internal only; CRT/TS/key labels replace liquidity taxonomy.');

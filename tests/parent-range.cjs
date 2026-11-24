@@ -20,7 +20,7 @@ for(const dir of [-1,1]){
  cases++;assert.equal(keys.renew(pending,bar(b(120,111,114,105,109)),3),false,'C4 reclaim must not silently revive an invalid C3');assert.equal(pending.bT,100);assert.equal(pending.confirmedAt,110);
  const remote=model();cases++;assert.equal(keys.renew(remote,bar(b(310,108,114,105,109)),22),false,'Screenshot regression: never attach a remote raid to old C1');assert.equal(remote.aT,90);assert.equal(remote.bT,100);
  const chained={...m,phase:0};cases++;assert.equal(keys.renew(chained,bar(b(120,108,115,105,109)),3),false,'No recursive C1 renewals');
- const late=model();late.rangeKeys={levels:[keys.makeKey({...key,knownAt:91})]};cases++;assert.equal(keys.renew(late,raid,2),false);
+ const late=model();late.rangeKeys={levels:[keys.makeKey({...key,knownAt:101})]};cases++;assert.equal(keys.renew(late,raid,2),false);
  const untouched=model();cases++;assert.equal(keys.renew(untouched,bar(b(110,108,112.5,105,109)),2),false,'Original key has not been swept');
  const completed=model();cases++;assert.equal(keys.renew(completed,bar(b(110,108,114,99,109)),2),false,'A spent target cannot generate a new attempt');
  const same=model();cases++;assert.equal(keys.renew(same,bar(b(110,108,112,105,109)),2),false,'No new extension beyond the old SL');
@@ -39,4 +39,4 @@ assert.match(s,/uid=time\[1\]/);assert.match(s,/KeyMap parentReferences = f_pare
 assert.doesNotMatch(s,/older and bar_index > m.bornIndex\)/);
 assert.match(s,/candidate.phase == 1/);assert.doesNotMatch(s,/selected := watching/);
 assert.match(s,/if m.phase == 0\r?\n\s+array.remove\(models, mi\)/);
-console.log(`PASS ${cases} symmetric parent cases: immediate C3 only, remote/recursive raid rejection, preserved original C1/old attempt, pre-C1 key, no target reuse, C4/C5 tracking and archive chronology. Synthetic only.`);
+console.log(`PASS ${cases} symmetric parent cases: immediate C3 only, remote/recursive raid rejection, preserved original C1/old attempt, pre-attempt key, no target reuse, C4/C5 tracking and archive chronology. Synthetic only.`);

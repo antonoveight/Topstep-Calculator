@@ -1,52 +1,60 @@
-// Execute the actual scalar Pine channel body; not request.security or Pine rollback.
+// Actual Pine scalar body; synthetic OHLC, not market replay.
 const assert=require('node:assert/strict'),fs=require('node:fs');
-const s=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
-const {createHarness}=require('./helpers/pine-channel-harness.cjs');const h=createHarness(s);
-assert.ok(!/CISD|MSS|FVG|\bOB\b|\bICT\b|Quarterly|macro|TrueOpen|obSeed|cisd|mss|fvg/i.test(s),'Removed concepts absent from active Pine');
-assert.equal(s,fs.readFileSync('chibao.txt','utf8'));
-const b=(t,o,hi,l,c)=>({t,o,h:hi,l,c}),mirror=x=>({...x,o:200-x.o,h:200-x.l,l:200-x.h,c:200-x.c});
-const base=[b(99,105,108,102,106),b(100,105,108,102,106),b(101,105,107,101,104),b(102,104,106,102,105),b(103,105,109,104,108)];
-function run(tape,dir=1,options={},ctxExtra={}){
- const ctx={id:1,kind:1,flags:1,phase:1,dir,age:0,confirmed:100,resolved:100,inv:dir===1?90:110,cp:dir===1?120:80,...ctxExtra},state=h.state(ctx),out=[];
- for(let i=1;i<tape.length;i++)out.push(h.step(ctx,state,tape.slice(0,i+1),options));
- return {state,out,hits:out.flatMap((r,i)=>r.hit?[tape[i+1].t]:[])};
+const source=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
+const h=require('./helpers/pine-channel-harness.cjs').createHarness(source);
+const b=(t,o,h,l,c)=>({t,end:t+1,o,h,l,c});
+const sell=[b(100,104,108,102,106),b(101,108,111,103,105),b(102,104,105,99,100),b(103,99,101,96,97),b(104,104,107,100,101),b(105,101,104,98,100),b(106,100,104,97,99)];
+const mirror=x=>({...x,o:220-x.o,h:220-x.l,l:220-x.h,c:220-x.c});
+let cases=0,prefixes=0;
+function run(tape,dir=-1,options={},extra={}){
+ const ctx={id:1,kind:1,flags:1,phase:1,dir,age:0,confirmed:100,resolved:100,inv:dir===-1?120:100,cp:dir===-1?80:140,crtKey:{kind:1,dir,hi:dir===-1?114:106,lo:dir===-1?110:102,knownAt:80,beforeTime:90},...extra};
+ const state=h.state(ctx),trace=[];
+ for(let i=1;i<tape.length;i++)trace.push(h.step(ctx,state,tape.slice(0,i+1),{knownLow:102,knownHigh:118,...options}));
+ cases++;return {state,trace,hits:trace.flatMap((r,i)=>r.hit?[{t:tape[i+1].t,tag:r.tag,low:r.zoneLow,high:r.zoneHigh,known:r.zoneKnownAt}]:[])};
 }
-let cases=0;
-for(const dir of [1,-1]){
- const transform=t=>dir===1?t:t.map(mirror),test=(t=base,o={},c={})=>{cases++;return run(transform(t),dir,o,c);};
- const diagnosed=test();assert.deepEqual(diagnosed.hits,[102],'Pullback emits on retest close, never sweep candle');
- assert.equal(diagnosed.out[0].evaluated,true);assert.equal(diagnosed.out[1].tsDetected,true);assert.equal(diagnosed.out[1].entryDetected,false);assert.equal(diagnosed.out[2].retestDetected,true);assert.equal(diagnosed.out[2].entryDetected,true);
- assert.deepEqual(test(base,{timing:'Confirmation close'}).hits,[101]);
- assert.deepEqual(test(base,{confirmed:false}).hits,[]);
- assert.deepEqual(test(base,{isLtf:false}).hits,[]);
- assert.deepEqual(test(base,{}, {age:1}).hits,[]);
- assert.deepEqual(test(base,{}, {confirmed:101}).hits,[],'Both local candles must form after activation');
- const doubled=base.map(x=>x.t===101?{...x,h:109}:x);assert.deepEqual(test(doubled).hits,[]);
- const noReclaim=base.slice(0,3).map(x=>x.t===101?{...x,c:102}:x);assert.deepEqual(test(noReclaim,{timing:'Confirmation close'}).hits,[]);
- const stopped=base.map(x=>x.t===101?{...x,l:89}:x);assert.deepEqual(test(stopped).hits,[]);assert.equal(test(stopped).out.at(-1).status,'SL TOUCHED');
- const targeted=base.map(x=>x.t===101?{...x,h:121}:x);assert.deepEqual(test(targeted).hits,[]);assert.equal(test(targeted).out.at(-1).status,'CP TAKEN');
- assert.deepEqual(test(base,{waveAllowed:false}).hits,[]);
- assert.deepEqual(test(base,{bias:0}).hits,[]);
- assert.deepEqual(test(base,{bias:-dir}).hits,[],'Counter-bias without prior key is blocked');
- const key={kind:3,dir,hi:dir===1?95:105,lo:dir===1?95:105,knownAt:80,beforeTime:90};
- assert.deepEqual(test(base,{bias:-dir},{crtKey:key}).hits,[102]);
- assert.deepEqual(test(base,{bias:-dir,allowCrtCounter:false},{crtKey:key}).hits,[]);
- assert.deepEqual(test(base,{bias:-dir},{crtKey:{...key,knownAt:91}}).hits,[]);
- assert.deepEqual(test(base,{bias:-dir},{crtKey:{...key,kind:1}}).hits,[],'Removed zone key cannot authorize a reversal');
- const renewed=[...base.slice(0,3),b(102,104,106,100,104),b(103,104,106,101,103)];
- const reset=test(renewed);assert.deepEqual(reset.hits,[103]);assert.equal(reset.out[2].hit,false,'New raid invalidates old pending retest and must confirm again');
- assert.equal(reset.state.confirmTime,102);
- const repeated=[...base.slice(0,4),b(103,106,109,104,108),b(104,108,109,103,106),b(105,106,108,104,107)];
- assert.deepEqual(test(repeated).hits,[102,105]);
- assert.deepEqual(test(repeated,{cadence:'One per model'}).hits,[102]);
- for(let n=1;n<base.length;n++){const prefix=test(base.slice(0,n));assert.deepEqual(prefix.hits,test().hits.filter(t=>t<=base[n-1].t),'Appending future bars does not backfill historical signals');}
+for(const dir of [-1,1]){
+ const tape=dir===-1?sell:sell.map(mirror),test=(o={},extra={},bars=tape)=>run(bars,dir,o,extra);
+ const got=test();
+ assert.equal(got.hits[0].t,101,'Direct triangle is on the closed sweep candle');
+ assert.equal(got.hits[0].tag,'TS_CLOSE','No mandatory MPS or second retest');
+ assert.equal(got.trace[0].legDetected,false);
+ assert.equal(got.trace[1].legDetected,true,'Later close through pre-TS pivot records MPS');
+ const retrace=got.hits.find(x=>x.tag.includes('OTE'));
+ assert.ok(retrace,'Automatic OTE needs no second TS');assert.equal(retrace.t,104);
+ assert.equal(retrace.low,dir===-1?103.5:112);
+ assert.equal(retrace.high,dir===-1?108:116.5,'OTE uses full leg endpoint, not MPS-bar wick');
+ assert.ok(got.hits.some(x=>x.tag.includes('FVG')),'FVG has its own branch budget');
+ assert.ok(!got.trace[2].hit,'FVG formation is not its own retest');
+ assert.equal(test({branches:'TS close'}).hits.length,1);
+ assert.ok(test({branches:'FVG / OTE'}).hits.every(x=>!x.tag.includes('TS_CLOSE')));
+ assert.equal(test({cadence:'One per model'}).hits.length,1);
+ for(const opts of [{confirmed:false},{isLtf:false},{timeAllowed:false},{waveAllowed:false},{bias:0}])assert.deepEqual(test(opts).hits,[]);
+ assert.deepEqual(test({}, {crtKey:null}).hits,[]);
+ assert.ok(test({requireKey:false},{crtKey:null}).hits.length>0);
+ assert.ok(test({bias:-dir}).hits.length>0,'Prior held zone allows optional CRT reversal');
+ assert.deepEqual(test({bias:-dir,allowCrtCounter:false}).hits,[]);
+ assert.deepEqual(test({}, {crtKey:{kind:2,dir,hi:114,lo:102,knownAt:91,beforeTime:90}}).hits,[],'No future key');
+ assert.ok(test({}, {age:3}).hits.length>0,'A live CRT can continue after C3');
+ assert.deepEqual(test({}, {confirmed:101}).hits,[],'No pre-activation local range');
+ const double=tape.slice(0,2).map((x,i)=>i===1?{...x,h:Math.max(x.h,tape[0].h+1),l:Math.min(x.l,tape[0].l-1)}:x);
+ assert.deepEqual(test({}, {},double).hits,[]);
+ const target=tape.slice(0,2).map((x,i)=>i===1?{...x,...(dir===-1?{l:79}:{h:141})}:x);
+ assert.deepEqual(test({}, {},target).hits,[]);
+ const stop=tape.slice(0,2).map((x,i)=>i===1?{...x,...(dir===-1?{h:121}:{l:99})}:x);
+ assert.deepEqual(test({}, {},stop).hits,[]);
+ const noMps=test({knownLow:null,knownHigh:null});
+ assert.ok(noMps.hits.some(x=>x.tag.includes('FVG')),'FVG works without MPS');
+ assert.ok(noMps.hits.every(x=>!x.tag.includes('OTE')),'OTE requires MPS');
+ const spent=test({knownLow:107,knownHigh:113});
+ assert.ok(spent.hits.every(x=>!x.tag.includes('OTE')),'A P2 already closed through before TS cannot become a fresh MPS');
+ const sameClose=test({knownLow:106,knownHigh:114});
+ assert.equal(sameClose.trace[0].legDetected,true,'A TS close can also be the first structural cross; OTE still waits for a later bar');
+ const extension=tape.map(x=>x.t===104?{...x,...(dir===-1?{l:95}:{h:125})}:x);
+ assert.ok(!test({}, {},extension).hits.some(x=>x.t===104&&x.tag.includes('OTE')),'Do not infer intrabar new-extreme/retrace order');
+ for(let n=2;n<=tape.length;n++){prefixes++;assert.deepEqual(test({}, {},tape.slice(0,n)).hits,got.hits.filter(x=>x.t<=tape[n-1].t),'No backfilled historical signal');}
+ const ctx={id:2,kind:1,dir,confirmed:100,inv:dir===-1?120:100,cp:dir===-1?80:140};
+ const state=h.state(ctx);h.step(ctx,state,tape.slice(0,2),{requireKey:false});assert.equal(h.step(ctx,state,tape.slice(0,2),{requireKey:false}).hit,false);
 }
-const fields=s.match(/^    \[selected.uid,.+$/m)[0].trim().slice(1,-1).split(', ');
-assert.equal(fields.length,64);assert.ok(fields.length+7+6+7+18<=127);
-assert.match(s,/bool entryWindow = ctx.age == 0/);
-assert.match(s,/bool timeAllowed = true/);
-assert.match(s,/str.format_time\(liveEnd, "HH:mm", NY\)/);
-assert.match(s,/q.price < m.hi and q.price > m.lo/);
-assert.match(s,/k.knownAt <= beforeTime/);
-assert.match(s,/if q.born < scanStart or \(q.side == 1 \? high >= q.price : low <= q.price\)/);
-console.log(`PASS ${cases} symmetric pure-CRT traces: closed TS, later retest, expiry, barriers, key timing, duplicate suppression and immutable prefixes. Synthetic only.`);
+assert.equal(source,fs.readFileSync('chibao.txt','utf8'));
+assert.doesNotMatch(source,/CISD|\bMSS\b|Quarterly|TrueOpen|requireMps|r1Mode/);
+console.log(`PASS ${cases} symmetric actual-channel scenarios, ${prefixes} immutable prefixes: TS close, FVG before MPS, full-leg OTE, keys, barriers and branch dedup. Synthetic only.`);

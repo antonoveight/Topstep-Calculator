@@ -1,5 +1,7 @@
 # Range C1 và từng attempt CRT · 22/11/2026
 
+> Cập nhật 25/11/2026: quy tắc Pine hiện hành ở [CRT key và ba nhánh entry](CRT-FIRST-LEG-SPEC.md). Các phần universal MPS, R1 nhập tay, IRL/ERL hoặc C3-only bên dưới là lịch sử của phiên bản trước. CSV hiện dùng schema 4; auditor TS-only cũ không chứng nhận bản mới. Web chưa được migration trong lần sửa indicator này.
+
 Range gốc C1 và lần xác nhận/giao dịch (**attempt**) là hai vòng đời khác nhau. Hết C3 không tự làm range mất hiệu lực. C4/C5 vẫn có thể đi tới biên đối diện C1. Đây là quy ước thực thi của công cụ cá nhân, không khẳng định một thuật toán do Romeo công bố.
 
 | Sự kiện | Trạng thái | Hành động |

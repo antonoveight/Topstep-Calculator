@@ -1,5 +1,7 @@
 # Early C2 · bản thử quan sát
 
+> Cập nhật 25/11/2026: quy tắc Pine hiện hành ở [CRT key và ba nhánh entry](CRT-FIRST-LEG-SPEC.md). Các phần universal MPS, R1 nhập tay, IRL/ERL hoặc C3-only bên dưới là lịch sử của phiên bản trước. CSV hiện dùng schema 4; auditor TS-only cũ không chứng nhận bản mới. Web chưa được migration trong lần sửa indicator này.
+
 **Cập nhật thực thi 24/11/2026:** MPS before entry bật mặc định cho Main, Larger và Early C2. Có 31 setting khai báo và ô Calculated bars tích hợp của TradingView (mặc định 600); Pullback vẫn là timing mặc định. MPS là bước xác nhận trước entry, không phải tam giác vào lệnh. Xem [quy tắc MPS đang triển khai](CRT-FIRST-LEG-SPEC.md#mps-trước-entry--triển-khai-24112026).
 
 Ngày 22/11/2026: người dùng cho phép bật Early C2 để quan sát thực tế và phản hồi, thay phạm vi trước đây chỉ nghiên cứu. Input **Early C2 · experimental** mặc định bật; có thể tắt để chỉ xem tín hiệu Confirmed. Chỉ báo có 31 input, gồm hai tùy chọn cụm HTF lớn hơn.

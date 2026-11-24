@@ -1,5 +1,7 @@
 # Nghiệm thu Replay · CRT thuần
 
+> Cập nhật 25/11/2026: quy tắc Pine hiện hành ở [CRT key và ba nhánh entry](CRT-FIRST-LEG-SPEC.md). Các phần universal MPS, R1 nhập tay, IRL/ERL hoặc C3-only bên dưới là lịch sử của phiên bản trước. CSV hiện dùng schema 4; auditor TS-only cũ không chứng nhận bản mới. Web chưa được migration trong lần sửa indicator này.
+
 Ngày 22/11/2026. Người dùng đã cho phép bật [Early C2 thử nghiệm](EARLY-C2-EXPERIMENT.md) để quan sát; tài khoản Basic trong Brave đã kiểm tra và bị chặn Replay intraday. Quy trình dưới đây giữ cho lúc có CSV/quyền Replay, không tự coi đã hoàn tất. Đặc tả giao dịch hiện hành: [CRT thuần & thời gian](CRT-PURE-AND-TIME.md).
 
 ## Hiện đã làm được gì

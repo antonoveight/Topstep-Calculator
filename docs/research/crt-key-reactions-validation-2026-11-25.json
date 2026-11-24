@@ -1,0 +1,68 @@
+{
+  "reviewDate": "2026-11-25",
+  "timezone": "Asia/Saigon",
+  "source": "indicators/funded-angler-v6.pine",
+  "sourceSha256": "2852d36d8535c77b050c497d94d099c4f1d4cd58f720d6e85f02be8ae2ac5da4",
+  "normalizedSourceSha256": "4a2f2494c18ca503c3bf8ff202ec3f30eaf735d9c3d7e93db4be4b456f4f5d9c",
+  "nativeEditorVerifiedCharacters": 113852,
+  "auditSchema": 4,
+  "declaredInputs": 27,
+  "automated": {
+    "command": "node tools/check-crt.cjs",
+    "suites": 20,
+    "result": "pass",
+    "scope": "Actual scalar Pine function-body adapters, synthetic OHLC/keys, and source/layout contracts. No emulation of request.security, rollback, broker fills or market profitability.",
+    "selectedCoverage": {
+      "htfRandomSymmetric": 3000,
+      "entryScenarios": 58,
+      "prefixes": 12,
+      "keyReactionCases": 50,
+      "earlyScenarios": 30
+    }
+  },
+  "compiler": {
+    "method": "Official TradingView Pine compiler via anonymous browser Pine Editor",
+    "exactSource": true,
+    "success": true,
+    "errors": [],
+    "warnings": []
+  },
+  "nativeChartSmoke": {
+    "browser": "Existing authorized Brave TradingView session",
+    "symbol": "OANDA:XAUUSD",
+    "chart": "M5",
+    "observedContexts": [
+      {
+        "main": "H2",
+        "larger": "H4",
+        "bias": "D1",
+        "mainSignals": 4,
+        "largerSignals": 11,
+        "earlySignals": 10
+      },
+      {
+        "main": "H1",
+        "larger": "H4",
+        "bias": "D1",
+        "mainSignals": 5,
+        "largerSignals": 11,
+        "earlySignals": 12
+      }
+    ],
+    "calculatedChartBars": 600,
+    "entryBranches": "TS + FVG + OTE",
+    "keys": "All",
+    "smtPeerConfigured": false,
+    "visibleTriangles": true,
+    "visibleMps": true,
+    "runtimeErrorObserved": false,
+    "scope": "Visual smoke observation after whole-source equality check and Ctrl+Enter Update on chart; these counts are emitted events, not trades/wins. Inputs may change while user observes. No cloud script saved or published."
+  },
+  "notVerified": [
+    "Exact replay/OHLC matching of all seven user images",
+    "Market profitability or entry win rate",
+    "Positive native SMT comparison on a configured peer feed",
+    "Every timeframe/feed/account performance budget",
+    "Schema 4 market CSV auditor (legacy TS-only auditor intentionally rejects it)"
+  ]
+}

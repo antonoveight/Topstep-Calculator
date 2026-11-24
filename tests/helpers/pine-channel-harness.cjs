@@ -29,6 +29,7 @@ function createHarness(source){
  }
  const clear=Function('state','phaseAt','seedPivot','keepRun',translate('f_clearReaction'));
  const environment=['barstate','isLtf','time','bar_index','open','high','low','close','history','na','signalCadence','pivotLength','tolerance','entryMode','signalTiming','filterBias','allowCrtCounter','biasDir','timeAllowed','f_clearReaction','makeResult'];
+ environment.push('time_close','requireKey','entryBranches','f_has','math');
  environment.push('sweepSize');
  environment.push('f_obDisplacement');
  const displacementBody=source.includes('f_obDisplacement(')?body('f_obDisplacement').map((l,i,a)=>i===a.length-1?'return '+expr(l.trim())+';':expr(l.trim().replace(/^float /,'let '))+';').join('\n'):'return false;';
@@ -40,6 +41,7 @@ function createHarness(source){
    const b=tape.at(-1),keys={open:'o',high:'h',low:'l',close:'c',time:'t'};
    const history=(field,n)=>{const prior=tape.at(-1-n);return prior?prior[keys[field]]:null;};
    const env=[{isconfirmed:options.confirmed!==false},options.isLtf!==false,b.t,tape.length-1,b.o,b.h,b.l,b.c,history,x=>x==null||Number.isNaN(x),options.cadence||'Fresh reaction',2,.01,options.entryMode||'Auto',options.timing||'Pullback',true,options.allowCrtCounter!==false,options.bias??ctx.dir,options.timeAllowed!==false,clear,args=>({...defaults('ChannelResult'),...args})];
+   env.push(b.end??b.t+1,options.requireKey!==false,options.branches||'TS + FVG + OTE',(flags,bit)=>Math.floor(flags/bit)%2===1,Math);
    return stepWithSweep(...env,options.sweepSize??.01,displacement,{age:0,irlKind:0,...ctx},state,options.knownHigh??null,options.knownLow??null,options.pivotHigh??null,options.pivotLow??null,options.waveAllowed!==false,options.forcePullback===true,options.mpsAllowed!==false);
   }
  };

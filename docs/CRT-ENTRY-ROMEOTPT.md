@@ -1,5 +1,7 @@
 # Entry sau TS: đối chiếu nguồn Romeotpt · 22/11/2026
 
+> Cập nhật 25/11/2026: quy tắc Pine hiện hành ở [CRT key và ba nhánh entry](CRT-FIRST-LEG-SPEC.md). Các phần universal MPS, R1 nhập tay, IRL/ERL hoặc C3-only bên dưới là lịch sử của phiên bản trước. CSV hiện dùng schema 4; auditor TS-only cũ không chứng nhận bản mới. Web chưa được migration trong lần sửa indicator này.
+
 **Cập nhật 24/11/2026:** đã lấy được phụ đề gốc qua Show transcript cho OTE và Model 1. Đã đọc transcript OTE và các đoạn kỹ thuật Model 1; giới hạn truy cập ghi bên dưới thuộc đợt 22/11. [Phân tích 7 ảnh XAUUSD, ba nhánh entry và đối chiếu nguồn mới](CRT-ENTRY-FOLLOWUP.md#ca-xauusd-của-người-dùng--7-hình-ngày-24112026) thay thế giả định áp MPS bắt buộc cho mọi cách vào; chưa thay mã Pine.
 
 ## Nguồn trực tiếp đã kiểm tra

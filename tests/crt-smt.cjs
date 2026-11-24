@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const source=fs.readFileSync('indicators/funded-angler-v6.pine','utf8'),lines=source.split(/\r?\n/),at=lines.findIndex(x=>x.startsWith('f_smtDirection('));
+let end=at+1;while(end<lines.length&&/^\s/.test(lines[end]))end++;
+const body=lines.slice(at+1,end).map((l,i,a)=>{
+ const x=l.trim().replace(/^bool /,'let ').replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!');
+ return i===a.length-1?'return '+x+';':x+';';
+}).join('\n');
+const f=Function('na','own','peer','inverse',body),run=(a,b,i=false)=>f(x=>x==null,a,b,i);
+const base={first:0,firstEnd:10,second:10,secondEnd:20,firstHigh:110,firstLow:90,secondHigh:109,secondLow:91};
+assert.equal(run({...base,secondLow:89},base),1);
+assert.equal(run({...base,secondHigh:111},base),-1);
+assert.equal(run({...base,secondLow:89},{...base,secondLow:89}),0);
+assert.equal(run({...base,secondLow:89},{...base,second:11}),0);
+assert.equal(run({...base,secondLow:89},{...base,secondEnd:21}),0);
+assert.equal(run({...base,secondLow:89},{...base,first:null}),0);
+assert.equal(run({...base,secondLow:89},{...base,secondHigh:111},true),0);
+assert.equal(run({...base,secondLow:89},base,true),1);
+assert.equal(run({...base,secondHigh:111},base,true),-1);
+assert.equal(run({...base,secondHigh:111,secondLow:89},base),0,'Ambiguous two-sided divergence has no direction');
+assert.match(source,/SMT comparison \(blank = off\)/);
+assert.match(source,/first=time\[2\].+second=time\[1\]/);
+assert.doesNotMatch(source.slice(source.indexOf('f_stepChannel('),source.indexOf('var float lastPivotHigh')),/mainSmt|higherSmt|smtSymbol/,'SMT cannot bypass price entry confirmation');
+console.log('PASS actual paired SMT direction, direct/inverse mapping, timestamp/session alignment, unknown/ambiguous rejection and no standalone entry.');
