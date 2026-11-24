@@ -61,3 +61,7 @@ Chạy node tools/sync-indicator.cjs và node tools/check-crt.cjs. Bộ hiện h
 Giới hạn mặc định vẫn 600 nến chart và 600 nến mỗi nguồn. Đây là phạm vi tải, không phải chứng nhận độ ổn định mọi cặp khung/feed. Kiểm tra tổng hợp và biên dịch không thay thế đối chiếu OHLC thị trường, reload, Replay hoặc hiệu suất giao dịch.
 
 Nghiệm thu 25/11/2026: 20 suite hiện hành qua; exact source biên dịch Pine không lỗi/cảnh báo. Brave XAUUSD M5 đã hiện tam giác và MPS với H1/H4 và H2/H4, 600 chart bar; chưa thấy cảnh báo runtime trong lần quan sát. [Hash nguồn, phạm vi kiểm tra và hạn chế](research/crt-key-reactions-validation-2026-11-25.json). Đây là smoke test, không phải Replay hoặc xác nhận mọi dấu trong ảnh mẫu.
+
+### Hiển thị MPS theo ảnh mẫu · 25/11/2026
+
+MPS dùng đoạn ngang màu cam tại giá P2, nối từ nến pivot nguồn tới nến close xác nhận phá mức. Chữ +MPS (xanh) hoặc -MPS (đỏ) ở giữa đoạn, có khoảng ngắt đường để chữ dễ đọc, không nền hộp và không đẩy nhãn theo ATR lên trên/dưới nến. Nhãn dùng Chart text size. Hai HTF cùng xác nhận một giá/hướng trên cùng nến được gộp và ghi đủ nguồn trong tooltip. History/Latest xóa cả nhãn và hai đoạn đường tương ứng; đường không extend quá nến xác nhận. Chỉ bổ sung timestamp để neo hình, không đổi điều kiện tín hiệu. Đã qua 21 suite, compiler không lỗi/cảnh báo và đối chiếu trực quan trên Brave XAUUSD M5 H2/H4; số sự kiện C2/H7/E10 giữ như trước cập nhật trong cùng dữ liệu đã tải. Chưa kiểm tra mọi mức zoom hoặc mọi feed.

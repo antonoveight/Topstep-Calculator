@@ -812,6 +812,7 @@ type ReactionState
     bool everSent = false
     int branchMask = 0
     float mpsRef = na
+    int mpsRefAt = na
     int mpsAt = na
     bool mpsEvent = false
     float legExtreme = na
@@ -864,7 +865,7 @@ f_clearReaction(ReactionState state, int phaseAt, float seedPivot, bool keepRun 
 
 // Independent closed-bar branches. A key reaction belongs to the CRT attempt;
 // MPS confirms only the OTE branch, never the direct TS or FVG branch.
-f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float knownLow, float pivotHigh, float pivotLow, bool waveAllowed = true, bool forcePullback = false, bool mpsAllowed = true) =>
+f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float knownLow, float pivotHigh, float pivotLow, bool waveAllowed = true, bool forcePullback = false, bool mpsAllowed = true, int knownHighAt = na, int knownLowAt = na) =>
     ChannelResult result = ChannelResult.new(dir=ctx.dir, kind=ctx.kind, flags=ctx.flags, phase=ctx.phase, id=ctx.id, key=state.key, cp=ctx.cp, inv=ctx.inv)
     state.mpsEvent := false
     bool armed = not na(ctx.id) and ctx.kind == 1 and ctx.dir != 0
@@ -906,6 +907,7 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             state.localExtreme := bullish ? low : high
             state.branchMask := 0
             state.mpsRef := bullish ? (close[1] <= knownHigh ? knownHigh : na) : (close[1] >= knownLow ? knownLow : na)
+            state.mpsRefAt := bullish ? knownHighAt : knownLowAt
             state.mpsAt := na
             state.legExtreme := bullish ? high : low
             state.gapAt := na
@@ -1166,6 +1168,7 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                     state.channel.localExtreme := state.attemptSl
                     state.channel.legExtreme := bullish ? high : low
                     state.channel.mpsRef := bullish ? (lastPivotHighTime[1] >= ref.c1Time ? lastPivotHigh[1] : na) : (lastPivotLowTime[1] >= ref.c1Time ? lastPivotLow[1] : na)
+                    state.channel.mpsRefAt := bullish ? lastPivotHighTime[1] : lastPivotLowTime[1]
                     bool spentP2 = not na(state.channel.mpsRef) and (bullish ? close[1] > state.channel.mpsRef : close[1] < state.channel.mpsRef)
                     if spentP2
                         state.channel.mpsRef := na
@@ -1189,7 +1192,7 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                     result.keyRef := state.key
             else
                 SignalContext local = SignalContext.new(age=0, crtKey=state.key, kind=1, id=ref.start, flags=1, phase=1, dir=state.dir, confirmed=state.reclaimedAt, resolved=state.reclaimedAt, hi=ref.c1H, lo=ref.c1L, inv=state.attemptSl, cp=target)
-                ChannelResult entry = f_stepChannel(local, state.channel, lastPivotHigh[1], lastPivotLow[1], na, na, not confirmedHit)
+                ChannelResult entry = f_stepChannel(local, state.channel, lastPivotHigh[1], lastPivotLow[1], na, na, not confirmedHit, knownHighAt=lastPivotHighTime[1], knownLowAt=lastPivotLowTime[1])
                 state.status := confirmedHit ? "E C3 PRIORITY" : "E " + entry.status
 
 
@@ -1240,13 +1243,13 @@ if barstate.isconfirmed and focusAvailable and na(crtState.confirmIndex) and ear
     crtState.key := htf + ":" + modelKey
     crtState.activatedAt := sConfirmed
     map.put(channelStates, htf + ":" + modelKey, crtState)
-ChannelResult crtResult = f_stepChannel(ctx, crtState, not na(lastPivotHighTime[1]) and lastPivotHighTime[1] >= sAT ? lastPivotHigh[1] : na, not na(lastPivotLowTime[1]) and lastPivotLowTime[1] >= sAT ? lastPivotLow[1] : na, pivotHigh, pivotLow)
+ChannelResult crtResult = f_stepChannel(ctx, crtState, not na(lastPivotHighTime[1]) and lastPivotHighTime[1] >= sAT ? lastPivotHigh[1] : na, not na(lastPivotLowTime[1]) and lastPivotLowTime[1] >= sAT ? lastPivotLow[1] : na, pivotHigh, pivotLow, knownHighAt=lastPivotHighTime[1], knownLowAt=lastPivotLowTime[1])
 if not focusAvailable
     crtResult.status := focusLife.uid == sId and focusLife.reason != 0 ? f_endTag(focusLife.reason) : "WAIT CRT"
 SignalContext higherCtx = SignalContext.new(age=higher.age, crtKey=higher.key, kind=1, id=higherAvailable ? higher.id : na, flags=higher.flags, phase=higher.phase, dir=higher.dir, confirmed=higher.confirmed, resolved=higher.resolved, hi=higher.hi, lo=higher.lo, inv=higher.inv, cp=higher.cp)
 string higherModelKey = f_contextKey(higherAvailable ? higher.id : na, higher.resolved, higher.dir)
 ReactionState higherState = f_channelState(channelStates, largerTf + ":" + higherModelKey, higher.confirmed)
-ChannelResult higherResult = f_stepChannel(higherCtx, higherState, not na(lastPivotHighTime[1]) and lastPivotHighTime[1] >= higher.aT ? lastPivotHigh[1] : na, not na(lastPivotLowTime[1]) and lastPivotLowTime[1] >= higher.aT ? lastPivotLow[1] : na, pivotHigh, pivotLow)
+ChannelResult higherResult = f_stepChannel(higherCtx, higherState, not na(lastPivotHighTime[1]) and lastPivotHighTime[1] >= higher.aT ? lastPivotHigh[1] : na, not na(lastPivotLowTime[1]) and lastPivotLowTime[1] >= higher.aT ? lastPivotLow[1] : na, pivotHigh, pivotLow, knownHighAt=lastPivotHighTime[1], knownLowAt=lastPivotLowTime[1])
 if not higherAvailable
     higherResult.status := not enableLargerSignals ? "OFF" : not higherSignalTfValid ? "TF/Bias" : higherLife.uid == higher.id and higherLife.reason != 0 ? f_endTag(higherLife.reason) : "WAIT CRT"
 
@@ -1558,23 +1561,41 @@ string buyHint = ""
 string sellHint = ""
 // Latest means the latest EVENT BAR: keep both directions if sources conflict.
 // Early + one independent higher signal can also share that bar (max two marks).
-// MPS text marks the observation bar. It has its own bounded history and no fill.
+// MPS is a structural level: source pivot -> confirmation candle, as in the
+// user's examples 4/7. The text sits in a gap at that price, not above the candle.
+f_mpsSegment(int sourceAt, int brokenAt, int barMs) =>
+    int span = brokenAt - sourceAt
+    int middle = sourceAt + int(span / 2)
+    int halfGap = math.max(1, math.min(int(barMs * 2.0), int(span * 0.35)))
+    [middle, middle - halfGap, middle + halfGap]
 var array<label> mpsLabels = array.new<label>()
-float mpsPadding = math.max(nz(ta.atr(14), high - low), syminfo.mintick * 8)
+var array<line> mpsLeftLines = array.new<line>()
+var array<line> mpsRightLines = array.new<line>()
 if historyMarks > 0 and (crtState.mpsEvent or higherState.mpsEvent)
     if not retainHistory
         while array.size(mpsLabels) > 0
             label.delete(array.shift(mpsLabels))
+            line.delete(array.shift(mpsLeftLines))
+            line.delete(array.shift(mpsRightLines))
+    bool sharedMps = crtState.mpsEvent and higherState.mpsEvent and sDir == higher.dir and math.abs(crtState.mpsRef - higherState.mpsRef) < syminfo.mintick * 0.5
     for pass = 0 to 1
         bool event = pass == 0 ? crtState.mpsEvent : higherState.mpsEvent
         int direction = pass == 0 ? sDir : higher.dir
-        if event
-            string hint = "MPS: closed through the pre-TS confirmed pivot. Required for OTE only; not an entry."
-            array.push(mpsLabels, label.new(bar_index, direction == 1 ? low - mpsPadding * (pass + 1) : high + mpsPadding * (pass + 1), direction == 1 ? "+MPS" : "-MPS", xloc=xloc.bar_index, yloc=yloc.price, style=label.style_none, textcolor=direction == 1 ? color.teal : color.red, size=size.small, force_overlay=true, tooltip=hint))
+        float price = pass == 0 ? crtState.mpsRef : higherState.mpsRef
+        int sourceAt = sharedMps ? math.min(crtState.mpsRefAt, higherState.mpsRefAt) : pass == 0 ? crtState.mpsRefAt : higherState.mpsRefAt
+        if event and not (sharedMps and pass == 1) and not na(sourceAt) and sourceAt < time and not na(price)
+            [middle, gapLeft, gapRight] = f_mpsSegment(sourceAt, time, int(chartSeconds * 1000))
+            string sourceName = sharedMps ? f_tfName(htf) + " / " + f_tfName(largerTf) : f_tfName(pass == 0 ? htf : largerTf)
+            string hint = "MPS " + sourceName + " | P2 " + str.tostring(price, format.mintick) + " | Pivot " + str.format_time(sourceAt, "dd/MM HH:mm", NY) + " NY | Break close " + str.format_time(time_close, "dd/MM HH:mm", NY) + " NY. Required for OTE only; not an entry."
+            array.push(mpsLeftLines, line.new(sourceAt, price, gapLeft, price, xloc=xloc.bar_time, extend=extend.none, color=color.orange, width=1, force_overlay=true))
+            array.push(mpsRightLines, line.new(gapRight, price, time, price, xloc=xloc.bar_time, extend=extend.none, color=color.orange, width=1, force_overlay=true))
+            array.push(mpsLabels, label.new(middle, price, direction == 1 ? "+MPS" : "-MPS", xloc=xloc.bar_time, yloc=yloc.price, style=label.style_none, textalign=text.align_center, textcolor=direction == 1 ? color.teal : color.red, size=chartFont, force_overlay=true, tooltip=hint))
 
 int mpsLimit = historyMarks == 0 ? 0 : retainHistory ? math.min(historyMarks, 40) : 2
 while array.size(mpsLabels) > mpsLimit
     label.delete(array.shift(mpsLabels))
+    line.delete(array.shift(mpsLeftLines))
+    line.delete(array.shift(mpsRightLines))
 if not retainHistory and markLimit > 0 and (entryLong or entryShort or earlyResult.hit)
     while array.size(eventLabels) > 0
         f_dropMark(0)

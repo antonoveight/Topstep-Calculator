@@ -34,7 +34,7 @@ function createHarness(source){
  environment.push('f_obDisplacement');
  const displacementBody=source.includes('f_obDisplacement(')?body('f_obDisplacement').map((l,i,a)=>i===a.length-1?'return '+expr(l.trim())+';':expr(l.trim().replace(/^float /,'let '))+';').join('\n'):'return false;';
  const displacement=Function('direction','opening','barHigh','barLow','closing',displacementBody);
- const stepWithSweep=Function(...environment,'ctx','state','knownHigh','knownLow','pivotHigh','pivotLow','waveAllowed','forcePullback','mpsAllowed',translate('f_stepChannel'));
+ const stepWithSweep=Function(...environment,'ctx','state','knownHigh','knownLow','pivotHigh','pivotLow','waveAllowed','forcePullback','mpsAllowed','knownHighAt','knownLowAt',translate('f_stepChannel'));
  return {
   state(ctx){return {...defaults('ReactionState'),key:String(ctx.id),activatedAt:ctx.confirmed,phaseAt:ctx.kind===2?null:ctx.confirmed,mssLevel:null};},
   step(ctx,state,tape,options={}){
@@ -42,7 +42,7 @@ function createHarness(source){
    const history=(field,n)=>{const prior=tape.at(-1-n);return prior?prior[keys[field]]:null;};
    const env=[{isconfirmed:options.confirmed!==false},options.isLtf!==false,b.t,tape.length-1,b.o,b.h,b.l,b.c,history,x=>x==null||Number.isNaN(x),options.cadence||'Fresh reaction',2,.01,options.entryMode||'Auto',options.timing||'Pullback',true,options.allowCrtCounter!==false,options.bias??ctx.dir,options.timeAllowed!==false,clear,args=>({...defaults('ChannelResult'),...args})];
    env.push(b.end??b.t+1,options.requireKey!==false,options.branches||'TS + FVG + OTE',(flags,bit)=>Math.floor(flags/bit)%2===1,Math);
-   return stepWithSweep(...env,options.sweepSize??.01,displacement,{age:0,irlKind:0,...ctx},state,options.knownHigh??null,options.knownLow??null,options.pivotHigh??null,options.pivotLow??null,options.waveAllowed!==false,options.forcePullback===true,options.mpsAllowed!==false);
+   return stepWithSweep(...env,options.sweepSize??.01,displacement,{age:0,irlKind:0,...ctx},state,options.knownHigh??null,options.knownLow??null,options.pivotHigh??null,options.pivotLow??null,options.waveAllowed!==false,options.forcePullback===true,options.mpsAllowed!==false,options.knownHighAt??null,options.knownLowAt??null);
   }
  };
 }
