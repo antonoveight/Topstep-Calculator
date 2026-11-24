@@ -2,6 +2,8 @@
 
 ## Bổ sung 24/11/2026 · MPS theo video mới nhất
 
+**Sau nghiên cứu, người dùng đã yêu cầu triển khai:** [cổng MPS trước entry](CRT-FIRST-LEG-SPEC.md#mps-trước-entry--triển-khai-24112026) hiện bật mặc định; bảng so sánh R1 bên dưới mô tả bản trước thay đổi. Đây là triển khai cá nhân theo sơ đồ gốc, chưa xác minh đầy đủ OTE/Model 1.
+
 **S07 — [CRTology ep.5: MPS](https://www.youtube.com/watch?v=Q-mne0H4lRY)**, kênh Romeotpt, dài khoảng 12 phút, đăng **23/11/2026 lúc 20:47 giờ Việt Nam**. Video đứng đầu tab Videos tại lần kiểm tra 24/11; channel ID khớp danh mục đã xác minh. [Telegram chính thức /7057](https://t.me/officialRomeotpt/7057) dẫn đúng video, /7058 thông báo tập 5 đã lên.
 
 Đã đọc toàn bộ **91 đoạn phụ đề tiếng Anh tự động do giao diện YouTube cung cấp**, từ 00:00 đến cue cuối 11:55, và đối chiếu sáu sheet storyboard gốc. Chưa nghe toàn bộ audio hoặc xem phát liên tục; không coi ảnh player bị đứng ở slide mở đầu là khung hình đúng thời điểm seek. ASR có chỗ chép OTE thành “OT” và MPS thành “NPS”; không dùng lỗi nhận dạng đó làm thuật ngữ mới. Nguồn, mốc và hash bằng chứng: [romeotpt-mps-sources.json](research/romeotpt-mps-sources.json). Transcript và ảnh đầy đủ chỉ lưu trong output cục bộ.
@@ -50,7 +52,7 @@
 4. Đối chiếu hồi nông/hồi sâu/chạy thẳng/target trước hồi; xác định đầu neo và trigger từ bài OTE riêng. Chưa áp dụng phần trăm fibo cá nhân vào MPS.
 5. Lưu key, timeframe, thời điểm, reference và lý do loại cho cả tín hiệu có/không có; sau khi chốt đặc tả mới làm nhánh thử nghiệm riêng và so với baseline. Chưa có kết quả thị trường để khẳng định độ chính xác hoặc chọn setting.
 
-Phạm vi lần bổ sung này chỉ là tài liệu nghiên cứu. Pine, setting, chart và các quy tắc R1/Pullback hiện hành không đổi. Các mục ngày 22/11 phía dưới giữ lại để theo dõi tiến trình; phần MPS cập nhật những chỗ trước đây chưa biết cách chọn mốc xác nhận.
+Phạm vi bước nghiên cứu ban đầu chỉ là tài liệu; sau yêu cầu tiếp theo, cổng MPS đã được triển khai, xem đặc tả được dẫn ở đầu mục. Bảng đối chiếu phía trên giữ mô tả baseline trước thay đổi. Các mục ngày 22/11 phía dưới giữ lại để theo dõi tiến trình; phần MPS cập nhật những chỗ trước đây chưa biết cách chọn mốc xác nhận.
 
 ## Bằng chứng mới từ nguồn gốc
 

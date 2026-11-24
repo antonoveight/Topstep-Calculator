@@ -4,7 +4,54 @@ Ngày 22/11/2026. Người dùng chọn **đặc tả và kiểm tra ngoài char
 
 Nguồn gốc chỉ cung cấp framework TS → xác nhận nhịp đầu → hồi entry → nhịp tiếp theo. Các quyết định kỹ thuật bên dưới là đề xuất R1, không gán cho Romeo. Đối chiếu nguồn và điều còn thiếu tại [nghiên cứu bổ sung](CRT-ENTRY-FOLLOWUP.md).
 
-**Cập nhật nghiên cứu 24/11/2026:** [MPS trong CRTology ep.5](CRT-ENTRY-FOLLOWUP.md#bổ-sung-24112026--mps-theo-video-mới-nhất) làm rõ mốc xác nhận là swing P2 trực tiếp trước TS và P3 phải tại key level. R1 hiện chọn pivot gần nhất và chỉ bắt buộc key khi ngược bias, nên chưa tương đương MPS; vùng hồi thủ công cũng chưa phải OTE gốc. Xem bảng đối chiếu trong nghiên cứu trước khi diễn giải tín hiệu R1. Lần cập nhật này không sửa logic chỉ báo.
+**Cập nhật nghiên cứu 24/11/2026:** [MPS trong CRTology ep.5](CRT-ENTRY-FOLLOWUP.md#bổ-sung-24112026--mps-theo-video-mới-nhất) làm rõ mốc xác nhận là swing P2 trực tiếp trước TS và P3 phải tại key level. R1 trước khi bổ sung cổng MPS chọn pivot gần nhất và chỉ bắt buộc key khi ngược bias, nên chưa tương đương MPS; vùng hồi thủ công cũng chưa phải OTE gốc. Xem bảng đối chiếu trong nghiên cứu trước khi diễn giải tín hiệu R1. Đó là bước nghiên cứu; sau yêu cầu tiếp theo, cổng MPS đã được triển khai như phần dưới.
+
+## MPS trước entry · triển khai 24/11/2026
+
+**MPS before entry = bật mặc định.** Trình tự hiện hành là **CRT/TS tại key → MPS → tìm entry**. Tắt công tắc chỉ để đối chiếu nhánh cũ; không cần chọn R1 mới có MPS. Cả Main HTF và Larger HTF có context/state/gate riêng. Early C2 cũng xét MPS trên dữ liệu đã đóng lúc đó và vẫn là cảnh báo thử nghiệm, chưa phải CRT HTF xác nhận.
+
+### Quy ước nhận diện đã mã hóa
+
+1. **P1:** đúng High/Low bao gồm râu của C1 HTF, định vị xuống nến LTF thực sự tạo cực trị. Cần đầy đủ các nến đóng của C1 và phần raid được dùng; thiếu nguồn/khác OHLC thì không neo giả.
+2. **P3:** nến LTF có cực trị raid cuối đã biết của attempt. Nếu cùng cực trị xuất hiện nhiều lần, dùng lần cuối. MPS trước P3 cuối không được dùng cho attempt mới. Confirmed chỉ đọc C2 đã đóng; Early dùng C2 tính tới nến LTF hiện tại, không đọc giá cuối tương lai.
+3. **P2:** swing ngược hướng quét gần nhất nằm **sau P1 và trước P3**, dùng pivot 2 trái/2 phải đã xác nhận và chưa bị lấy tại giờ mở bar P3. Buy dùng swing High; Sell dùng swing Low. Chọn ứng viên trực tiếp theo thứ tự hình thành trước, rồi mới kiểm tra thời điểm biết/đã tiêu thụ; ứng viên sai không được thay bằng mức cũ dễ phá hơn. Đây là quy ước cơ học thận trọng cho sơ đồ của tác giả, chưa chứng minh bao quát mọi đường giá phức tạp hoặc pivot nội nến.
+4. **Key bắt buộc ở cả hai hướng**, kể cả cùng bias. Hiện dùng swing key HTF/Bias TF của hệ thống đã biết trước C1, được raid và reclaim. Không tự coi mọi biên C1/POC/line thủ công là key. Chính sách key này là lựa chọn triển khai; taxonomy key gốc đầy đủ còn cần nghiên cứu.
+5. **Một close qua P2:** Buy đóng cao hơn P2; Sell thấp hơn P2. Râu xuyên và close đúng bằng mốc chưa xác nhận. Không buộc thêm buffer ngoài bước giá giao dịch. MPS hình thành trong C2 có thể được giữ khi context được xác nhận; không bắt first leg phải xuất phát lại trong C3.
+
+Không bổ sung bộ lọc giờ hoặc SMT do tập 5 chưa đủ quy tắc để mã hóa. MPS không tự đảo bias D1. Entry vẫn cần gate bias/key/wave, chưa chạm target/INV và cửa sổ của nhánh.
+
+### Thời điểm và cách đọc trên chart
+
+- Nhãn chữ **+MPS / -MPS** tại nến **quan sát được** xác nhận; không phải tam giác entry. Hover ghi timeframe, P1/P2/P3, lúc pivot được biết, activation thực tế, available và observed. Hai nguồn cùng hướng/cùng bar gộp một nhãn, giữ cả thông tin nguồn. Chữ không có nền và đặt cách nến theo biên độ giá.
+- Nhãn MPS có bộ nhớ riêng, giữ tối đa 40 nhãn trong History (và không vượt Historical signals to keep); không lấy mất suất tam giác entry. Latest giữ lần MPS quan sát gần nhất, tối đa hai hướng. Giá trị 0 ẩn cả hai loại dấu.
+- Dashboard thêm hàng **MPS**: ví dụ H1:+ H4:WAIT. WAIT MPS ở ENTRY nghĩa chưa mở bước tìm entry. Hover MPS/WHY để xem M DATA, M NO KEY, M NO P2, M P2 LATE/USED, M KEY LOST, M GAP, M INV/TG/AMB hoặc M EXP. M DATA còn có thể do OHLC nguồn không khớp hoặc thiếu coverage.
+- Phân biệt **activationAt** (close thực sự qua P2), **availableAt** (lúc đã đủ dữ liệu để dùng) và **observedAt** (close chart đầu tiên chỉ báo cam kết). Dữ liệu C2 trong quá khứ không được tạo nhãn lùi; việc phát hiện ở close LTF đầu của C3 có thể chậm một nến LTF. Entry chỉ bắt đầu ở bar mở từ availableAt sau lần quan sát đó, không lấy chính bar vừa quan sát MPS làm entry.
+- Alerts **MPS + / MPS -** để bắt đầu tìm entry; E+/E- vẫn là điều kiện entry của timing đang chọn. Đổi code/input thì tạo lại alert TradingView vì alert đã tạo giữ snapshot cũ.
+
+### Các cách entry sau MPS
+
+| Timing | Sau khi MPS đã biết |
+| --- | --- |
+| Pullback (mặc định) | Bắt đầu tìm TS LTF và retest mới trên các nến từ sau MPS; không giữ một mẫu TS đã tích lũy trước cổng. Đây vẫn là model entry cá nhân. |
+| Confirmation close | Xét TS LTF đã đóng trong giai đoạn sau MPS, không phát tại chính MPS. |
+| R1 first leg · experimental | Nhận bàn giao reference, wick nến kích hoạt và thời điểm biết MPS; không đòi thêm first leg thứ hai hoặc TS LTF mới. Vùng hồi vẫn nhập tay; Declared at phải từ availableAt trở đi và trong C3. Chưa có vùng thì không có entry R1. |
+| Early C2 | MPS tính trên C2 tạm thời; sau đó TS/retest trên nến tiếp theo. Một wick raid mới trước entry xóa nhịp cũ và xét lại P3/MPS, không dùng SL cuối C2 để chấm lại lịch sử. |
+
+R1 vẫn chưa phải OTE/Model 1 gốc. Khi tắt MPS, nhánh R1 cũ bên dưới giữ quy tắc first leg trong C3 và 64 fixture riêng; các fixture đó không được gọi là nghiệm thu cổng MPS.
+
+### Giới hạn dữ liệu và kiểm tra
+
+Giới hạn tính toán mặc định là **600 nến chart**, điều chỉnh ở **Inputs → Calculation → Calculated bars**. Nến chart là khung đang mở: 600 bar M5 khoảng 50 giờ liên tục, M3 khoảng 30 giờ, M1 khoảng 10 giờ. Đây là thiết lập tích hợp của TradingView, thêm vào 31 setting khai báo. Tăng khi cần xem xa hơn hoặc cần đủ C1/C2 của HTF lớn; quá nhiều có thể tái gặp RE10110. M DATA cần kiểm tra cả giới hạn này. Với D1 trên M1 thường cần trên 2880 bar chỉ để phủ hai ngày C1/C2, cộng phần đã chạy của C3; tài khoản Basic có thể không chịu được khối lượng đó. Chưa chứng nhận mọi tổ hợp HTF/LTF trên Basic. Tham khảo [calc_bars_count của Pine](https://www.tradingview.com/pine-script-docs/language/declaration-statements/#calc_bars_count).
+
+Giới hạn tính toán context nguồn còn **600 nến mỗi timeframe** thay cho yêu cầu 5000 trước đây, nhằm giảm khối lượng cho day trading. H1 tương đương khoảng 25 ngày liên tục; sản phẩm có phiên/ngày nghỉ sẽ khác. Đây là giới hạn lịch sử/khởi tạo, không phải timeout setup. Model/key/bias nằm ngoài dữ liệu đã tải không được bảo đảm giữ như bản lookback dài; dashboard DATA và nguồn có sẵn cần được đọc khi so kết quả. Không bù thiếu dữ liệu bằng mức giá phỏng đoán. History 100 là giới hạn nhãn, không đảm bảo có đủ 100 tín hiệu.
+
+MPS cache theo timeframe + model + lần xác nhận, tối đa 128 attempt; pool 512 pivot; kiểm tra nguồn chart tối đa 5000 bar. Sau khi MPS biết vẫn hủy gate khi mất key, chạm INV/target, thiếu bar hoặc hết cửa sổ entry. Parent C1 tiếp tục theo vòng đời CRT hiện hành. Cùng bar chạm INV/target giữ trạng thái mơ hồ, không chọn thứ tự thuận lợi.
+
+CSV khi bật MPS dùng **TFA audit schema=3**, có bốn cột MPS riêng cho mỗi nguồn: direction ở bar quan sát, P2, available ms, activation ms. Công cụ CSV TS cũ từ chối schema 3, không chứng nhận nhầm MPS. Tắt MPS thì schema 1/2 cũ theo timing. Không suy ra giao dịch khớp, PnL hoặc xác suất từ nhãn/alert.
+
+node tools/check-crt.cjs hiện chạy 22 suite. Bộ mới thực thi thân hàm Pine với 70 ca Buy/Sell: nguồn P1/P3, P2 trực tiếp/sai thời điểm/đã tiêu thụ, key cùng/ngược hướng, close/râu/equality, quan sát không backdate, nguồn C2, barrier/gap/expiry, bàn giao R1, cổng TS/retest và Early gặp wick mới. Có ca kiểm tra dừng sớm khi C1 trước dữ liệu đã tải và không đọc quá buffer dù bar_index của dataset lớn. Harness không thay Pine runtime/rollback/feed hoặc backtest thị trường. Đã biên dịch exact source cuối không lỗi/cảnh báo. Đã chạy Brave BTCUSD M5 với H1/H4, Calculated bars=600; không thấy cảnh báo runtime sau tối ưu, dashboard hiện WAIT MPS và NO KEY ở cả hai nguồn. Đây là smoke test ca bị chặn, chưa phải xác minh tín hiệu MPS dương, Replay, reload causality hay hiệu suất thị trường.
+
+Các mục R1 cũ dưới đây mô tả nhánh khi MPS tắt, trừ nơi nói rõ khác.
 
 ## Phạm vi dữ liệu
 

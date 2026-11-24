@@ -3,8 +3,11 @@
 // History and model-branch formulas tested in Node; chart / Replay validation still required.
 // See docs/CRT-PURE-AND-TIME.md for scope, lifecycle, priority and validation limits.
 //@version=6
-indicator("The Funded Angler v6 - CRT Pure TS", shorttitle="TFA v6", overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=500, max_boxes_count=500, max_labels_count=300)
+indicator("The Funded Angler v6 - CRT Pure TS", shorttitle="TFA v6", calc_bars_count=600, overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=500, max_boxes_count=500, max_labels_count=300)
 
+// Bound source work for day trading; the loaded context is not unlimited history.
+const int CONTEXT_BARS = 600
+var int availableChartStart = time
 const string NY = "America/New_York"
 const string G_HTF = "1. Auto HTF"
 const string G_BIAS = "2. Bias"
@@ -21,7 +24,7 @@ htfInput = input.timeframe("60", "HTF", options=["60", "120", "240", "1D"], grou
 bool overviewMode = timeframe.in_seconds() > timeframe.in_seconds(htfInput)
 string htf = overviewMode ? timeframe.period : htfInput
 minSweepTicks = 1
-scanDepth = 1000
+scanDepth = CONTEXT_BARS
 queueLimit = 12
 // INV/TP retire attempts; C3 closes entry only. No stale invalid-parent fallback.
 lifeHtf = 0
@@ -34,11 +37,12 @@ biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutr
 filterBias = true
 allowCrtCounter = input.bool(true, "CRT reversal at prior HTF key", group=G_ENTRY, tooltip="CRT ngược bias cần sweep/reclaim swing HTF đã biết trước C1. Sau đó cần TS LTF và retest trong C3. Không đổi bias tổng thể; B0/B0! vẫn chặn.")
 signalCadence = input.string(DEFAULT_SIGNAL_CADENCE, "Signal cadence", options=["Fresh reaction", "One per model"], group=G_ENTRY, tooltip="Fresh reaction cần TS LTF mới sau dấu trước, tiến triển cực trị và pivot hồi mới đã xác nhận. One per model chỉ một dấu trong C3.")
-signalTiming = input.string(DEFAULT_SIGNAL_TIMING, "Signal timing", options=["Pullback", "Confirmation close", "R1 first leg · experimental"], group=G_ENTRY, tooltip="Pullback: sau TS LTF đã đóng, đợi nến sau retest biên C1 LTF và đóng đúng phía, giữ cực trị TS. Confirmation close: dấu ngay nến TS đóng. Hai nến TS đều phải nằm trong C3 HTF. R1 thử nghiệm: close qua swing biết trước raid, sau đó phản ứng vùng hồi nhập thủ công ở nhóm 3b; không cần TS LTF mới. Chỉ xét C3, tối đa một dấu R1 mỗi attempt.")
+signalTiming = input.string(DEFAULT_SIGNAL_TIMING, "Signal timing", options=["Pullback", "Confirmation close", "R1 first leg · experimental"], group=G_ENTRY, tooltip="Pullback: sau TS LTF đã đóng, đợi nến sau retest biên C1 LTF và đóng đúng phía, giữ cực trị TS. Confirmation close: dấu ngay nến TS đóng. Hai nến TS đều phải nằm trong C3 HTF. R1: phản ứng vùng hồi thủ công ở nhóm 3b. Khi bật MPS, dùng MPS làm nhịp xác nhận, không đòi lại first leg hoặc TS LTF. Khi tắt MPS, R1 giữ cơ chế first leg cũ. Entry R1 chỉ trong C3, tối đa một lần mỗi attempt.")
+requireMps = input.bool(true, "MPS before entry", group=G_ENTRY, tooltip="Bật mặc định: P1 là râu biên C1 HTF, P3 là râu raid cuối, P2 là swing LTF trực tiếp giữa P1/P3 đã biết trước P3. Cần key HTF trước C1 ở cả hai hướng và một close qua P2. MPS là xác nhận, chưa phải entry. Entry chỉ xét từ nến sau lúc biết MPS. Tắt để đối chiếu bản cũ; chưa có bộ lọc giờ/SMT gốc đã xác minh.")
 bool r1Mode = signalTiming == "R1 first leg · experimental"
 r1MainLow = input.float(0, "Main zone low", group=G_R1, display=display.none, tooltip="Chỉ dùng khi chọn R1. Vùng hồi thủ công sau first leg; không phải vùng được chỉ báo tự tìm.")
 r1MainHigh = input.float(0, "Main zone high", group=G_R1, display=display.none)
-r1MainAt = input.time(0, "Main declared at", group=G_R1, display=display.none, tooltip="0 = chưa khai báo. Phải sau khi nến first leg đóng, trong C3. Chỉ nến mở từ mốc này trở đi được xét. Không khai báo hồi tố để đánh giá tín hiệu.")
+r1MainAt = input.time(0, "Main declared at", group=G_R1, display=display.none, tooltip="0 = chưa khai báo. Phải từ lúc biết MPS/first leg trở đi, trong C3. Chỉ nến mở từ mốc này trở đi được xét. Không khai báo hồi tố để đánh giá tín hiệu.")
 r1HigherLow = input.float(0, "Larger zone low", group=G_R1, display=display.none)
 r1HigherHigh = input.float(0, "Larger zone high", group=G_R1, display=display.none)
 r1HigherAt = input.time(0, "Larger declared at", group=G_R1, display=display.none, tooltip="Vùng và thời gian riêng cho nhánh Larger HTF. 0 = chưa khai báo; không dùng vùng của nhánh Main.")
@@ -439,7 +443,7 @@ f_preferCrt(int candidateBorn, int candidateRoot, int selectedBorn, int selected
     na(selectedRoot) or (candidateBorn == currentIndex and selectedBorn != currentIndex) or ((candidateBorn == currentIndex) == (selectedBorn == currentIndex) and candidateRoot > selectedRoot)
 
 f_engine(string sourceTf) =>
-    [higherBias, higherBiasAge, higherBiasHigh, higherBiasLow, higherGuardHigh, higherGuardLow, higherKeyMap] = request.security(syminfo.tickerid, biasTf, f_biasBundle(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+    [higherBias, higherBiasAge, higherBiasHigh, higherBiasLow, higherGuardHigh, higherGuardLow, higherKeyMap] = request.security(syminfo.tickerid, biasTf, f_biasBundle(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
     var array<Model> models = array.new<Model>()
     var array<Liquidity> swings = array.new<Liquidity>()
     var ModelArchive lastEnded = ModelArchive.new()
@@ -587,7 +591,7 @@ f_snapshot(bool previous) =>
 [sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft, sInnerHi, sInnerLo, sInnerHiT, sInnerLoT, sArchived, kCrtKey, sEqTouched, sAEnd, sCEnd, sBEnd] = if onHtf
     f_snapshot(not barstate.isconfirmed)
 else
-    request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+    request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
 
 // Packed UDT avoids exceeding Pine's combined 127 request tuple elements.
 type HigherSnapshot
@@ -603,16 +607,17 @@ type HigherSnapshot
     int resolved = na
     int age = 0
     int aT = na
+    int aEnd = na
     int bT = na
     int bEnd = na
     int reason = 0
     CrtKey key = na
 f_higherSnapshot() =>
     [q0, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14, q15, q16, q17, q18, q19, q20, q21, q22, q23, q24, q25, q26, q27, q28, q29, q30, q31, q32, q33, q34, q35, q36, q37, q38, q39, q40, q41, q42, q43, q44, q45, q46, q47, q48, q49, q50, q51, q52, q53, q54, q55, q56, q57, q58, q59, q60, q61, q62, q63] = f_engine(largerTf)
-    HigherSnapshot.new(id=q0[1], flags=q1[1], phase=q3[1], dir=q4[1], hi=q5[1], lo=q6[1], inv=q7[1], cp=q8[1], confirmed=q15[1], resolved=q16[1], age=q37[1], aT=q22[1], bT=q27[1], bEnd=q63[1], reason=q34[1], key=q59[1])
+    HigherSnapshot.new(id=q0[1], flags=q1[1], phase=q3[1], dir=q4[1], hi=q5[1], lo=q6[1], inv=q7[1], cp=q8[1], confirmed=q15[1], resolved=q16[1], age=q37[1], aT=q22[1], aEnd=q61[1], bT=q27[1], bEnd=q63[1], reason=q34[1], key=q59[1])
 bool higherSignalTfValid = isLtf and timeframe.in_seconds(largerTf) > htfSeconds and timeframe.in_seconds(largerTf) % chartSeconds == 0 and timeframe.in_seconds(biasTf) >= timeframe.in_seconds(largerTf)
 HigherSnapshot higher = if enableLargerSignals and higherSignalTfValid
-    request.security(syminfo.tickerid, largerTf, f_higherSnapshot(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+    request.security(syminfo.tickerid, largerTf, f_higherSnapshot(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
 else
     HigherSnapshot.new()
 
@@ -620,7 +625,7 @@ else
 [autoBias, autoBiasAge, autoBiasHigh, autoBiasLow, autoGuardHigh, autoGuardLow] = if chartSeconds == timeframe.in_seconds(biasTf)
     f_biasSnapshot(not barstate.isconfirmed)
 else
-    request.security(syminfo.tickerid, biasTf, f_biasSnapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+    request.security(syminfo.tickerid, biasTf, f_biasSnapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
 int structureBias = biasMode == "Auto" ? nz(autoBias) : biasMode == "Long" ? 1 : biasMode == "Short" ? -1 : 0
 float biasCheckClose = barstate.isconfirmed ? close : close[1]
 bool biasPaused = biasMode == "Auto" and chartSeconds < timeframe.in_seconds(biasTf) and (structureBias == 1 ? not na(autoGuardLow) and biasCheckClose < autoGuardLow : structureBias == -1 ? not na(autoGuardHigh) and biasCheckClose > autoGuardHigh : false)
@@ -691,7 +696,7 @@ else
 // aggregated from this chart only; an incomplete first bucket is omitted.
 f_largerClosed() =>
     [time[3], open[3], high[3], low[3], close[3], time_close[3], time[2], open[2], high[2], low[2], close[2], time_close[2], time[1], open[1], high[1], low[1], close[1], time_close[1]]
-[h3T, h3O, h3H, h3L, h3C, h3End, h2T, h2O, h2H, h2L, h2C, h2End, h1T, h1O, h1H, h1L, h1C, h1End] = request.security(syminfo.tickerid, largerTf, f_largerClosed(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+[h3T, h3O, h3H, h3L, h3C, h3End, h2T, h2O, h2H, h2L, h2C, h2End, h1T, h1O, h1H, h1L, h1C, h1End] = request.security(syminfo.tickerid, largerTf, f_largerClosed(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
 int largerBucket = time(largerTf)
 int largerEnd = time_close(largerTf)
 var int largerLiveT = na
@@ -843,7 +848,7 @@ f_clearReaction(ReactionState state, int phaseAt, float seedPivot, bool keepRun 
 
 // Personal CRT execution rule, not an attributed Romeo mechanical entry model.
 // Local C1 and C2 must both form in HTF C3. Never backdate a confirmation.
-f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float knownLow, float pivotHigh, float pivotLow, bool waveAllowed = true, bool forcePullback = false) =>
+f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float knownLow, float pivotHigh, float pivotLow, bool waveAllowed = true, bool forcePullback = false, bool mpsAllowed = true) =>
     ChannelResult result = ChannelResult.new(dir=ctx.dir, kind=ctx.kind, flags=ctx.flags, phase=ctx.phase, id=ctx.id, key=state.key, cp=ctx.cp, inv=ctx.inv)
     float target = ctx.cp
     float executionSl = ctx.inv
@@ -851,7 +856,7 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
     bool entryWindow = ctx.age == 0
     bool armed = not na(ctx.id) and ctx.kind == 1 and ctx.dir != 0
     result.status := not isLtf ? "VIEW TF" : not armed ? "NO MODEL" : not entryWindow ? "C3 CLOSED" : "WAIT CLOSE"
-    if armed and barstate.isconfirmed and isLtf and entryWindow and time >= activatedAt
+    if armed and barstate.isconfirmed and isLtf and entryWindow and time >= activatedAt and mpsAllowed
         result.evaluated := true
         bool bullish = ctx.dir == 1
         bool revokedPending = not state.sent and not na(state.confirmIndex) and bar_index > state.confirmIndex and (bullish ? close <= state.confirmLevel or low <= state.localExtreme : close >= state.confirmLevel or high >= state.localExtreme)
@@ -979,7 +984,7 @@ f_r1Raid(int sourceStart, int sourceEnd, int direction, float rangeHigh, float r
     int found = na
     int expected = sourceEnd
     bool gap = false
-    if not na(sourceStart) and not na(sourceEnd)
+    if not na(sourceStart) and not na(sourceEnd) and sourceStart >= availableChartStart
         for offset = 0 to math.min(bar_index, 4999)
             if time[offset] < sourceStart
                 break
@@ -990,6 +995,8 @@ f_r1Raid(int sourceStart, int sourceEnd, int direction, float rangeHigh, float r
                 bool swept = direction == 1 ? low[offset] <= rangeLow - sweepSize : high[offset] >= rangeHigh + sweepSize
                 if swept
                     found := time[offset]
+                if expected == sourceStart
+                    break
     bool complete = not gap and not na(expected) and expected == sourceStart
     [found, complete]
 f_r1Seed(array<R1Swing> pool, string key, int sourceStart, int sourceEnd, int direction, float rh, float rl, int windowStart, int windowEnd) =>
@@ -1105,6 +1112,143 @@ f_r1Stamp(int stamp) =>
 f_r1Debug(R1State state) =>
     "REF " + str.tostring(state.reference, format.mintick) + " | known " + f_r1Stamp(state.referenceKnownAt) + " | raid " + f_r1Stamp(state.raidAt) + " | LEG close " + f_r1Stamp(state.legKnownAt) + " | extreme " + str.tostring(state.legExtreme, format.mintick) + " | ZONE " + str.tostring(state.zoneLow, format.mintick) + "–" + str.tostring(state.zoneHigh, format.mintick) + " | published " + f_r1Stamp(state.zoneKnownAt) + " NY"
 
+// MPS implementation convention: HTF C1 extreme is P1; the final raid wick is P3.
+// P2 must be the direct confirmed opposite swing BETWEEN P1 and P3. No fallback.
+type MpsState
+    float reference = na
+    int referenceTime = na
+    int referenceKnownAt = na
+    int p1At = na
+    int p3At = na
+    int sourceEnd = na
+    int windowStart = na
+    int windowEnd = na
+    int expected = na
+    int activationOpen = na
+    int activationAt = na
+    float activationExtreme = na
+    int availableAt = na
+    int observedAt = na
+    string terminal = ""
+type MpsResult
+    bool ready = false
+    bool event = false
+    string status = "M WAIT"
+f_mpsSelect(array<R1Swing> pool, int direction, int p1At, int p3At) =>
+    R1Swing found = R1Swing.new()
+    if not na(p1At) and not na(p3At) and array.size(pool) > 0
+        for i = 0 to array.size(pool) - 1
+            R1Swing item = array.get(pool, i)
+            bool inLeg = item.side == direction and item.formedAt > p1At and item.formedAt < p3At
+            if inLeg and (na(found.formedAt) or item.formedAt > found.formedAt or (item.formedAt == found.formedAt and item.knownAt > found.knownAt))
+                found := item.copy()
+    found
+f_mpsKey(SignalContext ctx, int c1Start) =>
+    bool prior = not na(ctx.crtKey) and ctx.crtKey.kind == 3 and ctx.crtKey.dir == ctx.dir and not na(ctx.crtKey.knownAt) and ctx.crtKey.knownAt <= c1Start and ctx.crtKey.beforeTime == c1Start
+    prior and (ctx.dir == 1 ? ctx.inv <= ctx.crtKey.lo - sweepSize : ctx.inv >= ctx.crtKey.hi + sweepSize)
+f_mpsSeed(array<R1Swing> pool, SignalContext ctx, int aStart, int aEnd, int bStart, int bEnd, int windowStart, int windowEnd) =>
+    MpsState state = MpsState.new(sourceEnd=bEnd, windowStart=windowStart, windowEnd=windowEnd, expected=math.max(windowStart, bEnd))
+    int expectedA = aEnd
+    int expectedB = bEnd
+    bool gap = false
+    bool up = ctx.dir == 1
+    if not na(aStart) and not na(aEnd) and not na(bStart) and not na(bEnd) and aStart >= availableChartStart and f_mpsKey(ctx, aStart)
+        for offset = 0 to math.min(bar_index, 4999)
+            if time[offset] < aStart
+                break
+            if time[offset] >= aStart and time[offset] < aEnd and time_close[offset] <= aEnd
+                gap := gap or time_close[offset] != expectedA
+                expectedA := time[offset]
+                if na(state.p1At) and (up ? low[offset] == ctx.lo : high[offset] == ctx.hi)
+                    state.p1At := time[offset]
+            if time[offset] >= bStart and time[offset] < bEnd and time_close[offset] <= bEnd
+                gap := gap or time_close[offset] != expectedB
+                expectedB := time[offset]
+                if na(state.p3At) and (up ? low[offset] == ctx.inv : high[offset] == ctx.inv)
+                    state.p3At := time[offset]
+            if expectedA == aStart and expectedB == bStart
+                break
+    bool coverage = not gap and expectedA == aStart and expectedB == bStart and not na(state.p1At) and not na(state.p3At)
+    R1Swing ref = f_mpsSelect(pool, ctx.dir, state.p1At, state.p3At)
+    state.reference := ref.price
+    state.referenceTime := ref.formedAt
+    state.referenceKnownAt := ref.knownAt
+    bool path = not na(ref.price) and (up ? ref.price > ctx.inv and ref.price < ctx.cp : ref.price < ctx.inv and ref.price > ctx.cp)
+    state.terminal := not f_mpsKey(ctx, aStart) ? "M NO KEY" : not coverage ? "M DATA" : na(ref.price) ? "M NO P2" : ref.knownAt > state.p3At ? "M P2 LATE" : not na(ref.takenAt) and ref.takenAt <= state.p3At ? "M P2 USED" : not path ? "M PATH" : ""
+    // Source activation is known only after this provisional/confirmed snapshot.
+    // A later extreme replaces P3, so older pre-P3 activations cannot survive.
+    if state.terminal == ""
+        for offset = 0 to math.min(bar_index, 4999)
+            if time[offset] < state.p3At
+                break
+            if time[offset] >= state.p3At and time[offset] < bEnd and time_close[offset] <= bEnd
+                bool through = up ? close[offset] > ref.price : close[offset] < ref.price
+                if through
+                    state.activationOpen := time[offset]
+                    state.activationAt := time_close[offset]
+                    state.activationExtreme := up ? high[offset] : low[offset]
+            if time[offset] == state.p3At
+                break
+        if not na(state.activationAt)
+            state.availableAt := math.max(ctx.confirmed, bEnd)
+    state
+f_stepMps(SignalContext ctx, MpsState state, R1Bar candle) =>
+    MpsResult result = MpsResult.new()
+    bool armed = not na(ctx.id) and ctx.dir != 0
+    bool up = ctx.dir == 1
+    result.status := not candle.eligible ? "VIEW TF" : not armed ? "M NO CRT" : not candle.closed ? "WAIT CLOSE" : "M WAIT"
+    if armed and candle.closed and candle.eligible
+        if state.terminal != ""
+            result.status := state.terminal
+        else if ctx.age != 0 or candle.start >= state.windowEnd or candle.finish > state.windowEnd
+            state.terminal := "M EXP"
+            result.status := state.terminal
+        else
+            bool sourceBar = candle.finish <= state.sourceEnd
+            bool gap = not sourceBar and candle.start != state.expected
+            bool stopped = not sourceBar and (up ? candle.l <= ctx.inv : candle.h >= ctx.inv)
+            bool target = not sourceBar and (up ? candle.h >= ctx.cp : candle.l <= ctx.cp)
+            bool keyHeld = not na(ctx.crtKey) and (up ? candle.c > ctx.crtKey.hi : candle.c < ctx.crtKey.lo)
+            if gap or stopped or target or not keyHeld
+                state.terminal := gap ? "M GAP" : stopped and target ? "M AMB" : stopped ? "M INV" : target ? "M TG" : "M KEY LOST"
+                result.status := state.terminal
+            else
+                state.expected := candle.finish
+                bool through = up ? candle.c > state.reference : candle.c < state.reference
+                if na(state.activationAt) and not sourceBar and through
+                    state.activationOpen := candle.start
+                    state.activationAt := candle.finish
+                    state.activationExtreme := up ? candle.h : candle.l
+                    state.availableAt := candle.finish
+                result.ready := not na(state.availableAt)
+                result.status := result.ready ? "MPS READY" : "M WAIT"
+                if result.ready and na(state.observedAt)
+                    result.event := true
+                    state.observedAt := candle.finish
+                    state.availableAt := math.max(state.availableAt, candle.finish)
+    result
+f_mpsState(map<string, MpsState> records, array<R1Swing> pool, string token, SignalContext ctx, int aStart, int aEnd, int bStart, int bEnd, int windowStart, int windowEnd) =>
+    if barstate.isconfirmed and token != "" and not map.contains(records, token)
+        map.put(records, token, f_mpsSeed(pool, ctx, aStart, aEnd, bStart, bEnd, windowStart, windowEnd))
+        if map.size(records) > 128
+            map.remove(records, array.get(map.keys(records), 0))
+    map.contains(records, token) ? map.get(records, token) : MpsState.new()
+f_mpsHandoff(R1State reaction, MpsState state) =>
+    if na(reaction.legKnownAt)
+        reaction.raidReady := true
+        reaction.reference := state.reference
+        reaction.referenceTime := state.referenceTime
+        reaction.referenceKnownAt := state.referenceKnownAt
+        reaction.raidAt := state.p3At
+        reaction.legStart := state.activationOpen
+        reaction.legKnownAt := state.availableAt
+        reaction.legExtreme := state.activationExtreme
+        reaction.expected := time
+    reaction
+f_mpsDebug(MpsState state) =>
+    "P1 " + f_r1Stamp(state.p1At) + " | P2 " + str.tostring(state.reference, format.mintick) + " @ " + f_r1Stamp(state.referenceTime) + " known " + f_r1Stamp(state.referenceKnownAt) + " | P3 " + f_r1Stamp(state.p3At) + " | activation " + f_r1Stamp(state.activationAt) + " | available " + f_r1Stamp(state.availableAt) + " | observed " + f_r1Stamp(state.observedAt) + " NY | key/time interpretation: personal CRT convention; no clock-hour/SMT gate"
+
+
 var float lastPivotHigh = na
 var float lastPivotLow = na
 var int lastPivotHighTime = na
@@ -1124,7 +1268,8 @@ if barstate.isconfirmed
         lastPivotLowTime := time[pivotLength]
 var array<R1Swing> r1Swings = array.new<R1Swing>()
 var map<string, R1State> r1States = map.new<string, R1State>()
-if r1Mode and isLtf and barstate.isconfirmed
+var map<string, MpsState> mpsStates = map.new<string, MpsState>()
+if (r1Mode or requireMps) and isLtf and barstate.isconfirmed
     f_r1Update(r1Swings, pivotHigh, pivotLow)
 R1Bar r1Bar = R1Bar.new(start=time, finish=time_close, o=open, h=high, l=low, c=close, previousClose=close[1], previousEnd=time_close[1], closed=barstate.isconfirmed, eligible=isLtf, tick=sweepSize, bias=biasDir, useBias=filterBias, allowCounter=allowCrtCounter, allowedTime=timeAllowed)
 var ReactionState crtState = ReactionState.new()
@@ -1134,7 +1279,16 @@ if barstate.isconfirmed and crtState.key != modelKey
     crtState := ReactionState.new(key=modelKey, activatedAt=sConfirmed, phaseAt=sConfirmed)
 bool waveAllowed = sDir == 1 ? na(lastBuyTime) or bar_index == lastBuyBar or (not na(lastPivotLowTime) and lastPivotLowTime > lastBuyTime) : na(lastSellTime) or bar_index == lastSellBar or (not na(lastPivotHighTime) and lastPivotHighTime > lastSellTime)
 R1State mainR1 = r1Mode and isLtf and focusAvailable ? f_r1State(r1States, r1Swings, htf + ":" + modelKey, sBT, sBEnd, sDir, sHi, sLo, bucketTime, bucketEnd) : R1State.new()
-ChannelResult crtResult = r1Mode ? f_stepR1(ctx, mainR1, r1Bar, r1MainLow, r1MainHigh, r1MainAt, waveAllowed) : f_stepChannel(ctx, crtState, lastPivotHigh, lastPivotLow, pivotHigh, pivotLow, waveAllowed)
+MpsState mainMps = requireMps and isLtf and focusAvailable ? f_mpsState(mpsStates, r1Swings, htf + ":" + modelKey, ctx, sAT, sAEnd, sBT, sBEnd, bucketTime, bucketEnd) : MpsState.new()
+MpsResult mainMpsResult = requireMps ? f_stepMps(ctx, mainMps, r1Bar) : MpsResult.new(status="OFF")
+bool mainMpsAllowed = not requireMps or (mainMpsResult.ready and time >= mainMps.availableAt)
+if requireMps and mainMpsAllowed
+    crtState.activatedAt := math.max(sConfirmed, mainMps.availableAt)
+    if r1Mode
+        mainR1 := f_mpsHandoff(mainR1, mainMps)
+ChannelResult crtResult = r1Mode ? (mainMpsAllowed ? f_stepR1(ctx, mainR1, r1Bar, r1MainLow, r1MainHigh, r1MainAt, waveAllowed) : ChannelResult.new(status=mainMpsResult.status)) : f_stepChannel(ctx, crtState, lastPivotHigh, lastPivotLow, pivotHigh, pivotLow, waveAllowed, false, mainMpsAllowed)
+if requireMps and not mainMpsAllowed
+    crtResult.status := mainMpsResult.status
 if not focusAvailable
     crtResult.status := focusLife.uid == sId and focusLife.reason != 0 ? f_endTag(focusLife.reason) : "WAIT CRT"
 if crtResult.hit and crtResult.dir == 1
@@ -1155,7 +1309,16 @@ if barstate.isconfirmed and higherState.key != higherModelKey
     higherState := ReactionState.new(key=higherModelKey, activatedAt=higher.confirmed, phaseAt=higher.confirmed)
 bool higherWaveAllowed = higher.dir == 1 ? na(higherLastBuyTime) or bar_index == higherLastBuyBar or (not na(lastPivotLowTime) and lastPivotLowTime > higherLastBuyTime) : na(higherLastSellTime) or bar_index == higherLastSellBar or (not na(lastPivotHighTime) and lastPivotHighTime > higherLastSellTime)
 R1State higherR1 = r1Mode and higherAvailable ? f_r1State(r1States, r1Swings, largerTf + ":" + higherModelKey, higher.bT, higher.bEnd, higher.dir, higher.hi, higher.lo, largerBucket, largerEnd) : R1State.new()
-ChannelResult higherResult = r1Mode ? f_stepR1(higherCtx, higherR1, r1Bar, r1HigherLow, r1HigherHigh, r1HigherAt, higherWaveAllowed) : f_stepChannel(higherCtx, higherState, lastPivotHigh, lastPivotLow, pivotHigh, pivotLow, higherWaveAllowed)
+MpsState higherMps = requireMps and higherAvailable ? f_mpsState(mpsStates, r1Swings, largerTf + ":" + higherModelKey, higherCtx, higher.aT, higher.aEnd, higher.bT, higher.bEnd, largerBucket, largerEnd) : MpsState.new()
+MpsResult higherMpsResult = requireMps ? f_stepMps(higherCtx, higherMps, r1Bar) : MpsResult.new(status="OFF")
+bool higherMpsAllowed = not requireMps or (higherMpsResult.ready and time >= higherMps.availableAt)
+if requireMps and higherMpsAllowed
+    higherState.activatedAt := math.max(higher.confirmed, higherMps.availableAt)
+    if r1Mode
+        higherR1 := f_mpsHandoff(higherR1, higherMps)
+ChannelResult higherResult = r1Mode ? (higherMpsAllowed ? f_stepR1(higherCtx, higherR1, r1Bar, r1HigherLow, r1HigherHigh, r1HigherAt, higherWaveAllowed) : ChannelResult.new(status=higherMpsResult.status)) : f_stepChannel(higherCtx, higherState, lastPivotHigh, lastPivotLow, pivotHigh, pivotLow, higherWaveAllowed, false, higherMpsAllowed)
+if requireMps and not higherMpsAllowed
+    higherResult.status := higherMpsResult.status
 if not higherAvailable
     higherResult.status := not enableLargerSignals ? "OFF" : not higherSignalTfValid ? "TF/Bias" : higherLife.uid == higher.id and higherLife.reason != 0 ? f_endTag(higherLife.reason) : "WAIT CRT"
 if higherResult.hit and higherResult.dir == 1
@@ -1203,11 +1366,14 @@ diagnostic := f_recordSignalAudit(diagnostic, crtResult)
 higherDiagnostic := f_recordSignalAudit(higherDiagnostic, higherResult)
 string diagnosticSummary = "Main HTF " + htf + " | C1 " + (not na(sAT) ? str.format_time(sAT, "dd/MM HH:mm", NY) : "-") + " NY | Confirmed " + (not na(sConfirmed) ? str.format_time(sConfirmed, "dd/MM HH:mm", NY) : "-") + " NY | " + f_signalAuditText(diagnostic) + "\nHigher HTF " + largerTf + " | " + higherResult.status + " | C1 " + (not na(higher.aT) ? str.format_time(higher.aT, "dd/MM HH:mm", NY) : "-") + " NY | " + f_signalAuditText(higherDiagnostic) + " | Last end " + f_endTag(higher.reason)
 
+if requireMps
+    diagnosticSummary += "\nMPS Main " + mainMpsResult.status + " | " + f_mpsDebug(mainMps) + "\nMPS Larger " + higherMpsResult.status + " | " + f_mpsDebug(higherMps)
 if r1Mode
     diagnosticSummary += "\nR1 Main " + crtResult.status + " | " + f_r1Debug(mainR1) + "\nR1 Larger " + higherResult.status + " | " + f_r1Debug(higherR1)
 
 // Experimental Early C2 uses only completed chart bars; no final C2 OHLC is read.
 type EarlyReference
+    int c1End = na
     int start = na
     int finish = na
     int c1Time = na
@@ -1216,6 +1382,7 @@ type EarlyReference
     float c1L = na
     float c1C = na
 type EarlyState
+    MpsState mps = na
     int bucket = na
     int lastClose = na
     int dir = 0
@@ -1265,6 +1432,7 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
             state.lockedSl := na
             state.lockedTp := na
             state.key := CrtKey.new()
+            state.mps := MpsState.new()
             state.channel := ReactionState.new()
             state.terminalReason := ""
         if not newWindow and time != state.lastClose
@@ -1331,11 +1499,20 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                 state.reclaimedAt := time_close
                 state.attemptSl := bullish ? state.lo : state.hi
                 state.channel := ReactionState.new(activatedAt=time_close, phaseAt=time_close)
-                state.status := "E WAIT LTF TS"
+                state.status := requireMps ? "E WAIT MPS" : "E WAIT LTF TS"
+                if requireMps
+                    SignalContext earlyContext = SignalContext.new(age=0, id=ref.start, kind=1, dir=state.dir, confirmed=time_close, crtKey=state.key, hi=ref.c1H, lo=ref.c1L, inv=state.attemptSl, cp=target)
+                    state.mps := f_mpsSeed(r1Swings, earlyContext, ref.c1Time, ref.c1End, ref.start, time_close, ref.start, ref.finish)
+                    MpsResult initialMps = f_stepMps(earlyContext, state.mps, r1Bar)
+                    state.status := "E " + initialMps.status
             else
                 SignalContext local = SignalContext.new(age=0, crtKey=state.key, kind=1, id=ref.start, flags=1, phase=1, dir=state.dir, confirmed=state.reclaimedAt, resolved=state.reclaimedAt, hi=ref.c1H, lo=ref.c1L, inv=state.attemptSl, cp=target)
-                ChannelResult entry = f_stepChannel(local, state.channel, na, na, na, na, (bullish ? buyWave : sellWave) and not confirmedHit, r1Mode)
-                state.status := confirmedHit ? "E C3 PRIORITY" : "E " + entry.status
+                MpsResult earlyMps = requireMps ? f_stepMps(local, state.mps, r1Bar) : MpsResult.new(status="OFF")
+                bool earlyMpsAllowed = not requireMps or (earlyMps.ready and time >= state.mps.availableAt)
+                if requireMps and earlyMpsAllowed
+                    state.channel.activatedAt := math.max(state.reclaimedAt, state.mps.availableAt)
+                ChannelResult entry = f_stepChannel(local, state.channel, na, na, na, na, (bullish ? buyWave : sellWave) and not confirmedHit, r1Mode, earlyMpsAllowed)
+                state.status := confirmedHit ? "E C3 PRIORITY" : requireMps and not earlyMpsAllowed ? "E " + earlyMps.status : "E " + entry.status
                 if entry.hit and not confirmedHit
                     state.emitted := true
                     state.lockedSl := state.attemptSl
@@ -1357,7 +1534,7 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
 f_earlyReference() =>
     KeyMap priorMap = f_higherKeyMap(htf)
     [open[1], high[1], low[1], close[1], time[1], time_close[1], priorMap[1]]
-[earlyC1O, earlyC1H, earlyC1L, earlyC1C, earlyC1T, earlyC1End, earlyKeys] = request.security(syminfo.tickerid, htf, f_earlyReference(), lookahead=barmerge.lookahead_on, calc_bars_count=5000)
+[earlyC1O, earlyC1H, earlyC1L, earlyC1C, earlyC1T, earlyC1End, earlyKeys] = request.security(syminfo.tickerid, htf, f_earlyReference(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
 var EarlyState earlyState = EarlyState.new()
 var array<string> earlyUnused = array.new<string>()
 float earlyHigh = earlyState.bucket == bucketTime ? math.max(earlyState.hi, high) : high
@@ -1366,7 +1543,7 @@ CrtKey earlyBuyKey = not na(earlyKeys) and not na(earlyKeys.levels) ? f_matchKey
 CrtKey earlySellKey = not na(earlyKeys) and not na(earlyKeys.levels) ? f_matchKeyMap(earlyKeys, earlyUnused, earlyC1T, -1, earlyHigh, earlyLow, close) : CrtKey.new()
 bool earlyBuyWave = na(lastBuyTime) or (not na(lastPivotLowTime) and lastPivotLowTime > lastBuyTime)
 bool earlySellWave = na(lastSellTime) or (not na(lastPivotHighTime) and lastPivotHighTime > lastSellTime)
-EarlyReference earlyRef = EarlyReference.new(start=bucketTime, finish=bucketEnd, c1Time=earlyC1T, c1O=earlyC1O, c1H=earlyC1H, c1L=earlyC1L, c1C=earlyC1C)
+EarlyReference earlyRef = EarlyReference.new(start=bucketTime, finish=bucketEnd, c1Time=earlyC1T, c1End=earlyC1End, c1O=earlyC1O, c1H=earlyC1H, c1L=earlyC1L, c1C=earlyC1C)
 EarlyResult earlyResult = f_stepEarly(earlyRef, earlyState, earlyBuyKey, earlySellKey, earlyBuyWave, earlySellWave, crtResult.hit)
 if earlyResult.hit and earlyResult.dir == 1
     lastBuyTime := time
@@ -1450,7 +1627,7 @@ var array<line> clusterWicks = array.new<line>()
 var array<label> clusterLabels = array.new<label>()
 var array<label> groupLabels = array.new<label>()
 var label clockLabel = label.new(bar_index, high, "", force_overlay=true, style=label.style_label_up, color=color.new(chart.bg_color, 100), textcolor=chart.fg_color, size=chartFont)
-var table panel = table.new(position.top_right, 2, 10, bgcolor=color.new(#111820, 12), border_width=0)
+var table panel = table.new(position.top_right, 2, 11, bgcolor=color.new(#111820, 12), border_width=0)
 if barstate.isfirst
     for i = 0 to 15
         array.push(levelLines, line.new(time, high, time, high, xloc=xloc.bar_time, extend=extend.none, force_overlay=true, color=color.new(color.gray, 100)))
@@ -1635,6 +1812,23 @@ string buyHint = ""
 string sellHint = ""
 // Latest means the latest EVENT BAR: keep both directions if sources conflict.
 // Early + one independent higher signal can also share that bar (max two marks).
+// MPS text marks the observation bar. It has its own bounded history and no fill.
+var array<label> mpsLabels = array.new<label>()
+float mpsPadding = math.max(nz(ta.atr(14), high - low), syminfo.mintick * 8)
+if requireMps and historyMarks > 0 and (mainMpsResult.event or higherMpsResult.event)
+    if not retainHistory
+        while array.size(mpsLabels) > 0
+            label.delete(array.shift(mpsLabels))
+    for pass = 0 to 1
+        int direction = pass == 0 ? 1 : -1
+        bool mainEvent = mainMpsResult.event and sDir == direction
+        bool largerEvent = higherMpsResult.event and higher.dir == direction
+        if mainEvent or largerEvent
+            string hint = "MPS CONFIRMATION · NOT ENTRY\n" + (mainEvent ? f_tfName(htf) + " | " + f_mpsDebug(mainMps) : "") + (largerEvent ? "\n" + f_tfName(largerTf) + " | " + f_mpsDebug(higherMps) : "")
+            array.push(mpsLabels, label.new(bar_index, direction == 1 ? low - mpsPadding : high + mpsPadding, direction == 1 ? "+MPS" : "-MPS", xloc=xloc.bar_index, yloc=yloc.price, style=label.style_none, textcolor=direction == 1 ? color.teal : color.red, size=size.small, force_overlay=true, tooltip=hint))
+int mpsLimit = historyMarks == 0 ? 0 : retainHistory ? math.min(historyMarks, 40) : 2
+while array.size(mpsLabels) > mpsLimit
+    label.delete(array.shift(mpsLabels))
 if not retainHistory and markLimit > 0 and (entryLong or entryShort or earlyResult.hit)
     while array.size(eventLabels) > 0
         f_dropMark(0)
@@ -1702,7 +1896,7 @@ plot(autoGuardLow, "Bias guard low", display=display.data_window)
 
 // Export-only evidence for causal Replay review. No drawing, entry or alert changes.
 // Numeric plot titles become CSV headers; timestamps are Unix milliseconds.
-plot(r1Mode ? 2 : 1, "TFA audit schema", display=display.data_window)
+plot(requireMps ? 3 : r1Mode ? 2 : 1, "TFA audit schema", display=display.data_window)
 plot(barstate.isconfirmed ? time_close : na, "TFA audit bar close ms", display=display.data_window)
 plot(htfSeconds, "TFA audit HTF seconds", display=display.data_window)
 plot(chartSeconds, "TFA audit LTF seconds", display=display.data_window)
@@ -1735,6 +1929,16 @@ plot(r1Mode and higherResult.hit ? higherResult.referencePrice : na, "R1 larger 
 plot(r1Mode and higherResult.hit ? higherResult.referenceKnownAt : na, "R1 larger reference known ms", display=display.data_window)
 plot(r1Mode and higherResult.hit ? higherResult.legKnownAt : na, "R1 larger leg known ms", display=display.data_window)
 plot(r1Mode and higherResult.hit ? higherResult.zoneKnownAt : na, "R1 larger zone known ms", display=display.data_window)
+
+// MPS observation is exported on the observation bar, never backdated to C2.
+plot(requireMps and mainMpsResult.event ? sDir : na, "MPS main direction", display=display.data_window)
+plot(requireMps and mainMpsResult.event ? mainMps.reference : na, "MPS main P2", display=display.data_window)
+plot(requireMps and mainMpsResult.event ? mainMps.availableAt : na, "MPS main available ms", display=display.data_window)
+plot(requireMps and mainMpsResult.event ? mainMps.activationAt : na, "MPS main activation ms", display=display.data_window)
+plot(requireMps and higherMpsResult.event ? higher.dir : na, "MPS larger direction", display=display.data_window)
+plot(requireMps and higherMpsResult.event ? higherMps.reference : na, "MPS larger P2", display=display.data_window)
+plot(requireMps and higherMpsResult.event ? higherMps.availableAt : na, "MPS larger available ms", display=display.data_window)
+plot(requireMps and higherMpsResult.event ? higherMps.activationAt : na, "MPS larger activation ms", display=display.data_window)
 
 // Early events are exported separately and never relabelled as C3 evidence.
 plot(enableEarlyC2 ? 1 : 0, "Early C2 enabled", display=display.data_window)
@@ -1769,12 +1973,12 @@ if barstate.islast
     f_layoutLabels()
     if showPanel
         string dirText = biasPaused ? "B0!" : biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
-        string stateText = not hasModel ? "SEARCH" : not focusAvailable ? "WATCH" : sModelAge > 0 ? "TRACK" : alreadyEmitted ? "SIGNAL" : "ENTRY"
-        array<string> headings = array.from("TF", "CRT", "BIAS", "REF", "T", "ENTRY", "N", "WHY", "DATA", "EARLY")
-        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (hasModel ? (sDir == 1 ? "BUY" : "SELL") : "-") + " | " + str.tostring(hasModel ? sCount : 0), dirText + " / " + biasTf, hasModel and hasIrl ? "IRL" : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals) + " H " + str.tostring(higherSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals))
-        for row = 0 to 9
+        string stateText = not hasModel ? "SEARCH" : not focusAvailable ? "WATCH" : sModelAge > 0 ? "TRACK" : requireMps and (na(mainMps.availableAt) or mainMps.terminal != "") ? "WAIT MPS" : alreadyEmitted ? "SIGNAL" : "ENTRY"
+        array<string> headings = array.from("TF", "CRT", "BIAS", "REF", "T", "ENTRY", "N", "WHY", "DATA", "EARLY", "MPS")
+        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (hasModel ? (sDir == 1 ? "BUY" : "SELL") : "-") + " | " + str.tostring(hasModel ? sCount : 0), dirText + " / " + biasTf, hasModel and hasIrl ? "IRL" : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals) + " H " + str.tostring(higherSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals), requireMps ? f_tfName(htf) + ":" + (not focusAvailable ? "-" : mainMps.terminal != "" ? str.replace(mainMps.terminal, "M ", "") : not na(mainMps.availableAt) ? (sDir == 1 ? "+" : "-") : "WAIT") + " " + f_tfName(largerTf) + ":" + (not higherAvailable ? "-" : higherMps.terminal != "" ? str.replace(higherMps.terminal, "M ", "") : not na(higherMps.availableAt) ? (higher.dir == 1 ? "+" : "-") : "WAIT") : "OFF")
+        for row = 0 to 10
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
-            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | Parent C1 stays until its target is taken. INV ends only this attempt; Only original C3 can replace the raid once, with original key and close inside C1. TRACK after entry window; no automatic C3 expiry. Not fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C1. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit + "\n" + diagnosticSummary : row == 6 ? "C = main HTF, H = larger HTF. Separate source event counts; a merged marker may count once in each source. Closed LTF C3 only; not fills or win-rate." : "")
+            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 10 ? "MPS = structural confirmation, not entry. Entry begins on a later bar. " + diagnosticSummary : row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | Parent C1 stays until its target is taken. INV ends only this attempt; Only original C3 can replace the raid once, with original key and close inside C1. TRACK after entry window; no automatic C3 expiry. Not fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C1. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit + "\n" + diagnosticSummary : row == 6 ? "C = main HTF, H = larger HTF. Separate source event counts; a merged marker may count once in each source. Closed LTF C3 only; not fills or win-rate." : "")
     array<ClusterCandle> clusterCandles = array.new<ClusterCandle>()
     if showCluster and clusterActive
         if array.size(candleTimes) > 0
@@ -1912,3 +2116,6 @@ alertcondition(higherResult.hit and higherResult.dir == -1, "Higher HTF E-", "TF
 
 alertcondition(earlyResult.hit and earlyResult.dir == 1, "Early C2 E+ · experimental", "TFA Early C2 Buy: provisional C2, not HTF confirmed. See E tooltip.")
 alertcondition(earlyResult.hit and earlyResult.dir == -1, "Early C2 E- · experimental", "TFA Early C2 Sell: provisional C2, not HTF confirmed. See E tooltip.")
+
+alertcondition(requireMps and ((mainMpsResult.event and sDir == 1) or (higherMpsResult.event and higher.dir == 1)), "MPS +", "TFA: bullish MPS observed. Start looking for entry; this is not an entry alert. See source tooltip.")
+alertcondition(requireMps and ((mainMpsResult.event and sDir == -1) or (higherMpsResult.event and higher.dir == -1)), "MPS -", "TFA: bearish MPS observed. Start looking for entry; this is not an entry alert. See source tooltip.")

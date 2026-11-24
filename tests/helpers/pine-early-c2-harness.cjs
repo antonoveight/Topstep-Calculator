@@ -6,7 +6,7 @@ function createEarlyHarness(source){
  function defaults(type){const at=lines.indexOf('type '+type),out={};if(at<0)throw Error(type);for(let i=at+1;i<lines.length&&/^\s/.test(lines[i]);i++){const m=lines[i].trim().match(/^\w+ (\w+) = (.+)$/);if(m)out[m[1]]=m[2]==='na'?null:JSON.parse(m[2]);}return out;}
  const make=(type,args={})=>{const value={...defaults(type),...args};if(type==='CrtKey')Object.defineProperty(value,'copy',{value:()=>make('CrtKey',value)});return value;};
  function expr(s){
-  for(const type of ['EarlyResult','CrtKey','ReactionState','SignalContext'])s=s.replace(new RegExp(type+'\\.new\\(([^\\n]*?)\\)','g'),(_,args)=>`make('${type}',{${args.replace(/\b(\w+)=/g,'$1:')}})`);
+  for(const type of ['EarlyResult','CrtKey','ReactionState','SignalContext','MpsState','MpsResult'])s=s.replace(new RegExp(type+'\\.new\\(([^\\n]*?)\\)','g'),(_,args)=>`make('${type}',{${args.replace(/\b(\w+)=/g,'$1:')}})`);
   return s.replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!').replace(/\bna\b(?!\s*\()/g,'null');
  }
  const at=lines.findIndex(l=>l.startsWith('f_stepEarly('));let end=at+1;while(end<lines.length&&(!lines[end].trim()||/^\s/.test(lines[end])))end++;
@@ -18,13 +18,13 @@ function createEarlyHarness(source){
   if(s.startsWith('else if ')){code+='else if('+expr(s.slice(8))+'){\n';blocks.push(indent);continue;}
   if(s==='else'){code+='else {\n';blocks.push(indent);continue;}
   if(i===body.length-1&&s==='result'){code+='return result;\n';continue;}
-  s=s.replace(/^(?:EarlyResult|CrtKey|ReactionState|SignalContext|ChannelResult|bool|int|float|string) (\w+) = /,'let $1 = ').replace(/:=/g,'=');code+=expr(s)+';\n';
+  s=s.replace(/^(?:EarlyResult|CrtKey|ReactionState|SignalContext|ChannelResult|MpsState|MpsResult|bool|int|float|string) (\w+) = /,'let $1 = ').replace(/:=/g,'=');code+=expr(s)+';\n';
  }
  while(blocks.length){code+='}\n';blocks.pop();}
- const run=Function('r1Mode','enableEarlyC2','isLtf','barstate','time','time_close','open','high','low','close','sweepSize','biasDir','allowCrtCounter','math','na','make','f_stepChannel','ref','state','buyKey','sellKey','buyWave','sellWave','confirmedHit',code);
+ const run=Function('requireMps','r1Swings','r1Bar','f_mpsSeed','f_stepMps','r1Mode','enableEarlyC2','isLtf','barstate','time','time_close','open','high','low','close','sweepSize','biasDir','allowCrtCounter','math','na','make','f_stepChannel','ref','state','buyKey','sellKey','buyWave','sellWave','confirmedHit',code);
  return {make,state:()=>make('EarlyState'),step(ref,state,tape,options={}){
-  const b=tape.at(-1),stepChannel=(ctx,cs,kh,kl,ph,pl,wave,forcePullback)=>channel.step(ctx,cs,tape,{...options,forcePullback,waveAllowed:wave,sweepSize:options.tick??.25});
-  return run(options.r1Mode===true,options.enabled!==false,options.isLtf!==false,{isconfirmed:options.confirmed!==false},b.t,b.tc??b.t+1,b.o,b.h,b.l,b.c,options.tick??.25,options.bias??1,options.allowCrtCounter!==false,Math,x=>x==null||Number.isNaN(x),make,stepChannel,ref,state,options.buyKey??make('CrtKey'),options.sellKey??make('CrtKey'),options.buyWave!==false,options.sellWave!==false,options.confirmedHit===true);
+  const b=tape.at(-1),stepChannel=(ctx,cs,kh,kl,ph,pl,wave,forcePullback,mpsAllowed)=>channel.step(ctx,cs,tape,{...options,forcePullback,mpsAllowed,waveAllowed:wave,sweepSize:options.tick??.25});
+  return run(options.requireMps===true,options.pool??[],options.r1Bar??{},options.mpsSeed??(()=>{throw Error("Missing MPS seed provider");}),options.mpsStep??(()=>{throw Error("Missing MPS step provider");}),options.r1Mode===true,options.enabled!==false,options.isLtf!==false,{isconfirmed:options.confirmed!==false},b.t,b.tc??b.t+1,b.o,b.h,b.l,b.c,options.tick??.25,options.bias??1,options.allowCrtCounter!==false,Math,x=>x==null||Number.isNaN(x),make,stepChannel,ref,state,options.buyKey??make('CrtKey'),options.sellKey??make('CrtKey'),options.buyWave!==false,options.sellWave!==false,options.confirmedHit===true);
  }};
 }
 module.exports={createEarlyHarness};

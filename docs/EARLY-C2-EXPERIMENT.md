@@ -1,6 +1,8 @@
 # Early C2 · bản thử quan sát
 
-Ngày 22/11/2026: người dùng cho phép bật Early C2 để quan sát thực tế và phản hồi, thay phạm vi trước đây chỉ nghiên cứu. Input **Early C2 · experimental** mặc định bật; có thể tắt để chỉ xem tín hiệu Confirmed. Chỉ báo có 30 input, gồm hai tùy chọn cụm HTF lớn hơn.
+**Cập nhật thực thi 24/11/2026:** MPS before entry bật mặc định cho Main, Larger và Early C2. Có 31 setting khai báo và ô Calculated bars tích hợp của TradingView (mặc định 600); Pullback vẫn là timing mặc định. MPS là bước xác nhận trước entry, không phải tam giác vào lệnh. Xem [quy tắc MPS đang triển khai](CRT-FIRST-LEG-SPEC.md#mps-trước-entry--triển-khai-24112026).
+
+Ngày 22/11/2026: người dùng cho phép bật Early C2 để quan sát thực tế và phản hồi, thay phạm vi trước đây chỉ nghiên cứu. Input **Early C2 · experimental** mặc định bật; có thể tắt để chỉ xem tín hiệu Confirmed. Chỉ báo có 31 input, gồm hai tùy chọn cụm HTF lớn hơn.
 
 Đây là quy ước cá nhân của công cụ, không tuyên bố một thuật toán đã được Romeotpt xác nhận, không phải kết quả backtest và không tự đặt lệnh.
 
@@ -48,4 +50,4 @@ Khi phản hồi một dấu E, ghi mã/feed, HTF/LTF, Bias, Signal timing, th�
 Vòng đời setup hiện hành: [Range C1, attempt, INV/TG và xác nhận lại](CRT-SETUP-LIFECYCLE.md).
 
 
-R1 hiện có trong Pine dưới chế độ **Signal timing → R1 first leg · experimental**, mặc định tắt (Pullback). Có 30 input, gồm 6 ô vùng/thời gian thủ công, không đưa các giá trị này lên tiêu đề chart. Xem [hướng dẫn R1](CRT-FIRST-LEG-SPEC.md#sử-dụng-r1-trong-chỉ-báo). Early vẫn chạy TS/Pullback riêng khi R1 được chọn.
+R1 hiện có trong Pine dưới chế độ **Signal timing → R1 first leg · experimental**, mặc định tắt (Pullback). Có 31 input, gồm 6 ô vùng/thời gian thủ công, không đưa các giá trị này lên tiêu đề chart. Xem [hướng dẫn R1](CRT-FIRST-LEG-SPEC.md#sử-dụng-r1-trong-chỉ-báo). Early vẫn chạy TS/Pullback riêng khi R1 được chọn.

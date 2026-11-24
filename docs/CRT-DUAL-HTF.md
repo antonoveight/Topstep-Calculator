@@ -1,6 +1,8 @@
 # Hai nhánh CRT Confirmed · 22/11/2026
 
-**Larger HTF signals** mặc định bật. **Larger HTF** dùng lựa chọn đã có ở Display: Auto H1/H2 → H4, H4 → D1, D1 → W1. Tổng cộng 30 input. Mỗi nhánh tìm CRT trên feed khung của mình, dùng snapshot chỉ từ nến đã đóng; nhánh lớn đóng gói object để tránh vượt giới hạn tổng 127 trường tuple request của Pine.
+**Cập nhật thực thi 24/11/2026:** MPS before entry bật mặc định cho Main, Larger và Early C2. Có 31 setting khai báo và ô Calculated bars tích hợp của TradingView (mặc định 600); Pullback vẫn là timing mặc định. MPS là bước xác nhận trước entry, không phải tam giác vào lệnh. Xem [quy tắc MPS đang triển khai](CRT-FIRST-LEG-SPEC.md#mps-trước-entry--triển-khai-24112026).
+
+**Larger HTF signals** mặc định bật. **Larger HTF** dùng lựa chọn đã có ở Display: Auto H1/H2 → H4, H4 → D1, D1 → W1. Tổng cộng 31 input. Mỗi nhánh tìm CRT trên feed khung của mình, dùng snapshot chỉ từ nến đã đóng; nhánh lớn đóng gói object để tránh vượt giới hạn tổng 127 trường tuple request của Pine.
 
 ## Phạm vi độc lập
 

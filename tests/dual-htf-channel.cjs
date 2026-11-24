@@ -52,5 +52,5 @@ assert.match(s,/bool entryEvent = crtResult.hit/,'Legacy main export remains iso
 assert.match(s,/diagnosticToken = htf \+ ":"/);assert.match(s,/higherDiagnosticToken = largerTf \+ ":"/);
 assert.match(s,/int markLimit = historyMarks == 0 \? 0 : retainHistory \? historyMarks : 2/);
 assert.match(s,/if not retainHistory and markLimit > 0 and \(entryLong or entryShort or earlyResult.hit\)\r?\n\s+while array.size\(eventLabels\) > 0\r?\n\s+f_dropMark\(0\)/,'Latest clears older event bars before keeping both current directions');
-assert.equal((s.match(/= input\./g)||[]).length,30);
+assert.equal((s.match(/= input\./g)||[]).length,31);
 console.log(`PASS ${cases} symmetric dual-HTF channel traces, own windows/barriers/states, merged marker predicates, explicit source attribution, previous-only packed snapshot, display isolation and main audit isolation. Not market Replay.`);

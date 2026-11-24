@@ -14,7 +14,7 @@ function csv(bars,prefix=''){
  return '\uFEFF'+fields.map(f=>escape(f in reverse?prefix+f:f)).join(',')+'\r\n'+bars.map(b=>fields.map(f=>escape(f==='time'?b.time/1000:b[reverse[f]||f])).join(',')).join('\r\n');
 }
 let checked=0;
-assert.throws(()=>audit(csv(tape().map(b=>({...b,schema:2})))),/unsupported\/missing audit schema/,'R1 schema must not pass the TS-only auditor');
+for(const schema of [2,3])assert.throws(()=>audit(csv(tape().map(b=>({...b,schema})))),/unsupported\/missing audit schema/,'R1/MPS schema must not pass the TS-only auditor');
 for(const dir of [1,-1]){
  const bars=tape(dir),baseline=audit(csv(bars));assert.equal(baseline.status,'checks_passed');assert.equal(baseline.signals.length,1);assert.equal(baseline.marketReplayVerified,false);checked++;
  assert.equal(audit(csv(bars,'TFA v6: ')).status,'checks_passed');
@@ -58,7 +58,7 @@ assert.ok(audit(withEarly([null,null,null,1],0)).issues.some(x=>x.rule==='invali
 const s=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
 for(const title of Object.values(C))assert.ok(s.includes('"'+title+'"'),'Actual plot missing '+title);
 for(const line of s.split(/\r?\n/).filter(l=>l.startsWith('plot(')&&l.includes('"TFA audit ')))assert.ok(line.includes('display=display.data_window'));
-assert.equal((s.match(/= input\./g)||[]).length,30,'Early switch retained; obsolete context timeout removed; audit adds no settings');
+assert.equal((s.match(/= input\./g)||[]).length,31,'Early switch retained; obsolete context timeout removed; audit adds no settings');
 assert.equal(s,fs.readFileSync('chibao.txt','utf8'));
 // Exercise CLI exit codes/report output without touching the user's real report.
 const path=require('node:path'),{spawnSync}=require('node:child_process');
@@ -75,4 +75,4 @@ const empty=tape().map(x=>({...x,dir:null}));fs.writeFileSync(reload,csv(empty))
 assert.equal(cli(input,reload).status,1);assert.equal(report().comparison.status,'differences');
 assert.equal(cli(reload).status,2);assert.equal(report().replay.status,'incomplete');
 assert.equal(cli().status,1);
-console.log(`PASS ${checked} symmetric export audit cases; strict CSV/time parsing, partial/no-signal coverage, reload differences, changed OHLC/feed, actual plot wiring and 30 inputs. Synthetic only.`);
+console.log(`PASS ${checked} symmetric export audit cases; strict CSV/time parsing, partial/no-signal coverage, reload differences, changed OHLC/feed, actual plot wiring and 31 inputs. Synthetic only.`);

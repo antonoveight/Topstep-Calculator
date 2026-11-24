@@ -1,5 +1,7 @@
 # CRT thuần & thời gian · 22/11/2026
 
+**Cập nhật thực thi 24/11/2026:** MPS before entry bật mặc định cho Main, Larger và Early C2. Có 31 setting khai báo và ô Calculated bars tích hợp của TradingView (mặc định 600); Pullback vẫn là timing mặc định. MPS là bước xác nhận trước entry, không phải tam giác vào lệnh. Xem [quy tắc MPS đang triển khai](CRT-FIRST-LEG-SPEC.md#mps-trước-entry--triển-khai-24112026).
+
 Nhánh Confirmed phát trong nến HTF đầu tiên sau mỗi lần xác nhận: C3 ở attempt đầu, hoặc nến sau raid/reclaim mới của cùng C1. Hết cửa sổ không xóa range. Nhánh [Early C2 thử nghiệm](EARLY-C2-EXPERIMENT.md) có dấu E riêng; xem [vòng đời range/attempt](CRT-SETUP-LIFECYCLE.md).
 
 Đây là đặc tả hiện hành, thay thế phần entry/key/time trong tài liệu trước ngày này. Người dùng đã chọn bỏ cả CISD/MSS, FVG/OB, ICT Macros, Quarterly Theory và True Open. Bản Pine cũ giữ riêng trong `indicators/archive/funded-angler-v6-crt-support-2026-11-22.pine` để đối chiếu, không chạy trên web.
@@ -50,7 +52,7 @@ Web giữ phiên thị trường, lịch tin và thêm đồng hồ C3 với hai
 
 ## Cài đặt và kiểm tra
 
-Mặc định: HTF H1, Bias TF D1, Auto bias, Pullback, Fresh reaction, History 100. Có 30 input, gồm công tắc Early C2 thử nghiệm bật sẵn theo yêu cầu mới; HTF tùy H1/H2/H4/D1. Không còn chọn loại xác nhận hoặc bộ lọc giờ cũ.
+Mặc định: HTF H1, Bias TF D1, Auto bias, Pullback, Fresh reaction, History 100. Có 31 input, gồm công tắc Early C2 thử nghiệm bật sẵn theo yêu cầu mới; HTF tùy H1/H2/H4/D1. Không còn chọn loại xác nhận hoặc bộ lọc giờ cũ.
 
 Checklist schema `crt-v1` → `crt-ts-v2`: snapshot cũ giữ nguyên, các ô mới bắt đầu chưa xác nhận. Nhật ký, kết quả cũ, giỏ cá và tài khoản vẫn giữ. Early C2 nay đã được cho phép bật thử theo [đặc tả thuần CRT riêng](EARLY-C2-EXPERIMENT.md). Dấu E chưa phải HTF Confirmed, không trộn vào tam giác C3 hay bộ audit Confirmed. Nghiên cứu cũ không còn là đặc tả đang chạy.
 
@@ -61,4 +63,4 @@ Vòng đời setup hiện hành: [Range C1, attempt, INV/TG và xác nhận lạ
 Cập nhật hai nhánh Confirmed: [H1/H4 độc lập, nguồn tam giác và giới hạn khung](CRT-DUAL-HTF.md). Đối chiếu entry sau TS từ [nguồn Romeotpt](CRT-ENTRY-ROMEOTPT.md); Pullback trong code vẫn là quy ước cá nhân.
 
 
-R1 hiện có trong Pine dưới chế độ **Signal timing → R1 first leg · experimental**, mặc định tắt (Pullback). Có 30 input, gồm 6 ô vùng/thời gian thủ công, không đưa các giá trị này lên tiêu đề chart. Xem [hướng dẫn R1](CRT-FIRST-LEG-SPEC.md#sử-dụng-r1-trong-chỉ-báo). Early vẫn chạy TS/Pullback riêng khi R1 được chọn.
+R1 hiện có trong Pine dưới chế độ **Signal timing → R1 first leg · experimental**, mặc định tắt (Pullback). Có 31 input, gồm 6 ô vùng/thời gian thủ công, không đưa các giá trị này lên tiêu đề chart. Xem [hướng dẫn R1](CRT-FIRST-LEG-SPEC.md#sử-dụng-r1-trong-chỉ-báo). Early vẫn chạy TS/Pullback riêng khi R1 được chọn.
