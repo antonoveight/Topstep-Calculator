@@ -2,6 +2,8 @@
 
 Ngày 21/11/2026. Mục tiêu là đưa dự án về CRT, giữ IRL, ERL và Turtle Soup trong đúng vai trò, đồng thời phân biệt nội dung của Romeo với quy ước giao dịch cá nhân. Kết luận cho kế hoạch: lấy range, key level, thời gian và phản ứng làm trục; không chỉ đổi bộ quét ba loại nến thành một bộ quét hình dạng ba nến.
 
+**Bổ sung ngày 24/11/2026:** video mới nhất [CRTology ep.5: MPS](https://www.youtube.com/watch?v=Q-mne0H4lRY), đăng 23/11, đã được đối chiếu toàn bộ phụ đề tự động và các storyboard gốc. [Nghiên cứu MPS và khoảng cách với R1](CRT-ENTRY-FOLLOWUP.md#bổ-sung-24112026--mps-theo-video-mới-nhất), [danh mục bằng chứng](research/romeotpt-mps-sources.json). Phạm vi 17 video và giới hạn phụ đề bên dưới mô tả đợt nghiên cứu 21/11, không bao gồm lần bổ sung này. Chưa xác minh MPS bằng nghe/xem liên tục hoặc hiệu suất thị trường.
+
 ## Nguồn và phạm vi xác minh
 
 Kênh [Romeotpt](https://www.youtube.com/@Romeotpt) có channel ID `UCYCbFixbl2KcyLuH6cOfL2g`. Metadata trực tiếp của 17 video dưới đây cùng trả về ID này. Mô tả các video liên kết tới [X @romeotpt](https://x.com/romeotpt) và [Telegram officialRomeotpt](https://t.me/officialRomeotpt); Telegram liên kết ngược về kênh YouTube. Không dùng tên hiển thị Raid hoặc một website mang chữ CRT làm bằng chứng duy nhất về danh tính.

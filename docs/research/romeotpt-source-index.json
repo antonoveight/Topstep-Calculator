@@ -239,5 +239,13 @@
       "topic": "Terminology; embed text truncated",
       "access": "Public syndication embed; partial"
     }
+  ],
+  "supplements": [
+    {
+      "reviewDate": "2026-11-24",
+      "path": "romeotpt-mps-sources.json",
+      "videoId": "Q-mne0H4lRY",
+      "scope": "Full rendered English auto-transcript and selected official storyboards; research only"
+    }
   ]
 }

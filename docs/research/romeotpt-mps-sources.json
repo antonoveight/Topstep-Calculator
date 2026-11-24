@@ -1,0 +1,137 @@
+{
+  "reviewDate": "2026-11-24",
+  "timezone": "Asia/Saigon",
+  "scope": "Documentation research only; Pine/defaults unchanged",
+  "video": {
+    "id": "Q-mne0H4lRY",
+    "url": "https://www.youtube.com/watch?v=Q-mne0H4lRY",
+    "title": "CRTology ep.5: MPS",
+    "author": "Romeotpt",
+    "channelId": "UCYCbFixbl2KcyLuH6cOfL2g",
+    "publishedUtc": "2026-11-23T13:47:37.000Z",
+    "publishedVietnam": "2026-11-23 20:47:37 +07:00",
+    "durationSeconds": 720,
+    "latestOnVideosTabAtReview": true,
+    "latestVideoIds": [
+      "Q-mne0H4lRY",
+      "L87Iy51_ATM",
+      "f4gdAohTi40"
+    ]
+  },
+  "access": {
+    "metadata": "Direct public YouTube watch HTML and official channel Videos tab",
+    "transcript": "English auto-generated transcript rendered by YouTube Show transcript; full text read in browser DOM",
+    "segments": 91,
+    "firstCueSeconds": 0,
+    "lastCueSeconds": 715,
+    "transcriptSha256": "5d1b822cdefee140f8851296956ed2418379097f02483bb8ab71d8b6f03b54bb",
+    "captionDownload": "Direct timedtext returned 200 with zero bytes; manual get_transcript POST returned 400. Rendered UI transcript was available.",
+    "visuals": "Six original YouTube storyboard sheets reviewed, not continuous playback; selected player seeks remained on title slide and are not treated as target-time frames",
+    "fullAudioListened": false,
+    "continuousVideoPlaybackReviewed": false,
+    "rawTranscriptCommitted": false
+  },
+  "officialAnnouncement": {
+    "url": "https://t.me/officialRomeotpt/7057",
+    "postedUtc": "2026-11-23T13:54:05Z",
+    "followup": "https://t.me/officialRomeotpt/7058"
+  },
+  "reviewedStoryboardSheets": [
+    {
+      "sheet": 3,
+      "rangeSeconds": [
+        135,
+        180
+      ],
+      "sha256": "4b39057e25a1ee41965a872ea373bde92ef69ec218045713b81e96b34dd823df"
+    },
+    {
+      "sheet": 5,
+      "rangeSeconds": [
+        225,
+        270
+      ],
+      "sha256": "99fece74c3aa7523994055964c622a6491d8cedc8e8b51a912ecd9b1387606d3"
+    },
+    {
+      "sheet": 7,
+      "rangeSeconds": [
+        315,
+        360
+      ],
+      "sha256": "15ca8bd0d897d36b1980dfc46843e465f448d307e4693d362ceac23db898cdae"
+    },
+    {
+      "sheet": 11,
+      "rangeSeconds": [
+        495,
+        540
+      ],
+      "sha256": "36ae88b004d21b29fe55cd5e17e041be729832ceb855049f00f81c75cb6e1fbe"
+    },
+    {
+      "sheet": 13,
+      "rangeSeconds": [
+        585,
+        630
+      ],
+      "sha256": "98dce3e7422a06c21b125223613d0e5d230ca2a36921deb4e33839625c16be66"
+    },
+    {
+      "sheet": 14,
+      "rangeSeconds": [
+        630,
+        675
+      ],
+      "sha256": "8da1f6c7d885569b475f9e2a9886c5bebdf8b90a2a56f594563ce03c1c72943a"
+    }
+  ],
+  "technicalEvidence": [
+    {
+      "seconds": 40,
+      "claim": "MPS expands to Market Profile Shift; author presents an alternative to conventional structure-shift labels"
+    },
+    {
+      "seconds": 155,
+      "claim": "Bearish high-low-higher-high, then close below point 2; bullish inverse"
+    },
+    {
+      "seconds": 223,
+      "claim": "Point 3 is at a key level; timing is a contextual distinction"
+    },
+    {
+      "seconds": 249,
+      "claim": "SMT occurs often; immediate pre-TS high/low selection is emphasized"
+    },
+    {
+      "seconds": 312,
+      "claim": "A single close activates the MPS; illustrated symmetrically"
+    },
+    {
+      "seconds": 373,
+      "claim": "Profile describes reactions to highs and lows, not a demonstrated volume/TPO calculation"
+    },
+    {
+      "seconds": 498,
+      "claim": "After bullish MPS expect deep bearish retracement and further expansion; explicit entry price not specified"
+    },
+    {
+      "seconds": 591,
+      "claim": "Bearish illustration links C1, TS C2 and OTE C3; not a complete universal timing rule"
+    },
+    {
+      "seconds": 615,
+      "claim": "Bearish leg one, deep bullish retracement and leg two; activation leg is leg one"
+    }
+  ],
+  "unresolved": [
+    "Executable key-level taxonomy and tolerance",
+    "Exact clock windows and HTF/LTF alignment",
+    "Causal swing selection in complex overlapping paths and pivot recognition delay",
+    "Close buffer, equality, precise OTE anchors/depth and order trigger",
+    "Whether first-leg activation can be reused from forming C2",
+    "Entry expiry, invalidation and repeated-signal rules",
+    "Independent market accuracy/profitability"
+  ],
+  "indicatorChanged": false
+}

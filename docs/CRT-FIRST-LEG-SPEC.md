@@ -4,6 +4,8 @@ Ngày 22/11/2026. Người dùng chọn **đặc tả và kiểm tra ngoài char
 
 Nguồn gốc chỉ cung cấp framework TS → xác nhận nhịp đầu → hồi entry → nhịp tiếp theo. Các quyết định kỹ thuật bên dưới là đề xuất R1, không gán cho Romeo. Đối chiếu nguồn và điều còn thiếu tại [nghiên cứu bổ sung](CRT-ENTRY-FOLLOWUP.md).
 
+**Cập nhật nghiên cứu 24/11/2026:** [MPS trong CRTology ep.5](CRT-ENTRY-FOLLOWUP.md#bổ-sung-24112026--mps-theo-video-mới-nhất) làm rõ mốc xác nhận là swing P2 trực tiếp trước TS và P3 phải tại key level. R1 hiện chọn pivot gần nhất và chỉ bắt buộc key khi ngược bias, nên chưa tương đương MPS; vùng hồi thủ công cũng chưa phải OTE gốc. Xem bảng đối chiếu trong nghiên cứu trước khi diễn giải tín hiệu R1. Lần cập nhật này không sửa logic chỉ báo.
+
 ## Phạm vi dữ liệu
 
 - Context HTF đã xác nhận được cấp từ ngoài: ID, hướng, thời điểm TS, C2 đóng, thời điểm đóng cửa sổ C3, INV/target. R1 không tự dựng C1/C2 hoặc chứng minh TS HTF từ dãy giá.
