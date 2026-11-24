@@ -1,5 +1,7 @@
 # Xác nhận nhịp đầu và phản ứng vùng hồi · R1 ngoài chart và tích hợp thử nghiệm
 
+**Nghiên cứu mới từ 7 ảnh của người dùng (24/11/2026):** [ca XAUUSD và các điểm nghẽn](CRT-ENTRY-FOLLOWUP.md#ca-xauusd-của-người-dùng--7-hình-ngày-24112026) chỉ ra cổng MPS toàn cục hiện không khớp workflow. Người dùng đã chốt nhánh #1: tam giác ở chính nến TS đóng ngược vào range, không chờ MPS. Cần tách TS close, TS→FVG và MPS→OTE; OTE dùng cuối leg 1 và hồi 50–80%, không chỉ wick nến kích hoạt. Phần triển khai bên dưới vẫn mô tả bản đang chạy, chưa sửa theo nghiên cứu mới.
+
 Ngày 22/11/2026. Người dùng chọn **đặc tả và kiểm tra ngoài chart trước**. Đây là giả thuyết thực thi cá nhân có thể chạy kiểm tra; không phải Model 1 nguyên bản đã xác minh. Sau đó người dùng yêu cầu tích hợp: bản Pine hiện có chế độ R1 thử nghiệm, không bật mặc định. Phần đặc tả dữ liệu tổng hợp bên dưới vẫn mô tả module ngoài chart; cách lấy dữ liệu thực tế và vận hành Pine nằm ở cuối tài liệu.
 
 Nguồn gốc chỉ cung cấp framework TS → xác nhận nhịp đầu → hồi entry → nhịp tiếp theo. Các quyết định kỹ thuật bên dưới là đề xuất R1, không gán cho Romeo. Đối chiếu nguồn và điều còn thiếu tại [nghiên cứu bổ sung](CRT-ENTRY-FOLLOWUP.md).

@@ -1,5 +1,87 @@
 # Nghiên cứu entry bổ sung · 22/11/2026
 
+## Ca XAUUSD của người dùng · 7 hình ngày 24/11/2026
+
+**Kết luận nghiên cứu:** bản 54f7a88 đã áp MPS như một cổng chung trước mọi entry, không khớp ba nhánh người dùng đang dùng. Chuỗi cần theo dõi là **key HTF → CRT/TS địa phương → một trong các cách thực thi**, với MPS là điều kiện của nhánh hồi OTE. Cần sửa đặc tả trước khi nới ngưỡng hoặc tăng tần suất tam giác. Lần này chỉ nghiên cứu, chưa sửa Pine.
+
+Nguồn ca là thư mục cục bộ Ví dụ, bảy ảnh XAUUSD/OANDA, trục giờ UTC+7: 1=H4, 2=H1, 3=M15, 4=M5, 5=H1 setup kế tiếp, 6=M15 cấu trúc setup kế tiếp, 7=M5 entry setup kế tiếp. Đã xem cả bảy ảnh. [Danh mục ảnh, hash, nguồn video và khoảng trống triển khai](research/crt-xauusd-user-example-2026-11-24.json) giữ nguồn có thể đối chiếu; ảnh gốc của người dùng không được đưa vào commit.
+
+Một số hình đang ẩn TFA và header có HTF input=120 (H2). Vì vậy không dùng việc không thấy tam giác ngay trong các ảnh này làm kết quả kiểm thử runtime. Phải phân biệt khung đang xem, HTF engine được chọn và timeframe của key; H2.CRTH có thể là key của setup H1/M5 mà không buộc engine phát hiện một CRT H2 mới.
+
+### Đọc hai setup trong chuỗi
+
+| Nhóm ảnh | Sự kiện quan sát được | Vai trò đối với entry |
+| --- | --- | --- |
+| 1–3 | H4 có FVG/key và range; H1 có mức key và CRTH riêng. Giá quay lại vùng tham chiếu rồi phản ứng giảm. | Key/vị trí ở khung lớn cung cấp bối cảnh; không bắt mọi key phải là swing đã bị quét đúng như kind=3 hiện tại. Nguồn chính xác của line H1.Key level vẫn cần đặc tả. |
+| 4 · setup sáng | Có nhịp lấy high, nến giảm trở lại range; sau đó giá đóng dưới low cấu trúc đánh dấu -MPS, chạy một nhịp xuống rồi hồi lên vùng OTE được đánh dấu. | Có ít nhất hai cách thực thi: TS close sớm và hồi sau MPS. Không cần một TS M5 mới sau MPS chỉ để hợp thức hóa entry OTE. |
+| 5–6 | Hình thành vùng H1.FVG sau nhịp giảm; buổi chiều/tối giá hồi tới key đó, tạo chuỗi cấu trúc mới. | Đây là setup kế tiếp có ID/key/thời điểm riêng, không bị khóa vì một dấu Sell đã phát ở setup sáng. M15 giúp đọc cấu trúc, M5 dùng thực thi. |
+| 7 · setup tối | P1 gần H2.CRTH, P2 là low của nhịp tăng, P3 là high TS tại vùng H1.FVG. Nhãn entry FVG nằm trước lúc giá phá low -MPS; nhãn entry OTE nằm sau khi low bị phá và nhịp giảm đầu đã kết thúc. | Nhánh TS→FVG được phép có trước MPS; nhánh MPS→OTE phải có MPS trước. Cùng một ý tưởng có nhiều ứng viên entry, không đồng nghĩa cộng thêm vị thế. |
+
+Ở hình 4, **người dùng đã xác nhận nhãn #1 là tham chiếu; tam giác cần nằm trên chính nến TS đen sau nó**: high sweep và nến đóng giảm trở vào range CRT. Không đặt tam giác lên nến nguồn trước sweep, không đợi MPS cho nhánh này. Buy đối xứng: sweep low, nến đóng tăng trở vào range; tam giác dưới nến. Đây là quy tắc TS/#1 cá nhân đã chốt, chưa tự đồng nhất toàn bộ với Model 1 gốc của Romeo.
+
+Mức giá trên ảnh chỉ đọc gần đúng: setup sáng có TS quanh 3678, low nhịp đầu quanh 3645–3647 và phản ứng hồi quanh 3660–3662; setup tối có TS quanh 3646–3647, low cấu trúc quanh 3622, đáy nhịp đầu quanh 3614–3616 và hồi quanh 3632. Không dùng các số ước lượng này để chấm tỷ lệ chính xác, ghim timestamp nến hoặc tạo OHLC giả cho backtest. Cần dữ liệu từng bar để kiểm tra chính xác mép 50%, thời điểm MPS/FVG được biết và thứ tự trong nến.
+
+### Đối chiếu thêm lời giảng gốc
+
+Đã truy cập trực tiếp giao diện Show transcript tiếng Anh tự động của hai video chính chủ, kiểm tra đúng channel ID. Đọc đầy đủ phần transcript OTE; với Model 1 đọc các đoạn kỹ thuật được dẫn dưới đây. Không dùng phần tóm tắt AI hoặc bình luận trên trang làm bằng chứng; chưa nghe/xem liên tục hai video. Hash transcript được lưu trong danh mục nguồn, bản chép đầy đủ chỉ lưu ở output cục bộ.
+
+- **[CRTology ep.3: OTE, 02:16–03:42](https://www.youtube.com/watch?v=f4gdAohTi40&t=136):** sau close phá low cấu trúc mới bắt đầu tìm nhịp hồi; tác giả mô tả nhịp mở rộng rồi hồi, có bối cảnh key. Một giá trị fibo không tự tạo ra entry.
+- **[08:12–09:45](https://www.youtube.com/watch?v=f4gdAohTi40&t=492)** và **[12:27–13:34](https://www.youtube.com/watch?v=f4gdAohTi40&t=747):** mô tả hồi xấp xỉ 50–80%; phần minh họa dùng vùng 0,5–0,79, kéo tới cuối leg 1 và có thêm ví dụ dùng body. Như vậy 50–80% của người dùng có cơ sở trong bài; quy ước triển khai ở đây vẫn dùng wick theo yêu cầu cá nhân, không tự đổi sang body.
+- **[One CRT model for life, 10:06–10:56](https://www.youtube.com/watch?v=T7udbrWlARI&t=606)**, **[15:15–16:46](https://www.youtube.com/watch?v=T7udbrWlARI&t=915)** và **[19:13–22:19](https://www.youtube.com/watch?v=T7udbrWlARI&t=1153):** có mẫu thực thi từ một nến raid cụ thể và close xác nhận, phối hợp nhiều khung; FVG được nêu như yếu tố có thể đi kèm. Không có căn cứ từ các đoạn này để ép mọi mẫu sớm phải đợi MPS rồi tạo thêm một TS mới. Tiêu chí chọn nến và biên close của toàn bộ Model 1 gốc vẫn không được suy diễn từ một nhãn #1 trên ảnh.
+
+Các mô tả của tác giả về xác suất/hoàn hảo không phải kết quả thống kê độc lập. Hai setup đi đúng hướng trong ảnh là ví dụ để chuẩn hóa workflow, không đo tỷ lệ thắng hay xác nhận mọi nhánh có lợi thế.
+
+### Các điểm nghẽn cụ thể trong code hiện tại
+
+| Vị trí | Đang làm gì | Hệ quả với ca này |
+| --- | --- | --- |
+| f_mpsKey / f_keyReact | Chỉ nhận kind=3: swing key biết trước C1, yêu cầu sweep/reclaim mức đó. | FVG H4/H1 và kiểu chạm/phản ứng vùng chưa được nhận diện. NO KEY có thể xuất hiện dù trader đã có key đúng loại đang sử dụng. |
+| f_mpsSeed | Ép P1 bằng cực trị toàn C1 HTF, P3 bằng wick raid của model được chọn. | Có thể bỏ lỡ chuỗi P1/P2/P3 địa phương trên M15/M5 tại key. Cần lưu riêng range HTF, mức bị sweep và cấu trúc thực thi. |
+| mainMpsAllowed / higherMpsAllowed / earlyMpsAllowed | Tất cả entry phải qua MPS. | Chặn trực tiếp TS close/#1 và entry FVG sớm trước MPS trong hình 7. |
+| f_stepChannel | Sau cổng còn bắt một TS hai nến LTF mới, rồi retest trong Pullback. | OTE không tạo TS mới thì không có dấu, dù nhịp xác nhận/hồi đã có như hình 4/7. |
+| f_stepR1 / f_mpsHandoff | Vùng nhập tay; extreme cố định bằng wick nến kích hoạt MPS. | Chưa tự theo dõi cuối leg 1 để tính OTE. Nhập vùng=0 vẫn WAIT_ZONE; không phải bộ nhận diện OTE tự động. |
+| isLtf | Chỉ chạy thực thi M1/M3/M5; M15 không có vai trò cấu trúc độc lập. | Chưa có phân tầng key H4/H1 → cấu trúc M15 → entry M5 như ví dụ. Không nên bắt mọi khung đồng thời phát cùng một mẫu. |
+| ctx.age==0 / localTargetTaken / targetAtBirth | Entry chỉ trong C3 của nguồn; cp cố định bằng đầu kia C1. | Cần tách tuổi context cha khỏi cửa sổ setup con, và target CRT gốc khỏi một cơ hội tiếp diễn mới. Không chỉ xóa các điều kiện hoàn thành để tăng dấu. |
+| f_preferCrt / waveAllowed | Chọn một focus model cho mỗi engine, khóa nhịp theo hướng bằng pivot mới. | Chưa quản lý một chuỗi setup kế tiếp và nhiều nhánh entry theo ID/leg; có nguy cơ setup mới bị khóa bởi dấu của setup cũ. |
+
+Đây là đối chiếu cấu trúc mã, chưa chạy replay đúng các bar XAUUSD trong ảnh. Chưa có OHLC, trạng thái bias D1 hoặc export WHY ở các bar đánh dấu để kết luận gate nào chặn đầu tiên trong từng lần chạy.
+
+### Quy tắc hoàn thành và setup tiếp diễn
+
+Trong hình 3/6, giá đã xuyên H4.CRTL ở nhịp thấp buổi chiều trước setup tối. Cần giữ đánh dấu hoàn thành của setup H4 cũ. Setup tối phải có key/range/TS/leg và mục tiêu mới hoặc bối cảnh mới được xác định rõ; không tái dùng setup H4 đã TP chỉ vì hướng vẫn Sell. Mức H4.CRTL đã bị lấy cũng không được ghi lại là thanh khoản chưa bị lấy.
+
+Tương tự, low/high mục tiêu của CRT gốc có thể đã bị chạm trong leg 1 trước một ứng viên OTE. Muốn nghiên cứu tiếp diễn, phải tạo một giả thuyết thực thi mới với target/INV riêng; không vô hiệu hóa CP TAKEN của lệnh/setup trước. Cấu trúc dữ liệu nên là **context/ý tưởng → setup có ID riêng → leg → nhánh entry**. Context cũ có thể vẫn hữu ích để đọc thị trường dù quyền entry của nó đã kết thúc.
+
+### Nhánh OTE cần được đặc tả lại
+
+Theo yêu cầu người dùng, các đầu neo tính cả wick. Sell: S=high TS, L=low cuối leg 1 sau MPS, D=S−L; vùng hồi là **[L+0,50D; L+0,80D]**. Buy: S=low TS, H=high cuối leg 1, D=H−S; vùng hồi là **[H−0,80D; H−0,50D]**. Đây là phép tính nội bộ cho logic; không yêu cầu khôi phục công cụ fibo vẽ trên chart.
+
+Endpoint phải được theo dõi trong quá trình leg 1 mở rộng, không chỉ lấy wick nến phá P2. Có thể cập nhật extreme theo từng nến đóng và tính vùng đã biết **trước** nến phản ứng. Khi dùng vùng để xác nhận entry, cố định hai neo và thời điểm được biết; không đổi low/high sau khi đã xem nhịp tiếp theo. Nếu một bar vừa tạo extreme mới vừa chạm vùng tính lại, OHLC không đủ xác định thứ tự; không tự coi đó là một lần hồi hợp lệ. Cách chốt kết thúc leg, touch/close-reaction và tình huống không hồi vẫn phải có quy tắc rõ trước mã hóa.
+
+### Trình tự cải tổ đề xuất và ca nghiệm thu
+
+```mermaid
+flowchart LR
+    K[Key HTF và context] --> T[TS địa phương]
+    T --> A[TS close / #1]
+    T --> F[FVG hình thành rồi được retest]
+    T --> M[MPS đóng qua P2]
+    M --> L[Leg 1 mở rộng]
+    L --> O[Hồi OTE 50–80% và trigger]
+    A --> E[Tam giác entry đúng nến]
+    F --> E
+    O --> E
+```
+
+1. Chuẩn hóa key với loại, timeframe, biên giá, formedAt/knownAt, trạng thái chạm/mitigation và vô hiệu. Ưu tiên các loại có trong mẫu: HTF FVG, mức CRTH/CRTL liên quan và line key cần giải thích nguồn. Phân biệt FVG HTF làm key với FVG LTF để thực thi. Yêu cầu mới có FVG/OTE là phạm vi cụ thể cho lần cải tổ tiếp theo; không tự khôi phục toàn bộ bộ lọc đã bỏ.
+2. Tách TS close/#1 thành nhánh đầu tiên, không có cổng MPS bắt buộc. Emit ở chính bar sweep đã đóng trở lại range, theo xác nhận của người dùng. Range/reference phải được biết trước sweep; không dùng close cuối HTF tương lai cho entry LTF sớm.
+3. Theo dõi MPS địa phương độc lập và endpoint leg 1 cho nhánh OTE. Bỏ yêu cầu có thêm một TS mới của nhánh này. Phân biệt M15 structure với M5 execution; chốt M15 là bắt buộc, hỗ trợ hay một lựa chọn thay thế trước khi mã hóa.
+4. Thêm nhánh FVG retest sau TS. Vùng ba nến phải đã hình thành/được biết rồi mới xét bar retest tiếp theo; không đồng nhất bar tạo FVG với bar quay lại FVG. Chính sách fill/mitigation, invalidation và trigger cần chốt.
+5. Ghi nguồn theo SetupId + Branch + Leg; gộp một tam giác khi nhiều nhánh cùng hướng/cùng bar, giữ mọi lý do trong tooltip. Setup mới có ID mới, không bị khóa chung vì đã có Sell trước đó. Quyền vẽ ứng viên entry không phải quyền tự thêm vị thế.
+6. Chốt bốn ca dương mục tiêu: TS đen sau #1 ở hình 4; OTE sáng ở hình 4; FVG sớm trước MPS ở hình 7; OTE sau MPS ở hình 7. Ca đối chứng: chỉ râu/không reclaim, không có key hợp lệ, vùng chưa hình thành, chạm vùng trước khi biết, thiếu close nếu mode yêu cầu close, endpoint thay bởi dữ liệu tương lai, target/INV đã kết thúc setup cũ, setup mới độc lập sau TP, phản ứng không đủ 50%/vượt ngưỡng và cùng bar có thứ tự không xác định.
+
+Các ca cần được chấm trên dữ liệu từng bar và kiểm tra mọi prefix/reload, không dựng giá tổng hợp rồi tuyên bố đã tái hiện ảnh. Triệu chứng ít dấu không đủ lý do tăng tần suất hay nới MPS tùy ý; thay đổi cần bám đúng ba nhánh đã phân biệt. Chưa thay code hoặc mặc định trong bước nghiên cứu này.
+
 ## Bổ sung 24/11/2026 · MPS theo video mới nhất
 
 **Sau nghiên cứu, người dùng đã yêu cầu triển khai:** [cổng MPS trước entry](CRT-FIRST-LEG-SPEC.md#mps-trước-entry--triển-khai-24112026) hiện bật mặc định; bảng so sánh R1 bên dưới mô tả bản trước thay đổi. Đây là triển khai cá nhân theo sơ đồ gốc, chưa xác minh đầy đủ OTE/Model 1.

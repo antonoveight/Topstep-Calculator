@@ -1,5 +1,7 @@
 # Entry sau TS: đối chiếu nguồn Romeotpt · 22/11/2026
 
+**Cập nhật 24/11/2026:** đã lấy được phụ đề gốc qua Show transcript cho OTE và Model 1. Đã đọc transcript OTE và các đoạn kỹ thuật Model 1; giới hạn truy cập ghi bên dưới thuộc đợt 22/11. [Phân tích 7 ảnh XAUUSD, ba nhánh entry và đối chiếu nguồn mới](CRT-ENTRY-FOLLOWUP.md#ca-xauusd-của-người-dùng--7-hình-ngày-24112026) thay thế giả định áp MPS bắt buộc cho mọi cách vào; chưa thay mã Pine.
+
 ## Nguồn trực tiếp đã kiểm tra
 
 1. [Bài minh họa entry của tác giả, 6219](https://t.me/officialRomeotpt/6219), truy cập qua [bản công khai quanh bài đó](https://t.me/s/officialRomeotpt/6221). Đã đọc HTML gốc và xem trực tiếp hai ảnh đính kèm, không chỉ đọc kết quả tìm kiếm. Ảnh ETH H1 đánh dấu CRTL, sự kiện +TS và vị trí mua; ảnh ETH M15 đánh dấu các nến 1, 2, 3, vùng low tham chiếu, +TS và nến thứ ba là entry. Ảnh M15 được lưu tạm trong output/romeo-entry/proper-ts-1.jpg để đối chiếu, không đưa bản sao hình tác giả vào repo.

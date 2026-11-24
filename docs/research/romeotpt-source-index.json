@@ -246,6 +246,15 @@
       "path": "romeotpt-mps-sources.json",
       "videoId": "Q-mne0H4lRY",
       "scope": "Full rendered English auto-transcript and selected official storyboards; research only"
+    },
+    {
+      "reviewDate": "2026-11-24",
+      "path": "crt-xauusd-user-example-2026-11-24.json",
+      "videoIds": [
+        "f4gdAohTi40",
+        "T7udbrWlARI"
+      ],
+      "scope": "User XAUUSD case, original OTE transcript and selected Model 1 technical cues; research only, no indicator changes"
     }
   ]
 }

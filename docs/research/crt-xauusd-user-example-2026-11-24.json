@@ -1,0 +1,263 @@
+{
+  "reviewDate": "2026-11-24",
+  "scope": "Research and implementation-gap analysis only; indicator unchanged",
+  "market": {
+    "symbol": "XAUUSD",
+    "feed": "OANDA",
+    "dateVisible": "2026-11-24",
+    "chartTimezone": "UTC+7"
+  },
+  "images": [
+    {
+      "number": 1,
+      "localFile": "Ví dụ/1.png",
+      "timeframe": "H4",
+      "width": 1487,
+      "height": 913,
+      "sha256": "d6cbdfcd8b99ccb8fca8fa3a1c3a495a266dc0b909e17d65b3b5dcb00c5b7aaa",
+      "rawImageCommitted": false
+    },
+    {
+      "number": 2,
+      "localFile": "Ví dụ/2.png",
+      "timeframe": "H1",
+      "width": 1483,
+      "height": 915,
+      "sha256": "6365128f4b485e77b6d9b35014596b8749dc0e5beaa5143315db49b1f4db8cce",
+      "rawImageCommitted": false
+    },
+    {
+      "number": 3,
+      "localFile": "Ví dụ/3.png",
+      "timeframe": "M15",
+      "width": 1496,
+      "height": 911,
+      "sha256": "5c8a3b616d95ec772769d6bd7af3c5ef1114bbfbc5b795bcedb5473bca62cf1e",
+      "rawImageCommitted": false
+    },
+    {
+      "number": 4,
+      "localFile": "Ví dụ/4.png",
+      "timeframe": "M5",
+      "width": 1481,
+      "height": 912,
+      "sha256": "29253cf0296514fed661a3b544f8bd8f9dae7c1b8c3349347d6810d7825f47b7",
+      "rawImageCommitted": false
+    },
+    {
+      "number": 5,
+      "localFile": "Ví dụ/5.png",
+      "timeframe": "H1 continuation",
+      "width": 1485,
+      "height": 916,
+      "sha256": "019c2ab77f635f69db2717e3989778528c24f8ab845c8aca3e990f700a249b72",
+      "rawImageCommitted": false
+    },
+    {
+      "number": 6,
+      "localFile": "Ví dụ/6.png",
+      "timeframe": "M15 continuation structure",
+      "width": 1487,
+      "height": 915,
+      "sha256": "a7c55d83046db0250a67ca279a67d799e40371ba43794b405432bd9bb3487f1c",
+      "rawImageCommitted": false
+    },
+    {
+      "number": 7,
+      "localFile": "Ví dụ/7.png",
+      "timeframe": "M5 continuation entry",
+      "width": 1477,
+      "height": 912,
+      "sha256": "3b3de845e74e1ec41166887904d6bcb8b8d1859f0f4c65b5490ca413e64f8263",
+      "rawImageCommitted": false
+    }
+  ],
+  "observations": {
+    "indicatorHiddenInSomeImages": true,
+    "visibleMainHtfInput": "120 (H2)",
+    "manualContextFrames": [
+      "H4",
+      "H1"
+    ],
+    "structureFrame": "M15",
+    "entryFrame": "M5",
+    "notes": [
+      "Images are annotated completed paths, not timestamped decisions or raw OHLC exports",
+      "Approximate prices/times must not be used as exact backtest inputs",
+      "A lower line labelled H1.CRTH appears to represent a range low; preserve original image but normalize names before implementation"
+    ],
+    "userClarification": {
+      "branch": "TS close / #1",
+      "signalBar": "The actual sweep candle closes in the opposite direction back inside the relevant CRT range; in image 4, the bearish black candle after the #1-marked source candle",
+      "requiresMps": false,
+      "confirmedByUser": true
+    }
+  },
+  "setups": [
+    {
+      "id": "A-morning",
+      "images": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "context": "Prior H4 key/FVG and range; H1 key plus local H1 range high",
+      "candidateSellEvents": [
+        {
+          "type": "TS_CLOSE",
+          "approxEntryWindowLocal": "08:40–08:55",
+          "signalBar": "Bearish sweep candle after #1; high sweeps the reference and close returns inside CRT",
+          "status": "Trigger role confirmed by user; exact bar timestamp/range needs OHLC"
+        },
+        {
+          "type": "MPS_OTE",
+          "approxTsHigh": [
+            3677,
+            3679
+          ],
+          "approxP2": [
+            3652,
+            3654
+          ],
+          "approxFirstLegLow": [
+            3645,
+            3647
+          ],
+          "approxReactionPrice": [
+            3660,
+            3662
+          ],
+          "approxEntryWindowLocal": "09:10–09:25",
+          "status": "Visually consistent candidate; exact 50–80% and close confirmation not verified from OHLC"
+        }
+      ]
+    },
+    {
+      "id": "B-evening-continuation",
+      "images": [
+        5,
+        6,
+        7
+      ],
+      "context": "Return to H1.FVG key with H2.CRTH/local P1; independent successor of prior idea",
+      "candidateSellEvents": [
+        {
+          "type": "TS_FVG",
+          "approxEntryWindowLocal": "20:05–20:20",
+          "approxReactionPrice": [
+            3637,
+            3640
+          ],
+          "beforeP2CloseBreak": true,
+          "status": "FVG formation/mitigation/trigger needs exact closed bars"
+        },
+        {
+          "type": "MPS_OTE",
+          "approxTsHigh": [
+            3645,
+            3648
+          ],
+          "approxP2": [
+            3621,
+            3623
+          ],
+          "approxFirstLegLow": [
+            3613,
+            3616
+          ],
+          "approxReactionPrice": [
+            3630,
+            3633
+          ],
+          "approxEntryWindowLocal": "21:30–21:50",
+          "status": "Visually consistent candidate; not a replay or profitability result"
+        }
+      ],
+      "lifecycleWarning": "H4.CRTL was already breached around the earlier afternoon low; do not revive the completed H4 setup to approve the evening entry"
+    }
+  ],
+  "codeGaps": [
+    {
+      "function": "f_mpsKey",
+      "issue": "Only kind=3 pre-C1 swept swing keys; no HTF FVG zone or key touch/reaction taxonomy"
+    },
+    {
+      "function": "f_mpsSeed",
+      "issue": "P1 is forced to the selected HTF C1 extreme; local P1/P2/P3 can belong to an execution wave instead"
+    },
+    {
+      "function": "f_stepChannel / mainMpsAllowed / earlyMpsAllowed",
+      "issue": "Universal MPS gate followed by a fresh TS/retest excludes Model1/FVG before MPS and OTE without a second TS"
+    },
+    {
+      "function": "f_stepR1 / f_mpsHandoff",
+      "issue": "Manual zone inputs and frozen activation-bar wick do not implement the first-leg endpoint OTE workflow"
+    },
+    {
+      "function": "isLtf",
+      "issue": "Execution is M1/M3/M5 only; M15 has no independent structure/MPS role"
+    },
+    {
+      "function": "f_engine / f_preferCrt",
+      "issue": "Main and larger chosen-model channels do not represent a parent idea with independent child setups/entry branches"
+    },
+    {
+      "function": "ctx.age == 0 / targetAtBirth / localTargetTaken",
+      "issue": "C3-only entry and original C1 target can terminate a different continuation hypothesis; preserve completion and create a fresh ID rather than removing target checks"
+    },
+    {
+      "function": "waveAllowed",
+      "issue": "Global direction latches can block a fresh child; deduplicate by setup/branch/leg instead"
+    }
+  ],
+  "unresolved": [
+    "Triangle on first zone touch versus closed reaction confirmation",
+    "Rule for declaring the first-leg endpoint using only available bars",
+    "FVG formation, first/remaining mitigation and distal invalidation",
+    "Whether M15 confirmation is mandatory, supportive or an alternative to M5 MPS",
+    "Precise source of H1.Key level and chart timeframe selection",
+    "Targets and invalidation for each successor setup/entry branch",
+    "Exact CRT range source for each TS and separate strict source-Model1 candle quality rules, if that full model is desired"
+  ],
+  "marketReplayVerified": false,
+  "indicatorChanged": false,
+  "baselineCommit": "54f7a88",
+  "videos": [
+    {
+      "id": "f4gdAohTi40",
+      "title": "CRTology ep.3: OTE",
+      "channel": "UCYCbFixbl2KcyLuH6cOfL2g",
+      "seconds": "921",
+      "published": "2026-10-22T13:38:25-07:00",
+      "url": "https://www.youtube.com/watch?v=f4gdAohTi40",
+      "access": "Original YouTube Show transcript DOM, English auto-generated; AI page summary/comments excluded",
+      "cueCount": 119,
+      "firstCue": 1,
+      "lastCue": 908,
+      "transcriptSha256": "a477dae578762c02ba49b88e834bae9b13cbad218ee8deccac8c1630069f6d69",
+      "reviewed": "Full rendered transcript; no continuous audiovisual review",
+      "videoFramesReviewed": false
+    },
+    {
+      "id": "T7udbrWlARI",
+      "title": "CRT secrets ep.1: One CRT model for life",
+      "channel": "UCYCbFixbl2KcyLuH6cOfL2g",
+      "seconds": "1857",
+      "published": "2025-06-16T02:47:28-07:00",
+      "url": "https://www.youtube.com/watch?v=T7udbrWlARI",
+      "access": "Original YouTube Show transcript DOM, English auto-generated; AI page summary/comments excluded",
+      "cueCount": 226,
+      "firstCue": 2,
+      "lastCue": 1849,
+      "transcriptSha256": "944642540cd43f124c9f3bb410d6495dd0461c49bac9fbd25f3c12feec8b23d1",
+      "reviewed": "Selected technical cues around 09:56–22:46 and 27:06–28:54; no claim of full audiovisual review",
+      "videoFramesReviewed": false
+    }
+  ],
+  "proposedBranches": [
+    "TS_CLOSE without mandatory MPS",
+    "TS_FVG_RETEST without mandatory MPS",
+    "MPS_OTE_REACTION requiring prior MPS"
+  ]
+}
