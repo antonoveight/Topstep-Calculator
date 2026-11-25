@@ -8,7 +8,7 @@ for(const dir of [1,-1]){
  function run(opts={},input=tape){const state=h.state(),out=[];for(let i=0;i<input.length;i++)out.push(h.step(ref,state,input.slice(0,i+1),{bias:dir,...(dir===1?{buyKey:key}:{sellKey:key}),...opts}));cases++;return {state,out,hits:out.flatMap((x,i)=>x.hit?[input[i].t]:[])};}
  assert.deepEqual(run().hits,[100],'Early marker is on actual closed sweep/reclaim bar');
  for(const opts of [{enabled:false},{confirmed:false},{isLtf:false},{bias:0},{bias:-dir,allowCrtCounter:false},{confirmedHit:true}])assert.deepEqual(run(opts).hits,[]);
- assert.deepEqual(run({bias:-dir}).hits,[100]);
+ assert.deepEqual(run({bias:-dir}).hits,[],'A prior key alone cannot authorize an unstructured counter-bias Early entry');
  assert.deepEqual(run(dir===1?{buyKey:h.make('CrtKey')}:{sellKey:h.make('CrtKey')}).hits,[]);
  const future=h.make('CrtKey',{...key,knownAt:101});
  assert.deepEqual(run(dir===1?{buyKey:future}:{sellKey:future}).hits,[]);

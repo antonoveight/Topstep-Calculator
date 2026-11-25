@@ -34,12 +34,12 @@ manualBsl = 0.0
 biasTf = input.timeframe("1D", "Bias TF (>= HTF)", options=["60", "120", "240", "1D"], group=G_BIAS, tooltip="Khung bias từ H1 đến D1, phải >= HTF hiệu lực. Mặc định D1; không đồng nghĩa bias cá nhân đọc từ FRVP/day high-low.")
 biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutral"], group=G_BIAS, tooltip="Auto dùng close phá swing xác nhận trên Bias TF; giữ hướng đến khi cấu trúc đổi. B0! tạm chặn theo close chart xuyên guard ngược hướng, không tự coi là bias đối diện. Long/Short/Neutral là ý kiến chủ động của bạn; reset khi bối cảnh thay đổi.")
 filterBias = true
-allowCrtCounter = input.bool(true, "CRT reversal at prior HTF key", group=G_ENTRY, tooltip="CRT ngược bias cần key bối cảnh có trước C2 VÀ TS/P3 LTF phản ứng trực tiếp tại key HTF có trước nhịp quét. Không dùng key cũ đã ở xa để cho phép mọi TS. Không đổi bias; B0/B0! vẫn chặn.")
+allowCrtCounter = input.bool(true, "CRT reversal at prior HTF key", group=G_ENTRY, tooltip="Counter bias/parent requires a prior context key, a local HTF key reaction AND an ordered P1-P2-P3 swing sweep/reclaim. A two-candle adjacent TS alone is insufficient. MPS is still required only for OTE. B0 stays blocked.")
 structureMode = input.string("Chart", "Structure timeframe", options=["Chart", "M15"], group=G_ENTRY, tooltip="Chart keeps existing swing/close timing. M15 uses independently confirmed M15 swings and M15 closes for MPS while TS/FVG/OTE execution stays on M1/M3/M5. A direct M15 chart is also supported. No fixed M15-to-H4 identity is assumed.")
 signalCadence = input.string(DEFAULT_SIGNAL_CADENCE, "Signal cadence", options=["Fresh reaction", "One per model"], group=G_ENTRY, tooltip="Fresh reaction: mỗi nhịp TS có tối đa một dấu cho từng nhánh TS/FVG/OTE. One per model chỉ phát một lần cho mỗi setup.")
 entryBranches = input.string("TS + FVG + OTE", "Entry branches", options=["TS + FVG + OTE", "TS close", "FVG / OTE"], group=G_ENTRY, tooltip="TS: closed sweep/reclaim candle. FVG: a later reaction to a gap formed after TS. OTE: 50–80% of the first leg after a close through pre-TS structure. MPS is required only for OTE.")
 requireKey = input.bool(true, "Require prior HTF key reaction", group=G_KEY, tooltip="Default: each LTF TS/P3 must react at a completed H1/main/larger/bias HTF key known BEFORE its raid. Swing needs sweep + reclaim; zones need contact + reclaim. Old CRT context alone is insufficient. Off diagnoses aligned TS/FVG only; MPS/OTE and counter-bias still need a local key. SMT never replaces a price key.")
-keyTypes = input.string("All", "Key types", options=["All", "Swing", "Swing + FVG", "Swing + OB", "Open / Close"], group=G_KEY)
+keyTypes = input.string("All", "Key types", options=["All", "Swing", "Swing + FVG", "Swing + OB", "Open / Close", "Weekly wick"], group=G_KEY, tooltip="All includes 50% upper/lower wick of the last CLOSED week on this feed. Weekly wick selects those two levels only. No developing-week final prices are used.")
 smtSymbol = input.symbol("", "SMT comparison (blank = off)", group=G_KEY, tooltip="Optional comparison chosen by you. Same HTF bar timestamps are mandatory. This compares raids of the previous completed range, not a full cross-market swing model; it never generates an entry alone.")
 smtRelation = input.string("Direct", "SMT relationship", options=["Direct", "Inverse"], group=G_KEY)
 // Compatibility name for tooltips; manual R1 zones and universal MPS gate removed.
@@ -278,7 +278,7 @@ f_keyReact(CrtKey k, int beforeTime, int direction, float barHigh, float barLow,
     bool preexisting = k.kind > 0 and not na(k.knownAt) and k.knownAt <= beforeTime
     bool sameSide = k.dir == direction
     bool sweepReaction = direction == 1 ? barLow <= k.lo - sweepSize and barClose > k.hi : barHigh >= k.hi + sweepSize and barClose < k.lo
-    bool enabled = keyTypes == "All" or keyTypes == "Swing" and k.kind == 3 or keyTypes == "Swing + FVG" and (k.kind == 3 or k.kind == 1) or keyTypes == "Swing + OB" and (k.kind == 3 or k.kind == 2) or keyTypes == "Open / Close" and (k.kind == 4 or k.kind == 5)
+    bool enabled = keyTypes == "All" or keyTypes == "Swing" and k.kind == 3 or keyTypes == "Swing + FVG" and (k.kind == 3 or k.kind == 1) or keyTypes == "Swing + OB" and (k.kind == 3 or k.kind == 2) or keyTypes == "Open / Close" and (k.kind == 4 or k.kind == 5) or keyTypes == "Weekly wick" and k.kind == 6
     bool zoneReaction = barHigh >= k.lo and barLow <= k.hi and (direction == 1 ? barClose > k.hi : barClose < k.lo)
     preexisting and sameSide and enabled and (k.kind == 3 ? sweepReaction : zoneReaction)
 
@@ -297,7 +297,7 @@ f_keyIdentity(CrtKey key) =>
 
 f_matchKeyMap(KeyMap keyMap, array<string> usedKeys, int beforeTime, int direction, float barHigh, float barLow, float barClose) =>
     CrtKey found = CrtKey.new()
-    for pass = 1 to 5
+    for pass = 1 to 6
         if array.size(keyMap.levels) > 0
             for j = 0 to array.size(keyMap.levels) - 1
                 CrtKey candidate = array.get(keyMap.levels, j)
@@ -378,6 +378,27 @@ f_zoneKeys(array<CrtKey> zones, string sourceTf) =>
                     f_pushKey(zones, 4, direction, open[back], open[back], time[back], sourceTf)
                     f_pushKey(zones, 5, direction, close[back], close[back], time[back], sourceTf)
     zones
+// Mechanical personal reference: midpoint of each real wick, not candle EQ.
+// Created in W1 and exposed only through its previous completed snapshot.
+f_weeklyWickMap(float opening, float barHigh, float barLow, float closing, int openedAt, int closedAt) =>
+    array<CrtKey> levels = array.new<CrtKey>()
+    float bodyLow = math.min(opening, closing)
+    float bodyHigh = math.max(opening, closing)
+    if not na(closedAt) and bodyLow - barLow > sweepSize
+        float lowerMid = (barLow + bodyLow) / 2
+        array.push(levels, CrtKey.new(kind=6, dir=1, lo=lowerMid, hi=lowerMid, born=openedAt, leftTime=openedAt, knownAt=closedAt, tf="1W"))
+    if not na(closedAt) and barHigh - bodyHigh > sweepSize
+        float upperMid = (barHigh + bodyHigh) / 2
+        array.push(levels, CrtKey.new(kind=6, dir=-1, lo=upperMid, hi=upperMid, born=openedAt, leftTime=openedAt, knownAt=closedAt, tf="1W"))
+    KeyMap result = KeyMap.new(levels)
+    result.sourceClose := closing
+    result.sourceEnd := closedAt
+    result.sourceTf := "1W"
+    result
+f_weeklyWickSnapshot() =>
+    KeyMap result = f_weeklyWickMap(open, high, low, close, time, time_close)
+    result[1]
+
 f_higherKeyMap(string sourceTf) =>
     var array<Liquidity> swings = array.new<Liquidity>()
     var array<CrtKey> zones = array.new<CrtKey>()
@@ -441,7 +462,21 @@ f_rangeReaction(KeyMap references, int beforeTime, int direction, float raidHigh
 // key is context; it never proves that a NEW LTF P3 has reacted at a key.
 f_executionSnapshot(string tf) =>
     KeyMap keys = f_higherKeyMap(tf)
-    keys[1]
+    KeyMap previous = keys[1]
+    KeyMap result = KeyMap.new(array.new<CrtKey>())
+    if not na(previous)
+        result.sourceClose := previous.sourceClose
+        result.sourceEnd := previous.sourceEnd
+        result.sourceTf := previous.sourceTf
+        for k in previous.levels
+            array.push(result.levels, k.copy())
+    // W1 already applies its own [1]; append AFTER the local offset to avoid
+    // an extra H1/H4 delay at the week boundary (or a second weekly offset).
+    KeyMap weekly = request.security(syminfo.tickerid, "1W", f_weeklyWickSnapshot(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
+    if not na(weekly) and not na(weekly.levels)
+        for k in weekly.levels
+            array.push(result.levels, k.copy())
+    result
 KeyMap executionH1 = request.security(syminfo.tickerid, "60", f_executionSnapshot("60"), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
 KeyMap executionMain = request.security(syminfo.tickerid, htf, f_executionSnapshot(htf), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
 KeyMap executionLarger = request.security(syminfo.tickerid, largerTf, f_executionSnapshot(largerTf), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
@@ -469,7 +504,7 @@ f_nextBarrier(KeyMap references, int beforeTime, int direction, float origin, fl
             float level = direction == 1 ? k.lo : k.hi
             float distance = direction == 1 ? level - origin : origin - level
             float room = direction == 1 ? targetLevel - origin : origin - targetLevel
-            bool enabled = keyTypes == "All" or keyTypes == "Swing" and k.kind == 3 or keyTypes == "Swing + FVG" and (k.kind == 3 or k.kind == 1) or keyTypes == "Swing + OB" and (k.kind == 3 or k.kind == 2) or keyTypes == "Open / Close" and (k.kind == 4 or k.kind == 5)
+            bool enabled = keyTypes == "All" or keyTypes == "Swing" and k.kind == 3 or keyTypes == "Swing + FVG" and (k.kind == 3 or k.kind == 1) or keyTypes == "Swing + OB" and (k.kind == 3 or k.kind == 2) or keyTypes == "Open / Close" and (k.kind == 4 or k.kind == 5) or keyTypes == "Weekly wick" and k.kind == 6
             bool eligible = enabled and k.kind > 0 and k.dir == -direction and not na(k.knownAt) and k.knownAt <= beforeTime and distance > sweepSize and distance < room
             if eligible and (na(best) or distance < best)
                 found := k.copy()
@@ -497,7 +532,8 @@ f_keyProofValid(CrtKey key, int reactedAt, float sourceClose, int sourceEnd) =>
     known and not broken
 
 f_executionProofValid(CrtKey key, int reactedAt) =>
-    KeyMap source = not na(key) and key.tf == "60" ? executionH1 : not na(key) and key.tf == htf ? executionMain : not na(key) and key.tf == largerTf ? executionLarger : not na(key) and key.tf == biasTf ? executionBias : na
+    // Weekly levels stay fixed; subsequent CLOSED H1 prices validate local reclaim.
+    KeyMap source = not na(key) and (key.kind == 6 or key.tf == "60") ? executionH1 : not na(key) and key.tf == htf ? executionMain : not na(key) and key.tf == largerTf ? executionLarger : not na(key) and key.tf == biasTf ? executionBias : na
     not na(source) and f_keyProofValid(key, reactedAt, source.sourceClose, source.sourceEnd)
 
 // Price-based attempt failure is sticky. Revalidation below creates a new attempt,
@@ -557,6 +593,12 @@ f_engine(string sourceTf) =>
     KeyMap localMap = f_higherKeyMap(sourceTf)
     KeyMap priorLocalMap = localMap[1]
     KeyMap parentReferences = f_parentKeys(swings, higherKeyMap, usedHigherKeys, time, sourceTf)
+    KeyMap weeklyReferences = request.security(syminfo.tickerid, "1W", f_weeklyWickSnapshot(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
+    if not na(weeklyReferences) and not na(weeklyReferences.levels)
+        for k in weeklyReferences.levels
+            CrtKey frozenWeekly = k.copy()
+            frozenWeekly.beforeTime := time
+            array.push(parentReferences.levels, frozenWeekly)
     if not na(priorLocalMap) and not na(priorLocalMap.levels)
         for k in priorLocalMap.levels
             CrtKey frozen = k.copy()
@@ -1060,12 +1102,11 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         bool pendingLost = not na(state.confirmIndex) and (bullish ? low <= state.localExtreme : high >= state.localExtreme)
         bool expired = not na(state.confirmIndex) and bar_index - state.confirmIndex > 36
         bool raidExpired = not na(state.raidIndex) and bar_index - state.raidIndex > 36
-        bool deliveredReset = state.objectiveReached and not na(state.objectiveAt) and time >= state.objectiveAt
         // A close a full P1-P2 range beyond P1 is an accepted expansion, not a
         // small renewed raid. Release that old parent so a new wave can form.
         float parentSpan = math.abs(state.p1Ref - state.mpsRef)
         bool rangeAccepted = not na(state.p1At) and parentSpan > sweepSize and (bullish ? close < state.p1Ref - parentSpan : close > state.p1Ref + parentSpan)
-        if deliveredReset or raidExpired or expired or rangeAccepted or (pendingLost and not na(state.mpsAt))
+        if raidExpired or expired or rangeAccepted or (pendingLost and not na(state.mpsAt))
             state.p1Ref := na
             state.p1At := na
             state.raidIndex := na
@@ -1078,7 +1119,7 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             state.p3Key := na
             state.p3KeyAt := na
             state.p3KeyBroken := false
-        if deliveredReset or pendingLost or expired or raidExpired or rangeAccepted
+        if pendingLost or expired or raidExpired or rangeAccepted
             state.confirmIndex := na
             state.confirmTime := na
             state.mpsAt := na
@@ -1148,7 +1189,9 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         chainAllowed := chainAllowed and (na(ctx.c2T) or na(state.p3At) or state.p3At >= ctx.c2T)
         state.chainRole := not chainAllowed ? "SOURCE LOST" : na(ctx.c2End) or na(state.p3At) ? "LOCAL" : state.p3At < ctx.c2End ? "FROM C2" : not na(ctx.c3End) and state.p3At < ctx.c3End ? "LOCAL C3" : "LOCAL TRACK"
         bool later = hasTs and bar_index > state.confirmIndex
-        bool reachedForward = hasTs and not na(state.nextObjective) and (bullish ? high >= state.nextObjective : low <= state.nextObjective)
+        // A nearby key is an observation, not the CRT target or a trade exit.
+        // Count touches only AFTER the TS close; OHLC cannot order its own wick.
+        bool reachedForward = later and not na(state.nextObjective) and (bullish ? high >= state.nextObjective : low <= state.nextObjective)
         if reachedForward and not state.objectiveReached
             state.objectiveReached := true
             state.objectiveAt := time_close
@@ -1156,10 +1199,11 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             state.p3KeyBroken := true
         bool localKeyGood = not state.p3KeyBroken and not na(state.p3Key) and state.p3Key.dir == ctx.dir and f_executionProofValid(state.p3Key, state.p3KeyAt)
         bool keyAllowed = not requireKey or localKeyGood
-        bool counterContext = allowCrtCounter and opposingBias and keyHeld and localKeyGood
+        bool counterStructure = not na(state.p1At) and not na(state.mpsRefAt) and not na(state.p3At) and state.p1At < state.mpsRefAt and state.mpsRefAt < state.p3At and state.p3At <= state.confirmTime and (bullish ? state.localExtreme <= state.p1Ref - sweepSize and close > state.p1Ref : state.localExtreme >= state.p1Ref + sweepSize and close < state.p1Ref)
+        bool counterContext = allowCrtCounter and opposingBias and keyHeld and localKeyGood and counterStructure
         bool parentKnown = ctx.parentLive and ctx.parentAtKey and ctx.parentDir != 0 and not na(ctx.parentConfirmed) and ctx.parentConfirmed <= time
         bool againstParent = parentKnown and ctx.parentDir != ctx.dir
-        bool parentReversal = allowCrtCounter and keyHeld and localKeyGood
+        bool parentReversal = allowCrtCounter and keyHeld and localKeyGood and counterStructure
         bool contextAllowed = not againstParent or parentReversal
         bool biasAllowed = (not filterBias or biasDir == ctx.dir or counterContext) and contextAllowed
         state.biasRole := not biasAllowed ? (biasDir == 0 ? "B0" : againstParent ? "HTF CONFLICT" : "BIAS") : againstParent ? "COUNTER SWING" : counterContext ? (parentKnown ? "HTF KEY REV" : "KEY REV") : parentKnown and ctx.confirmed >= ctx.parentConfirmed and localKeyGood ? "CONT" : "FLOW"
@@ -1185,7 +1229,7 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         bool fvg = gapReady and not gapInvalid and low <= state.gapHigh and high >= state.gapLow and oppositeClose and (bullish ? close > state.gapHigh : close < state.gapLow)
         if gapInvalid
             state.gapBroken := true
-        bool canEmit = not ended and not state.objectiveReached and chainAllowed and keyAllowed and biasAllowed and timeAllowed and waveAllowed and (signalCadence != "One per model" or not state.everSent)
+        bool canEmit = not ended and chainAllowed and keyAllowed and biasAllowed and timeAllowed and waveAllowed and (signalCadence != "One per model" or not state.everSent)
         bool direct = newTs and entryBranches != "FVG / OTE"
         bool fvgEntry = fvg and entryBranches != "TS close" and not f_has(state.branchMask, 2)
         bool oteEntry = ote and entryBranches != "TS close" and not f_has(state.branchMask, 4)
@@ -1194,7 +1238,7 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         result.retestDetected := fvg or ote
         result.legDetected := state.mpsEvent
         result.entryDetected := emitted > 0
-        result.status := ended ? (state.localStopTaken ? "INV" : "TGT") : state.objectiveReached ? "KEY DELIVERED" : not hasTs ? "WAIT TS" : not keyAllowed ? "WAIT P3 KEY" : not biasAllowed ? "BIAS" : signalCadence == "One per model" and state.everSent ? "USED" : not na(state.mpsAt) ? "WAIT OTE/FVG" : not localKeyGood ? "MPS NO KEY" : "WAIT FVG/MPS"
+        result.status := ended ? (state.localStopTaken ? "INV" : "TGT") : not hasTs ? "WAIT TS" : not keyAllowed ? "WAIT P3 KEY" : not biasAllowed ? ((opposingBias or againstParent) and not counterStructure ? "WAIT CT SWING" : "BIAS") : signalCadence == "One per model" and state.everSent ? "USED" : not na(state.mpsAt) ? "WAIT OTE/FVG" : not localKeyGood ? "MPS NO KEY" : "WAIT FVG/MPS"
         if canEmit and emitted > 0
             result.hit := true
             result.tag := (direct ? "TS_CLOSE" : "") + (fvgEntry ? (direct ? "+FVG" : "TS_FVG") : "") + (oteEntry ? (direct or fvgEntry ? "+OTE" : "MPS_OTE") : "")
@@ -1215,7 +1259,7 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             state.lastSignalHigh := high
             state.lastSignalLow := low
         // Freeze the first leg once the OTE branch is consumed.
-        if hasTs and not state.objectiveReached and not f_has(state.branchMask, 4)
+        if hasTs and not f_has(state.branchMask, 4)
             state.legExtreme := bullish ? math.max(legBefore, high) : math.min(legBefore, low)
         bool gapSource = later and time[1] >= state.confirmTime
         bool newGap = gapSource and (bullish ? low > high[2] : high < low[2])
@@ -1504,12 +1548,16 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                     state.channel.lastClosedAt := time_close
                 state.channel.forwardKey := f_forwardKey(state.dir, time, close, target)
                 state.channel.nextObjective := state.channel.forwardKey.kind > 0 ? (bullish ? state.channel.forwardKey.lo : state.channel.forwardKey.hi) : na
-                state.channel.objectiveReached := not na(state.channel.nextObjective) and (bullish ? high >= state.channel.nextObjective : low <= state.channel.nextObjective)
-                state.channel.objectiveAt := state.channel.objectiveReached ? time_close : na
+                state.channel.objectiveReached := false
+                state.channel.objectiveAt := na
                 bool freshEarlyKey = not na(state.channel.p3Key) and state.channel.p3Key.kind > 0 and f_executionProofValid(state.channel.p3Key, state.channel.p3KeyAt)
                 if oppositeClose and not freshEarlyKey
                     state.status := "E WAIT P3 KEY"
-                if oppositeClose and not state.emitted and not state.channel.objectiveReached and (not parentActive or parentDirection == state.dir or allowCrtCounter and hasKey) and freshEarlyKey and enableEarlyC2 and permitEntry and biasOk and time_close < ref.finish and not confirmedHit and entryBranches != "FVG / OTE"
+                bool earlyCounter = biasDir == -state.dir or parentActive and parentDirection != state.dir
+                bool earlyCounterSwing = not na(state.channel.p1At) and not na(state.channel.mpsRefAt) and not na(state.channel.p3At) and state.channel.p1At < state.channel.mpsRefAt and state.channel.mpsRefAt < state.channel.p3At and state.channel.p3At <= time and (bullish ? state.lo <= state.channel.p1Ref - sweepSize and close > state.channel.p1Ref : state.hi >= state.channel.p1Ref + sweepSize and close < state.channel.p1Ref)
+                if oppositeClose and earlyCounter and not earlyCounterSwing
+                    state.status := "E WAIT CT SWING"
+                if oppositeClose and not state.emitted and (not earlyCounter or earlyCounterSwing) and (not parentActive or parentDirection == state.dir or allowCrtCounter and hasKey) and freshEarlyKey and enableEarlyC2 and permitEntry and biasOk and time_close < ref.finish and not confirmedHit and entryBranches != "FVG / OTE"
                     state.channel.branchMask := 1
                     state.channel.everSent := true
                     state.emitted := true
@@ -1657,7 +1705,7 @@ bool entryEvent = crtResult.hit
 bool entryLong = (entryEvent and crtResult.dir == 1) or (higherResult.hit and higherResult.dir == 1)
 bool entryShort = (entryEvent and crtResult.dir == -1) or (higherResult.hit and higherResult.dir == -1)
 bool focusSignal = entryEvent
-string auditSummary = "CRT: " + crtResult.status + " | " + crtState.chainRole + " | " + crtState.biasRole + (not na(crtState.nextObjective) ? " | Next key " + str.tostring(crtState.nextObjective, format.mintick) : "") + (sEqTouched ? " | EQ touched (not TP)" : "") + " | CRT attempt " + str.tostring(sId)
+string auditSummary = "CRT: " + crtResult.status + " | " + crtState.chainRole + " | " + crtState.biasRole + (not na(crtState.nextObjective) ? " | Barrier " + str.tostring(crtState.nextObjective, format.mintick) + " | type " + str.tostring(crtState.forwardKey.kind) + "/" + crtState.forwardKey.tf + (crtState.objectiveReached ? " TOUCHED " + str.format_time(crtState.objectiveAt, "dd/MM HH:mm", NY) + " NY (observation only)" : " NOT TOUCHED") : " | No intermediate key") + (sEqTouched ? " | EQ touched (not TP)" : "") + " | CRT attempt " + str.tostring(sId)
 string signalStatus = crtResult.status
 float target = sCp
 float executionSl = sInv
@@ -1905,7 +1953,10 @@ f_note(bool up, string hint) =>
     while array.size(eventLabels) > markLimit
         f_dropMark(0)
 f_keyTag(CrtKey key) =>
-    (key.kind == 1 ? "FVG" : key.kind == 2 ? "OB" : key.kind == 3 ? (key.dir == 1 ? "SWL" : "SWH") : key.kind == 4 ? "OPEN" : key.kind == 5 ? "CLOSE" : "-") + "/" + f_tfName(key.tf)
+    (key.kind == 1 ? "FVG" : key.kind == 2 ? "OB" : key.kind == 3 ? (key.dir == 1 ? "SWL" : "SWH") : key.kind == 4 ? "OPEN" : key.kind == 5 ? "CLOSE" : key.kind == 6 ? (key.dir == 1 ? "WW-L50" : "WW-H50") : "-") + "/" + f_tfName(key.tf)
+
+f_barrierNote(ReactionState state) =>
+    not na(state.forwardKey) and state.forwardKey.kind > 0 ? "Intermediate " + f_keyTag(state.forwardKey) + " " + str.tostring(state.nextObjective, format.mintick) + " | known " + str.format_time(state.forwardKey.knownAt, "dd/MM HH:mm", NY) + " NY | " + (state.objectiveReached ? "touched " + str.format_time(state.objectiveAt, "dd/MM HH:mm", NY) + " NY" : "not touched after TS close") + " | observation only; CRT TGT/INV and branch budget still apply" : "No frozen intermediate key"
 
 f_keyProofHint(CrtKey key, int reclaimedAt) =>
     string detail = "P3 KEY: none (diagnostic key filter off)"
@@ -1988,7 +2039,7 @@ for i = 0 to 1
         int sourceC1 = i == 0 ? sAT : higher.aT
         int sourceConfirmed = i == 0 ? sConfirmed : higher.confirmed
         hint += "\nCRT #" + str.tostring(hit.id) + " | C1 " + str.format_time(sourceC1, "dd/MM HH:mm", NY) + " NY | HTF confirmed " + str.format_time(sourceConfirmed, "dd/MM HH:mm", NY) + " NY | Closed entry bar; reference levels are not fills"
-        hint += not na(proofState.nextObjective) ? "\nNext HTF key " + str.tostring(proofState.nextObjective, format.mintick) + " | CRT range target remains " + str.tostring(hit.cp, format.mintick) : ""
+        hint += "\n" + f_barrierNote(proofState) + " | CRT target " + str.tostring(hit.cp, format.mintick)
         hint += "\nChain " + proofState.chainRole + " | " + proofState.biasRole + " | source C2 " + str.format_time(proofState.sourceC2, "dd/MM HH:mm", NY) + " NY"
         hint += "\nSource C1 " + str.format_time(sourceC1, "dd/MM HH:mm", "Asia/Ho_Chi_Minh") + " UTC+7 | Signal close " + str.format_time(time_close, "dd/MM HH:mm", "Asia/Ho_Chi_Minh") + " UTC+7"
         hint += "\n" + f_keyProofHint(hit.keyRef, proofState.p3KeyAt)
@@ -2052,7 +2103,7 @@ plot(crtResult.hit ? crtResult.zoneKnownAt : na, "CRT zone known ms", display=di
 plot(crtResult.hit ? crtResult.zoneLow : na, "CRT zone low", display=display.data_window)
 plot(crtResult.hit ? crtResult.zoneHigh : na, "CRT zone high", display=display.data_window)
 plot(crtResult.hit ? crtState.branchMask : na, "CRT branch mask TS1 FVG2 OTE4 cumulative", display=display.data_window)
-plot(crtResult.hit and not na(crtResult.keyRef) ? crtResult.keyRef.kind : na, "CRT key type FVG1 OB2 Swing3 Open4 Close5", display=display.data_window)
+plot(crtResult.hit and not na(crtResult.keyRef) ? crtResult.keyRef.kind : na, "CRT key type FVG1 OB2 Swing3 Open4 Close5 WW6", display=display.data_window)
 plot(crtResult.hit and not na(crtResult.keyRef) ? crtResult.keyRef.knownAt : na, "CRT key known ms", display=display.data_window)
 plot(higherResult.hit ? higherResult.dir : na, "Higher CRT direction +1/-1", display=display.data_window)
 plot(higherResult.hit ? higherResult.cp : na, "Higher CRT target at signal", display=display.data_window)
@@ -2091,7 +2142,7 @@ if barstate.islast
         array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (hasModel ? (sDir == 1 ? "BUY" : "SELL") : "-") + " | " + str.tostring(hasModel ? sCount : 0), dirText + " / " + biasTf, hasModel and not na(kCrtKey) and kCrtKey.kind > 0 ? f_keyTag(kCrtKey) : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals) + " H " + str.tostring(higherSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals), (not na(crtState.mpsAt) ? f_tfName(htf) + ":OK" : f_tfName(htf) + ":WAIT") + " / " + (not na(higherState.mpsAt) ? f_tfName(largerTf) + ":OK" : f_tfName(largerTf) + ":WAIT"))
         for row = 0 to 10
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
-            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 10 ? "MPS is required for OTE only. TS/FVG can precede it. " + diagnosticSummary : row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | Parent C1 stays until its target is taken. INV ends only this attempt; Only original C3 can replace the raid once, with original key and close inside C1. TRACK after entry window; no automatic C3 expiry. Not fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C2. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit + "\n" + diagnosticSummary : row == 6 ? "C = main HTF, H = larger HTF. Separate source event counts; a merged marker may count once in each source. Closed LTF in a live CRT attempt; not fills or win-rate." : "")
+            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 10 ? "MPS is required for OTE only. TS/FVG can precede it. " + diagnosticSummary : row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | Parent C1 stays until its target is taken. INV ends only this attempt; Only original C3 can replace the raid once, with original key and close inside C1. TRACK after entry window; no automatic C3 expiry. Not fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C2. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit + "\n" + diagnosticSummary + "\nCurrent observation: " + f_barrierNote(crtState) : row == 6 ? "C = main HTF, H = larger HTF. Separate source event counts; a merged marker may count once in each source. Closed LTF in a live CRT attempt; not fills or win-rate." : "")
     array<ClusterCandle> clusterCandles = array.new<ClusterCandle>()
     if showCluster and clusterActive
         if array.size(candleTimes) > 0

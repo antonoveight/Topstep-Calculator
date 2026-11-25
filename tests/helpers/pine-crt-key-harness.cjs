@@ -33,6 +33,7 @@ function createKeyHarness(source,settings={}){
   }
   while(blocks.length){code+='}\n';blocks.pop();}return code;
  }
+ const weekly=Function('array','makeKey','math','na','sweepSize','opening','barHigh','barLow','closing','openedAt','closedAt',translate('f_weeklyWickMap'));
  const react=Function('na','sweepSize','keyTypes','k','beforeTime','direction','barHigh','barLow','barClose',translate('f_keyReact'));
  const reaction=(k,t,d,h,l,c,types=settings.keyTypes||'All')=>react(na,settings.sweepSize??.25,types,k,t,d,h,l,c);
  const find=Function('array','makeKey','f_keyReact','zones','swings','beforeTime','direction','barHigh','barLow','barClose','sourceTf',translate('f_findCrtKey'));
@@ -55,6 +56,6 @@ function createKeyHarness(source,settings={}){
  const push=Function('array','makeKey','time_close','zones','kind','direction','hi','lo','left','sourceTf',translate('f_pushKey',false));
  const zone=Function('array','makeKey','na','history','timeframe','time','time_close','open','high','low','close','f_pushKey','zones','sourceTf',translate('f_zoneKeys'));
  function zoneStep(zones,tape,tfSeconds=3600){const b=tape.at(-1),names={open:'o',high:'h',low:'l',close:'c',time:'t'},history=(f,n)=>tape.at(-1-n)?.[names[f]]??null;return zone(array,makeKey,na,history,{in_seconds:()=>tfSeconds},b.t,b.end??b.t+1,b.o,b.h,b.l,b.c,(...args)=>push(array,makeKey,b.end??b.t+1,...args),zones,String(tfSeconds/60));}
- return {reaction,zoneStep,proofValid,forwardKey:(maps,d,t,o,target)=>forward(pickBarrier,...maps,d,t,o,target),executionKey:(maps,d,t,h,l,c)=>execution(makeKey,rangeReaction,...maps,d,t,h,l,c),executionProof:(maps,key,at,tf='60',large='240',bias='1D')=>liveProof(na,proofValid,...maps,tf,large,bias,key,at),find:(z,q,t,d,h,l,c,tf='60')=>find(array,makeKey,reaction,z,q,t,d,h,l,c,tf),match:(m,t,d,h,l,c,used=[])=>match(array,makeKey,reaction,identify,m,used,t,d,h,l,c),mark:(m,used,t,h,l)=>mark(array,identify,m,used,t,h,l),collect:(z,q,tf='1D')=>collect(array,makeKey,z,q,tf),makeKey,parent:(q,h,used,t,tf='60')=>parent(array,makeKey,na,identify,q,h,used,t,tf),rangeReaction,renew:(m,b,i)=>renew(makeKey,na,.25,rangeReaction,m,b.o,b.h,b.l,b.c,b.t,b.end,i)};
+ return {weekly:(o,h,l,c,t,end)=>weekly(array,makeKey,Math,na,settings.sweepSize??.25,o,h,l,c,t,end),reaction,zoneStep,proofValid,forwardKey:(maps,d,t,o,target)=>forward(pickBarrier,...maps,d,t,o,target),executionKey:(maps,d,t,h,l,c)=>execution(makeKey,rangeReaction,...maps,d,t,h,l,c),executionProof:(maps,key,at,tf='60',large='240',bias='1D')=>liveProof(na,proofValid,...maps,tf,large,bias,key,at),find:(z,q,t,d,h,l,c,tf='60')=>find(array,makeKey,reaction,z,q,t,d,h,l,c,tf),match:(m,t,d,h,l,c,used=[])=>match(array,makeKey,reaction,identify,m,used,t,d,h,l,c),mark:(m,used,t,h,l)=>mark(array,identify,m,used,t,h,l),collect:(z,q,tf='1D')=>collect(array,makeKey,z,q,tf),makeKey,parent:(q,h,used,t,tf='60')=>parent(array,makeKey,na,identify,q,h,used,t,tf),rangeReaction,renew:(m,b,i)=>renew(makeKey,na,.25,rangeReaction,m,b.o,b.h,b.l,b.c,b.t,b.end,i)};
 }
 module.exports={createKeyHarness};

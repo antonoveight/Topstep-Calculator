@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-25",
+  "source": "indicators/funded-angler-v6.pine",
+  "sha256": "a4ae0a7ccf15e5af02b58b561296c62d39b6984818afca8013ebc6bdf999ddaf",
+  "mirrorExact": true,
+  "checks": {
+    "suiteCount": 27,
+    "result": "passed",
+    "exactPineCompilation": [
+      {
+        "exactSource": true,
+        "errors": [],
+        "warnings": []
+      }
+    ]
+  },
+  "changes": [
+    "Intermediate key is observation only; no same-TS touch, no automatic reset or veto",
+    "Counter bias/qualified parent requires ordered P1-P2-P3 sweep and reclaim; aligned TS remains independent of MPS",
+    "Previous closed weekly upper/lower wick midpoints, kind 6, causal W1 snapshot and H1 proof validation",
+    "Barrier type, price, known/touch time in tooltips; no new overlay table"
+  ],
+  "limits": {
+    "nativeChartUpdated": false,
+    "reason": "No Brave window found by host-guarded UI helper",
+    "marketReplayVerified": false,
+    "multiMarketProfitRanking": false,
+    "weeklyScope": "Most recently completed week only; current developing week intentionally excluded"
+  },
+  "fixtures": [
+    "tests/crt-cross-market-audit.cjs",
+    "tests/crt-weekly-and-counter.cjs"
+  ]
+}

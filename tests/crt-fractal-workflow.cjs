@@ -42,18 +42,18 @@ for(const dir of [-1,1]){
  // Step 4: nearest pre-known opposing key ends the old leg, not the HTF parent.
  const barrier=dir===-1?{kind:2,dir:1,lo:98,hi:100,knownAt:80,tf:'60'}:{kind:2,dir:-1,lo:120,hi:122,knownAt:80,tf:'60'};
  const delivered=run({localKeys:[key,barrier]});
- assert.equal(delivered.hits.length,1,'TS before delivery remains; old OTE/FVG entry is stopped');
+ assert.equal(delivered.hits.length,2,'An intermediate key touch does not terminate the CRT leg');
  assert.equal(delivered.hits[0].tag,'TS_CLOSE');
  assert.equal(delivered.state.nextObjective,dir===-1?100:120);
  assert.equal(delivered.state.objectiveReached,true);
- assert.equal(delivered.state.mpsAt,null,'A delivered first leg is not kept alive as an OTE opportunity');
+ assert.ok(delivered.state.mpsAt!==null,'Intermediate observation preserves MPS and its OTE branch');
  assert.equal(delivered.state.localTargetTaken,false,'Intermediate key is separate from the C1 range target');
  assert.equal(run({localKeys:[key,{...barrier,knownAt:102}]}).state.objectiveReached,false,'No future-created key changes the TS objective');
  const again=[...bars.slice(0,3),dir===-1?bar(103,107,108,102,105):mirror(bar(103,107,108,102,105))];
  const newKey=dir===-1?{...key,lo:106,hi:110}:mirrorKey({...key,dir:-1,lo:106,hi:110});
  const renewed=run(n=>({localKeys:[key,newKey,barrier],...(n===4?(dir===-1?{knownHigh:106,knownHighAt:101,knownLow:99,knownLowAt:102}:{knownLow:114,knownLowAt:101,knownHigh:121,knownHighAt:102}):{})}),{},again);
- assert.equal(renewed.out.at(-1).hit,true,'A genuinely new key/TS reaction can start another local leg');
- assert.equal(renewed.state.confirmTime,103);assert.equal(renewed.state.mpsAt,null);
+ assert.equal(renewed.state.confirmTime,101,'An intermediate touch does not reset the TS budget or borrow a later root');
+ assert.equal(renewed.out.at(-1).tag,'MPS_OTE','Preserve the later OTE branch without re-emitting consumed TS');
  // Step 5: M15 close is independent from intrabar M5 closes.
  const gated=run(n=>({structureReady:n===4,structureClose:dir===-1?100:120,structurePrior:dir===-1?105:115,structureEnd:104}));
  assert.equal(gated.out[1].legDetected,false,'An intrabar M5 break is not a closed M15 MPS');

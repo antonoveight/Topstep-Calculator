@@ -33,4 +33,11 @@ Mũi tên History ghi nguồn tại lúc phát, không đổi theo panel khi có
 
 Early C2 hiện chỉ truyền cấu trúc cho MPS/OTE nếu P1 → P2 → P3 đúng thứ tự thời gian và P3 thực sự quét P1. TS-close Early vẫn độc lập với MPS. Hover MPS để xem P1/P2/P3 nguồn; nhãn H2 chỉ context HTF, các swing MPS vẫn thuộc chart LTF. Không cần đổi input sau bản sửa này.
 
-Tooltip entry ghi vai trò chuỗi FROM C2 / LOCAL C3 / LOCAL TRACK, bối cảnh FLOW / CONT / KEY REV / HTF KEY REV / COUNTER SWING và key HTF kế tiếp nếu có. Đây là phân loại theo quy ước trong đặc tả, không khẳng định hướng sẽ thắng. KEY DELIVERED ngừng tái dùng leg/MPS cũ để vào hồi; vẫn chờ được một TS/key mới khi CRT cha còn sống. WHY/tooltip audit giúp phân biệt thiếu TS, mất nguồn và xung đột bối cảnh.
+Tooltip entry ghi vai trò chuỗi FROM C2 / LOCAL C3 / LOCAL TRACK, bối cảnh FLOW / CONT / KEY REV / HTF KEY REV / COUNTER SWING và key HTF kế tiếp nếu có. Đây là phân loại theo quy ước trong đặc tả, không khẳng định hướng sẽ thắng. Key cản trung gian hiện chỉ là quan sát: tooltip WHY ghi loại, giá và thời điểm chạm; không dùng KEY DELIVERED để hủy leg. Target CRT, INV, giới hạn nhánh và thời gian chờ bằng chứng vẫn được giữ.
+
+Bản sửa sau rà soát nhiều thị trường ngày 25/11/2026:
+
+- Counter D1 hoặc counter parent CRT có key cần cả key bối cảnh, key phản ứng P3 và P1 → P2 → P3 đúng thứ tự, P3 quét P1 rồi đóng lại. Hai nến liền kề đơn lẻ không đủ. WHY có thể ghi WAIT CT SWING; Early có E WAIT CT SWING. Không ép mọi entry phải chờ MPS.
+- Key types = All đã gồm trung điểm râu trên/dưới của tuần đã đóng; chọn Weekly wick để chỉ xét loại này. Nhãn WW-L50/W1 và WW-H50/W1. Body min/max dùng cả open và close; high/low gồm râu. Tuần đang chạy không được dùng làm nguồn key này. Phản ứng tại midpoint là chạm và đóng lại qua mức; không đòi quét đáy/đỉnh cả tuần.
+- Key tuần dùng cùng feed chart. Bằng chứng reclaim cho entry bị mất khi H1 đã đóng sau phản ứng xuyên ngược mức; cơ chế sticky của nhịp TS vẫn áp dụng. Tham chiếu tuần được thay khi có tuần mới hoàn tất; không tự kéo mức futures sang spot.
+- Cấu hình đối chiếu ban đầu: M5, HTF H1 hoặc H2 tùy setup, Bias D1 Auto, Structure Chart, TS close, Fresh reaction, Require prior HTF key reaction bật. Khi kiểm tra MPS M15 thì đổi riêng Structure M15. Sau đó mới bật thêm FVG/OTE và so sánh từng nguồn main/higher/Early/counter bằng tooltip. Đây là cấu hình chẩn đoán, chưa phải setting đã chứng minh tối ưu lợi nhuận; mặc định All branches không đổi.
