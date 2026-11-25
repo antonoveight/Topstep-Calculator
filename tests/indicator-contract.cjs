@@ -12,17 +12,26 @@ assert.match(source,/bool targetAtBirth = direction == 1 \? high >= fresh.cp : l
 assert.match(source,/if endingReason != 0/);
 assert.match(source,/f_snapshot\(true\), lookahead=barmerge.lookahead_on/);
 assert.match(source,/f_snapshot\(not barstate.isconfirmed\)/);
-const fields=source.match(/^    \[selected.uid,.+$/m)[0].trim().slice(1,-1).split(', ');
-const names=source.match(/^\[sId,.+\] = if onHtf/m)[0].split('] =')[0].slice(1).split(', ');
-assert.equal(fields.length,64);assert.equal(names.length,fields.length);
-for(let i=0;i<fields.length;i++)assert.ok(source.includes(`previous ? v${i}[1] : v${i}`));
-assert.equal(fields[names.indexOf('sArchived')],'lastEnded');
-assert.equal(fields[names.indexOf('kCrtKey')],'selected.crtKey');
-assert.equal(fields[names.indexOf('sEqTouched')],'selected.eqTouched');
-assert.equal(fields[names.indexOf('sAEnd')],'selected.aEnd');
-assert.equal(fields[names.indexOf('sCEnd')],'selected.cEnd');
-assert.ok(fields.length+7+6+7+18+1+7<=127,'110 fields including independent higher engine fit Pine budget');
-const engine=source.slice(source.indexOf('f_engine(string sourceTf) =>'),source.indexOf('// Every snapshot'));
+const mapping=require('./fixtures/crt-snapshot-fields.json');
+const empty=require('./fixtures/crt-empty-model-fields.json');
+assert.equal(mapping.length,64);
+const meta={lastRetired:'retired',retiredReason:'reason',dropped:'dropped',historyReady:'ready','array.size(models)':'count','bar_index - selected.bornIndex':'age',lastEnded:'archive'};
+for(const {name,old} of mapping){
+ if(old.startsWith('selected.')&&empty[old.slice(9)]){
+  const def=empty[old.slice(9)];assert.ok(source.includes(`${def.type} ${name} = ${def.initial}`));continue;
+ }
+ const expected=old.startsWith('selected.')?old.replace('selected.','mainSelected.'):`not na(mainSnapshot) ? mainSnapshot.${meta[old]} :`;
+ assert.ok(source.includes(`${name} = ${expected}`),`Preserve source alias ${name} from ${old}`);
+}
+assert.match(source,/EngineSnapshot.new\(model=f_exportModel\(selected\), archive=lastEnded.copy\(\)/,'Freeze values before their source registry mutates');
+const view=source.slice(source.indexOf('type ModelView'),source.indexOf('type ModelArchive'));
+assert.doesNotMatch(view,/KeyMap|array</,'Model export has no collection-bearing field');
+const exportCall=source.match(/ModelView.new\(uid=source.uid[^\n]+/)?.[0];
+assert.ok(exportCall);
+for(const {old} of mapping.filter(x=>x.old.startsWith('selected.')&&!empty[x.old.slice(9)])){const field=old.slice(9);assert.ok(exportCall.includes(field+'=source.'+field));}
+assert.match(source,/previous \? snapshot\[1\] : snapshot/,'Offset the entire source event exactly once');
+assert.match(source,/EngineSnapshot mainSnapshot = onHtf \? f_snapshot\(not barstate.isconfirmed\) : requestedMain/);
+const engine=source.slice(source.indexOf('f_engine(string sourceTf) =>'),source.indexOf('// One immutable packed snapshot'));
 assert.doesNotMatch(engine,/\blive[OHLC]\b/);
 assert.match(source,/bool armed = not na\(ctx.id\) and ctx.kind == 1/);
 assert.match(source,/SignalContext.new\(age=sModelAge/);

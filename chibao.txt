@@ -3,9 +3,9 @@
 // History and model-branch formulas tested in Node; chart / Replay validation still required.
 // See docs/CRT-PURE-AND-TIME.md for scope, lifecycle, priority and validation limits.
 //@version=6
-indicator("The Funded Angler v6 - CRT Key Reactions", shorttitle="TFA v6", calc_bars_count=600, overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=500, max_boxes_count=500, max_labels_count=300)
+indicator("The Funded Angler v6 - CRT Key Reactions", shorttitle="TFA v6", dynamic_requests=false, calc_bars_count=150, overlay=true, scale=scale.none, behind_chart=false, max_bars_back=5000, max_lines_count=500, max_boxes_count=500, max_labels_count=300)
 
-// Bound source work for day trading; the loaded context is not unlimited history.
+// Source cap is 600; default chart work is 150 bars for strict runtime limits.
 const int CONTEXT_BARS = 600
 var int availableChartStart = time
 const string NY = "America/New_York"
@@ -18,6 +18,8 @@ const string G_VIEW = "4. Display"
 // Compatibility fixtures, NOT an XAUUSD profit/drawdown optimization.
 const string DEFAULT_SIGNAL_CADENCE = "Fresh reaction"
 htfInput = input.timeframe("60", "HTF", options=["60", "120", "240", "1D"], group=G_HTF, tooltip="Khung xác nhận C1/C2 CRT/TS: H1, H2, H4 hoặc D1. Mặc định H1; entry theo setup CRT còn hiệu lực.")
+calculationBudget = input.string("Light", "Calculation budget", options=["Light", "Full"], group=G_HTF, tooltip="Light loads 24 bars per source timeframe for strict calculation limits; Full loads 600. Chart history remains capped at 600. Older model/key initialization can differ. Entry formulas are identical; Full can exceed a Basic account's runtime allowance.")
+int requestDepth = calculationBudget == "Light" ? 24 : CONTEXT_BARS
 // CRT Pure TS: independent confirmed main/higher models and causal LTF channels.
 // A higher chart uses its own timeframe for context-only overview.
 bool overviewMode = timeframe.in_seconds() > timeframe.in_seconds(htfInput)
@@ -185,34 +187,10 @@ type Model
     float lo = na
     float inv = na
     float cp = na
-    float erlU = na
-    float erlL = na
     int hiT = na
     int loT = na
     int invT = na
     int cpT = na
-    int erlUT = na
-    int erlLT = na
-    float irlH = na
-    float irlL = na
-    int irlT = na
-    int irlKind = 0
-    int irlDir = 0
-    int irlLeft = na
-    int bullIrlLeft = na
-    int bearIrlLeft = na
-    float innerHi = na
-    float innerLo = na
-    int innerHiT = na
-    int innerLoT = na
-    float bullIrlH = na
-    float bullIrlL = na
-    int bullIrlT = na
-    int bullIrlKind = 0
-    float bearIrlH = na
-    float bearIrlL = na
-    int bearIrlT = na
-    int bearIrlKind = 0
     float aO = na
     float aH = na
     float aL = na
@@ -228,6 +206,42 @@ type Model
     float cL = na
     float cC = na
     int cT = na
+type ModelView
+    int uid = na
+    int flags = 0
+    int kind = 0
+    int phase = 0
+    int dir = 0
+    float hi = na
+    float lo = na
+    float inv = na
+    float cp = na
+    int confirmedAt = na
+    int resolvedAt = na
+    float aO = na
+    float aH = na
+    float aL = na
+    float aC = na
+    int aT = na
+    float bO = na
+    float bH = na
+    float bL = na
+    float bC = na
+    int bT = na
+    float cO = na
+    float cH = na
+    float cL = na
+    float cC = na
+    int cT = na
+    int hiT = na
+    int loT = na
+    int invT = na
+    int cpT = na
+    CrtKey crtKey = na
+    bool eqTouched = false
+    int aEnd = na
+    int cEnd = na
+    int bEnd = na
 type ModelArchive
     int confirmedAt = na
     int aEnd = na
@@ -267,6 +281,11 @@ f_archive(Model m, int reason, int endedAt) =>
 f_archiveAllowed(int kind) =>
     kind == 1
 
+// rangeKeys belong to the registry only; no chart consumer reads that pool.
+// Sending it through request.security copies the entire frozen collection.
+f_exportModel(Model source) =>
+    ModelView.new(uid=source.uid, flags=source.flags, kind=source.kind, phase=source.phase, dir=source.dir, hi=source.hi, lo=source.lo, inv=source.inv, cp=source.cp, confirmedAt=source.confirmedAt, resolvedAt=source.resolvedAt, aO=source.aO, aH=source.aH, aL=source.aL, aC=source.aC, aT=source.aT, bO=source.bO, bH=source.bH, bL=source.bL, bC=source.bC, bT=source.bT, cO=source.cO, cH=source.cH, cL=source.cL, cC=source.cC, cT=source.cT, hiT=source.hiT, loT=source.loT, invT=source.invT, cpT=source.cpT, crtKey=source.crtKey, eqTouched=source.eqTouched, aEnd=source.aEnd, cEnd=source.cEnd, bEnd=source.bEnd)
+
 // Context outcomes, not executed trade outcomes. OHLC cannot order both barriers.
 f_crtEnd(int direction, float invalidation, float targetLevel, float barHigh, float barLow, float closing, bool older, bool outsideHistory, bool timedOut, bool entryExpired = false) =>
     bool bad = older and (direction == 1 ? barLow <= invalidation : barHigh >= invalidation)
@@ -297,13 +316,12 @@ f_keyIdentity(CrtKey key) =>
 
 f_matchKeyMap(KeyMap keyMap, array<string> usedKeys, int beforeTime, int direction, float barHigh, float barLow, float barClose) =>
     CrtKey found = CrtKey.new()
-    for pass = 1 to 6
-        if array.size(keyMap.levels) > 0
-            for j = 0 to array.size(keyMap.levels) - 1
-                CrtKey candidate = array.get(keyMap.levels, j)
-                if found.kind == 0 and candidate.kind == pass and not array.includes(usedKeys, f_keyIdentity(candidate)) and f_keyReact(candidate, beforeTime, direction, barHigh, barLow, barClose)
-                    found := candidate.copy()
-                    found.beforeTime := beforeTime
+    if array.size(keyMap.levels) > 0
+        for j = 0 to array.size(keyMap.levels) - 1
+            CrtKey candidate = array.get(keyMap.levels, j)
+            if (found.kind == 0 or candidate.kind < found.kind) and not array.includes(usedKeys, f_keyIdentity(candidate)) and f_keyReact(candidate, beforeTime, direction, barHigh, barLow, barClose)
+                found := candidate.copy()
+                found.beforeTime := beforeTime
     found
 
 f_markHigherUsed(KeyMap keyMap, array<string> usedKeys, int barStart, float barHigh, float barLow) =>
@@ -398,6 +416,28 @@ f_weeklyWickMap(float opening, float barHigh, float barLow, float closing, int o
 f_weeklyWickSnapshot() =>
     KeyMap result = f_weeklyWickMap(open, high, low, close, time, time_close)
     result[1]
+// One shared completed-week request, never re-requested inside an HTF engine.
+KeyMap completedWeeklyKeys = request.security(syminfo.tickerid, "1W", f_weeklyWickSnapshot(), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+
+// One scan replaces eight scans of the same zone pool. Preserve kind/direction
+// priority and newest-two order exactly; do not change which key wins.
+f_appendZoneKeys(array<CrtKey> levels, array<CrtKey> zones) =>
+    array<CrtKey> slots = array.new<CrtKey>()
+    for i = 0 to 19
+        array.push(slots, na)
+    if array.size(zones) > 0
+        for back = 0 to array.size(zones) - 1
+            CrtKey k = array.get(zones, array.size(zones) - 1 - back)
+            int slot = (k.kind - 1) * 4 + (k.dir == 1 ? 2 : 0)
+            if na(array.get(slots, slot))
+                array.set(slots, slot, k)
+            else if na(array.get(slots, slot + 1))
+                array.set(slots, slot + 1, k)
+    for i = 0 to 19
+        CrtKey k = array.get(slots, i)
+        if not na(k)
+            array.push(levels, k.copy())
+    levels
 
 f_higherKeyMap(string sourceTf) =>
     var array<Liquidity> swings = array.new<Liquidity>()
@@ -411,23 +451,13 @@ f_higherKeyMap(string sourceTf) =>
     result.sourceClose := close
     result.sourceEnd := time_close
     result.sourceTf := sourceTf
-    // Most recent two of each zone type/direction; bounded snapshot size 20.
-    for kind = 1 to 5
-        if kind != 3
-            for direction = -1 to 1 by 2
-                int kept = 0
-                if array.size(zones) > 0
-                    for back = 0 to array.size(zones) - 1
-                        CrtKey k = array.get(zones, array.size(zones) - 1 - back)
-                        if kept < 2 and k.kind == kind and k.dir == direction
-                            array.push(result.levels, k.copy())
-                            kept += 1
+    f_appendZoneKeys(result.levels, zones)
     result
 
-f_biasBundle() =>
-    [direction, age, swingHigh, swingLow, guardHigh, guardLow] = f_biasSnapshot(true)
+f_priorBiasKeys() =>
     KeyMap keyMap = f_higherKeyMap(biasTf)
-    [direction, age, swingHigh, swingLow, guardHigh, guardLow, keyMap[1]]
+    keyMap[1]
+KeyMap completedBiasKeys = request.security(syminfo.tickerid, biasTf, f_priorBiasKeys(), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
 
 // Freeze the references that existed before C1. They are evidence for this parent,
 // not a claim that liquidity can be traded repeatedly without a new raid/reclaim.
@@ -472,15 +502,15 @@ f_executionSnapshot(string tf) =>
             array.push(result.levels, k.copy())
     // W1 already applies its own [1]; append AFTER the local offset to avoid
     // an extra H1/H4 delay at the week boundary (or a second weekly offset).
-    KeyMap weekly = request.security(syminfo.tickerid, "1W", f_weeklyWickSnapshot(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
+    KeyMap weekly = completedWeeklyKeys
     if not na(weekly) and not na(weekly.levels)
         for k in weekly.levels
             array.push(result.levels, k.copy())
     result
-KeyMap executionH1 = request.security(syminfo.tickerid, "60", f_executionSnapshot("60"), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
-KeyMap executionMain = request.security(syminfo.tickerid, htf, f_executionSnapshot(htf), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
-KeyMap executionLarger = request.security(syminfo.tickerid, largerTf, f_executionSnapshot(largerTf), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
-KeyMap executionBias = request.security(syminfo.tickerid, biasTf, f_executionSnapshot(biasTf), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
+KeyMap executionH1 = request.security(syminfo.tickerid, "60", f_executionSnapshot("60"), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+KeyMap executionMain = request.security(syminfo.tickerid, htf, f_executionSnapshot(htf), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+KeyMap executionLarger = request.security(syminfo.tickerid, largerTf, f_executionSnapshot(largerTf), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+KeyMap executionBias = request.security(syminfo.tickerid, biasTf, f_executionSnapshot(biasTf), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
 
 f_executionKey(int direction, int knownBefore, float peakHigh, float peakLow, float reclaimClose) =>
     CrtKey found = f_rangeReaction(executionH1, knownBefore, direction, peakHigh, peakLow, reclaimClose)
@@ -574,8 +604,18 @@ f_revalidateRange(Model m, float opening, float barHigh, float barLow, float clo
 f_preferCrt(int candidateBorn, int candidateRoot, int selectedBorn, int selectedRoot, int currentIndex) =>
     na(selectedRoot) or (candidateBorn == currentIndex and selectedBorn != currentIndex) or ((candidateBorn == currentIndex) == (selectedBorn == currentIndex) and candidateRoot > selectedRoot)
 
+type EngineSnapshot
+    ModelView model = na
+    ModelArchive archive = na
+    int retired = na
+    int reason = 0
+    int dropped = 0
+    bool ready = false
+    int count = 0
+    int age = na
+
 f_engine(string sourceTf) =>
-    [higherBias, higherBiasAge, higherBiasHigh, higherBiasLow, higherGuardHigh, higherGuardLow, higherKeyMap] = request.security(syminfo.tickerid, biasTf, f_biasBundle(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
+    KeyMap higherKeyMap = completedBiasKeys
     var array<Model> models = array.new<Model>()
     var array<Liquidity> swings = array.new<Liquidity>()
     var ModelArchive lastEnded = ModelArchive.new()
@@ -592,25 +632,34 @@ f_engine(string sourceTf) =>
     float pl = ta.pivotlow(low, htfPivotLength, htfPivotLength)
     KeyMap localMap = f_higherKeyMap(sourceTf)
     KeyMap priorLocalMap = localMap[1]
-    KeyMap parentReferences = f_parentKeys(swings, higherKeyMap, usedHigherKeys, time, sourceTf)
-    KeyMap weeklyReferences = request.security(syminfo.tickerid, "1W", f_weeklyWickSnapshot(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
-    if not na(weeklyReferences) and not na(weeklyReferences.levels)
-        for k in weeklyReferences.levels
-            CrtKey frozenWeekly = k.copy()
-            frozenWeekly.beforeTime := time
-            array.push(parentReferences.levels, frozenWeekly)
-    if not na(priorLocalMap) and not na(priorLocalMap.levels)
-        for k in priorLocalMap.levels
-            CrtKey frozen = k.copy()
-            frozen.beforeTime := time
-            array.push(parentReferences.levels, frozen)
-    CrtKey priorBuyKey = f_rangeReaction(parentReferences, time, 1, high, low, close)
-    CrtKey priorSellKey = f_rangeReaction(parentReferences, time, -1, high, low, close)
+    [tsBull, tsBear] = f_patterns(open[1], high[1], low[1], close[1], open, high, low, close)
+    bool crt = tsBull or tsBear
+    KeyMap parentReferences = KeyMap.new(array.new<CrtKey>())
+    CrtKey priorBuyKey = CrtKey.new()
+    CrtKey priorSellKey = CrtKey.new()
+    // Build/freeze a parent pool only when this bar can create a CRT.
+    // Consumption below still runs EVERY bar, before source pool updates.
+    if inScan and not na(time[1]) and crt
+        parentReferences := f_parentKeys(swings, higherKeyMap, usedHigherKeys, time, sourceTf)
+        KeyMap weeklyReferences = completedWeeklyKeys
+        if not na(weeklyReferences) and not na(weeklyReferences.levels)
+            for k in weeklyReferences.levels
+                CrtKey frozenWeekly = k.copy()
+                frozenWeekly.beforeTime := time
+                array.push(parentReferences.levels, frozenWeekly)
+        if not na(priorLocalMap) and not na(priorLocalMap.levels)
+            for k in priorLocalMap.levels
+                CrtKey frozen = k.copy()
+                frozen.beforeTime := time
+                array.push(parentReferences.levels, frozen)
+        priorBuyKey := f_rangeReaction(parentReferences, time, 1, high, low, close)
+        priorSellKey := f_rangeReaction(parentReferences, time, -1, high, low, close)
+        if biasTf != sourceTf and not na(higherKeyMap) and not na(higherKeyMap.levels)
+            if priorBuyKey.kind == 0
+                priorBuyKey := f_matchKeyMap(higherKeyMap, usedHigherKeys, time, 1, high, low, close)
+            if priorSellKey.kind == 0
+                priorSellKey := f_matchKeyMap(higherKeyMap, usedHigherKeys, time, -1, high, low, close)
     if biasTf != sourceTf and not na(higherKeyMap) and not na(higherKeyMap.levels)
-        if priorBuyKey.kind == 0
-            priorBuyKey := f_matchKeyMap(higherKeyMap, usedHigherKeys, time, 1, high, low, close)
-        if priorSellKey.kind == 0
-            priorSellKey := f_matchKeyMap(higherKeyMap, usedHigherKeys, time, -1, high, low, close)
         f_markHigherUsed(higherKeyMap, usedHigherKeys, time, high, low)
     f_updateKeyPools(swings, scanStart, inScan, ph, pl)
 
@@ -652,8 +701,6 @@ f_engine(string sourceTf) =>
                 array.remove(models, mi)
         mi -= 1
 
-    [tsBull, tsBear] = f_patterns(open[1], high[1], low[1], close[1], open, high, low, close)
-    bool crt = tsBull or tsBear
     if inScan and not na(time[1]) and crt
         // With timeout disabled, old context-only records must not starve a new C3.
         bool freshPath = tsBull ? high < high[1] : low > low[1]
@@ -697,18 +744,80 @@ f_engine(string sourceTf) =>
                 selected := candidate
     priorFocusId := selected.uid
     bool historyReady = firstSeen <= scanStart
-    [selected.uid, selected.flags, selected.kind, selected.phase, selected.dir, selected.hi, selected.lo, selected.inv, selected.cp, selected.erlU, selected.erlL, selected.irlH, selected.irlL, selected.irlT, selected.irlKind, selected.confirmedAt, selected.resolvedAt, array.size(models), selected.aO, selected.aH, selected.aL, selected.aC, selected.aT, selected.bO, selected.bH, selected.bL, selected.bC, selected.bT, selected.cO, selected.cH, selected.cL, selected.cC, selected.cT, lastRetired, retiredReason, dropped, historyReady, bar_index - selected.bornIndex, selected.hiT, selected.loT, selected.invT, selected.cpT, selected.erlUT, selected.erlLT, selected.bullIrlH, selected.bullIrlL, selected.bullIrlT, selected.bullIrlKind, selected.bearIrlH, selected.bearIrlL, selected.bearIrlT, selected.bearIrlKind, selected.bullIrlLeft, selected.bearIrlLeft, selected.innerHi, selected.innerLo, selected.innerHiT, selected.innerLoT, lastEnded, selected.crtKey, selected.eqTouched, selected.aEnd, selected.cEnd, selected.bEnd]
+    EngineSnapshot.new(model=f_exportModel(selected), archive=lastEnded.copy(), retired=lastRetired, reason=retiredReason, dropped=dropped, ready=historyReady, count=array.size(models), age=bar_index - selected.bornIndex)
 
-// Every snapshot field is individually offset; live OHLC is display-only.
-// C3 receives the previous confirmed C2 snapshot (age 0); C4 receives age 1.
+// One immutable packed snapshot; offset the entire source event together.
 f_snapshot(bool previous) =>
-    [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40, v41, v42, v43, v44, v45, v46, v47, v48, v49, v50, v51, v52, v53, v54, v55, v56, v57, v58, v59, v60, v61, v62, v63] = f_engine(htf)
-    [previous ? v0[1] : v0, previous ? v1[1] : v1, previous ? v2[1] : v2, previous ? v3[1] : v3, previous ? v4[1] : v4, previous ? v5[1] : v5, previous ? v6[1] : v6, previous ? v7[1] : v7, previous ? v8[1] : v8, previous ? v9[1] : v9, previous ? v10[1] : v10, previous ? v11[1] : v11, previous ? v12[1] : v12, previous ? v13[1] : v13, previous ? v14[1] : v14, previous ? v15[1] : v15, previous ? v16[1] : v16, previous ? v17[1] : v17, previous ? v18[1] : v18, previous ? v19[1] : v19, previous ? v20[1] : v20, previous ? v21[1] : v21, previous ? v22[1] : v22, previous ? v23[1] : v23, previous ? v24[1] : v24, previous ? v25[1] : v25, previous ? v26[1] : v26, previous ? v27[1] : v27, previous ? v28[1] : v28, previous ? v29[1] : v29, previous ? v30[1] : v30, previous ? v31[1] : v31, previous ? v32[1] : v32, previous ? v33[1] : v33, previous ? v34[1] : v34, previous ? v35[1] : v35, previous ? v36[1] : v36, previous ? v37[1] : v37, previous ? v38[1] : v38, previous ? v39[1] : v39, previous ? v40[1] : v40, previous ? v41[1] : v41, previous ? v42[1] : v42, previous ? v43[1] : v43, previous ? v44[1] : v44, previous ? v45[1] : v45, previous ? v46[1] : v46, previous ? v47[1] : v47, previous ? v48[1] : v48, previous ? v49[1] : v49, previous ? v50[1] : v50, previous ? v51[1] : v51, previous ? v52[1] : v52, previous ? v53[1] : v53, previous ? v54[1] : v54, previous ? v55[1] : v55, previous ? v56[1] : v56, previous ? v57[1] : v57, previous ? v58[1] : v58, previous ? v59[1] : v59, previous ? v60[1] : v60, previous ? v61[1] : v61, previous ? v62[1] : v62, previous ? v63[1] : v63]
+    EngineSnapshot snapshot = f_engine(htf)
+    previous ? snapshot[1] : snapshot
 
-[sId, sFlags, sKind, sPhase, sDir, sHi, sLo, sInv, sCp, sErlU, sErlL, sIrlH, sIrlL, sIrlT, sIrlKind, sConfirmed, sResolved, sCount, sAO, sAH, sAL, sAC, sAT, sBO, sBH, sBL, sBC, sBT, sCO, sCH, sCL, sCC, sCT, sRetired, sReason, sDropped, sReady, sModelAge, sHiT, sLoT, sInvT, sCpT, sErlUT, sErlLT, sBullIrlH, sBullIrlL, sBullIrlT, sBullIrlKind, sBearIrlH, sBearIrlL, sBearIrlT, sBearIrlKind, sBullIrlLeft, sBearIrlLeft, sInnerHi, sInnerLo, sInnerHiT, sInnerLoT, sArchived, kCrtKey, sEqTouched, sAEnd, sCEnd, sBEnd] = if onHtf
-    f_snapshot(not barstate.isconfirmed)
-else
-    request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
+EngineSnapshot requestedMain = request.security(syminfo.tickerid, htf, f_snapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+EngineSnapshot mainSnapshot = onHtf ? f_snapshot(not barstate.isconfirmed) : requestedMain
+ModelView mainSelected = not na(mainSnapshot) ? mainSnapshot.model : ModelView.new()
+sId = mainSelected.uid
+sFlags = mainSelected.flags
+sKind = mainSelected.kind
+sPhase = mainSelected.phase
+sDir = mainSelected.dir
+sHi = mainSelected.hi
+sLo = mainSelected.lo
+sInv = mainSelected.inv
+sCp = mainSelected.cp
+float sErlU = na
+float sErlL = na
+float sIrlH = na
+float sIrlL = na
+int sIrlT = na
+int sIrlKind = 0
+sConfirmed = mainSelected.confirmedAt
+sResolved = mainSelected.resolvedAt
+sCount = not na(mainSnapshot) ? mainSnapshot.count : 0
+sAO = mainSelected.aO
+sAH = mainSelected.aH
+sAL = mainSelected.aL
+sAC = mainSelected.aC
+sAT = mainSelected.aT
+sBO = mainSelected.bO
+sBH = mainSelected.bH
+sBL = mainSelected.bL
+sBC = mainSelected.bC
+sBT = mainSelected.bT
+sCO = mainSelected.cO
+sCH = mainSelected.cH
+sCL = mainSelected.cL
+sCC = mainSelected.cC
+sCT = mainSelected.cT
+sRetired = not na(mainSnapshot) ? mainSnapshot.retired : na
+sReason = not na(mainSnapshot) ? mainSnapshot.reason : 0
+sDropped = not na(mainSnapshot) ? mainSnapshot.dropped : 0
+sReady = not na(mainSnapshot) ? mainSnapshot.ready : false
+sModelAge = not na(mainSnapshot) ? mainSnapshot.age : na
+sHiT = mainSelected.hiT
+sLoT = mainSelected.loT
+sInvT = mainSelected.invT
+sCpT = mainSelected.cpT
+int sErlUT = na
+int sErlLT = na
+float sBullIrlH = na
+float sBullIrlL = na
+int sBullIrlT = na
+int sBullIrlKind = 0
+float sBearIrlH = na
+float sBearIrlL = na
+int sBearIrlT = na
+int sBearIrlKind = 0
+int sBullIrlLeft = na
+int sBearIrlLeft = na
+float sInnerHi = na
+float sInnerLo = na
+int sInnerHiT = na
+int sInnerLoT = na
+sArchived = not na(mainSnapshot) ? mainSnapshot.archive : ModelArchive.new()
+kCrtKey = mainSelected.crtKey
+sEqTouched = mainSelected.eqTouched
+sAEnd = mainSelected.aEnd
+sCEnd = mainSelected.cEnd
+sBEnd = mainSelected.bEnd
 
 // Packed UDT avoids exceeding Pine's combined 127 request tuple elements.
 type HigherSnapshot
@@ -731,24 +840,26 @@ type HigherSnapshot
     int cEnd = na
     CrtKey key = na
 f_higherSnapshot(string sourceTf) =>
-    [q0, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14, q15, q16, q17, q18, q19, q20, q21, q22, q23, q24, q25, q26, q27, q28, q29, q30, q31, q32, q33, q34, q35, q36, q37, q38, q39, q40, q41, q42, q43, q44, q45, q46, q47, q48, q49, q50, q51, q52, q53, q54, q55, q56, q57, q58, q59, q60, q61, q62, q63] = f_engine(sourceTf)
-    HigherSnapshot.new(id=q0[1], flags=q1[1], phase=q3[1], dir=q4[1], hi=q5[1], lo=q6[1], inv=q7[1], cp=q8[1], confirmed=q15[1], resolved=q16[1], age=q37[1], aT=q22[1], aEnd=q61[1], bT=q27[1], bEnd=q63[1], cEnd=q62[1], reason=q34[1], key=q59[1])
+    EngineSnapshot snapshot = f_engine(sourceTf)
+    EngineSnapshot prior = snapshot[1]
+    ModelView m = not na(prior) ? prior.model : ModelView.new()
+    HigherSnapshot.new(id=m.uid, flags=m.flags, phase=m.phase, dir=m.dir, hi=m.hi, lo=m.lo, inv=m.inv, cp=m.cp, confirmed=m.confirmedAt, resolved=m.resolvedAt, age=not na(prior) ? prior.age : na, aT=m.aT, aEnd=m.aEnd, bT=m.bT, bEnd=m.bEnd, cEnd=m.cEnd, reason=not na(prior) ? prior.reason : 0, key=m.crtKey)
 bool higherSignalTfValid = isLtf and timeframe.in_seconds(largerTf) > htfSeconds and timeframe.in_seconds(largerTf) % chartSeconds == 0 and timeframe.in_seconds(biasTf) >= timeframe.in_seconds(largerTf)
-HigherSnapshot higher = if enableLargerSignals and higherSignalTfValid
-    request.security(syminfo.tickerid, largerTf, f_higherSnapshot(largerTf), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
-else
-    HigherSnapshot.new()
+HigherSnapshot requestedHigher = request.security(syminfo.tickerid, largerTf, f_higherSnapshot(largerTf), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+HigherSnapshot requestedBiasModel = request.security(syminfo.tickerid, biasTf, f_higherSnapshot(biasTf), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+HigherSnapshot higher = enableLargerSignals and higherSignalTfValid ? requestedHigher : HigherSnapshot.new()
 
 // A separate confirmed CRT hypothesis on Bias TF supplies context, not an order.
-HigherSnapshot biasModel = if timeframe.in_seconds(biasTf) > timeframe.in_seconds(largerTf)
-    request.security(syminfo.tickerid, biasTf, f_higherSnapshot(biasTf), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
-else
-    HigherSnapshot.new()
+HigherSnapshot biasModel = timeframe.in_seconds(biasTf) > timeframe.in_seconds(largerTf) ? requestedBiasModel : HigherSnapshot.new()
 // Independent bias from the chosen reference TF: confirmed reclaim or range close-through.
-[autoBias, autoBiasAge, autoBiasHigh, autoBiasLow, autoGuardHigh, autoGuardLow] = if chartSeconds == timeframe.in_seconds(biasTf)
-    f_biasSnapshot(not barstate.isconfirmed)
-else
-    request.security(syminfo.tickerid, biasTf, f_biasSnapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
+[requestedBiasDirection, requestedBiasAge, requestedBiasHigh, requestedBiasLow, requestedGuardHigh, requestedGuardLow] = request.security(syminfo.tickerid, biasTf, f_biasSnapshot(true), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+[localBiasDirection, localBiasAge, localBiasHigh, localBiasLow, localGuardHigh, localGuardLow] = f_biasSnapshot(not barstate.isconfirmed)
+autoBias = chartSeconds == timeframe.in_seconds(biasTf) ? localBiasDirection : requestedBiasDirection
+autoBiasAge = chartSeconds == timeframe.in_seconds(biasTf) ? localBiasAge : requestedBiasAge
+autoBiasHigh = chartSeconds == timeframe.in_seconds(biasTf) ? localBiasHigh : requestedBiasHigh
+autoBiasLow = chartSeconds == timeframe.in_seconds(biasTf) ? localBiasLow : requestedBiasLow
+autoGuardHigh = chartSeconds == timeframe.in_seconds(biasTf) ? localGuardHigh : requestedGuardHigh
+autoGuardLow = chartSeconds == timeframe.in_seconds(biasTf) ? localGuardLow : requestedGuardLow
 int structureBias = biasMode == "Auto" ? nz(autoBias) : biasMode == "Long" ? 1 : biasMode == "Short" ? -1 : 0
 float biasCheckClose = barstate.isconfirmed ? close : close[1]
 bool biasPaused = biasMode == "Auto" and chartSeconds < timeframe.in_seconds(biasTf) and (structureBias == 1 ? not na(autoGuardLow) and biasCheckClose < autoGuardLow : structureBias == -1 ? not na(autoGuardHigh) and biasCheckClose > autoGuardHigh : false)
@@ -819,7 +930,7 @@ else
 // aggregated from this chart only; an incomplete first bucket is omitted.
 f_largerClosed() =>
     [time[3], open[3], high[3], low[3], close[3], time_close[3], time[2], open[2], high[2], low[2], close[2], time_close[2], time[1], open[1], high[1], low[1], close[1], time_close[1]]
-[h3T, h3O, h3H, h3L, h3C, h3End, h2T, h2O, h2H, h2L, h2C, h2End, h1T, h1O, h1H, h1L, h1C, h1End] = request.security(syminfo.tickerid, largerTf, f_largerClosed(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
+[h3T, h3O, h3H, h3L, h3C, h3End, h2T, h2O, h2H, h2L, h2C, h2End, h1T, h1O, h1H, h1L, h1C, h1End] = request.security(syminfo.tickerid, largerTf, f_largerClosed(), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
 int largerBucket = time(largerTf)
 int largerEnd = time_close(largerTf)
 var int largerLiveT = na
@@ -932,10 +1043,8 @@ f_structureSource() =>
 f_structureReady(int sourceEnd, int chartEnd, int previousEnd) =>
     not na(sourceEnd) and sourceEnd <= chartEnd and (na(previousEnd) or sourceEnd > previousEnd)
 bool useM15Structure = structureMode == "M15" and chartSeconds < 900
-StructureBar structureRaw = if useM15Structure
-    request.security(syminfo.tickerid, "15", f_structureSource(), lookahead=barmerge.lookahead_off, calc_bars_count=CONTEXT_BARS)
-else
-    StructureBar.new()
+StructureBar requestedStructure = request.security(syminfo.tickerid, "15", f_structureSource(), lookahead=barmerge.lookahead_off, calc_bars_count=requestDepth)
+StructureBar structureRaw = useM15Structure ? requestedStructure : StructureBar.new()
 var StructureBar structureClosed = StructureBar.new()
 bool structureUpdated = barstate.isconfirmed and useM15Structure and f_structureReady(structureRaw.closed, time_close, structureClosed.closed)
 if structureUpdated
@@ -956,7 +1065,6 @@ type SignalContext
     bool parentLive = false
     bool parentAtKey = false
     int age = 0
-    int irlKind = 0
     CrtKey crtKey = na
     int id = na
     int kind = 0
@@ -969,9 +1077,6 @@ type SignalContext
     float lo = na
     float inv = na
     float cp = na
-    float irlH = na
-    float irlL = na
-    int irlT = na
 type ReactionState
     int sourceRoot = na
     int sourceC2 = na
@@ -1319,10 +1424,10 @@ f_smtDirection(SmtBars own, SmtBars peer, bool inverse) =>
     buy and not sell ? 1 : sell and not buy ? -1 : 0
 bool smtEnabled = smtSymbol != "" and smtSymbol != ticker.standard(syminfo.tickerid)
 string peerSymbol = smtEnabled ? smtSymbol : ticker.standard(syminfo.tickerid)
-SmtBars ownMainSmt = request.security(syminfo.tickerid, htf, f_smtBars(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
-SmtBars peerMainSmt = request.security(peerSymbol, htf, f_smtBars(), lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true, calc_bars_count=CONTEXT_BARS)
-SmtBars ownHigherSmt = request.security(syminfo.tickerid, largerTf, f_smtBars(), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
-SmtBars peerHigherSmt = request.security(peerSymbol, largerTf, f_smtBars(), lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true, calc_bars_count=CONTEXT_BARS)
+SmtBars ownMainSmt = request.security(syminfo.tickerid, htf, f_smtBars(), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+SmtBars peerMainSmt = request.security(peerSymbol, htf, f_smtBars(), lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true, calc_bars_count=requestDepth)
+SmtBars ownHigherSmt = request.security(syminfo.tickerid, largerTf, f_smtBars(), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+SmtBars peerHigherSmt = request.security(peerSymbol, largerTf, f_smtBars(), lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true, calc_bars_count=requestDepth)
 int mainSmt = smtEnabled and not na(peerMainSmt) ? f_smtDirection(ownMainSmt, peerMainSmt, smtRelation == "Inverse") : 0
 int higherSmt = smtEnabled and not na(peerHigherSmt) ? f_smtDirection(ownHigherSmt, peerHigherSmt, smtRelation == "Inverse") : 0
 
@@ -1597,9 +1702,9 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
 // Both OHLC and key map come from the completed C1, never the forming C2.
 // The key matcher separately excludes keys learned after C2 opened.
 f_earlyReference(string sourceTf) =>
-    KeyMap priorMap = f_higherKeyMap(sourceTf)
-    [open[1], high[1], low[1], close[1], time[1], time_close[1], priorMap[1]]
-[earlyC1O, earlyC1H, earlyC1L, earlyC1C, earlyC1T, earlyC1End, earlyKeys] = request.security(syminfo.tickerid, htf, f_earlyReference(htf), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
+    [open[1], high[1], low[1], close[1], time[1], time_close[1]]
+[earlyC1O, earlyC1H, earlyC1L, earlyC1C, earlyC1T, earlyC1End] = request.security(syminfo.tickerid, htf, f_earlyReference(htf), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+KeyMap earlyKeys = executionMain
 var EarlyState earlyState = EarlyState.new()
 var array<string> earlyUnused = array.new<string>()
 float earlyHigh = earlyState.bucket == bucketTime ? math.max(earlyState.hi, high) : high
@@ -1610,7 +1715,8 @@ bool earlyBuyWave = na(lastBuyTime) or (not na(lastPivotLowTime) and lastPivotLo
 bool earlySellWave = na(lastSellTime) or (not na(lastPivotHighTime) and lastPivotHighTime > lastSellTime)
 EarlyReference earlyRef = EarlyReference.new(start=bucketTime, finish=bucketEnd, c1Time=earlyC1T, c1End=earlyC1End, c1O=earlyC1O, c1H=earlyC1H, c1L=earlyC1L, c1C=earlyC1C)
 // Larger has its own observation channel even when provisional entries are off.
-[hEarlyO, hEarlyH, hEarlyL, hEarlyC, hEarlyT, hEarlyEnd, hEarlyKeys] = request.security(syminfo.tickerid, largerTf, f_earlyReference(largerTf), lookahead=barmerge.lookahead_on, calc_bars_count=CONTEXT_BARS)
+[hEarlyO, hEarlyH, hEarlyL, hEarlyC, hEarlyT, hEarlyEnd] = request.security(syminfo.tickerid, largerTf, f_earlyReference(largerTf), lookahead=barmerge.lookahead_on, calc_bars_count=requestDepth)
+KeyMap hEarlyKeys = executionLarger
 var EarlyState higherEarlyState = EarlyState.new()
 var array<string> higherEarlyUnused = array.new<string>()
 float hEarlyHigh = higherEarlyState.bucket == largerBucket ? math.max(higherEarlyState.hi, high) : high

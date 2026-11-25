@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-25",
+  "source": "indicators/funded-angler-v6.pine",
+  "sha256": "269009100539eca234668ea75fc9f7502f010b8b24b32333c451f12a0d62a7c1",
+  "mirrorExact": true,
+  "offlineSuites": 29,
+  "fullCompiler": {
+    "source": "indicators/funded-angler-v6.pine",
+    "sha256": "269009100539eca234668ea75fc9f7502f010b8b24b32333c451f12a0d62a7c1",
+    "httpStatus": 200,
+    "elapsedMs": 73497,
+    "fullCompilationPassed": true,
+    "reason": null,
+    "errors": [],
+    "warnings": [],
+    "chartExecutionVerified": false
+  },
+  "native": {
+    "passed": true,
+    "time": "2026-11-25 17:07 UTC+7",
+    "symbol": "OANDA:XAUUSD",
+    "chart": "M5",
+    "htf": "H1",
+    "larger": "H4",
+    "bias": "D1 Auto",
+    "structure": "Chart",
+    "branches": "TS + FVG + OTE",
+    "early": true,
+    "largerSignals": true,
+    "budget": "Light",
+    "sourceBars": 24,
+    "calculatedChartBars": 150,
+    "observed": [
+      "No compilation error",
+      "No runtime icon",
+      "Dashboard visible",
+      "H1/H4 groups and countdowns visible",
+      "Historical entry/E markers visible"
+    ],
+    "screenshot": "output/brave-review/crt-release-150-runtime-ok.png",
+    "cloudSaved": false,
+    "published": false
+  },
+  "limits": [
+    "Earlier 600-chart-bar trials hit the observed 0.5 second allowance; final Full-source/600 mode was not revalidated",
+    "Light initialization can omit old models/keys and differ from Full",
+    "Native smoke check is not market Replay or a performance backtest",
+    "Prior translate_light records did not prove full compilation"
+  ]
+}

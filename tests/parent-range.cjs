@@ -35,7 +35,7 @@ for(const dir of [-1,1]){
 const frozen=keys.parent([{price:113,side:1,born:70,knownAt:80},{price:114,side:1,born:75,knownAt:95}],{levels:[]},[],90);
 assert.equal(frozen.levels.length,1);assert.equal(frozen.levels[0].knownAt,80);
 const old={uid:90,confirmedAt:110,endReason:1,endedAt:115},fresh={uid:90,confirmedAt:120,endReason:2,endedAt:140};assert.equal(focus.archive(old,fresh),fresh,'New attempt archive beats old local INV on the same parent');
-assert.match(s,/uid=time\[1\]/);assert.match(s,/KeyMap parentReferences = f_parentKeys/);
+assert.match(s,/uid=time\[1\]/);assert.match(s,/if inScan and not na\(time\[1\]\) and crt\s+parentReferences := f_parentKeys/);
 assert.doesNotMatch(s,/older and bar_index > m.bornIndex\)/);
 assert.match(s,/candidate.phase == 1/);assert.doesNotMatch(s,/selected := watching/);
 assert.match(s,/if m.phase == 0\r?\n\s+array.remove\(models, mi\)/);

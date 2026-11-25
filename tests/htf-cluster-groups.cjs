@@ -27,7 +27,9 @@ for(const reason of [1,2,3,4,5,6,7]){
  assert.deepEqual(h.endedCandles({...ended,kind:1,cT:null}).map(c=>c.t),[100,101],'No invented CRT third candle');
  assert.deepEqual(h.endedCandles(null,[{t:999}]),[],'Empty archive clears old rendered history');
 }
-assert.ok(source.includes('previous ? v58[1] : v58'),'Archive uses confirmed HTF history offset');
+assert.match(source,/previous \? snapshot\[1\] : snapshot/,'Archive shares the confirmed source event offset');
+assert.match(source,/archive=lastEnded.copy\(\)/,'Archive is copied before its event is stored');
+assert.match(source,/sArchived = not na\(mainSnapshot\) \? mainSnapshot.archive/);
 assert.equal((source.match(/lastEnded := f_archive\(/g)||[]).length,3,'Lifecycle, capacity and target-at-birth paths preserve snapshots');
 assert.match(source,/if f_archiveAllowed\(m.kind\) and \(m.uid == priorFocusId or not archivedThisBar\)/,'Archive respects selected model family, prioritizing the focused model');
 const allowedExpr=source.match(/f_archiveAllowed\(int kind\) =>\r?\n\s+(.+)/)[1].replace(/\band\b/g,'&&').replace(/\bor\b/g,'||');

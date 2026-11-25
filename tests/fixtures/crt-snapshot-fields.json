@@ -1,0 +1,258 @@
+[
+  {
+    "name": "sId",
+    "old": "selected.uid"
+  },
+  {
+    "name": "sFlags",
+    "old": "selected.flags"
+  },
+  {
+    "name": "sKind",
+    "old": "selected.kind"
+  },
+  {
+    "name": "sPhase",
+    "old": "selected.phase"
+  },
+  {
+    "name": "sDir",
+    "old": "selected.dir"
+  },
+  {
+    "name": "sHi",
+    "old": "selected.hi"
+  },
+  {
+    "name": "sLo",
+    "old": "selected.lo"
+  },
+  {
+    "name": "sInv",
+    "old": "selected.inv"
+  },
+  {
+    "name": "sCp",
+    "old": "selected.cp"
+  },
+  {
+    "name": "sErlU",
+    "old": "selected.erlU"
+  },
+  {
+    "name": "sErlL",
+    "old": "selected.erlL"
+  },
+  {
+    "name": "sIrlH",
+    "old": "selected.irlH"
+  },
+  {
+    "name": "sIrlL",
+    "old": "selected.irlL"
+  },
+  {
+    "name": "sIrlT",
+    "old": "selected.irlT"
+  },
+  {
+    "name": "sIrlKind",
+    "old": "selected.irlKind"
+  },
+  {
+    "name": "sConfirmed",
+    "old": "selected.confirmedAt"
+  },
+  {
+    "name": "sResolved",
+    "old": "selected.resolvedAt"
+  },
+  {
+    "name": "sCount",
+    "old": "array.size(models)"
+  },
+  {
+    "name": "sAO",
+    "old": "selected.aO"
+  },
+  {
+    "name": "sAH",
+    "old": "selected.aH"
+  },
+  {
+    "name": "sAL",
+    "old": "selected.aL"
+  },
+  {
+    "name": "sAC",
+    "old": "selected.aC"
+  },
+  {
+    "name": "sAT",
+    "old": "selected.aT"
+  },
+  {
+    "name": "sBO",
+    "old": "selected.bO"
+  },
+  {
+    "name": "sBH",
+    "old": "selected.bH"
+  },
+  {
+    "name": "sBL",
+    "old": "selected.bL"
+  },
+  {
+    "name": "sBC",
+    "old": "selected.bC"
+  },
+  {
+    "name": "sBT",
+    "old": "selected.bT"
+  },
+  {
+    "name": "sCO",
+    "old": "selected.cO"
+  },
+  {
+    "name": "sCH",
+    "old": "selected.cH"
+  },
+  {
+    "name": "sCL",
+    "old": "selected.cL"
+  },
+  {
+    "name": "sCC",
+    "old": "selected.cC"
+  },
+  {
+    "name": "sCT",
+    "old": "selected.cT"
+  },
+  {
+    "name": "sRetired",
+    "old": "lastRetired"
+  },
+  {
+    "name": "sReason",
+    "old": "retiredReason"
+  },
+  {
+    "name": "sDropped",
+    "old": "dropped"
+  },
+  {
+    "name": "sReady",
+    "old": "historyReady"
+  },
+  {
+    "name": "sModelAge",
+    "old": "bar_index - selected.bornIndex"
+  },
+  {
+    "name": "sHiT",
+    "old": "selected.hiT"
+  },
+  {
+    "name": "sLoT",
+    "old": "selected.loT"
+  },
+  {
+    "name": "sInvT",
+    "old": "selected.invT"
+  },
+  {
+    "name": "sCpT",
+    "old": "selected.cpT"
+  },
+  {
+    "name": "sErlUT",
+    "old": "selected.erlUT"
+  },
+  {
+    "name": "sErlLT",
+    "old": "selected.erlLT"
+  },
+  {
+    "name": "sBullIrlH",
+    "old": "selected.bullIrlH"
+  },
+  {
+    "name": "sBullIrlL",
+    "old": "selected.bullIrlL"
+  },
+  {
+    "name": "sBullIrlT",
+    "old": "selected.bullIrlT"
+  },
+  {
+    "name": "sBullIrlKind",
+    "old": "selected.bullIrlKind"
+  },
+  {
+    "name": "sBearIrlH",
+    "old": "selected.bearIrlH"
+  },
+  {
+    "name": "sBearIrlL",
+    "old": "selected.bearIrlL"
+  },
+  {
+    "name": "sBearIrlT",
+    "old": "selected.bearIrlT"
+  },
+  {
+    "name": "sBearIrlKind",
+    "old": "selected.bearIrlKind"
+  },
+  {
+    "name": "sBullIrlLeft",
+    "old": "selected.bullIrlLeft"
+  },
+  {
+    "name": "sBearIrlLeft",
+    "old": "selected.bearIrlLeft"
+  },
+  {
+    "name": "sInnerHi",
+    "old": "selected.innerHi"
+  },
+  {
+    "name": "sInnerLo",
+    "old": "selected.innerLo"
+  },
+  {
+    "name": "sInnerHiT",
+    "old": "selected.innerHiT"
+  },
+  {
+    "name": "sInnerLoT",
+    "old": "selected.innerLoT"
+  },
+  {
+    "name": "sArchived",
+    "old": "lastEnded"
+  },
+  {
+    "name": "kCrtKey",
+    "old": "selected.crtKey"
+  },
+  {
+    "name": "sEqTouched",
+    "old": "selected.eqTouched"
+  },
+  {
+    "name": "sAEnd",
+    "old": "selected.aEnd"
+  },
+  {
+    "name": "sCEnd",
+    "old": "selected.cEnd"
+  },
+  {
+    "name": "sBEnd",
+    "old": "selected.bEnd"
+  }
+]

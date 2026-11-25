@@ -2,7 +2,9 @@
 
 Cập nhật 25/11/2026. [Đặc tả hiện hành và nguồn gốc](CRT-FIRST-LEG-SPEC.md). [Cài đặt trước migration](archive/INDICATOR-SETTINGS-before-key-reactions-2026-11-25.md) chỉ dùng đối chiếu lịch sử.
 
-Mặc định có 28 input khai báo và ô Calculated bars tích hợp của TradingView. MPS gate chung và sáu ô R1 nhập tay đã bỏ. Không có fibo hay vùng entry LTF tự vẽ.
+Mặc định có 29 input khai báo và ô Calculated bars tích hợp của TradingView. MPS gate chung và sáu ô R1 nhập tay đã bỏ. Không có fibo hay vùng entry LTF tự vẽ.
+
+Calculation budget: Light mặc định tải 24 nến trên mỗi nguồn timeframe; Full tải 600. **Calculated bars mặc định 150 nến chart** (khoảng 12,5 giờ trên M5, có thể dài hơn khi có khoảng nghỉ phiên). Light có thể thiếu model/key cũ hoặc khởi tạo bias khác Full. Đây là giới hạn tải cho tài khoản có thời gian tính toán ngắn, không phải setting được tối ưu tỷ lệ thắng. Khi cần lịch sử rộng hơn, điều chỉnh cả Calculation budget và Calculated bars; Full có thể vẫn vượt runtime của tài khoản. Không thử lại liên tục một mã đang báo compilation timeout; xem [ghi nhận lỗi và kiểm tra](research/CRT-COMPILE-TIMEOUT-2026-11-25.md).
 
 | Mục | Mặc định / cách dùng |
 | --- | --- |

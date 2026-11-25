@@ -1,0 +1,98 @@
+{
+  "erlU": {
+    "type": "float",
+    "initial": "na"
+  },
+  "erlL": {
+    "type": "float",
+    "initial": "na"
+  },
+  "erlUT": {
+    "type": "int",
+    "initial": "na"
+  },
+  "erlLT": {
+    "type": "int",
+    "initial": "na"
+  },
+  "irlH": {
+    "type": "float",
+    "initial": "na"
+  },
+  "irlL": {
+    "type": "float",
+    "initial": "na"
+  },
+  "irlT": {
+    "type": "int",
+    "initial": "na"
+  },
+  "irlKind": {
+    "type": "int",
+    "initial": "0"
+  },
+  "irlDir": {
+    "type": "int",
+    "initial": "0"
+  },
+  "irlLeft": {
+    "type": "int",
+    "initial": "na"
+  },
+  "bullIrlLeft": {
+    "type": "int",
+    "initial": "na"
+  },
+  "bearIrlLeft": {
+    "type": "int",
+    "initial": "na"
+  },
+  "innerHi": {
+    "type": "float",
+    "initial": "na"
+  },
+  "innerLo": {
+    "type": "float",
+    "initial": "na"
+  },
+  "innerHiT": {
+    "type": "int",
+    "initial": "na"
+  },
+  "innerLoT": {
+    "type": "int",
+    "initial": "na"
+  },
+  "bullIrlH": {
+    "type": "float",
+    "initial": "na"
+  },
+  "bullIrlL": {
+    "type": "float",
+    "initial": "na"
+  },
+  "bullIrlT": {
+    "type": "int",
+    "initial": "na"
+  },
+  "bullIrlKind": {
+    "type": "int",
+    "initial": "0"
+  },
+  "bearIrlH": {
+    "type": "float",
+    "initial": "na"
+  },
+  "bearIrlL": {
+    "type": "float",
+    "initial": "na"
+  },
+  "bearIrlT": {
+    "type": "int",
+    "initial": "na"
+  },
+  "bearIrlKind": {
+    "type": "int",
+    "initial": "0"
+  }
+}

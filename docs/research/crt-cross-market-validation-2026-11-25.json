@@ -6,7 +6,7 @@
   "checks": {
     "suiteCount": 27,
     "result": "passed",
-    "exactPineCompilation": [
+    "lightTranslation": [
       {
         "exactSource": true,
         "errors": [],
@@ -30,5 +30,6 @@
   "fixtures": [
     "tests/crt-cross-market-audit.cjs",
     "tests/crt-weekly-and-counter.cjs"
-  ]
+  ],
+  "correction": "The recorded endpoint was translate_light (syntax/type analysis), not full chart compilation. User reported full compilation timeout; see CRT-COMPILE-TIMEOUT-2026-11-25.md."
 }
