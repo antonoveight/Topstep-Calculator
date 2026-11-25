@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-25",
+  "source": "indicators/funded-angler-v6.pine",
+  "normalizedSha256": "9d8e55c188f27b777b40edfd288ba5f149f8f676fa5c57a1295a8f9e526b8ba5",
+  "previousVersion": "7d37094",
+  "change": "Require P1 time < P2 time < actual P3 wick time <= closed TS bar, plus directional P1 sweep, before Early seeds MPS and before Main/Larger confirm it. Equal-price later retouch uses its actual candle and companion wick. Pure TS-close entries remain independent.",
+  "tests": {
+    "runner": "node tools/check-crt.cjs",
+    "suites": 24,
+    "passed": true,
+    "newRegression": "tests/early-mps-chronology.cjs",
+    "immutablePrefixes": 66,
+    "baselineFailedOnExpectedAssertion": true,
+    "baselineAssertion": "P3 before P2 must never seed a later MPS",
+    "cases": [
+      "Sell and mirrored Buy",
+      "P3 before P2 and same-candle ambiguity rejected",
+      "Valid later P3 and equal-price retouch accepted",
+      "Initial and delayed closed MPS",
+      "Pure Early TS entry retained",
+      "Main/Larger shared guard rejects invalid inherited evidence",
+      "C2 resets timestamps and handoff preserves P1/P2/P3"
+    ]
+  },
+  "compiler": {
+    "exactSource": true,
+    "errors": [],
+    "warnings": [],
+    "cloudSaved": false,
+    "published": false
+  },
+  "native": {
+    "updated": false,
+    "reason": "User actively used another Brave page; host guard stopped input. No chart instance was replaced this turn."
+  },
+  "limits": [
+    "Constructed OHLC and explicit pivot fixtures, not complete market Replay or ta.pivots/request.security emulation",
+    "No claim that the specific 25/11 XAUUSD MPS was false",
+    "No profitability, win-rate or cross-feed equivalence claim"
+  ]
+}

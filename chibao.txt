@@ -857,6 +857,7 @@ type ReactionState
     float raidExtreme = na
     bool raidReclaimed = false
     int raidAt = na
+    int p3At = na
     float p3High = na
     float p3Low = na
     CrtKey p3Key = na
@@ -964,6 +965,7 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             state.mpsRef := na
             state.mpsRefAt := na
             state.raidAt := na
+            state.p3At := na
             state.p3Key := na
             state.p3KeyAt := na
             state.p3KeyBroken := false
@@ -984,6 +986,7 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             state.raidExtreme := bullish ? low : high
             state.raidReclaimed := false
             state.raidAt := time
+            state.p3At := time
             state.p3High := high
             state.p3Low := low
             // Capture at the peak, before a later HTF close can consume the key.
@@ -995,6 +998,7 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         if hasRaid
             bool newPeak = bullish ? low < state.raidExtreme : high > state.raidExtreme
             if newPeak
+                state.p3At := time
                 state.p3High := high
                 state.p3Low := low
                 state.p3Key := f_executionKey(ctx.dir, state.raidAt, high, low, bullish ? high : low)
@@ -1035,7 +1039,11 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         bool keyAllowed = not requireKey or localKeyGood
         bool counterContext = allowCrtCounter and opposingBias and keyHeld and localKeyGood
         bool biasAllowed = not filterBias or biasDir == ctx.dir or counterContext
-        bool mpsNow = hasTs and localKeyGood and na(state.mpsAt) and not na(state.mpsRef) and (bullish ? close > state.mpsRef and close[1] <= state.mpsRef : close < state.mpsRef and close[1] >= state.mpsRef)
+        // The source extreme must follow P2, including evidence inherited from
+        // Early C2. A whole-C2 high/low from BEFORE P2 cannot become its P3.
+        bool mpsOrder = not na(state.p1At) and not na(state.mpsRefAt) and not na(state.p3At) and state.p1At < state.mpsRefAt and state.mpsRefAt < state.p3At and state.p3At <= state.confirmTime
+        bool mpsSweep = not na(state.p1Ref) and not na(state.localExtreme) and (bullish ? state.localExtreme <= state.p1Ref - sweepSize : state.localExtreme >= state.p1Ref + sweepSize)
+        bool mpsNow = hasTs and mpsOrder and mpsSweep and localKeyGood and na(state.mpsAt) and not na(state.mpsRef) and (bullish ? close > state.mpsRef and close[1] <= state.mpsRef : close < state.mpsRef and close[1] >= state.mpsRef)
         if mpsNow and not ended
             state.mpsAt := time_close
             state.mpsEvent := true
@@ -1162,6 +1170,8 @@ type EarlyState
     int dir = 0
     float hi = na
     float lo = na
+    int hiAt = na
+    int loAt = na
     float highCandleLow = na
     float lowCandleHigh = na
     bool complete = false
@@ -1200,6 +1210,8 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
             state.dir := 0
             state.hi := high
             state.lo := low
+            state.hiAt := time
+            state.loAt := time
             state.highCandleLow := low
             state.lowCandleHigh := high
             state.complete := time == ref.start
@@ -1217,9 +1229,13 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
             state.complete := false
         state.lastClose := time_close
         bool extended = state.dir == 1 ? low < state.lo : state.dir == -1 ? high > state.hi : false
-        if high > state.hi
+        // Keep the latest actual touch when an equal extreme is revisited.
+        // The companion wick must belong to that same candle.
+        if high >= state.hi
+            state.hiAt := time
             state.highCandleLow := low
-        if low < state.lo
+        if low <= state.lo
+            state.loAt := time
             state.lowCandleHigh := high
         state.hi := math.max(state.hi, high)
         state.lo := math.min(state.lo, low)
@@ -1294,6 +1310,7 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                     state.channel.confirmLevel := bullish ? ref.c1L : ref.c1H
                     state.channel.localExtreme := state.attemptSl
                     state.channel.raidAt := ref.start
+                    state.channel.p3At := bullish ? state.loAt : state.hiAt
                     state.channel.p3High := bullish ? state.lowCandleHigh : state.hi
                     state.channel.p3Low := bullish ? state.lo : state.highCandleLow
                     state.channel.p3Key := f_executionKey(state.dir, ref.start, state.channel.p3High, state.channel.p3Low, close)
@@ -1301,8 +1318,8 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                     state.channel.legExtreme := bullish ? high : low
                     state.channel.mpsRef := bullish ? (lastPivotHighTime[1] >= ref.c1Time ? lastPivotHigh[1] : na) : (lastPivotLowTime[1] >= ref.c1Time ? lastPivotLow[1] : na)
                     state.channel.mpsRefAt := bullish ? lastPivotHighTime[1] : lastPivotLowTime[1]
-                    bool earlyPair = not na(lastPivotHighTime[1]) and not na(lastPivotLowTime[1]) and (bullish ? lastPivotLowTime[1] < lastPivotHighTime[1] : lastPivotHighTime[1] < lastPivotLowTime[1])
-                    bool earlyRaid = earlyPair and (bullish ? state.lo <= lastPivotLow[1] - sweepSize : state.hi >= lastPivotHigh[1] + sweepSize)
+                    bool earlyPair = not na(state.channel.mpsRef) and not na(lastPivotHighTime[1]) and not na(lastPivotLowTime[1]) and lastPivotHigh[1] > lastPivotLow[1] and (bullish ? lastPivotLowTime[1] < lastPivotHighTime[1] : lastPivotHighTime[1] < lastPivotLowTime[1])
+                    bool earlyRaid = earlyPair and not na(state.channel.p3At) and state.channel.mpsRefAt < state.channel.p3At and state.channel.p3At <= time and (bullish ? state.lo <= lastPivotLow[1] - sweepSize : state.hi >= lastPivotHigh[1] + sweepSize)
                     if earlyRaid
                         state.channel.p1Ref := bullish ? lastPivotLow[1] : lastPivotHigh[1]
                         state.channel.p1At := bullish ? lastPivotLowTime[1] : lastPivotHighTime[1]
@@ -1748,6 +1765,7 @@ if historyMarks > 0 and (crtState.mpsEvent or higherState.mpsEvent)
             string sourceName = sharedMps ? f_tfName(htf) + " / " + f_tfName(largerTf) : f_tfName(pass == 0 ? htf : largerTf)
             string hint = "MPS " + sourceName + " | P2 " + str.tostring(price, format.mintick) + " | Pivot " + str.format_time(sourceAt, "dd/MM HH:mm", NY) + " NY | Break close " + str.format_time(time_close, "dd/MM HH:mm", NY) + " NY. Required for OTE only; not an entry."
             ReactionState proofState = pass == 0 ? crtState : higherState
+            hint += "\nP1 " + str.tostring(proofState.p1Ref, format.mintick) + " @ " + str.format_time(proofState.p1At, "dd/MM HH:mm", NY) + " NY | P3 " + str.tostring(proofState.localExtreme, format.mintick) + " @ " + str.format_time(proofState.p3At, "dd/MM HH:mm", NY) + " NY | P1 < P2 < P3 (time)"
             hint += "\n" + f_keyProofHint(proofState.p3Key, proofState.p3KeyAt)
             array.push(mpsLeftLines, line.new(sourceAt, price, gapLeft, price, xloc=xloc.bar_time, extend=extend.none, color=color.orange, width=1, force_overlay=true))
             array.push(mpsRightLines, line.new(gapRight, price, time, price, xloc=xloc.bar_time, extend=extend.none, color=color.orange, width=1, force_overlay=true))

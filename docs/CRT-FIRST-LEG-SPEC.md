@@ -88,3 +88,17 @@ Bộ lọc trước đây chỉ yêu cầu giá còn giữ phía phản ứng c�
 Tooltip hiện ghi hướng/HTF nguồn, C1 và giờ signal UTC+7, key của chính P3, thời điểm key đã biết và reclaim; panel luôn là context hiện tại. Không thêm chữ hay bảng trace lên chart. Kiểm tra bổ sung nằm ở tests/crt-local-key.cjs, dùng dữ liệu cấu tạo có giá tham chiếu ảnh và prefix bất biến; không gọi là backtest ETH/XAU.
 
 [Nghiệm thu bộ lọc vị trí key](research/crt-local-key-validation-2026-11-25.json): 23 suite qua; exact-source Pine không lỗi/cảnh báo. Brave đã kiểm tra XAUUSD và ETHUSD H2/M5, giữ cài đặt TS close; Buy ETH gần 05:50 được lọc, MPS sóng mẫu XAU giữ được phản ứng CLOSE/H1 3672.325. Đây là quan sát native, chưa phải Bar Replay hoặc đánh giá lợi nhuận.
+
+### Thứ tự P1 → P2 → P3 trong Early C2 · 25/11/2026
+
+Early C2 trước đây so cực trị tích lũy của cả C2 với P1 nhưng không kiểm tra thời điểm cực trị so với P2. Một ca dựng bằng thân hàm thực tế đã cho thấy đỉnh có trước P2 vẫn được dùng để khởi tạo MPS về sau. Đây là lỗi kiểm tra cấu trúc, không phải bằng chứng rằng một dấu cụ thể trên XAUUSD đã sai hoặc gây SL trên MGCG27.
+
+Early hiện lưu thời gian nến tạo high/low thực tế. Chỉ khởi tạo cấu trúc MPS khi P1 có trước P2, P2 có trước P3 và P3 không muộn hơn nến TS xác nhận. Sell phải quét trên P1 ít nhất một tick; Buy đối xứng. Dùng cả râu. P2/P3 cùng một nến không được suy đoán thứ tự intrabar. Nếu giá thực sự chạm lại cùng cực trị sau P2, ghi nhận lần chạm mới cùng high/low của đúng nến đó.
+
+Cổng MPS chung cũng kiểm tra lại thứ tự và giá quét trước khi phát, bao gồm bằng chứng Main nhận từ Early. Handoff giữ nguyên mốc P1/P2/P3; không dời cực trị về nến reclaim để hợp thức hóa thứ tự. Cấu trúc Early không hợp lệ thì không truyền P2 cho MPS/OTE. TS-close Early vẫn có thể phát độc lập khi đủ điều kiện CRT/key; không thêm MPS thành điều kiện bắt buộc cho TS/FVG.
+
+Tooltip MPS bổ sung giá/thời gian P1 và P3, cạnh thông tin P2 nguồn đã có. Các mốc này là cấu trúc LTF trong context HTF được ghi trên nhãn, không phải yêu cầu mọi đỉnh/đáy HTF đều bị vượt. Không thêm chữ hoặc bảng trace lên chart, không đổi setting mặc định.
+
+Kiểm tra: tests/early-mps-chronology.cjs chạy Buy/Sell đối xứng, ca sai trên bản trước sửa, P3 hợp lệ/cùng nến/quét lại bằng giá, xác nhận ngay hoặc về sau, cổng chung/handoff, reset C2 và 66 prefix bất biến. Đây là dữ liệu dựng với pivot nguồn cung cấp rõ, không emulation ta.pivots/request.security hoặc market Replay.
+
+[Bản nghiệm thu](research/crt-early-mps-chronology-2026-11-25.json): 24 suite qua, exact-source Pine biên dịch không lỗi/cảnh báo. Instance Brave chưa cập nhật trong lượt sửa này vì người dùng đang thao tác trang khác; host guard đã dừng nhập liệu.
