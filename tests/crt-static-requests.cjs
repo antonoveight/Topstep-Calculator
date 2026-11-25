@@ -14,8 +14,8 @@ for(const line of source.split(/\r?\n/)){
  assert.ok(indent===0 || indent===4 && owner,`Request must be global or directly in an extractable function: ${line.trim()}`);
 }
 assert.doesNotMatch(source,/f_requested\w+\(/,'Requests must execute globally, not via conditional wrappers');
-assert.match(source,/^EngineSnapshot requestedMain = request.security\(/m);
-assert.match(source,/^HigherSnapshot requestedHigher = request.security\(/m);
+assert.match(source,/^\[requestedMain, executionMain, mainPreview\] = request.security\(/m);
+assert.match(source,/^\[requestedHigher, executionLarger, largerPreview\] = request.security\(/m);
 assert.match(source,/^HigherSnapshot requestedBiasModel = request.security\(/m);
 assert.match(source,/^StructureBar requestedStructure = request.security\(/m);
 assert.ok(requests>0);

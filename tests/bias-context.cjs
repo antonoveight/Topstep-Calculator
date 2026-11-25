@@ -31,7 +31,7 @@ assert.equal(expression('biasCheckClose',{barstate:{isconfirmed:true},close:99,p
 for(const field of ['direction','age','swingHigh','swingLow','guardHigh','guardLow'])assert.ok(source.includes(`previous ? ${field}[1] : ${field}`),'All six bias snapshot fields must be individually confirmed');
 assert.match(source,/label.new\(bar_index, na, "", xloc=xloc.bar_index, yloc=markerLocation/,'Triangle remains at the current condition candle');
 assert.match(source,/Signal CLOSE/,'Tooltip distinguishes signal-close time from candle-open time');
-const tf={in_seconds:x=>x==='60'?3600:86400,period:'1D'};
+const tf={in_seconds:x=>x==='60'?3600:86400,period:'1D',main_period:'1D'};
 const overviewMode=expression('overviewMode',{timeframe:tf,htfInput:'60'});
 assert.equal(overviewMode,true);assert.equal(expression('htf',{overviewMode,htfInput:'60',timeframe:tf}),'1D','Opening D uses D overview of the selected H1 context');
 console.log('PASS structural bias, protection trail, persistence, symmetric reversals, closed-bar veto, six confirmed snapshot fields, marker anchoring and D overview. No market/Replay result claimed.');

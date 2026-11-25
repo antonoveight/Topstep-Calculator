@@ -1,0 +1,217 @@
+f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey, bool buyWave, bool sellWave, bool confirmedHit, bool permitEntry = true, int parentDirection = 0, bool qualifiedParent = false, int parentKnownAt = na) =>
+    EarlyResult result = EarlyResult.new(bucket=ref.start, c1Time=ref.c1Time)
+    if isLtf and barstate.isconfirmed and not na(ref.c1Time) and time >= ref.start
+        bool newWindow = na(state.bucket) or state.bucket != ref.start
+        if newWindow
+            state.root := ref.c1Time
+            state.bucket := ref.start
+            state.lastClose := ref.start
+            state.dir := 0
+            state.hi := high
+            state.lo := low
+            state.hiAt := time
+            state.loAt := time
+            state.highCandleLow := low
+            state.lowCandleHigh := high
+            state.setupP1 := na
+            state.setupP1At := na
+            state.setupP2 := na
+            state.setupP2At := na
+            state.complete := time == ref.start
+            state.blocked := false
+            state.emitted := false
+            state.attempts := 0
+            state.reclaimedAt := na
+            state.attemptSl := na
+            state.lockedSl := na
+            state.lockedTp := na
+            state.key := CrtKey.new()
+            state.channel := ReactionState.new()
+            state.terminalReason := ""
+        if not newWindow and time != state.lastClose
+            state.complete := false
+        state.lastClose := time_close
+        bool extended = state.dir == 1 ? low < state.lo : state.dir == -1 ? high > state.hi : false
+        // Keep the latest actual touch when an equal extreme is revisited.
+        // The companion wick must belong to that same candle.
+        if high >= state.hi
+            state.hiAt := time
+            state.highCandleLow := low
+        if low <= state.lo
+            state.loAt := time
+            state.lowCandleHigh := high
+        state.hi := math.max(state.hi, high)
+        state.lo := math.min(state.lo, low)
+        bool raidLow = state.lo <= ref.c1L - sweepSize
+        bool raidHigh = state.hi >= ref.c1H + sweepSize
+        bool both = raidLow and raidHigh
+        bool inside = close > ref.c1L and close < ref.c1H
+        if state.dir == 0 and not both
+            state.dir := raidLow ? 1 : raidHigh ? -1 : 0
+        bool bullish = state.dir == 1
+        // Capture the pre-raid pair while it is known, rather than selecting
+        // the new P3 itself as P1 after its pivot becomes confirmed.
+        float knownP1 = bullish ? lastPivotLow[1] : lastPivotHigh[1]
+        float knownP2 = bullish ? lastPivotHigh[1] : lastPivotLow[1]
+        int knownP1At = bullish ? lastPivotLowTime[1] : lastPivotHighTime[1]
+        int knownP2At = bullish ? lastPivotHighTime[1] : lastPivotLowTime[1]
+        bool orderedSeed = state.dir != 0 and not na(knownP1At) and not na(knownP2At) and knownP1At >= ref.c1Time and knownP1At < knownP2At and knownP2At < time and (bullish ? knownP1 < knownP2 : knownP1 > knownP2)
+        bool seedRaid = orderedSeed and (bullish ? low <= knownP1 - sweepSize : high >= knownP1 + sweepSize)
+        if seedRaid and (na(state.setupP1At) or na(state.reclaimedAt) and knownP1At > state.setupP1At)
+            state.setupP1 := knownP1
+            state.setupP1At := knownP1At
+            state.setupP2 := knownP2
+            state.setupP2At := knownP2At
+        float target = bullish ? ref.c1H : ref.c1L
+        bool targetTaken = state.dir != 0 and (bullish ? state.hi >= target : state.lo <= target)
+        bool biasOk = biasDir == state.dir or (allowCrtCounter and biasDir == -state.dir and biasDir != 0)
+        bool parentActive = qualifiedParent and parentDirection != 0 and not na(parentKnownAt) and parentKnownAt <= time
+        if not state.complete
+            state.status := "E DATA"
+        else if not na(state.reclaimedAt) and not na(state.channel) and not na(state.channel.confirmIndex)
+            bool stopped = bullish ? low <= state.attemptSl : high >= state.attemptSl
+            bool reached = bullish ? high >= target : low <= target
+            if not state.blocked and (stopped or reached)
+                state.status := stopped and reached ? "E AMB" : stopped ? "E SL REF" : "E TP REF"
+                state.terminalReason := state.status
+                if reached
+                    state.blocked := true
+                else
+                    // A stopped provisional trade stays stopped. Observation may
+                    // still find a new raid before this HTF C2 has finished.
+                    state.reclaimedAt := na
+                    state.channel := ReactionState.new()
+                    state.key := CrtKey.new()
+                    state.status := "OBS NEW RAID"
+            else if not state.blocked
+                state.status := time_close >= ref.finish ? "C2 CLOSED" : state.emitted ? "E SENT" : "TRACK TS"
+            // Observe later closed bars even after the one Early marker was sent.
+            // No additional Early alert; confirmed parent can inherit this evidence.
+            if not state.blocked and not na(state.channel) and not na(state.channel.confirmIndex)
+                SignalContext tracking = SignalContext.new(c1T=ref.c1Time, c2T=ref.start, c2End=ref.finish, parentDir=parentDirection, parentAtKey=qualifiedParent, parentLive=qualifiedParent, parentConfirmed=parentKnownAt, age=0, crtKey=state.key, kind=1, id=ref.c1Time, dir=state.dir, confirmed=state.reclaimedAt, hi=ref.c1H, lo=ref.c1L, inv=state.attemptSl, cp=target)
+                ChannelResult observed = f_stepChannel(tracking, state.channel, lastPivotHigh[1], lastPivotLow[1], na, na, enableEarlyC2 and permitEntry and not state.emitted and not confirmedHit and time_close < ref.finish, knownHighAt=lastPivotHighTime[1], knownLowAt=lastPivotLowTime[1])
+                if observed.hit and not state.emitted
+                    state.emitted := true
+                    state.lockedSl := state.attemptSl
+                    state.lockedTp := target
+                    state.status := "E SIGNAL"
+                    result.hit := true
+                    result.dir := state.dir
+                    result.inv := state.lockedSl
+                    result.cp := state.lockedTp
+                    result.confirmTime := observed.confirmTime
+                    result.reclaimedAt := state.reclaimedAt
+                    result.attempt := state.attempts
+                    result.keyRef := observed.keyRef
+        else if state.blocked
+            state.status := state.terminalReason
+        else if both or targetTaken
+            state.blocked := true
+            state.status := both ? "E DOUBLE" : "E TP TAKEN"
+            state.terminalReason := state.status
+        else if state.dir == 0
+            state.status := "E WAIT RAID"
+        else
+            if extended or not inside
+                state.reclaimedAt := na
+                state.channel := ReactionState.new()
+            CrtKey candidate = bullish ? buyKey : sellKey
+            if na(state.key) or state.key.kind == 0
+                if not na(candidate) and candidate.kind > 0 and candidate.dir == state.dir and not na(candidate.knownAt) and candidate.knownAt <= ref.start and candidate.beforeTime == ref.start
+                    state.key := candidate.copy()
+            bool hasKey = not na(state.key) and state.key.kind > 0 and state.key.dir == state.dir and state.key.knownAt <= ref.start
+            bool keyHeld = hasKey and (bullish ? close > state.key.hi : close < state.key.lo)
+            if hasKey and not keyHeld
+                state.blocked := true
+                state.status := "E KEY LOST"
+                state.terminalReason := state.status
+            else if not hasKey or not inside
+                state.status := not hasKey ? "E NO KEY" : "E WAIT RECLAIM"
+            else if na(state.reclaimedAt)
+                state.attempts += 1
+                state.reclaimedAt := time_close
+                state.attemptSl := bullish ? state.lo : state.hi
+                state.channel := ReactionState.new(sourceRoot=ref.c1Time, sourceC2=ref.start, sourceEnd=ref.finish, activatedAt=time_close, phaseAt=time_close)
+                state.status := "E TS CLOSED"
+                bool oppositeClose = bullish ? close > open : close < open
+                if oppositeClose
+                    state.channel.confirmIndex := bar_index
+                    state.channel.confirmTime := time
+                    state.channel.confirmLevel := bullish ? ref.c1L : ref.c1H
+                    state.channel.localExtreme := state.attemptSl
+                    state.channel.raidAt := ref.start
+                    state.channel.p3At := bullish ? state.loAt : state.hiAt
+                    state.channel.p3High := bullish ? state.lowCandleHigh : state.hi
+                    state.channel.p3Low := bullish ? state.lo : state.highCandleLow
+                    state.channel.p3Key := f_executionKey(state.dir, ref.start, state.channel.p3High, state.channel.p3Low, close)
+                    state.channel.p3KeyAt := state.channel.p3Key.kind > 0 ? time_close : na
+                    state.channel.legExtreme := bullish ? high : low
+                    bool storedPair = not na(state.setupP1At) and not na(state.setupP2At)
+                    float sourceP1 = storedPair ? state.setupP1 : knownP1
+                    int sourceP1At = storedPair ? state.setupP1At : knownP1At
+                    state.channel.mpsRef := storedPair ? state.setupP2 : not na(knownP2At) and knownP2At >= ref.c1Time ? knownP2 : na
+                    state.channel.mpsRefAt := storedPair ? state.setupP2At : knownP2At
+                    bool earlyPair = not na(state.channel.mpsRef) and not na(sourceP1At) and sourceP1At < state.channel.mpsRefAt and (bullish ? sourceP1 < state.channel.mpsRef : sourceP1 > state.channel.mpsRef)
+                    bool earlyRaid = earlyPair and not na(state.channel.p3At) and state.channel.mpsRefAt < state.channel.p3At and state.channel.p3At <= time and (bullish ? state.lo <= sourceP1 - sweepSize : state.hi >= sourceP1 + sweepSize)
+                    if earlyRaid
+                        state.channel.p1Ref := sourceP1
+                        state.channel.p1At := sourceP1At
+                        state.channel.raidIndex := bar_index
+                        state.channel.raidExtreme := state.attemptSl
+                        state.channel.raidReclaimed := true
+                    else
+                        state.channel.mpsRef := na
+                        state.channel.mpsRefAt := na
+                    bool spentP2 = not na(state.channel.mpsRef) and (bullish ? structureBeforeClose > state.channel.mpsRef : structureBeforeClose < state.channel.mpsRef)
+                    if spentP2
+                        state.channel.mpsRef := na
+                    bool initialMps = structureBarReady and state.channel.p3Key.kind > 0 and not na(state.channel.mpsRef) and (bullish ? structureClosing > state.channel.mpsRef and structurePriorClose <= state.channel.mpsRef : structureClosing < state.channel.mpsRef and structurePriorClose >= state.channel.mpsRef)
+                    state.channel.mpsAt := initialMps ? structureClosedAt : na
+                    state.channel.lastClosedAt := time_close
+                state.channel.forwardKey := f_forwardKey(state.dir, time, close, target)
+                state.channel.nextObjective := state.channel.forwardKey.kind > 0 ? (bullish ? state.channel.forwardKey.lo : state.channel.forwardKey.hi) : na
+                state.channel.objectiveReached := false
+                state.channel.objectiveAt := na
+                bool freshEarlyKey = not na(state.channel.p3Key) and state.channel.p3Key.kind > 0 and f_executionProofValid(state.channel.p3Key, state.channel.p3KeyAt)
+                if oppositeClose and not freshEarlyKey
+                    state.status := "E WAIT P3 KEY"
+                bool earlyCounter = biasDir == -state.dir or parentActive and parentDirection != state.dir
+                bool earlyCounterSwing = not na(state.channel.p1At) and not na(state.channel.mpsRefAt) and not na(state.channel.p3At) and state.channel.p1At < state.channel.mpsRefAt and state.channel.mpsRefAt < state.channel.p3At and state.channel.p3At <= time and (bullish ? state.lo <= state.channel.p1Ref - sweepSize and close > state.channel.p1Ref : state.hi >= state.channel.p1Ref + sweepSize and close < state.channel.p1Ref)
+                if oppositeClose and earlyCounter and not earlyCounterSwing
+                    state.status := "E WAIT CT SWING"
+                if oppositeClose and not state.emitted and (not earlyCounter or earlyCounterSwing) and (not parentActive or parentDirection == state.dir or allowCrtCounter and hasKey) and freshEarlyKey and enableEarlyC2 and permitEntry and biasOk and time_close < ref.finish and not confirmedHit and entryBranches != "FVG / OTE"
+                    state.channel.branchMask := 1
+                    state.channel.everSent := true
+                    state.emitted := true
+                    state.lockedSl := state.attemptSl
+                    state.lockedTp := target
+                    state.status := "E SIGNAL"
+                    result.hit := true
+                    result.dir := state.dir
+                    result.inv := state.lockedSl
+                    result.cp := state.lockedTp
+                    result.confirmTime := time
+                    result.reclaimedAt := state.reclaimedAt
+                    result.attempt := state.attempts
+                    result.keyRef := state.channel.p3Key
+            else
+                SignalContext local = SignalContext.new(age=0, crtKey=state.key, kind=1, id=ref.start, flags=1, phase=1, dir=state.dir, confirmed=state.reclaimedAt, resolved=state.reclaimedAt, hi=ref.c1H, lo=ref.c1L, inv=state.attemptSl, cp=target)
+                ChannelResult entry = f_stepChannel(local, state.channel, lastPivotHigh[1], lastPivotLow[1], na, na, enableEarlyC2 and permitEntry and not confirmedHit and time_close < ref.finish, knownHighAt=lastPivotHighTime[1], knownLowAt=lastPivotLowTime[1])
+                state.status := confirmedHit ? "E C3 PRIORITY" : "E " + entry.status
+
+
+                if entry.hit and not confirmedHit
+                    state.emitted := true
+                    state.lockedSl := state.attemptSl
+                    state.lockedTp := target
+                    state.status := "E SIGNAL"
+                    result.hit := true
+                    result.dir := state.dir
+                    result.inv := state.lockedSl
+                    result.cp := state.lockedTp
+                    result.confirmTime := entry.confirmTime
+                    result.reclaimedAt := state.reclaimedAt
+                    result.attempt := state.attempts
+                    result.keyRef := entry.keyRef
+    result.status := not isLtf ? "E VIEW TF" : not enableEarlyC2 or not permitEntry ? "OBS | " + state.status : state.status
+    result

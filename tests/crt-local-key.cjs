@@ -67,7 +67,7 @@ const proof=k.makeKey({...key,kind:3,lo:110,hi:110,beforeTime:101});
 assert.equal(k.proofValid(proof,102,111,102),true);
 assert.equal(k.proofValid(proof,102,111,103),false);
 assert.equal(k.proofValid(proof,102,109,103),true);
-assert.match(source,/keys\[1\]/);
+assert.match(source,/ClockCandle part = ClockCandle.new\(t=time\[1\]/);
 assert.match(source,/f_keyProofHint\(proofState.p3Key, proofState.p3KeyAt\)/);
 assert.match(source,/Historical source at signal time/);
 assert.match(source,/Source C1 .*Asia\/Ho_Chi_Minh/);

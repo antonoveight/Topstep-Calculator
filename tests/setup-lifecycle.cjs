@@ -24,16 +24,16 @@ for(const dir of [1,-1]){
 }
 // Screenshot-like 59.8k INV: no need to wait for H1 close at 22:00 NY.
 const shot=h.state();assert.equal(h.step(shot,[42,1,100,59850,60300,1,150,155,59600,59320,true]),1);
-const local={uid:1,endReason:1,endedAt:150},laterSame={uid:1,endReason:4,endedAt:200},newer={uid:2,endReason:2,endedAt:201};
+const local={aT:1,bEnd:100,endReason:1,endedAt:150},laterSame={aT:1,bEnd:100,endReason:4,endedAt:200},newer={aT:2,bEnd:101,endReason:2,endedAt:201};
 assert.equal(h.archive(local,laterSame),local,'Keep first observed LTF chronology for the same setup');
 assert.equal(h.archive(local,newer),newer);assert.equal(h.archive(local,null),local);assert.equal(h.archive(null,newer),newer);
 assert.ok(!h.archive(null,null));
 assert.doesNotMatch(s,/older and bar_index > m.bornIndex\)/,'No automatic parent expiry at C3');
 assert.doesNotMatch(s,/Model fallback|selected := fallback|Context timeout \(HTF/);
-assert.match(s,/bool clusterActive = rangeAvailable/);assert.match(s,/bool drawActive = rangeAvailable/);assert.match(s,/bool hasModel = rangeAvailable/);
+assert.match(s,/bool origin = showCluster and rangeAvailable/);assert.match(s,/bool visible = showLevels and rangeAvailable/);assert.match(s,/bool hasModel = rangeAvailable/);
 assert.match(s,/f_contextKey\(focusAvailable \? sId : na/);assert.match(s,/id=focusAvailable \? sId : na/);
 assert.match(s,/"SEARCH"/);assert.match(s,/reason == 7 \? "EXP"/);
 const localArchive=s.match(/focusLife.archived := ModelArchive.new\((.+)\)/)[1];assert.doesNotMatch(localArchive,/(?:cO|cH|cL|cC|cT|cEnd)=/,'A mid-HTF event must not invent closed C3 OHLC');
-assert.match(s,/f_archiveCandles\(visibleArchive, endedCandles\)/);assert.match(s,/bool archiveActive = showCluster and showArchive/);
+assert.match(s,/f_putVisual\(archiveVisual, ClockCandle.new\(t=visibleArchive.aT/);assert.match(s,/if showCluster and showArchive/);
 assert.equal(s,fs.readFileSync('chibao.txt','utf8'));
 console.log(`PASS ${traces} symmetric actual-source lifecycle traces: wick/equality INV, target, entry expiry separate from parent, ambiguity, no self-invalidation, closed-bar latch, fresh setup handoff, first-event archive and screenshot regression. Not market Replay.`);

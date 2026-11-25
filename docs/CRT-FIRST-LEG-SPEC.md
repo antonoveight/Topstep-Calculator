@@ -4,6 +4,12 @@ Cập nhật thực thi 25/11/2026. Đây là đặc tả hiện hành của Pin
 
 Cập nhật hạn mức chạy: mặc định hiện là Light (24 nến mỗi nguồn) và Calculated bars 150 trên chart; Full giữ nguồn 600. Các đoạn mô tả cửa sổ 600 bên dưới là giới hạn Full, không phải dữ liệu được bảo đảm trong Light. Snapshot model đã gộp và bỏ trường legacy luôn rỗng, không thay công thức entry. Xem [hướng dẫn cài đặt](INDICATOR-SETTINGS.md) và [kết quả full compiler + native runtime](research/crt-compile-runtime-validation-2026-11-25.json).
 
+## Đồng hồ nến khi tham khảo TopstepX
+
+[Đặc tả đồng bộ H2/H4](CRT-TOPSTEP-CLOCK.md): vẫn dùng giá OANDA, ghép theo phiên 17:00 Chicago trên OANDA:XAUUSD. C1/C2 và cụm bên phải phải đọc cùng nguồn; H1/D1 và các mã khác giữ native. Các bằng chứng compiler/runtime trước bản đồng hồ này chỉ áp dụng hash cũ, không tự chứng nhận bản mới.
+
+[Nghiệm thu bản đồng hồ](research/crt-topstep-clock-validation-2026-11-25.json) ghi hash, 33 suite, full compiler và kiểm tra Brave riêng cho bản cập nhật này.
+
 ## Kết luận từ nguồn gốc
 
 Romeo mô tả key là nơi kỳ vọng giá bật lại và nhấn mạnh quan sát LTF khi giá thực sự tới key HTF; một CRT đẹp trước khi tới key vẫn có thể thất bại. Phân biệt giao dịch tiến đến key với phản ứng rời key. [Key level, 05:52–09:55 và 12:00–17:05](https://www.youtube.com/watch?v=p8UYOgVn1-g&t=352s).

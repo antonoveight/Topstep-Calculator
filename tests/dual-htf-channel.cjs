@@ -13,7 +13,7 @@ assert.equal(h.step({...main,inv:110},stopped,tape,{requireKey:false,bias:-1}).h
 assert.equal(b.localStopTaken,false,'Main invalidation cannot terminate the higher channel');
 const packed=s.match(/HigherSnapshot.new\(id=m.uid[^\r\n]+/)[0];
 for(const [field,member] of [['id','uid'],['dir','dir'],['inv','inv'],['cp','cp'],['confirmed','confirmedAt'],['key','crtKey']])assert.ok(packed.includes(field+'=m.'+member));
-assert.match(s,/EngineSnapshot prior = snapshot\[1\]/,'Higher channel uses the same one-offset frozen event');
+assert.match(s,/f_asHigher\(f_engine\(sourceTf\)\)/,'Higher channel uses the same one-offset frozen event');
 assert.match(s,/htf \+ ":" \+ modelKey/);assert.match(s,/largerTf \+ ":" \+ higherModelKey/);
 assert.match(s,/markerResults = array.from\(crtResult, higherResult\)/);
 assert.equal((s.match(/f_note\(true, buyHint\)/g)||[]).length,1);

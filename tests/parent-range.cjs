@@ -13,7 +13,7 @@ for(const dir of [-1,1]){
  const model=()=>{const m=make();if(dir===1)Object.assign(m,{hi:120,lo:110,aH:120,aL:110});return m;};
  const m=model(),prior=clusters.archive({...m,phase:1},1,115),oldSL=m.inv;
  const raid=bar(b(110,108,114,105,109));cases++;assert.equal(keys.renew(m,raid,2),true);
- assert.equal(m.uid,90);assert.equal(m.aT,90);assert.equal(m.flags,3);assert.equal(m.phase,1);assert.equal(m.confirmedAt,120);assert.equal(m.inv,dir===-1?114:106);assert.equal(prior.confirmedAt,110);assert.equal(prior.inv,undefined);assert.equal(oldSL,dir===-1?112:108);
+ assert.equal(m.uid,90);assert.equal(m.aT,90);assert.equal(m.flags,3);assert.equal(m.phase,1);assert.equal(m.confirmedAt,120);assert.equal(m.inv,dir===-1?114:106);assert.equal(prior.bEnd,110);assert.equal(prior.inv,undefined);assert.equal(oldSL,dir===-1?112:108);
  assert.equal(m.bEnd,120);assert.equal(m.cT,null);assert.equal(m.raidTime,null);
  // Closing inside old C2 but outside C1 must not validate the parent.
  const pending=model();cases++;assert.equal(keys.renew(pending,bar(b(110,108,114,105,111)),2),false);assert.equal(pending.phase,0);
@@ -34,8 +34,8 @@ for(const dir of [-1,1]){
 }
 const frozen=keys.parent([{price:113,side:1,born:70,knownAt:80},{price:114,side:1,born:75,knownAt:95}],{levels:[]},[],90);
 assert.equal(frozen.levels.length,1);assert.equal(frozen.levels[0].knownAt,80);
-const old={uid:90,confirmedAt:110,endReason:1,endedAt:115},fresh={uid:90,confirmedAt:120,endReason:2,endedAt:140};assert.equal(focus.archive(old,fresh),fresh,'New attempt archive beats old local INV on the same parent');
-assert.match(s,/uid=time\[1\]/);assert.match(s,/if inScan and not na\(time\[1\]\) and crt\s+parentReferences := f_parentKeys/);
+const old={aT:90,bEnd:110,endReason:1,endedAt:115},fresh={aT:90,bEnd:120,endReason:2,endedAt:140};assert.equal(focus.archive(old,fresh),fresh,'New attempt archive beats old local INV on the same parent');
+assert.match(s,/uid=source.prevT/);assert.match(s,/if inScan and not na\(source.prevT\) and crt\s+parentReferences := f_parentKeys/);
 assert.doesNotMatch(s,/older and bar_index > m.bornIndex\)/);
 assert.match(s,/candidate.phase == 1/);assert.doesNotMatch(s,/selected := watching/);
 assert.match(s,/if m.phase == 0\r?\n\s+array.remove\(models, mi\)/);

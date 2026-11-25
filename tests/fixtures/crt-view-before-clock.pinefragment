@@ -1,0 +1,67 @@
+type ModelView
+    int uid = na
+    int flags = 0
+    int kind = 0
+    int phase = 0
+    int dir = 0
+    float hi = na
+    float lo = na
+    float inv = na
+    float cp = na
+    int confirmedAt = na
+    int resolvedAt = na
+    float aO = na
+    float aH = na
+    float aL = na
+    float aC = na
+    int aT = na
+    float bO = na
+    float bH = na
+    float bL = na
+    float bC = na
+    int bT = na
+    float cO = na
+    float cH = na
+    float cL = na
+    float cC = na
+    int cT = na
+    int hiT = na
+    int loT = na
+    int invT = na
+    int cpT = na
+    CrtKey crtKey = na
+    bool eqTouched = false
+    int aEnd = na
+    int cEnd = na
+    int bEnd = na
+type ModelArchive
+    int confirmedAt = na
+    int aEnd = na
+    int bEnd = na
+    int cEnd = na
+    int uid = na
+    int flags = na
+    int kind = na
+    int phase = na
+    float aO = na
+    float aH = na
+    float aL = na
+    float aC = na
+    int aT = na
+    float bO = na
+    float bH = na
+    float bL = na
+    float bC = na
+    int bT = na
+    float cO = na
+    float cH = na
+    float cL = na
+    float cC = na
+    int cT = na
+    int endReason = 0
+    int endedAt = na
+f_exportModel(Model source) =>
+    ModelView.new(uid=source.uid, flags=source.flags, kind=source.kind, phase=source.phase, dir=source.dir, hi=source.hi, lo=source.lo, inv=source.inv, cp=source.cp, confirmedAt=source.confirmedAt, resolvedAt=source.resolvedAt, aO=source.aO, aH=source.aH, aL=source.aL, aC=source.aC, aT=source.aT, bO=source.bO, bH=source.bH, bL=source.bL, bC=source.bC, bT=source.bT, cO=source.cO, cH=source.cH, cL=source.cL, cC=source.cC, cT=source.cT, hiT=source.hiT, loT=source.loT, invT=source.invT, cpT=source.cpT, crtKey=source.crtKey, eqTouched=source.eqTouched, aEnd=source.aEnd, cEnd=source.cEnd, bEnd=source.bEnd)
+
+f_archive(Model m, int reason, int endedAt) =>
+    ModelArchive.new(confirmedAt=m.confirmedAt, aEnd=m.aEnd, bEnd=m.bEnd, cEnd=m.cEnd, uid=m.uid, flags=m.flags, kind=m.kind, phase=m.phase, aO=m.aO, aH=m.aH, aL=m.aL, aC=m.aC, aT=m.aT, bO=m.bO, bH=m.bH, bL=m.bL, bC=m.bC, bT=m.bT, cO=m.cO, cH=m.cH, cL=m.cL, cC=m.cC, cT=m.cT, endReason=reason, endedAt=endedAt)

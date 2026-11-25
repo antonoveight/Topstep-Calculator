@@ -1,0 +1,107 @@
+{
+  "date": "2026-11-25",
+  "source": "indicators/funded-angler-v6.pine",
+  "sha256": "9d98d44c4861306eba55064199bfb7e1e32d5751ec5e216c7970b7e27d7cdfed",
+  "mirrorExact": true,
+  "offlineSuites": 33,
+  "fullCompiler": {
+    "source": "indicators/funded-angler-v6.pine",
+    "sha256": "9d98d44c4861306eba55064199bfb7e1e32d5751ec5e216c7970b7e27d7cdfed",
+    "httpStatus": 200,
+    "elapsedMs": 62287,
+    "fullCompilationPassed": true,
+    "reason": null,
+    "errors": [],
+    "warnings": [
+      "{\"message\":\"The function \\\"{functionName}\\\" should be called on each calculation for consistency. It is recommended to extract the call from this scope\",\"start\":{\"line\":2129,\"column\":30},\"end\":{\"line\":2129,\"column\":487},\"code\":\"CW10003\",\"ctx\":{\"functionName\":\"f_stepEarly\"}}"
+    ],
+    "chartExecutionVerified": false
+  },
+  "native": {
+    "passed": true,
+    "window": "Separate logged-in Brave review window; primary user tabs untouched",
+    "accountRuntimeLimitSeconds": 0.5,
+    "sourceVerifiedByEditorCopy": true,
+    "symbol": "OANDA:XAUUSD",
+    "budget": "Light",
+    "calculatedChartBars": 150,
+    "bias": "D1 Auto",
+    "structure": "Chart",
+    "branches": "TS + FVG + OTE",
+    "early": true,
+    "largerSignals": true,
+    "finalSource": {
+      "sha256": "9d98d44c4861306eba55064199bfb7e1e32d5751ec5e216c7970b7e27d7cdfed",
+      "time": "2026-11-25 22:36 UTC+7",
+      "chart": "M5",
+      "htf": "H1",
+      "larger": "H4",
+      "observed": [
+        "Dashboard and both candle groups visible",
+        "Historical Early marker visible",
+        "H1 countdown closes 23:00 UTC+7; H4 closes 02:00 UTC+7",
+        "No runtime error icon observed"
+      ],
+      "screenshot": "output/brave-review/clock-final-h1-m5.png"
+    },
+    "clockRegression": {
+      "sourceSha256": "a2a74c868673d497facf683b63d4d1b4061319cf99d479089dda8033a483c392",
+      "differenceFromFinal": "Tooltip wording only; formulas and rendering identical",
+      "checks": [
+        {
+          "chart": "M5",
+          "htf": "H2",
+          "clock": "TopstepX",
+          "at": "22:32 UTC+7",
+          "closes": [
+            "H2 00:00 UTC+7",
+            "H4 02:00 UTC+7"
+          ],
+          "screenshot": "output/brave-review/clock-h2-topstep.png"
+        },
+        {
+          "chart": "M5",
+          "htf": "H2",
+          "clock": "Native",
+          "at": "22:32 UTC+7",
+          "closes": [
+            "H2 23:00 UTC+7",
+            "H4 01:00 UTC+7"
+          ],
+          "screenshot": "output/brave-review/clock-h2-native.png"
+        },
+        {
+          "chart": "H2",
+          "effectiveHtf": "H2",
+          "clock": "TopstepX",
+          "observed": "H2/H4 previews use H1-derived clock; 00:00/02:00 UTC+7 close schedules; dashboard visible, no runtime icon",
+          "screenshot": "output/brave-review/clock-h2-chart.png"
+        },
+        {
+          "chart": "D1",
+          "observed": "D1/W1 overview, dashboard and source candles visible; empty-frame guards did not raise runtime error",
+          "screenshot": "output/brave-review/clock-d1-view.png"
+        }
+      ]
+    },
+    "cloudSaved": false,
+    "published": false,
+    "ordersPlaced": false
+  },
+  "fixes": [
+    "No-key CrtKey formatter guard fixes observed RE10041",
+    "Empty ClockPreview/SMT guards for insufficient source history",
+    "Compact exports and lean renderer avoid repeated legacy render overhead",
+    "H2/H4 clock shared by C1 detection, source keys, Early, SMT and previews"
+  ],
+  "limits": [
+    "CW10003 remains for f_stepEarly inside the two-channel loop; actual old/new state comparison covers 4224 constructed steps, not all TradingView runtime states",
+    "This is a compile/runtime smoke check, not market Replay, win-rate validation or a no-repaint guarantee",
+    "Only OANDA:XAUUSD H2/H4 use the TopstepX clock; H1/D1 and other feeds remain native",
+    "Regular CME session calendar only; holidays/early closes not emulated",
+    "OANDA prices remain spot prices; cannot guarantee MGC OHLC/TS/setup equality",
+    "Full 600-source mode and every symbol/timeframe combination not revalidated; Light can omit old context",
+    "Screenshot artifacts are local ignored output files, not included in Git"
+  ],
+  "hashNormalization": "UTF-8 source with CRLF normalized to LF and outer whitespace trimmed, matching compiler/editor verification"
+}

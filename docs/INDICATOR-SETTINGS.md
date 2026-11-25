@@ -2,12 +2,13 @@
 
 Cập nhật 25/11/2026. [Đặc tả hiện hành và nguồn gốc](CRT-FIRST-LEG-SPEC.md). [Cài đặt trước migration](archive/INDICATOR-SETTINGS-before-key-reactions-2026-11-25.md) chỉ dùng đối chiếu lịch sử.
 
-Mặc định có 29 input khai báo và ô Calculated bars tích hợp của TradingView. MPS gate chung và sáu ô R1 nhập tay đã bỏ. Không có fibo hay vùng entry LTF tự vẽ.
+Mặc định có 30 input khai báo và ô Calculated bars tích hợp của TradingView. MPS gate chung và sáu ô R1 nhập tay đã bỏ. Không có fibo hay vùng entry LTF tự vẽ.
 
 Calculation budget: Light mặc định tải 24 nến trên mỗi nguồn timeframe; Full tải 600. **Calculated bars mặc định 150 nến chart** (khoảng 12,5 giờ trên M5, có thể dài hơn khi có khoảng nghỉ phiên). Light có thể thiếu model/key cũ hoặc khởi tạo bias khác Full. Đây là giới hạn tải cho tài khoản có thời gian tính toán ngắn, không phải setting được tối ưu tỷ lệ thắng. Khi cần lịch sử rộng hơn, điều chỉnh cả Calculation budget và Calculated bars; Full có thể vẫn vượt runtime của tài khoản. Không thử lại liên tục một mã đang báo compilation timeout; xem [ghi nhận lỗi và kiểm tra](research/CRT-COMPILE-TIMEOUT-2026-11-25.md).
 
 | Mục | Mặc định / cách dùng |
 | --- | --- |
+| H2 / H4 clock | TopstepX mặc định trên OANDA:XAUUSD: ghép H1 theo phiên 17:00 Chicago có DST. Dùng chung cho C1/C2, key, Early và hai cụm nến. Native để trở về nến của feed; mã khác luôn native. Xem [phạm vi và cách đối chiếu](CRT-TOPSTEP-CLOCK.md). |
 | HTF / chart | H1 / M5 để bắt đầu; HTF có H1/H2/H4/D1. Engine entry ở M1/M3/M5/M15 chia hết HTF. |
 | Bias TF / Bias | D1 / Auto. Bias cấu trúc dùng nến đã đóng; có Long/Short/Neutral chủ động. |
 | CRT reversal at prior HTF key | Bật. Ngược bias cần key bối cảnh trước C2 và TS/P3 trực tiếp tại key HTF; không cho phép mọi TS chỉ vì key cũ còn giữ. Không đổi bias hoặc vượt B0/B0!. |
@@ -23,7 +24,9 @@ Calculation budget: Light mặc định tải 24 nến trên mỗi nguồn timef
 | CRT range / target / HTF key | Bật. CRTH/CRTL, EQ, INV, TGT và KEY có loại/khung nguồn; không còn IRL/ERL. |
 | Cluster / follow / last ended | Hai cụm bật; follow 6 nến; LAST mặc định tắt. Không thay logic hiệu lực setup. |
 | Drawing horizon / recency | 3 HTF; giới hạn hình/line, không làm setup hết hạn. |
-| Calculated bars | 600 chart bar, có thể tăng khi cần lịch sử; theo dõi giới hạn runtime tài khoản. |
+| Calculated bars | 150 chart bar mặc định; tăng khi cần lịch sử và theo dõi giới hạn runtime tài khoản. |
+
+Input không hiện dài trên status line nhưng vẫn chỉnh trong Inputs. TGT được gộp với CRTH hoặc CRTL cùng mức; các nhãn còn lại là EQ, INV và KEY. Hover tên cụm để xem giờ mở/đóng nguồn và OHLC. [Nghiệm thu bản đồng hồ TopstepX](research/crt-topstep-clock-validation-2026-11-25.json) tách riêng kết quả compiler, runtime và giới hạn dữ liệu.
 
 Key FVG, OB và open/close phải đủ quy tắc xác nhận của mã, không phải mọi hình tự đánh dấu thủ công. SMT là detector giới hạn trên hai range HTF đã đóng với timestamp đồng bộ. Xem công thức, invalidation và phạm vi chưa triển khai trong đặc tả.
 

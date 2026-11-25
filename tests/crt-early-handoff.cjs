@@ -2,7 +2,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const source=fs.readFileSync('indicators/funded-angler-v6.pine','utf8');
 const begin=source.indexOf('if barstate.isconfirmed and focusAvailable and na(crtState.confirmIndex) and earlyState.root');
-const end=source.indexOf('ChannelResult crtResult =',begin);
+const remaining=source.slice(begin).split(/\r?\n/);let stop=1;
+while(stop<remaining.length&&(!remaining[stop].trim()||/^\s/.test(remaining[stop])))stop++;
+const end=begin+remaining.slice(0,stop).join('\n').length;
 assert.ok(begin>=0&&end>begin);
 const lines=source.slice(begin,end).trimEnd().split(/\r?\n/);
 const js=x=>x.replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!').replace(/:=/g,'=');
