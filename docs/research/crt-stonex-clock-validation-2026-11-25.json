@@ -1,0 +1,84 @@
+{
+  "date": "2026-11-25",
+  "source": "indicators/funded-angler-v6.pine",
+  "sha256": "da4fe13e040545fae66cfcdd3821a543c26ae785aac7a54b72f13c25f2e598ba",
+  "hashNormalization": "UTF-8 source with CRLF normalized to LF and outer whitespace trimmed",
+  "mirrorExact": true,
+  "offlineSuites": 33,
+  "clockPolicyCases": 48,
+  "fullCompiler": {
+    "source": "indicators/funded-angler-v6.pine",
+    "sha256": "da4fe13e040545fae66cfcdd3821a543c26ae785aac7a54b72f13c25f2e598ba",
+    "httpStatus": 200,
+    "elapsedMs": 43454,
+    "fullCompilationPassed": true,
+    "reason": null,
+    "errors": [],
+    "warnings": [
+      "{\"message\":\"The function \\\"{functionName}\\\" should be called on each calculation for consistency. It is recommended to extract the call from this scope\",\"start\":{\"line\":2131,\"column\":30},\"end\":{\"line\":2131,\"column\":487},\"code\":\"CW10003\",\"ctx\":{\"functionName\":\"f_stepEarly\"}}"
+    ],
+    "chartExecutionVerified": false
+  },
+  "native": {
+    "passed": true,
+    "reviewWindow": "New separate Brave window; no chart or order actions on TopstepX",
+    "symbol": "STONEXTRADING:USTECH100CFD",
+    "chart": "M5",
+    "htf": "H2",
+    "larger": "H4",
+    "bias": "D1 Auto",
+    "calculationBudget": "Light",
+    "calculatedChartBars": 150,
+    "sourceVerifiedByEditorCopy": true,
+    "observations": [
+      {
+        "time": "2026-11-25 22:56 UTC+7",
+        "source": "Read-only observation of existing side-by-side chart",
+        "mnq": "MNQZ26 TopstepX H2 remaining approximately 01:03:10, closes 00:00 UTC+7",
+        "oldCfd": "H2 remaining approximately 00:03:17, closes 23:00 UTC+7 despite TopstepX input"
+      },
+      {
+        "time": "2026-11-25 23:00 UTC+7",
+        "clock": "TopstepX",
+        "h2Source": "25/11 22:00 to 26/11 00:00 UTC+7",
+        "h4Source": "25/11 22:00 to 26/11 02:00 UTC+7",
+        "observed": [
+          "Both clusters and dashboard visible",
+          "Historical main entry triangles and Early marker visible",
+          "No compile/runtime error icon observed",
+          "H2/H4 header tooltips confirm source clock and actual source intervals"
+        ],
+        "screenshots": [
+          "output/brave-review/index-clock-h2-m5-topstep.png",
+          "output/brave-review/index-clock-h2-tooltip.png",
+          "output/brave-review/index-clock-h4-tooltip.png"
+        ]
+      },
+      {
+        "time": "2026-11-25 23:01 UTC+7",
+        "clock": "Native",
+        "h2Closes": "26/11 01:00 UTC+7",
+        "h4Closes": "26/11 03:00 UTC+7",
+        "screenshot": "output/brave-review/index-clock-h2-m5-native.png"
+      }
+    ],
+    "restoredClock": "TopstepX",
+    "savedToCloud": false,
+    "published": false,
+    "ordersPlaced": false
+  },
+  "changeScope": [
+    "Add exact StoneX ticker to shared clock policy",
+    "Main C1/C2, execution keys, Early, own/peer SMT clocks and both previews use same policy",
+    "Fix TF panel/header clock provenance for both supported feeds",
+    "Preserve XAUUSD support, native H1/D1 and unsupported market behavior"
+  ],
+  "limits": [
+    "No MNQ futures data requested or purchased; CFD OHLC can differ from futures despite clock alignment",
+    "Regular CME session only; no holiday/early-close calendar",
+    "CW10003 for f_stepEarly remains from prior version; no new compiler errors or warnings",
+    "No profit, Replay or full cross-feed candle-equivalence validation",
+    "Full source budget not retested; runtime observation uses Light/150",
+    "Screenshots are local ignored output artifacts"
+  ]
+}

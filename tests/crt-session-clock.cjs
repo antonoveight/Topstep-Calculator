@@ -48,7 +48,15 @@ for(let i=0;i<240;i++){const o=100+random()*40,c=o+(random()-.5)*16;tape.push({t
 const piv=(values)=>h.pivots(values.map((v,i)=>h.candle({t:i,h:v,l:-v})));
 assert.deepEqual(piv([1,2,5,4,3]),[5,-5,2]);assert.deepEqual(piv([1,5,5,4,3]),[5,-5,2]);assert.deepEqual(piv([1,2,5,5,3]),[null,null,2]);
 assert.match(s,/htfClock = input.string\("TopstepX"/);
-assert.match(s,/ticker.standard\(syminfo.main_tickerid\) == "OANDA:XAUUSD"/,'Other markets retain native sessions; SMT peer inherits the main chart clock');
+const market=h.compile('f_topstepClockMarket',['mainTicker']);
+let policies=0;
+for(const id of ['OANDA:XAUUSD','STONEXTRADING:USTECH100CFD','OANDA:NAS100USD','BINANCE:BTCUSDT','CME_MINI:MNQ1!','FOREXCOM:EURUSD'])for(const clock of ['TopstepX','Native'])for(const tf of ['60','120','240','1D']){
+ const aligned=h.compile('f_alignedTf',['sourceTf'],{htfClock:clock,f_topstepClockMarket:market,ticker:{standard:x=>x},syminfo:{main_tickerid:id,tickerid:'OTHER:SMT_PEER'}});
+ const supported=['OANDA:XAUUSD','STONEXTRADING:USTECH100CFD'].includes(id);
+ assert.equal(market(id),supported);assert.equal(aligned(tf),clock==='TopstepX'&&supported&&['120','240'].includes(tf),'Policy '+id+' / '+clock+' / '+tf);policies++;
+}
+assert.equal(policies,48);
+assert.match(s,/f_topstepClockMarket\(ticker.standard\(syminfo.main_tickerid\)\)/,'SMT request inherits main market identity, never peer identity');
 assert.match(s,/overviewMode = timeframe.in_seconds\(timeframe.main_period\)/,'Main H2/H4 chart identity survives an H1 transport request');
 assert.match(s,/f_alignedTf\(sourceTf\) \? "60" : sourceTf/);
 assert.match(s,/ClockCandle part = ClockCandle.new\(t=time\[1\], e=time_close\[1\], o=open\[1\], h=high\[1\], l=low\[1\], c=close\[1\]\)/);

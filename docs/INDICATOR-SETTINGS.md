@@ -8,7 +8,7 @@ Calculation budget: Light mặc định tải 24 nến trên mỗi nguồn timef
 
 | Mục | Mặc định / cách dùng |
 | --- | --- |
-| H2 / H4 clock | TopstepX mặc định trên OANDA:XAUUSD: ghép H1 theo phiên 17:00 Chicago có DST. Dùng chung cho C1/C2, key, Early và hai cụm nến. Native để trở về nến của feed; mã khác luôn native. Xem [phạm vi và cách đối chiếu](CRT-TOPSTEP-CLOCK.md). |
+| H2 / H4 clock | TopstepX mặc định trên OANDA:XAUUSD và STONEXTRADING:USTECH100CFD: ghép H1 theo phiên 17:00 Chicago có DST. Dùng chung cho C1/C2, key, Early và hai cụm nến. Native để trở về nến của feed; mã khác luôn native. Xem [phạm vi và cách đối chiếu](CRT-TOPSTEP-CLOCK.md). |
 | HTF / chart | H1 / M5 để bắt đầu; HTF có H1/H2/H4/D1. Engine entry ở M1/M3/M5/M15 chia hết HTF. |
 | Bias TF / Bias | D1 / Auto. Bias cấu trúc dùng nến đã đóng; có Long/Short/Neutral chủ động. |
 | CRT reversal at prior HTF key | Bật. Ngược bias cần key bối cảnh trước C2 và TS/P3 trực tiếp tại key HTF; không cho phép mọi TS chỉ vì key cũ còn giữ. Không đổi bias hoặc vượt B0/B0!. |

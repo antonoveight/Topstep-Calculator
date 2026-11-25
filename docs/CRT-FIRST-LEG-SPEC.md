@@ -6,7 +6,7 @@ Cập nhật hạn mức chạy: mặc định hiện là Light (24 nến mỗi 
 
 ## Đồng hồ nến khi tham khảo TopstepX
 
-[Đặc tả đồng bộ H2/H4](CRT-TOPSTEP-CLOCK.md): vẫn dùng giá OANDA, ghép theo phiên 17:00 Chicago trên OANDA:XAUUSD. C1/C2 và cụm bên phải phải đọc cùng nguồn; H1/D1 và các mã khác giữ native. Các bằng chứng compiler/runtime trước bản đồng hồ này chỉ áp dụng hash cũ, không tự chứng nhận bản mới.
+[Đặc tả đồng bộ H2/H4](CRT-TOPSTEP-CLOCK.md): vẫn dùng giá feed chart, ghép theo phiên 17:00 Chicago trên OANDA:XAUUSD và STONEXTRADING:USTECH100CFD. C1/C2 và cụm bên phải phải đọc cùng nguồn; H1/D1 và các mã khác giữ native. Các bằng chứng compiler/runtime trước bản đồng hồ này chỉ áp dụng hash cũ, không tự chứng nhận bản mới.
 
 [Nghiệm thu bản đồng hồ](research/crt-topstep-clock-validation-2026-11-25.json) ghi hash, 33 suite, full compiler và kiểm tra Brave riêng cho bản cập nhật này.
 
