@@ -9,7 +9,7 @@ let cases=0,prefixes=0;
 function run(tape,dir=-1,options={},extra={}){
  const ctx={id:1,kind:1,flags:1,phase:1,dir,age:0,confirmed:100,resolved:100,inv:dir===-1?120:100,cp:dir===-1?80:140,crtKey:{kind:1,dir,hi:dir===-1?114:106,lo:dir===-1?110:102,knownAt:80,beforeTime:90},...extra};
  const state=h.state(ctx),trace=[];
- for(let i=1;i<tape.length;i++)trace.push(h.step(ctx,state,tape.slice(0,i+1),{knownLow:102,knownHigh:118,...options}));
+ for(let i=1;i<tape.length;i++)trace.push(h.step(ctx,state,tape.slice(0,i+1),{knownLow:dir===-1?102:112,knownHigh:dir===-1?108:118,knownHighAt:dir===-1?95:98,knownLowAt:dir===-1?98:95,...options}));
  cases++;return {state,trace,hits:trace.flatMap((r,i)=>r.hit?[{t:tape[i+1].t,tag:r.tag,low:r.zoneLow,high:r.zoneHigh,known:r.zoneKnownAt}]:[])};
 }
 for(const dir of [-1,1]){
@@ -35,9 +35,11 @@ for(const dir of [-1,1]){
  assert.deepEqual(test({bias:-dir,allowCrtCounter:false}).hits,[]);
  assert.deepEqual(test({}, {crtKey:{kind:2,dir,hi:114,lo:102,knownAt:91,beforeTime:90}}).hits,[],'No future key');
  assert.ok(test({}, {age:3}).hits.length>0,'A live CRT can continue after C3');
- assert.deepEqual(test({}, {confirmed:101}).hits,[],'No pre-activation local range');
+ assert.equal(test({}, {confirmed:101}).hits[0].t,101,'Known structural P1/P2 may predate activation; the raid/entry itself must not');
+ assert.deepEqual(test({knownHigh:null,knownLow:null}, {confirmed:101}).hits,[],'Fallback adjacent TS still requires its source candle after activation');
  const double=tape.slice(0,2).map((x,i)=>i===1?{...x,h:Math.max(x.h,tape[0].h+1),l:Math.min(x.l,tape[0].l-1)}:x);
- assert.deepEqual(test({}, {},double).hits,[]);
+ assert.equal(test({}, {},double).hits[0].t,101,'An engulfing raid can reclaim structural P1 despite sweeping both ends of the immediately previous candle');
+ assert.deepEqual(test({knownHigh:null,knownLow:null}, {},double).hits,[],'No structural range: ambiguous two-sided adjacent sweep is still rejected');
  const target=tape.slice(0,2).map((x,i)=>i===1?{...x,...(dir===-1?{l:79}:{h:141})}:x);
  assert.deepEqual(test({}, {},target).hits,[]);
  const stop=tape.slice(0,2).map((x,i)=>i===1?{...x,...(dir===-1?{h:121}:{l:99})}:x);
@@ -45,9 +47,9 @@ for(const dir of [-1,1]){
  const noMps=test({knownLow:null,knownHigh:null});
  assert.ok(noMps.hits.some(x=>x.tag.includes('FVG')),'FVG works without MPS');
  assert.ok(noMps.hits.every(x=>!x.tag.includes('OTE')),'OTE requires MPS');
- const spent=test({knownLow:107,knownHigh:113});
+ const spent=test(dir===-1?{knownLow:107}:{knownHigh:113});
  assert.ok(spent.hits.every(x=>!x.tag.includes('OTE')),'A P2 already closed through before TS cannot become a fresh MPS');
- const sameClose=test({knownLow:106,knownHigh:114});
+ const sameClose=test(dir===-1?{knownLow:106}:{knownHigh:114});
  assert.equal(sameClose.trace[0].legDetected,true,'A TS close can also be the first structural cross; OTE still waits for a later bar');
  const extension=tape.map(x=>x.t===104?{...x,...(dir===-1?{l:95}:{h:125})}:x);
  assert.ok(!test({}, {},extension).hits.some(x=>x.t===104&&x.tag.includes('OTE')),'Do not infer intrabar new-extreme/retrace order');

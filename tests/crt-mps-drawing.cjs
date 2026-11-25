@@ -18,7 +18,7 @@ const h=require('./helpers/pine-channel-harness.cjs').createHarness(source);
 const ctx={id:90,kind:1,dir:-1,confirmed:100,inv:120,cp:80};
 const tape=[{t:100,o:104,h:108,l:102,c:106},{t:101,o:108,h:111,l:103,c:105},{t:102,o:104,h:105,l:99,c:100}];
 const state=h.state(ctx);
-for(let n=2;n<=tape.length;n++)h.step(ctx,state,tape.slice(0,n),{requireKey:false,knownLow:102,knownLowAt:95});
+for(let n=2;n<=tape.length;n++)h.step(ctx,state,tape.slice(0,n),{requireKey:false,knownHigh:108,knownHighAt:90,knownLow:102,knownLowAt:95});
 assert.equal(state.mpsEvent,true);assert.equal(state.mpsRef,102);assert.equal(state.mpsRefAt,95,'Drawing starts at the P2 source, not TS or break candle');
 const drawing=source.slice(source.indexOf('f_mpsSegment('),source.indexOf('if not retainHistory and markLimit > 0'));
 assert.doesNotMatch(drawing,/mpsPadding|ta.atr|low -|high \+/);

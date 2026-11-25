@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-25",
+  "timezone": "Asia/Saigon",
+  "source": "indicators/funded-angler-v6.pine",
+  "sourceSha256": "47f11dd2f0ca72a4d25b638cc90e7f147c96149cb94b8c72e119dd8ef3cc0f59",
+  "baselineCommit": "78838d7",
+  "diagnosis": [
+    "Adjacent-only TS rejected the 08:45 candle because it pierced both ends of its immediate predecessor, despite reclaiming structural P1.",
+    "The later accepted TS selected the post-TS 09:00 pivot as P2.",
+    "Freezing a single parent indefinitely also retained the obsolete 06:30/06:45 range; an accepted expansion must release it."
+  ],
+  "change": [
+    "Chronological confirmed P1/P2 before raid; structural reclaim may engulf its predecessor.",
+    "Keep the first reclaimed parent through renewed raid extremes, never substitute an internal/post-TS P2.",
+    "Personal acceptance convention: a close more than one |P1-P2| span beyond P1 retires that local parent; existing HTF INV/TGT remain separate.",
+    "8-12 point display-only font based on count of horizontally visible chart bars; gap recalculates; no vertical pixel zoom API.",
+    "No diagnostic/time table in release source."
+  ],
+  "tests": {
+    "command": "node tools/check-crt.cjs",
+    "suites": 22,
+    "result": "pass",
+    "newCoverage": [
+      "Constructed Buy/Sell regression based on observed anchor times/prices; not a raw market replay",
+      "Original parent, repeated raid, failed old 06:30 parent, internal pivot, engulfing reclaim",
+      "24 immutable prefixes",
+      "1000 monotone font-density cases",
+      "Debug-overlay absence"
+    ]
+  },
+  "compiler": {
+    "exactSource": true,
+    "errors": [],
+    "warnings": []
+  },
+  "nativeObservation": {
+    "browser": "Authorized existing Brave TradingView",
+    "symbol": "OANDA:XAUUSD",
+    "chart": "M5",
+    "mpsSource": "H4",
+    "p2": 3653.235,
+    "p2Time": "2026-11-24T08:05:00+07:00",
+    "breakBarOpen": "2026-11-24T09:00:00+07:00",
+    "breakClose": "2026-11-24T09:05:00+07:00",
+    "evidence": "Visible MPS tooltip (NY 23/11 20:05 -> 21:05) and line on the chart",
+    "diagnosticOverlayRemoved": true
+  },
+  "limits": [
+    "One illustrated market sequence; not a full historical replay, win-rate estimate or profitability result",
+    "P1/P2 and expansion thresholds are mechanical conventions, not proof of all discretionary Romeo models",
+    "Font follows horizontal viewport density, not exact vertical-axis pixel zoom"
+  ]
+}

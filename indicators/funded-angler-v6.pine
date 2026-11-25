@@ -813,6 +813,11 @@ type ReactionState
     int branchMask = 0
     float mpsRef = na
     int mpsRefAt = na
+    float p1Ref = na
+    int p1At = na
+    int raidIndex = na
+    float raidExtreme = na
+    bool raidReclaimed = false
     int mpsAt = na
     bool mpsEvent = false
     float legExtreme = na
@@ -886,28 +891,72 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         bool biasAllowed = not filterBias or biasDir == ctx.dir or counterContext
         bool keyAllowed = not requireKey or keyHeld
         bool oppositeClose = bullish ? close > open : close < open
+        // P1 -> P2 must exist BEFORE the raid. A candle engulfing its immediate
+        // predecessor can still reclaim P1; that predecessor is not the CRT range.
+        bool orderedPair = not na(knownHigh) and not na(knownLow) and knownHigh > knownLow and not na(knownHighAt) and not na(knownLowAt) and (bullish ? knownLowAt < knownHighAt and knownHighAt < time : knownHighAt < knownLowAt and knownLowAt < time)
+        float candidateP1 = bullish ? knownLow : knownHigh
+        int candidateP1At = bullish ? knownLowAt : knownHighAt
+        float candidateP2 = bullish ? knownHigh : knownLow
+        int candidateP2At = bullish ? knownHighAt : knownLowAt
+        bool candidateRaid = orderedPair and (bullish ? low <= candidateP1 - sweepSize : high >= candidateP1 + sweepSize)
+        bool candidateUnspent = bullish ? close[1] <= candidateP2 : close[1] >= candidateP2
+        float candidateSpan = math.abs(candidateP1 - candidateP2)
+        bool candidateAccepted = orderedPair and (bullish ? close < candidateP1 - candidateSpan : close > candidateP1 + candidateSpan)
         bool inside = close > low[1] and close < high[1]
         bool lowRaid = low <= low[1] - sweepSize
         bool highRaid = high >= high[1] + sweepSize
         bool sourceReady = not na(time[1]) and time[1] >= state.activatedAt
-        bool localTs = sourceReady and inside and oppositeClose and (bullish ? lowRaid and not highRaid : highRaid and not lowRaid)
+        bool adjacentTs = sourceReady and inside and oppositeClose and (bullish ? lowRaid and not highRaid : highRaid and not lowRaid)
         bool pendingLost = not na(state.confirmIndex) and (bullish ? low <= state.localExtreme : high >= state.localExtreme)
         bool expired = not na(state.confirmIndex) and bar_index - state.confirmIndex > 36
-        if pendingLost or expired
+        bool raidExpired = not na(state.raidIndex) and bar_index - state.raidIndex > 36
+        // A close a full P1-P2 range beyond P1 is an accepted expansion, not a
+        // small renewed raid. Release that old parent so a new wave can form.
+        float parentSpan = math.abs(state.p1Ref - state.mpsRef)
+        bool rangeAccepted = not na(state.p1At) and parentSpan > sweepSize and (bullish ? close < state.p1Ref - parentSpan : close > state.p1Ref + parentSpan)
+        if raidExpired or expired or rangeAccepted or (pendingLost and not na(state.mpsAt))
+            state.p1Ref := na
+            state.p1At := na
+            state.raidIndex := na
+            state.raidExtreme := na
+            state.raidReclaimed := false
+            state.mpsRef := na
+            state.mpsRefAt := na
+        if pendingLost or expired or raidExpired or rangeAccepted
             state.confirmIndex := na
             state.confirmTime := na
             state.mpsAt := na
             state.gapAt := na
+        // An unreclaimed candidate can advance to a newer completed P1/P2 pair.
+        // After the FIRST reclaim, freeze that parent through further raid wicks.
+        bool replaceCandidate = na(state.p1At) or (not state.raidReclaimed and candidateP1At > state.p1At)
+        if candidateRaid and candidateUnspent and not candidateAccepted and replaceCandidate and keyAllowed and not ended
+            state.p1Ref := candidateP1
+            state.p1At := candidateP1At
+            state.mpsRef := candidateP2
+            state.mpsRefAt := candidateP2At
+            state.raidIndex := bar_index
+            state.raidExtreme := bullish ? low : high
+            state.raidReclaimed := false
+        bool hasRaid = not na(state.p1At)
+        if hasRaid
+            state.raidExtreme := bullish ? math.min(state.raidExtreme, low) : math.max(state.raidExtreme, high)
+        bool freshRaid = na(state.confirmIndex) or (bullish ? low <= state.p1Ref - sweepSize : high >= state.p1Ref + sweepSize)
+        bool structuralTs = hasRaid and freshRaid and oppositeClose and (bullish ? close > state.p1Ref : close < state.p1Ref)
+        bool localTs = structuralTs or (not hasRaid and adjacentTs)
         // A fresh TS starts its own branch budget. No global direction latch.
         bool newTs = localTs and not ended and keyAllowed and (na(state.confirmIndex) or state.branchMask == 7)
         if newTs
             state.confirmIndex := bar_index
             state.confirmTime := time
-            state.confirmLevel := bullish ? low[1] : high[1]
-            state.localExtreme := bullish ? low : high
+            state.confirmLevel := hasRaid ? state.p1Ref : bullish ? low[1] : high[1]
+            state.localExtreme := hasRaid ? state.raidExtreme : bullish ? low : high
             state.branchMask := 0
-            state.mpsRef := bullish ? (close[1] <= knownHigh ? knownHigh : na) : (close[1] >= knownLow ? knownLow : na)
-            state.mpsRefAt := bullish ? knownHighAt : knownLowAt
+            if hasRaid
+                state.raidReclaimed := true
+            else
+                state.mpsRef := na
+                state.mpsRefAt := na
             state.mpsAt := na
             state.legExtreme := bullish ? high : low
             state.gapAt := na
@@ -1169,6 +1218,17 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                     state.channel.legExtreme := bullish ? high : low
                     state.channel.mpsRef := bullish ? (lastPivotHighTime[1] >= ref.c1Time ? lastPivotHigh[1] : na) : (lastPivotLowTime[1] >= ref.c1Time ? lastPivotLow[1] : na)
                     state.channel.mpsRefAt := bullish ? lastPivotHighTime[1] : lastPivotLowTime[1]
+                    bool earlyPair = not na(lastPivotHighTime[1]) and not na(lastPivotLowTime[1]) and (bullish ? lastPivotLowTime[1] < lastPivotHighTime[1] : lastPivotHighTime[1] < lastPivotLowTime[1])
+                    bool earlyRaid = earlyPair and (bullish ? state.lo <= lastPivotLow[1] - sweepSize : state.hi >= lastPivotHigh[1] + sweepSize)
+                    if earlyRaid
+                        state.channel.p1Ref := bullish ? lastPivotLow[1] : lastPivotHigh[1]
+                        state.channel.p1At := bullish ? lastPivotLowTime[1] : lastPivotHighTime[1]
+                        state.channel.raidIndex := bar_index
+                        state.channel.raidExtreme := state.attemptSl
+                        state.channel.raidReclaimed := true
+                    else
+                        state.channel.mpsRef := na
+                        state.channel.mpsRefAt := na
                     bool spentP2 = not na(state.channel.mpsRef) and (bullish ? close[1] > state.channel.mpsRef : close[1] < state.channel.mpsRef)
                     if spentP2
                         state.channel.mpsRef := na
@@ -1568,6 +1628,13 @@ f_mpsSegment(int sourceAt, int brokenAt, int barMs) =>
     int middle = sourceAt + int(span / 2)
     int halfGap = math.max(1, math.min(int(barMs * 2.0), int(span * 0.35)))
     [middle, middle - halfGap, middle + halfGap]
+// Display-only density adaptation. Visible bar timestamps trigger a redraw on
+// horizontal zoom/scroll; no execution gate reads this viewport information.
+f_mpsFont(int visibleBars) =>
+    int(math.round(math.max(8.0, math.min(12.0, 12.0 * math.sqrt(160.0 / math.max(1, visibleBars))))))
+var int mpsVisibleBars = 0
+if time >= chart.left_visible_bar_time and time <= chart.right_visible_bar_time
+    mpsVisibleBars += 1
 var array<label> mpsLabels = array.new<label>()
 var array<line> mpsLeftLines = array.new<line>()
 var array<line> mpsRightLines = array.new<line>()
@@ -1589,13 +1656,24 @@ if historyMarks > 0 and (crtState.mpsEvent or higherState.mpsEvent)
             string hint = "MPS " + sourceName + " | P2 " + str.tostring(price, format.mintick) + " | Pivot " + str.format_time(sourceAt, "dd/MM HH:mm", NY) + " NY | Break close " + str.format_time(time_close, "dd/MM HH:mm", NY) + " NY. Required for OTE only; not an entry."
             array.push(mpsLeftLines, line.new(sourceAt, price, gapLeft, price, xloc=xloc.bar_time, extend=extend.none, color=color.orange, width=1, force_overlay=true))
             array.push(mpsRightLines, line.new(gapRight, price, time, price, xloc=xloc.bar_time, extend=extend.none, color=color.orange, width=1, force_overlay=true))
-            array.push(mpsLabels, label.new(middle, price, direction == 1 ? "+MPS" : "-MPS", xloc=xloc.bar_time, yloc=yloc.price, style=label.style_none, textalign=text.align_center, textcolor=direction == 1 ? color.teal : color.red, size=chartFont, force_overlay=true, tooltip=hint))
+            array.push(mpsLabels, label.new(middle, price, direction == 1 ? "+MPS" : "-MPS", xloc=xloc.bar_time, yloc=yloc.price, style=label.style_none, textalign=text.align_center, textcolor=direction == 1 ? color.teal : color.red, size=size.small, force_overlay=true, tooltip=hint))
 
 int mpsLimit = historyMarks == 0 ? 0 : retainHistory ? math.min(historyMarks, 40) : 2
 while array.size(mpsLabels) > mpsLimit
     label.delete(array.shift(mpsLabels))
     line.delete(array.shift(mpsLeftLines))
     line.delete(array.shift(mpsRightLines))
+if barstate.islast and array.size(mpsLabels) > 0
+    int fontPoints = f_mpsFont(mpsVisibleBars)
+    int gapScale = math.max(1, int(math.ceil(mpsVisibleBars * fontPoints / 1300.0)))
+    for i = 0 to array.size(mpsLabels) - 1
+        label textLabel = array.get(mpsLabels, i)
+        line leftLine = array.get(mpsLeftLines, i)
+        line rightLine = array.get(mpsRightLines, i)
+        [center, leftEdge, rightEdge] = f_mpsSegment(line.get_x1(leftLine), line.get_x2(rightLine), int(chartSeconds * 1000) * gapScale)
+        label.set_size(textLabel, fontPoints)
+        line.set_x2(leftLine, leftEdge)
+        line.set_x1(rightLine, rightEdge)
 if not retainHistory and markLimit > 0 and (entryLong or entryShort or earlyResult.hit)
     while array.size(eventLabels) > 0
         f_dropMark(0)
