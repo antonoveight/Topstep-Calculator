@@ -24,9 +24,9 @@ Các công thức dưới đây là quy ước cơ học cá nhân để kiểm 
 | OPEN/CLOSE | Giá mở/đóng của chính nến ngược hướng đủ điều kiện displacement trên. Không lấy tất cả open/close đại trà. | Chạm line và close giữ phía phản ứng. |
 | SMT | Cặp mã do người dùng chọn; hai nến HTF đã hoàn tất phải trùng cả giờ mở và đóng giữa hai feed. Direct/Inverse được chọn rõ. | Chỉ bổ trợ trong tooltip/data window; không thay thế key giá hoặc tự phát entry. |
 
-FVG/OB/open-close bị loại khi có close HTF vượt mép xa ngược hướng, hoặc quá 48 nến nguồn; râu chạm không tự xóa vùng. Swing bị loại khi đã bị lấy. Pool vùng tối đa 40; snapshot giữ hai mức gần nhất mỗi loại/hướng. Key của attempt phải được biết **không muộn hơn lúc C2 mở**, bao gồm key vừa xác nhận khi C1 đóng. Không bắt mọi key phải tồn tại từ trước C1 mở.
+FVG/OB/open-close bị loại khi có close HTF vượt mép xa ngược hướng, hoặc quá 48 nến nguồn; râu chạm không tự xóa vùng. Swing bị loại khi đã bị lấy. Pool vùng tối đa 40; snapshot giữ hai mức gần nhất mỗi loại/hướng. Key bối cảnh của attempt phải được biết **không muộn hơn lúc C2 mở**, bao gồm key vừa xác nhận khi C1 đóng. Không bắt mọi key phải tồn tại từ trước C1 mở.
 
-Main lấy key cùng HTF và từ Bias TF. Larger có bộ riêng. Early lấy bộ key cùng HTF từ C1 đã hoàn tất. SMT hiện chỉ xét raid range của hai nến liền kề, không dò đầy đủ SMT giữa mọi swing/FVG và không tự chọn mã tương quan. Cặp khác session hoặc thiếu dữ liệu không được xác nhận SMT.
+Key bối cảnh Main lấy cùng HTF và từ Bias TF; Larger có bộ riêng; Early lấy key cùng HTF từ C1 đã hoàn tất. Ngoài bối cảnh này, mỗi TS/P3 có bộ kiểm tra vị trí trực tiếp riêng bên dưới. SMT hiện chỉ xét raid range của hai nến liền kề, không dò đầy đủ SMT giữa mọi swing/FVG và không tự chọn mã tương quan. Cặp khác session hoặc thiếu dữ liệu không được xác nhận SMT.
 
 ## Ba nhánh song song
 
@@ -36,7 +36,7 @@ Main lấy key cùng HTF và từ Bias TF. Larger có bộ riêng. Early lấy b
 | TS_FVG | Sau TS, hình thành gap ba nến LTF. Chỉ nến sau lúc gap đã biết mới được retest; cần chạm vùng và close phản ứng ra ngoài mép gần. Có thể trước MPS. Vùng không vẽ lên chart. |
 | MPS_OTE | Sau TS, close vượt pivot cấu trúc LTF đã xác nhận trước TS và thuộc thời gian C1 trở đi. Sau MPS, theo dõi endpoint toàn bộ leg đầu từ râu TS. Entry là nến phản ứng vùng hồi 50–80% đã biết trước nến đó; không cần TS thứ hai. Không vẽ fibo. |
 
-MPS dùng cặp pivot 2/2 có thứ tự trước raid: Sell là high P1 rồi low P2; Buy đối xứng. Cặp được ghi nhận khi quét P1; trước lần reclaim đầu có thể chuyển sang cặp mới đã hoàn tất. Sau reclaim đầu, giữ P1/P2 qua các nhịp quét lại cùng sóng: thay cực trị TS khi reclaim lại, không đổi P2 sang pivot nội bộ hoặc đáy/đỉnh vừa tạo sau TS. Close đầu tiên vượt P2 mới xác nhận MPS. Vẫn là quy ước cơ học, chưa nhận diện hoàn chỉnh mọi cấu trúc discretionary hay một engine M15 riêng. Main/Larger thực thi trên chart M1/M3/M5; chưa khẳng định tái tạo mọi dấu trong bảy ảnh.
+MPS chỉ được xác nhận khi TS/P3 trực tiếp phản ứng tại key HTF hợp lệ, không chỉ vì CRT cha từng ở key. MPS dùng cặp pivot 2/2 có thứ tự trước raid: Sell là high P1 rồi low P2; Buy đối xứng. Cặp được ghi nhận khi quét P1; trước lần reclaim đầu có thể chuyển sang cặp mới đã hoàn tất. Sau reclaim đầu, giữ P1/P2 qua các nhịp quét lại cùng sóng: thay cực trị TS khi reclaim lại, không đổi P2 sang pivot nội bộ hoặc đáy/đỉnh vừa tạo sau TS. Close đầu tiên vượt P2 mới xác nhận MPS. Vẫn là quy ước cơ học, chưa nhận diện hoàn chỉnh mọi cấu trúc discretionary hay một engine M15 riêng. Main/Larger thực thi trên chart M1/M3/M5; chưa khẳng định tái tạo mọi dấu trong bảy ảnh.
 
 OTE không dùng riêng râu nến kích hoạt MPS. Endpoint cập nhật từ các nến đóng sau đó, rồi đóng băng khi nhánh OTE đã dùng. Nến vừa tạo endpoint mới không được đồng thời dùng vùng tính lại để phát OTE vì OHLC không biết thứ tự intrabar. Nhịp chờ giữ tối đa 36 nến LTF từ raid và từ TS. Trước MPS, quét thêm cực trị TS có thể tạo attempt reclaim mới trên cùng P1/P2; sau MPS, mất cực trị TS thì bỏ cặp. Một close mở rộng xa khỏi P1 quá một khoảng |P1−P2| cũng giải phóng cặp cũ, tránh giữ sóng từ nhiều giờ trước rồi bỏ qua sóng mới. Ngưỡng một range này là quy ước triển khai cá nhân, không gán cho Romeo; nó không tự hủy CRT HTF hoặc thay INV/TGT của context.
 
@@ -71,3 +71,20 @@ Sau phản hồi về sóng, đã sửa cả nhận diện P1/P2 như phần tr�
 Các dòng giờ/trace từng xuất hiện bên trái chart là bảng chẩn đoán tạm, không phải chức năng của bản phát hành. Đã gỡ khỏi bản đang chạy; kiểm tra nguồn cũng chặn các tên bảng debug này. Đối chiếu native XAUUSD/OANDA M5: P2 3653.235 tại 08:05 ngày 24/11/2026 (UTC+7), close phá 09:05 (bar mở 09:00), source H4. Không dùng low 09:00 làm P2 cho nhịp TS đó. Ca tổng hợp có Buy/Sell đối xứng, parent cũ 06:30, quét lại, pivot nội bộ và prefix bất biến; không coi đây là backtest đầy đủ hoặc chứng nhận lợi nhuận.
 
 [Bằng chứng và phạm vi nghiệm thu bản sửa sóng MPS](research/crt-mps-wave-fix-2026-11-25.json): 22 suite qua, compiler exact source không lỗi/cảnh báo; bảng chẩn đoán đã gỡ và chỉ thay instance TFA trên chart, giữ chỉ báo Daye Quarterly Theory của người dùng.
+
+### Vị trí TS/P3 tại key HTF và nguồn dấu lịch sử · 25/11/2026
+
+Bộ lọc trước đây chỉ yêu cầu giá còn giữ phía phản ứng của key bối cảnh CRT. Điều đó có thể cho phép TS hoặc MPS mới ở rất xa key. Quy tắc mới yêu cầu **cực trị P3 của chính nhịp LTF** phản ứng tại key HTF; bối cảnh cũ không thay thế bằng chứng này. Đây là cách mã hóa yêu cầu vị trí của người dùng và tài liệu key đã dẫn, không phải cam kết mọi phản ứng tại key đều thành công.
+
+- Nguồn key là nến H1, HTF chính, Larger HTF và Bias TF **đã hoàn tất**, theo thứ tự đó khi trùng phản ứng. Không tìm key LTF. Loại key vẫn theo Key types; SMT không tự thay một mức giá. H1 được bổ sung để nhận ra key H1 bên trong bức tranh H2/H4.
+- Key phải được biết không muộn hơn lúc nhịp raid đầu mở; Early dùng mốc C2 mở. Không mượn key mới hình thành sau raid. Key swing cần quét rồi reclaim; FVG/OB/open-close cần chạm và close ra phía phản ứng, theo đúng bảng phía trên.
+- Với raid nhiều nến, ghi lại high/low của **nến tạo cực trị**, không dùng toàn bộ khoảng high–low của cả sóng để giả lập chạm key. Bằng chứng tiếp xúc được giữ từ nến cực trị tới reclaim, kể cả khi key bị loại khỏi pool vì chính cú quét đó. Cực trị mới thay bằng chứng cũ; không mượn lần chạm trước nếu cực trị mới ở xa.
+- Sau reclaim, close hoàn tất của đúng HTF nguồn xuyên mép xa ngược hướng làm mất bằng chứng và khóa nhánh hồi của nhịp đó. Việc sau đó đóng trở lại không khôi phục bằng chứng đã mất; cần TS/P3 mới hợp lệ. INV/TGT của CRT cha và giới hạn nhịp vẫn áp dụng độc lập.
+- Mặc định mọi nhánh TS/FVG/OTE cần local key. Tắt Require prior HTF key reaction chỉ để chẩn đoán TS/FVG cùng bias; MPS/OTE luôn cần local key. Nhánh ngược bias còn phải có cả key bối cảnh trước C2 và local key mới.
+- MPS không bắt buộc để phát TS close/FVG. MPS đủ điều kiện mới mở nhánh OTE; không thêm một bộ chặn MPS chung làm mất cả tín hiệu TS.
+
+Ảnh ETHUSD: tooltip Buy chỉ rõ **HTF H2**, C1 24/11 13:00 NY, xác nhận 17:00 NY, signal close 17:55 NY; tương ứng 25/11 01:00, 05:00 và 05:55 UTC+7. Đây là Buy H2 lịch sử, không phải Buy H4 và không phải hướng Sell của setup đang ở panel sau đó. Không đổi màu/xóa ngược dấu cũ để khớp setup mới. Tuy nhiên OB/H2 1645.23–1667.94 trong tooltip không tự chứng minh một TS Buy quanh 1684 đã phản ứng tại key: bộ lọc mới loại trường hợp chỉ có OB xa đó. Chưa có OHLC đầy đủ để kết luận không có một key khác đủ điều kiện trên đúng nến này.
+
+Tooltip hiện ghi hướng/HTF nguồn, C1 và giờ signal UTC+7, key của chính P3, thời điểm key đã biết và reclaim; panel luôn là context hiện tại. Không thêm chữ hay bảng trace lên chart. Kiểm tra bổ sung nằm ở tests/crt-local-key.cjs, dùng dữ liệu cấu tạo có giá tham chiếu ảnh và prefix bất biến; không gọi là backtest ETH/XAU.
+
+[Nghiệm thu bộ lọc vị trí key](research/crt-local-key-validation-2026-11-25.json): 23 suite qua; exact-source Pine không lỗi/cảnh báo. Brave đã kiểm tra XAUUSD và ETHUSD H2/M5, giữ cài đặt TS close; Buy ETH gần 05:50 được lọc, MPS sóng mẫu XAU giữ được phản ứng CLOSE/H1 3672.325. Đây là quan sát native, chưa phải Bar Replay hoặc đánh giá lợi nhuận.

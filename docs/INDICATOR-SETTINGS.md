@@ -8,10 +8,10 @@ Mặc định có 27 input khai báo và ô Calculated bars tích hợp của Tr
 | --- | --- |
 | HTF / chart | H1 / M5 để bắt đầu; HTF có H1/H2/H4/D1. Engine entry ở M1/M3/M5 chia hết HTF. |
 | Bias TF / Bias | D1 / Auto. Bias cấu trúc dùng nến đã đóng; có Long/Short/Neutral chủ động. |
-| CRT reversal at prior HTF key | Bật. Cho phép CRT phản ứng key ngược bias; không đổi bias tổng thể và không vượt B0/B0!. |
+| CRT reversal at prior HTF key | Bật. Ngược bias cần key bối cảnh trước C2 và TS/P3 trực tiếp tại key HTF; không cho phép mọi TS chỉ vì key cũ còn giữ. Không đổi bias hoặc vượt B0/B0!. |
 | Entry branches | TS + FVG + OTE. Chọn TS close để chỉ xem nến sweep; FVG / OTE để chỉ xem nhánh hồi. |
 | Signal cadence | Fresh reaction: ngân sách riêng từng nhánh/nhịp/attempt. One per model để xem thưa hơn. |
-| Require prior HTF key reaction | Bật. Tắt chỉ để chẩn đoán sự khác biệt; không tự cho phép CRT ngược bias thiếu key. |
+| Require prior HTF key reaction | Bật. TS/P3 phải trực tiếp phản ứng tại key H1/HTF chính/Larger/Bias đã biết trước nhịp quét. Tắt chỉ chẩn đoán TS/FVG cùng bias; MPS/OTE và CRT ngược bias vẫn cần local key. |
 | Key types | All. Có thể đối chiếu riêng Swing, Swing + FVG, Swing + OB hoặc Open / Close. |
 | SMT comparison | Trống = tắt. Tự chọn mã so sánh và Direct/Inverse phù hợp; chỉ hiển thị bằng chứng, không tạo tam giác riêng. |
 | Early C2 | Bật thử nghiệm theo yêu cầu. Dấu E tại close sweep/reclaim còn C2 live, chưa xác nhận CRT HTF. |
@@ -27,3 +27,5 @@ Key FVG, OB và open/close phải đủ quy tắc xác nhận của mã, không 
 Khi thay phiên bản, xem lại Inputs vì timing cũ đã đổi thành Entry branches. Các alert TradingView cũ là snapshot script cũ; tạo lại nếu muốn chạy điều kiện mới. CSV schema 4 chưa có auditor thị trường đầy đủ; công cụ TS-only cũ chủ động từ chối.
 
 Nhãn MPS dùng font tự điều chỉnh 8–12 point theo mật độ nến trong vùng nhìn ngang, không theo Chart text size chung. Không có bảng thời gian/trace phủ chart trong bản phát hành. MPS giờ giữ cặp P1/P2 của sóng đã raid/reclaim và giải phóng parent đã mở rộng quá một range; các tam giác/OTE có thể khác phiên bản chỉ dùng pivot gần nhất. Xem đặc tả để phân biệt quy tắc mã hóa này với cách đọc discretionary.
+
+Mũi tên History ghi nguồn tại lúc phát, không đổi theo panel khi có setup mới ngược hướng. Hover để xem HTF/hướng, C1, giờ close UTC+7 và P3 KEY. WAIT P3 KEY nghĩa là đã có TS nhưng chưa chứng minh tiếp xúc key HTF của chính nhịp đó; MPS không được xác nhận chỉ từ key bối cảnh cũ. Không thêm setting mới.

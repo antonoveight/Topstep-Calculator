@@ -15,7 +15,7 @@ for(const barMs of [60000,180000,300000])for(const bars of [1,2,3,5,10,30,200]){
  assert.equal(right-middle,middle-left);assert.ok(right-left<=4*barMs);
 }
 const h=require('./helpers/pine-channel-harness.cjs').createHarness(source);
-const ctx={id:90,kind:1,dir:-1,confirmed:100,inv:120,cp:80};
+const ctx={id:90,kind:1,dir:-1,confirmed:100,inv:120,cp:80,crtKey:{kind:2,dir:-1,hi:114,lo:110,knownAt:80,beforeTime:90}};
 const tape=[{t:100,o:104,h:108,l:102,c:106},{t:101,o:108,h:111,l:103,c:105},{t:102,o:104,h:105,l:99,c:100}];
 const state=h.state(ctx);
 for(let n=2;n<=tape.length;n++)h.step(ctx,state,tape.slice(0,n),{requireKey:false,knownHigh:108,knownHighAt:90,knownLow:102,knownLowAt:95});

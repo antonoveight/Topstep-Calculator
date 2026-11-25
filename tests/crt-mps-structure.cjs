@@ -18,7 +18,7 @@ for(const dir of [-1,1]){
    const p1=t>=515?3672.02:3670.22,p1At=t>=515?500:480;
    const p2=t>=555?3645.32:t>=515?3664.09:3653.24,p2At=t>=555?540:t>=515?505:485;
    const options=dir===-1?{knownHigh:p1,knownHighAt:p1At,knownLow:p2,knownLowAt:p2At}:{knownHigh:7400-p2,knownHighAt:p2At,knownLow:7400-p1,knownLowAt:p1At};
-   const event=h.step(ctx,state,input.slice(0,i+1),{requireKey:false,...options});
+   const event=h.step(ctx,state,input.slice(0,i+1),{requireKey:false,localKeys:[{kind:2,dir,hi:dir===-1?3679:3729,lo:dir===-1?3671:3721,knownAt:400,beforeTime:480,tf:"60"}],...options});
    if(event.legDetected)events.push({bar:t,p2:state.mpsRef,source:state.mpsRefAt,ts:state.confirmTime});
   }
   return {state,events};

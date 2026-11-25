@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-25",
+  "source": "indicators/funded-angler-v6.pine",
+  "sha256": "dd3aa1ea9ff20e0f03f4d4e71c6b72e1278953cabf7be0292c725ac787d08d6b",
+  "tests": {
+    "runner": "node tools/check-crt.cjs",
+    "suites": 23,
+    "passed": true,
+    "newSuite": "tests/crt-local-key.cjs",
+    "scope": "Restricted actual-source execution using constructed OHLC and completed-HTF key snapshots, not market replay"
+  },
+  "compiler": {
+    "exactSource": true,
+    "errors": [],
+    "warnings": [],
+    "cloudSaved": false,
+    "published": false
+  },
+  "native": {
+    "browser": "Existing authorized Brave session",
+    "updatedInstanceOnly": "TFA v6; existing Daye Quarterly Theory retained",
+    "settings": "H2/M5, Bias D1 Auto, TS close, History, Early enabled; inputs preserved",
+    "observations": [
+      {
+        "symbol": "OANDA:XAUUSD",
+        "mps": "H4 source; P2 3653.235, pivot 23/11 20:05 NY, break close 23/11 21:05 NY",
+        "p3Key": "CLOSE/H1 3672.325; known 23/11 13:00 NY, before raid 23/11 20:20 NY, reclaim 24/11 08:50 UTC+7",
+        "screenshot": "output/brave-review/local-key-xau-mps.png"
+      },
+      {
+        "symbol": "CRYPTO:ETHUSD",
+        "observation": "Buy triangle near 25/11 05:50 UTC+7 from the provided screenshot is absent after the local-key filter; other qualified historical markers remain; current H2 SELL context, H2/H4 clusters and live clocks visible",
+        "screenshot": "output/brave-review/local-key-eth.png"
+      }
+    ],
+    "runtimeErrorObserved": false,
+    "diagnosticOverlayAdded": false
+  },
+  "limitations": [
+    "Native smoke observations, not Bar Replay, full raw-OHLC backtest or win-rate validation",
+    "MPS at a mechanically detected key can still fail; no guarantee of trade outcome",
+    "No retroactive relabelling of historical source direction to match a newer panel setup"
+  ]
+}
