@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-25",
+  "scope": "Completeness audit only; no indicator/default/browser changes",
+  "source": "indicators/funded-angler-v6.pine",
+  "normalizedSha256": "9d8e55c188f27b777b40edfd288ba5f149f8f676fa5c57a1295a8f9e526b8ba5",
+  "conclusion": "Core components exist, but the full contextual/fractal CRT method is not implemented or independently validated.",
+  "referenceScope": {
+    "primaryTranscriptsPreviouslyStored": [
+      "CRTology ep.5 MPS: P1/P2/P3, key, C1/TS-C2/OTE-C3 illustration",
+      "CRTology OTE: key/structure, first leg and roughly 50–80% retracement",
+      "CRT secrets ep.4 Candle anatomy: HTF context and fractal analysis",
+      "CRT secrets ep.5 Key level: location and reaction"
+    ],
+    "references": [
+      "https://www.youtube.com/watch?v=Q-mne0H4lRY&t=155s",
+      "https://www.youtube.com/watch?v=Q-mne0H4lRY&t=591s",
+      "https://www.youtube.com/watch?v=f4gdAohTi40&t=492s",
+      "https://www.youtube.com/watch?v=n2GF8kCpgVg&t=297s",
+      "https://www.youtube.com/watch?v=p8UYOgVn1-g&t=352s"
+    ],
+    "freshWebAccess": "Watch pages were cache-missed/rate-limited or returned only a shell; conclusions use existing primary-transcript artifacts and provenance, not a new full-video review.",
+    "notEstablished": "No universal fixed LTF-to-HTF mapping, complete executable discretionary method or profitability guarantee."
+  },
+  "implemented": [
+    "Adjacent HTF C1/C2 single-side sweep and reclaim with wick boundaries",
+    "Prior HTF key context plus direct local P3 key reaction",
+    "Ordered P1/P2/P3 and closed P2 break; corrected Early chronology",
+    "Internal OTE calculated causally from tracked full leg, later reaction only",
+    "Own-context INV/TGT and ambiguity handling; parent not automatically expired after C3",
+    "Independent source identity, closed-bar markers and preserved history"
+  ],
+  "findings": [
+    {
+      "id": "A1",
+      "priority": "high",
+      "kind": "missing chain relationship",
+      "line": 1401,
+      "detail": "Model ID/direction are attached, but source timestamps do not bind every LTF P1/P2/P3 to the specific HTF C1/C2/C3 being illustrated. Main can seek a new TS after C2 confirmation rather than inherit the original C2 sequence. Larger observes its own current chart channel; there is no independent M15 structure engine.",
+      "ltfEligibilityLine": 85,
+      "proposal": "Track source candle intervals and distinguish original C2 reaction, C3 execution and a genuinely new continuation setup. Select/infer chart roles from actual candle boundaries, not a fixed fractal identity."
+    },
+    {
+      "id": "A2",
+      "priority": "high",
+      "kind": "confirmed behavior gap",
+      "line": 1404,
+      "detail": "Handoff requires earlyState.emitted. The same known TS/MPS evidence transfers when an Early entry was emitted, and is dropped when it was not. FVG/OTE-only observation can lose the chain. Early disabled also disables collection, and an un-emitted window can be blocked at C2 close.",
+      "reproduction": {
+        "tool": ".review-tools/audit-crt-completeness.cjs",
+        "sameKnownMps": 104,
+        "emittedTrue": {
+          "inherited": true,
+          "mps": 104
+        },
+        "emittedFalse": {
+          "inherited": false,
+          "mps": null
+        },
+        "scope": "Actual handoff statements with constructed state objects; not market Replay"
+      },
+      "proposal": "Separate evidence collection and lifecycle from entry/marker permission; hand off valid same-parent evidence without requiring a trade signal. Keep invalidation/target and closed-time checks."
+    },
+    {
+      "id": "A3",
+      "priority": "high",
+      "kind": "context approximation",
+      "line": 116,
+      "detail": "Auto bias is persistent confirmed pivot-break direction with a chart-close guard and optional prior-key counter-bias exception. It does not classify a move as HTF expansion, pullback to key, countertrend reaction or HTF-aligned continuation. Main/Larger can disagree without a defined contextual precedence.",
+      "proposal": "Define the HTF hypothesis and key/target relationship separately from LTF trigger direction. Preserve explicit countertrend setups instead of imposing blind higher-frame agreement."
+    },
+    {
+      "id": "A4",
+      "priority": "medium",
+      "kind": "missing objective qualification",
+      "line": 928,
+      "detail": "Own CRT target/invalidation are checked. There is no general opposing-HTF-key/remaining-room policy for the first leg or OTE continuation. A reaction at another opposing key does not automatically cause a new continuation hypothesis.",
+      "proposal": "Distinguish own CRT target completion, arrival at an opposing key, and a new continuation setup. Specify behavior before coding; a key touch must not automatically be equated with guaranteed reversal."
+    },
+    {
+      "id": "A5",
+      "priority": "medium",
+      "kind": "mechanical conventions",
+      "line": 1052,
+      "detail": "Latest confirmed 2/2 pivots, frozen root, 36-chart-bar wait, one-range expansion reset, directional candle reactions, tracked rather than explicitly segmented first leg and 50–80% OTE acceptance are implementation conventions. Sources do not establish every threshold/branch as an exact universal author algorithm.",
+      "proposal": "Keep the conventions explicit; validate structure selection and leg segmentation against user-labelled cases without claiming author-exact automation."
+    },
+    {
+      "id": "A6",
+      "priority": "medium",
+      "kind": "coverage limits",
+      "line": 818,
+      "detail": "Time is feed-boundary context, not a clock-hour entry filter. Swing/FVG/OB/displacement-qualified open-close keys are bounded approximations; named PDL/PDH/WCP/weekly levels are not explicitly catalogued. SMT is an optional adjacent-range comparison, not the complete discretionary concept.",
+      "proposal": "Document coverage and add only directly sourced, user-relevant time/key rules. Do not invent clock windows or treat all old-method volume/POC conditions as CRT rules."
+    }
+  ],
+  "validation": {
+    "runner": "node tools/check-crt.cjs",
+    "suites": 24,
+    "passed": true,
+    "meaning": "Existing implementation contracts pass; this does not prove completeness, market reliability or source fidelity.",
+    "compilerRerun": false,
+    "reason": "No source mutation; prior exact-source compiler validation belongs to the preceding fix."
+  },
+  "recommendedOrder": [
+    "Separate observation/handoff from Early entry permission",
+    "Bind LTF evidence to source HTF candle intervals and roles",
+    "Specify contextual bias/reversal/continuation policy",
+    "Specify first-leg targets and opposing-key handling",
+    "Add structure-frame support such as M15 and expand labelled-case verification"
+  ],
+  "indicatorChanged": false,
+  "followup": {
+    "implementation": "crt-five-step-validation-2026-11-25.json",
+    "note": "Subsequent implementation covers the five authorized workstreams. Original findings remain the audit-time record; full discretionary source fidelity and market profitability remain unverified."
+  }
+}

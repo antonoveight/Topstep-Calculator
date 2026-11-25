@@ -1,0 +1,98 @@
+{
+  "date": "2026-11-25",
+  "source": "indicators/funded-angler-v6.pine",
+  "normalizedSha256": "eda11aa224e5c18a5e4227fa4a05f7269cfeae7a1793c5f5db5486ddd7703bec",
+  "previousCommit": "5554030",
+  "scope": "Five authorized implementation workstreams; no website, journal or trading-account changes",
+  "steps": [
+    {
+      "n": 1,
+      "status": "implemented",
+      "change": "Main and Larger C2 observation independent from Early entry permission. Valid TS/MPS survives Early off/FVG-OTE-only/C2 close. A stopped E remains stopped while a later raid can be observed; no second E. Freeze pre-raid P1/P2 before P3 becomes the latest confirmed pivot."
+    },
+    {
+      "n": 2,
+      "status": "implemented",
+      "change": "Bind source C1/C2 open/end and P3 timestamps. Handoff requires matching source/direction/C2 end/INV. Separate FROM C2, LOCAL C3, LOCAL TRACK. Do not automatically expire a live HTF CRT after C3."
+    },
+    {
+      "n": 3,
+      "status": "implemented as documented mechanical policy",
+      "change": "Confirmed key-qualified Larger/Bias CRT context supplements structural bias. FLOW/CONT/KEY REV/HTF KEY REV/COUNTER SWING, optional qualified counter-parent reversal, B0 gate retained. No blind requirement that every timeframe agree."
+    },
+    {
+      "n": 4,
+      "status": "implemented as documented mechanical policy",
+      "change": "Freeze nearest pre-known opposing HTF key ahead and before own range target. Delivery stops old leg entry reuse, while structural MPS observation may still occur. Old MPS cleared before another local leg; a new TS/key reaction is required. Own CRT INV/TGT remain independent."
+    },
+    {
+      "n": 5,
+      "status": "implemented",
+      "change": "Structure timeframe Chart/M15; default Chart. Independent closed M15 source swings/close on smaller charts, guarded lookahead_off cache, direct M15 charts supported. Entry stays on chart; no fixed fractal TF mapping."
+    }
+  ],
+  "settings": {
+    "declaredInputs": 28,
+    "newInput": "Structure timeframe",
+    "default": "Chart",
+    "noManualFibOrPocAdded": true
+  },
+  "tests": {
+    "runner": "node tools/check-crt.cjs",
+    "suites": 25,
+    "passed": true,
+    "newSuite": "tests/crt-fractal-workflow.cjs",
+    "newSuiteImmutablePrefixes": 24,
+    "previousEarlyChronologyImmutablePrefixes": 66,
+    "coverage": [
+      "Buy/Sell symmetry",
+      "Early off and no entry still retains MPS at last C2 close",
+      "Capture original P1/P2 rather than latest P3 pivot",
+      "Stopped E reference retained; new observation without second E",
+      "Handoff with no E, wrong source end or INV rejected",
+      "Source interval and identity mismatches",
+      "Qualified/current parent vs future/unqualified parent",
+      "Opposing key choice, future-key exclusion, delivery and fresh reaction",
+      "M15 intrabar close rejected; closed snapshot/repeated/stale/gapped-source checks"
+    ]
+  },
+  "compiler": {
+    "exactSource": true,
+    "errors": [],
+    "warnings": [],
+    "savedToCloud": false,
+    "published": false
+  },
+  "native": {
+    "browser": "Existing authorized Brave",
+    "finalSourcePasteVerified": true,
+    "finalSourceCharacters": 145034,
+    "finalSettings": "XAUUSD/OANDA M5; HTF H2; Bias D1 Auto; Structure M15; TS close; History; Early enabled",
+    "finalScreenshot": "output/brave-review/crt-workflow-final.png",
+    "runtimeErrorObserved": false,
+    "observedStatus": "KEY DELIVERED",
+    "integrationSmokeViews": [
+      {
+        "view": "M5 with M15 structure",
+        "screenshot": "output/brave-review/crt-workflow-m5-m15-structure.png"
+      },
+      {
+        "view": "Direct M15",
+        "screenshot": "output/brave-review/crt-workflow-direct-m15.png"
+      },
+      {
+        "view": "Native source tooltip",
+        "screenshot": "output/brave-review/crt-workflow-source-tooltip.png",
+        "example": "H4 Sell TS_CLOSE; Chain LOCAL C3 / FLOW; next HTF key 3613.495; separate CRT target 3575.335"
+      }
+    ],
+    "basicPlanLimitHandled": "Replaced only TFA instance; retained Daye Quarterly Theory. No upgrade, account order, cloud save or publication."
+  },
+  "limitations": [
+    "Causal synthetic tests and native smoke observations, not complete Bar Replay or profitability validation",
+    "Mechanical pivot/key/bias/objective rules are personal conventions, not a complete executable original-author method",
+    "No independent M5 entry engine while viewing M15; chart remains execution timeframe",
+    "No explicit named PDH/PDL/WCP/weekly-close catalogue or speculative clock-hour filter",
+    "No equivalence claim between XAUUSD CFDs and MGCG27 futures"
+  ]
+}

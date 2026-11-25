@@ -9,7 +9,7 @@ function createHarness(source){
   const normalize=key=>keyAdapter.makeKey({...key,tf:key.tf||'60'});
   const refs=options.localKeys??(ctx.crtKey?[ctx.crtKey]:[]);
   const maps=options.executionMaps??[{levels:refs.filter(Boolean).map(normalize)},...Array.from({length:3},()=>({levels:[]}))];
-  return {lookup:(d,t,h,l,c)=>keyAdapter.executionKey(maps,d,t,h,l,c),valid:(key,at)=>keyAdapter.executionProof(maps,key,at,options.htf||'60',options.largerTf||'240',options.biasTf||'1D')};
+  return {forward:(d,t,o,target)=>keyAdapter.forwardKey(maps,d,t,o,target),lookup:(d,t,h,l,c)=>keyAdapter.executionKey(maps,d,t,h,l,c),valid:(key,at)=>keyAdapter.executionProof(maps,key,at,options.htf||'60',options.largerTf||'240',options.biasTf||'1D')};
  }
  function body(name){const lines=source.split(/\r?\n/),at=lines.findIndex(l=>l.startsWith(name+'('));if(at<0)throw Error('Missing '+name);let end=at+1;while(end<lines.length&&(!lines[end].trim()||/^\s/.test(lines[end])))end++;return lines.slice(at+1,end).filter(l=>l.trim()&&!l.trim().startsWith('//'));}
  function defaults(name){const lines=source.split(/\r?\n/),at=lines.indexOf('type '+name),out={};for(let i=at+1;i<lines.length&&/^\s/.test(lines[i]);i++){const m=lines[i].trim().match(/^\w+ (\w+) = (.+)$/);if(m)out[m[1]]=m[2]==='na'?null:JSON.parse(m[2]);}return out;}
@@ -41,7 +41,7 @@ function createHarness(source){
  environment.push('time_close','requireKey','entryBranches','f_has','math');
  environment.push('sweepSize');
  environment.push('f_obDisplacement');
- environment.push('f_executionKey','f_executionProofValid','f_keyReact');
+ environment.push('f_executionKey','f_executionProofValid','f_keyReact','f_forwardKey','structureBarReady','structureClosing','structurePriorClose','structureBeforeClose','structureClosedAt');
  const displacementBody=source.includes('f_obDisplacement(')?body('f_obDisplacement').map((l,i,a)=>i===a.length-1?'return '+expr(l.trim())+';':expr(l.trim().replace(/^float /,'let '))+';').join('\n'):'return false;';
  const displacement=Function('direction','opening','barHigh','barLow','closing',displacementBody);
  const stepWithSweep=Function(...environment,'ctx','state','knownHigh','knownLow','pivotHigh','pivotLow','waveAllowed','forcePullback','mpsAllowed','knownHighAt','knownLowAt',translate('f_stepChannel'));
@@ -54,7 +54,7 @@ function createHarness(source){
    const env=[{isconfirmed:options.confirmed!==false},options.isLtf!==false,b.t,tape.length-1,b.o,b.h,b.l,b.c,history,x=>x==null||Number.isNaN(x),options.cadence||'Fresh reaction',2,.01,options.entryMode||'Auto',options.timing||'Pullback',true,options.allowCrtCounter!==false,options.bias??ctx.dir,options.timeAllowed!==false,clear,args=>({...defaults('ChannelResult'),...args})];
    env.push(b.end??b.t+1,options.requireKey!==false,options.branches||'TS + FVG + OTE',(flags,bit)=>Math.floor(flags/bit)%2===1,Math);
    const hooks=keyHooks(ctx,tape,options);
-   return stepWithSweep(...env,options.sweepSize??.01,displacement,hooks.lookup,hooks.valid,keyAdapter.reaction,{age:0,irlKind:0,...ctx},state,options.knownHigh??null,options.knownLow??null,options.pivotHigh??null,options.pivotLow??null,options.waveAllowed!==false,options.forcePullback===true,options.mpsAllowed!==false,options.knownHighAt??null,options.knownLowAt??null);
+   return stepWithSweep(...env,options.sweepSize??.01,displacement,hooks.lookup,hooks.valid,keyAdapter.reaction,hooks.forward,options.structureReady!==false,options.structureClose??b.c,options.structurePrior??tape.at(-2)?.c??null,options.structureBefore??tape.at(-2)?.c??null,options.structureEnd??b.end??b.t+1,{age:0,irlKind:0,...ctx},state,options.knownHigh??null,options.knownLow??null,options.pivotHigh??null,options.pivotLow??null,options.waveAllowed!==false,options.forcePullback===true,options.mpsAllowed!==false,options.knownHighAt??null,options.knownLowAt??null);
   }
  };
 }
