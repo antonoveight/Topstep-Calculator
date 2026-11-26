@@ -1,0 +1,1442 @@
+{
+  "date": "2026-11-26",
+  "sourceSha256": "14ed80f0b0408d0ea9c07248184ec8dbd6009f1272c481a4f28586797be395fa",
+  "scope": "Actual-source configuration compatibility on constructed symmetric OHLC, known pivot and HTF snapshots. Not a feed replay or profit optimization.",
+  "candidates": 24,
+  "runs": 528,
+  "prefixChecks": 288,
+  "criteriaOrigin": {
+    "method": "Prior HTF key, directional context, closed reclaim and independent TS/FVG/OTE branches.",
+    "personal": "Pullback only; counter observation-only; keep later qualified fresh reactions within a live setup."
+  },
+  "compatible": [
+    {
+      "branches": "FVG / OTE",
+      "cadence": "Fresh reaction",
+      "requireKey": true,
+      "allowCrtCounter": false
+    },
+    {
+      "branches": "FVG / OTE",
+      "cadence": "One per model",
+      "requireKey": true,
+      "allowCrtCounter": false
+    }
+  ],
+  "selected": {
+    "branches": "FVG / OTE",
+    "cadence": "Fresh reaction",
+    "requireKey": true,
+    "allowCrtCounter": false
+  },
+  "tieBreak": "Both cadences satisfy the measured guards. Fresh reaction retains OTE at 104 and a separate FVG branch at 105; One per model suppresses that second branch. Selection follows the user workflow, not demonstrated profitability.",
+  "notRanked": [
+    "H1 vs H2 vs H4 performance",
+    "D1 auto-bias predictive accuracy",
+    "Chart vs M15 structure performance",
+    "Early C2 profitability",
+    "Light vs Full signal completeness",
+    "Any actual-market win rate, P/L, spread or slippage"
+  ],
+  "rows": [
+    {
+      "settings": {
+        "branches": "TS + FVG + OTE",
+        "cadence": "Fresh reaction",
+        "requireKey": true,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": true,
+        "localKeyRequired": true,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS + FVG + OTE",
+        "cadence": "Fresh reaction",
+        "requireKey": true,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": true,
+        "localKeyRequired": true,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS + FVG + OTE",
+        "cadence": "Fresh reaction",
+        "requireKey": false,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": true,
+        "localKeyRequired": false,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": []
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS + FVG + OTE",
+        "cadence": "Fresh reaction",
+        "requireKey": false,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": true,
+        "localKeyRequired": false,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            },
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS + FVG + OTE",
+        "cadence": "One per model",
+        "requireKey": true,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": true,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS + FVG + OTE",
+        "cadence": "One per model",
+        "requireKey": true,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": true,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS + FVG + OTE",
+        "cadence": "One per model",
+        "requireKey": false,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": false,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": []
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS + FVG + OTE",
+        "cadence": "One per model",
+        "requireKey": false,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": false,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS close",
+        "cadence": "Fresh reaction",
+        "requireKey": true,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": true,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS close",
+        "cadence": "Fresh reaction",
+        "requireKey": true,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": true,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS close",
+        "cadence": "Fresh reaction",
+        "requireKey": false,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": false,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": []
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS close",
+        "cadence": "Fresh reaction",
+        "requireKey": false,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": false,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS close",
+        "cadence": "One per model",
+        "requireKey": true,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": true,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS close",
+        "cadence": "One per model",
+        "requireKey": true,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": true,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS close",
+        "cadence": "One per model",
+        "requireKey": false,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": false,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": []
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "TS close",
+        "cadence": "One per model",
+        "requireKey": false,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": false,
+        "pullbackRetained": false,
+        "localKeyRequired": false,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ],
+          "counter": [
+            {
+              "time": 101,
+              "tag": "TS_CLOSE"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "FVG / OTE",
+        "cadence": "Fresh reaction",
+        "requireKey": true,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": true,
+        "pullbackRetained": true,
+        "localKeyRequired": true,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        }
+      },
+      "compatible": true
+    },
+    {
+      "settings": {
+        "branches": "FVG / OTE",
+        "cadence": "Fresh reaction",
+        "requireKey": true,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": true,
+        "pullbackRetained": true,
+        "localKeyRequired": true,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "FVG / OTE",
+        "cadence": "Fresh reaction",
+        "requireKey": false,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": true,
+        "pullbackRetained": true,
+        "localKeyRequired": false,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": []
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "FVG / OTE",
+        "cadence": "Fresh reaction",
+        "requireKey": false,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": true,
+        "pullbackRetained": true,
+        "localKeyRequired": false,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            },
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "FVG / OTE",
+        "cadence": "One per model",
+        "requireKey": true,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": true,
+        "pullbackRetained": true,
+        "localKeyRequired": true,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": []
+        }
+      },
+      "compatible": true
+    },
+    {
+      "settings": {
+        "branches": "FVG / OTE",
+        "cadence": "One per model",
+        "requireKey": true,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": true,
+        "pullbackRetained": true,
+        "localKeyRequired": true,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ],
+          "withoutKey": [],
+          "counter": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "FVG / OTE",
+        "cadence": "One per model",
+        "requireKey": false,
+        "allowCrtCounter": false
+      },
+      "checks": {
+        "noDirectEntry": true,
+        "pullbackRetained": true,
+        "localKeyRequired": false,
+        "counterObservationOnly": true,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": []
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": []
+        }
+      },
+      "compatible": false
+    },
+    {
+      "settings": {
+        "branches": "FVG / OTE",
+        "cadence": "One per model",
+        "requireKey": false,
+        "allowCrtCounter": true
+      },
+      "checks": {
+        "noDirectEntry": true,
+        "pullbackRetained": true,
+        "localKeyRequired": false,
+        "counterObservationOnly": false,
+        "parentConflictBlocked": true,
+        "closedCandleOnly": true,
+        "causalPrefixes": true
+      },
+      "observed": {
+        "sell": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ]
+        },
+        "buy": {
+          "baseline": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ],
+          "withoutKey": [
+            {
+              "time": 105,
+              "tag": "TS_FVG"
+            }
+          ],
+          "counter": [
+            {
+              "time": 104,
+              "tag": "MPS_OTE"
+            }
+          ]
+        }
+      },
+      "compatible": false
+    }
+  ],
+  "currentSuitesPassed": 35,
+  "sourceDefaultsChanged": false,
+  "nativeApplication": {
+    "date": "2026-11-26",
+    "timezone": "Asia/Saigon",
+    "window": 4983332,
+    "symbol": "STONEXTRADING:USTECH100CFD",
+    "chart": "5",
+    "resetInputs": true,
+    "applied": true,
+    "observed": [
+      "HTF H1",
+      "D1 Auto",
+      "TopstepX",
+      "Light",
+      "Chart structure",
+      "Fresh reaction",
+      "FVG / OTE",
+      "Counter off",
+      "Require key on",
+      "All key types",
+      "SMT blank",
+      "Early C2 on",
+      "Larger signals on",
+      "H1/H4 live candle groups with countdowns",
+      "No runtime error badge observed"
+    ],
+    "screenshots": [
+      "output/brave-review/settings-study-top.png",
+      "output/brave-review/settings-study-entry.png",
+      "output/brave-review/settings-study-runtime.png"
+    ],
+    "cloudScriptSavedOrPublished": false
+  },
+  "compiler": {
+    "sameHashAsExistingFullCompilation": true,
+    "report": "crt-daytrading-defaults-validation-2026-11-26.json",
+    "recompiledThisStudy": false
+  }
+}

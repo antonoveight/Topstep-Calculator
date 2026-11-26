@@ -1,5 +1,7 @@
 # Cài đặt CRT Key Reactions
 
+Đã [đối chiếu 24 tổ hợp setting ngày 26/11/2026](research/CRT-SETTINGS-STUDY-2026-11-26.md): giữ profile Pullback hiện tại. Kết quả là tương thích quy trình trên dữ liệu dựng, chưa phải xếp hạng tỷ lệ thắng thị trường.
+
 Cập nhật 26/11/2026. [Đặc tả hiện hành và nguồn gốc](CRT-FIRST-LEG-SPEC.md). [Cài đặt trước migration](archive/INDICATOR-SETTINGS-before-key-reactions-2026-11-25.md) chỉ dùng đối chiếu lịch sử.
 
 Mặc định có 30 input khai báo và ô Calculated bars tích hợp của TradingView. MPS gate chung và sáu ô R1 nhập tay đã bỏ. Không có fibo hay vùng entry LTF tự vẽ.
