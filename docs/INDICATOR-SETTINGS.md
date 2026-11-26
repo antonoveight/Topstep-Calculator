@@ -18,7 +18,7 @@ Calculation budget: Light mặc định tải 24 nến trên mỗi nguồn timef
 | Require prior HTF key reaction | Bật. TS/P3 phải trực tiếp phản ứng tại key H1/HTF chính/Larger/Bias đã biết trước nhịp quét. Tắt chỉ chẩn đoán TS/FVG cùng bias; MPS/OTE và CRT ngược bias vẫn cần local key. |
 | Key types | All. Có thể đối chiếu riêng Swing, Swing + FVG, Swing + OB hoặc Open / Close. |
 | SMT comparison | Trống = tắt. Tự chọn mã so sánh và Direct/Inverse phù hợp; chỉ hiển thị bằng chứng, không tạo tam giác riêng. |
-| Early C2 | Bật thử nghiệm theo yêu cầu. Chỉ điều khiển quyền phát E; tắt vẫn quan sát C2 và chuyển bằng chứng hợp lệ sang setup xác nhận. Không phát E hồi tố. |
+| Early C2 | Bật thử nghiệm theo yêu cầu. Fresh reaction: một E trên mỗi attempt; sau vô hiệu cần quét sâu thêm ít nhất một tick và reclaim đủ key để có E2/E3. One per model: tối đa một E/C2. Tắt vẫn quan sát và chuyển bằng chứng hợp lệ; không phát hồi tố. |
 | Larger HTF / signals | Auto và bật. H1/H2 → H4, H4 → D1, D1 → W1. Engine Larger chỉ chạy khi khung đó <= Bias TF. |
 | History / historical signals | History / 100. Latest chỉ giữ sự kiện gần nhất; 0 ẩn marker. |
 | CRT range / target / HTF key | Bật. CRTH/CRTL, EQ, INV, TGT và KEY có loại/khung nguồn; không còn IRL/ERL. |
@@ -37,6 +37,8 @@ Nhãn MPS dùng font tự điều chỉnh 8–12 point theo mật độ nến tr
 Mũi tên History ghi nguồn tại lúc phát, không đổi theo panel khi có setup mới ngược hướng. Hover để xem HTF/hướng, C1, giờ close UTC+7 và P3 KEY. WAIT P3 KEY nghĩa là đã có TS nhưng chưa chứng minh tiếp xúc key HTF của chính nhịp đó; MPS không được xác nhận chỉ từ key bối cảnh cũ. Không thêm chữ dài lên chart; thông tin chi tiết ở tooltip.
 
 Early C2 hiện chỉ truyền cấu trúc cho MPS/OTE nếu P1 → P2 → P3 đúng thứ tự thời gian và P3 thực sự quét P1. TS-close Early vẫn độc lập với MPS. Hover MPS để xem P1/P2/P3 nguồn; nhãn H2 chỉ context HTF, các swing MPS vẫn thuộc chart LTF. Không cần đổi input sau bản sửa này.
+
+Cập nhật 26/11/2026: Fresh reaction nhận E2/E3 sau khi attempt trước vô hiệu, quét thêm ít nhất một tick và reclaim hợp lệ tại key HTF. Chạm bằng cực trị cũ không mở lại. Mỗi nhịp giữ một E, kể cả nhánh fallback; không mở lại sau target hoặc AMB. Nhãn cũ giữ mức tham chiếu của chính nó. Tooltip E ghi HTF nguồn và số attempt; đây vẫn là tín hiệu trước khi C2 HTF đóng. Mức risk/SL tự điều chỉnh khi giao dịch độc lập với tham chiếu chỉ báo. Xem [nghiệm thu vòng đời TS](research/crt-early-renewal-validation-2026-11-26.json).
 
 Tooltip entry ghi vai trò chuỗi FROM C2 / LOCAL C3 / LOCAL TRACK, bối cảnh FLOW / CONT / KEY REV / HTF KEY REV / COUNTER SWING và key HTF kế tiếp nếu có. Đây là phân loại theo quy ước trong đặc tả, không khẳng định hướng sẽ thắng. Key cản trung gian hiện chỉ là quan sát: tooltip WHY ghi loại, giá và thời điểm chạm; không dùng KEY DELIVERED để hủy leg. Target CRT, INV, giới hạn nhánh và thời gian chờ bằng chứng vẫn được giữ.
 

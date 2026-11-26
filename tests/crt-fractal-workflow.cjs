@@ -93,10 +93,10 @@ for(const dir of [-1,1]){
  const rerunTape=dir===-1?rerunRaw:rerunRaw.map(mirror);let count=0;
  for(let i=0;i<rerunTape.length;i++){
   const pair=i>=3?(dir===-1?{knownHigh:124,knownHighAt:95,knownLow:118,knownLowAt:102}:{knownLow:96,knownLowAt:95,knownHigh:102,knownHighAt:102}):{};
-  const event=early.step(extendedRef,rerun,rerunTape.slice(0,i+1),{bias:dir,...pair,...(dir===-1?{sellKey:i>=3?ek:early.make('CrtKey')}:{buyKey:i>=3?ek:early.make('CrtKey')})});
+  const event=early.step(extendedRef,rerun,rerunTape.slice(0,i+1),{bias:dir,cadence:'One per model',...pair,...(dir===-1?{sellKey:i>=3?ek:early.make('CrtKey')}:{buyKey:i>=3?ek:early.make('CrtKey')})});
   count+=Number(event.hit);
  }
- assert.equal(count,1,'Observation after an E stop must never emit a second E');
+ assert.equal(count,1,'One per model retains one E after an invalidation; Fresh is covered separately');
  assert.equal(rerun.lockedSl,dir===-1?125:95,'Old entry reference is never widened');
  assert.equal(rerun.channel.localExtreme,dir===-1?126:94);
  assert.equal(rerun.channel.confirmTime,105);assert.equal(rerun.channel.mpsAt,107);

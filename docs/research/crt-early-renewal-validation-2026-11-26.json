@@ -1,0 +1,84 @@
+{
+  "date": "2026-11-26",
+  "source": "indicators/funded-angler-v6.pine",
+  "sha256": "713a30933e216076757410b66d65d15fb006b4e630563ffb7ca8baf9b128c3d1",
+  "hashNormalization": "UTF-8, CRLF to LF, outer whitespace trimmed",
+  "mirrorExact": true,
+  "offlineSuites": 34,
+  "renewal": {
+    "test": "tests/early-c2-renewal.cjs",
+    "symmetricScenarios": 44,
+    "immutablePrefixes": 10,
+    "covers": [
+      "Fresh reaction: E followed by E2 only after previous invalidation, strict new extreme and qualified reclaim",
+      "Same closed bar can invalidate the old attempt and confirm a new one; old reference frozen",
+      "Equal/sub-tick touches do not renew",
+      "One per model preserves one-event window budget, including latest handoff channel",
+      "Local fallback cannot emit repeatedly within one surviving attempt",
+      "Key pending reclaim is not permanent C2 invalidation",
+      "Fresh local key proof, existing bias/source/entry gates retained",
+      "Target and same-bar target/INV remain terminal; no Early on final C2 close",
+      "Window reset; independent buy/sell symmetry; prefix event history unchanged"
+    ],
+    "unaffectedComparison": {
+      "test": "tests/crt-entry-call-equivalence.cjs",
+      "prefixStateResultComparisons": 2850,
+      "scope": "Non-invalidating prefixes through first Early event only; subsequent budgeting intentionally changed"
+    }
+  },
+  "fullCompiler": {
+    "source": "indicators/funded-angler-v6.pine",
+    "sha256": "713a30933e216076757410b66d65d15fb006b4e630563ffb7ca8baf9b128c3d1",
+    "httpStatus": 200,
+    "elapsedMs": 68288,
+    "fullCompilationPassed": true,
+    "reason": null,
+    "errors": [],
+    "warnings": [
+      "{\"message\":\"The function \\\"{functionName}\\\" should be called on each calculation for consistency. It is recommended to extract the call from this scope\",\"start\":{\"line\":2141,\"column\":30},\"end\":{\"line\":2141,\"column\":487},\"code\":\"CW10003\",\"ctx\":{\"functionName\":\"f_stepEarly\"}}"
+    ],
+    "chartExecutionVerified": false
+  },
+  "native": {
+    "passed": true,
+    "symbol": "STONEXTRADING:USTECH100CFD",
+    "chart": "M5",
+    "clock": "TopstepX",
+    "budget": "Light",
+    "calculatedChartBars": 150,
+    "sourceVerifiedByEditorCopy": true,
+    "configs": [
+      {
+        "htf": "H1",
+        "time": "2026-11-26 16:33 UTC+7",
+        "observed": [
+          "Dashboard, source range/key, candle group and historical E/entry marker visible",
+          "No runtime error icon observed"
+        ],
+        "screenshot": "output/brave-review/early-renewal-h1-m5.png"
+      },
+      {
+        "htf": "H2",
+        "time": "2026-11-26 16:35 UTC+7",
+        "observed": [
+          "H2 dashboard/range/key and current countdown visible",
+          "Historical E and confirmed triangle visible",
+          "No runtime error icon observed"
+        ],
+        "screenshot": "output/brave-review/early-renewal-h2-m5.png"
+      }
+    ],
+    "savedToCloud": false,
+    "published": false,
+    "ordersPlaced": false
+  },
+  "methodLimits": [
+    "The user manages actual risk independently; indicator reference invalidation is not their actual SL or fill",
+    "Review screenshots supplied context but do not provide complete OHLC or actual order history",
+    "Constructed renewal tests are not replay of MNQZ26 or proof that a specific CFD bar must emit E2",
+    "Native smoke check does not prove profitability, all feed/timeframe cases, or a universal no-repaint guarantee",
+    "CW10003 remains at f_stepEarly loop call site, as in prior version; no compiler errors",
+    "Light/150 only; Full budget not revalidated",
+    "Local screenshot output is ignored and not committed"
+  ]
+}

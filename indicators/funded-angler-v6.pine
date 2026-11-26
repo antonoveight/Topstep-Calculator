@@ -50,7 +50,7 @@ smtRelation = input.string("Direct", "SMT relationship", options=["Direct", "Inv
 // Compatibility name for tooltips; manual R1 zones and universal MPS gate removed.
 string signalTiming = entryBranches
 
-enableEarlyC2 = input.bool(true, "Early C2 · experimental", group=G_ENTRY, tooltip="Controls provisional E entries only. Observation of C2 TS/MPS continues when off or waiting for FVG/OTE, and valid evidence transfers to the matching confirmed CRT. At most one E before C2 closes; never backfilled as confirmed.", display=display.none)
+enableEarlyC2 = input.bool(true, "Early C2 · experimental", group=G_ENTRY, tooltip="Controls provisional E entries only. Observation of C2 TS/MPS continues when off or waiting for FVG/OTE, and valid evidence transfers to the matching confirmed CRT. Fresh reaction permits a new E only after the prior attempt is invalidated and a deeper sweep reclaims at a valid HTF key. One per model keeps one E per C2. Never backfilled as confirmed.", display=display.none)
 pivotLength = 2
 manualPoc = 0.0
 manualLine = 0.0
@@ -1774,6 +1774,8 @@ type EarlyState
     bool complete = false
     bool blocked = false
     bool emitted = false
+    bool attemptEmitted = false
+    float retiredExtreme = na
     int attempts = 0
     int reclaimedAt = na
     float attemptSl = na
@@ -1821,6 +1823,8 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
             state.complete := time == ref.start
             state.blocked := false
             state.emitted := false
+            state.attemptEmitted := false
+            state.retiredExtreme := na
             state.attempts := 0
             state.reclaimedAt := na
             state.attemptSl := na
@@ -1867,9 +1871,9 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
         bool targetTaken = state.dir != 0 and (bullish ? state.hi >= target : state.lo <= target)
         bool biasOk = biasDir == state.dir or (allowCrtCounter and biasDir == -state.dir and biasDir != 0)
         bool parentActive = qualifiedParent and parentDirection != 0 and not na(parentKnownAt) and parentKnownAt <= time
-        if not state.complete
-            state.status := "E DATA"
-        else if not na(state.reclaimedAt) and not na(state.channel) and not na(state.channel.confirmIndex)
+        // Retire the old attempt first; this same closed bar may establish a
+        // deeper raid and reclaim. The old marker/reference is never rewritten.
+        if state.complete and not na(state.reclaimedAt) and not na(state.channel) and not na(state.channel.confirmIndex)
             bool stopped = bullish ? low <= state.attemptSl : high >= state.attemptSl
             bool reached = bullish ? high >= target : low <= target
             if not state.blocked and (stopped or reached)
@@ -1878,21 +1882,25 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                 if reached
                     state.blocked := true
                 else
-                    // A stopped provisional trade stays stopped. Observation may
-                    // still find a new raid before this HTF C2 has finished.
+                    // Fresh reaction can rearm only beyond this retired extreme.
+                    // Equality touches invalidate but cannot manufacture a new TS.
+                    state.retiredExtreme := state.attemptSl
+                    state.attemptEmitted := false
                     state.reclaimedAt := na
                     state.channel := ReactionState.new()
                     state.key := CrtKey.new()
                     state.status := "OBS NEW RAID"
             else if not state.blocked
-                state.status := time_close >= ref.finish ? "C2 CLOSED" : state.emitted ? "E SENT" : "TRACK TS"
+                state.status := time_close >= ref.finish ? "C2 CLOSED" : state.attemptEmitted ? "E SENT" : "TRACK TS"
             // Observe later closed bars even after the one Early marker was sent.
-            // No additional Early alert; confirmed parent can inherit this evidence.
+            // One event per attempt; confirmed parent can inherit this evidence.
             if not state.blocked and not na(state.channel) and not na(state.channel.confirmIndex)
                 SignalContext tracking = SignalContext.new(c1T=ref.c1Time, c2T=ref.start, c2End=ref.finish, parentDir=parentDirection, parentAtKey=qualifiedParent, parentLive=qualifiedParent, parentConfirmed=parentKnownAt, age=0, crtKey=state.key, kind=1, id=ref.c1Time, dir=state.dir, confirmed=state.reclaimedAt, hi=ref.c1H, lo=ref.c1L, inv=state.attemptSl, cp=target)
                 deferred := tracking
                 deferredTracking := true
                 deferredTarget := target
+        if not state.complete
+            state.status := "E DATA"
         else if state.blocked
             state.status := state.terminalReason
         else if both or targetTaken
@@ -1901,7 +1909,7 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
             state.terminalReason := state.status
         else if state.dir == 0
             state.status := "E WAIT RAID"
-        else
+        else if na(deferred)
             if extended or not inside
                 state.reclaimedAt := na
                 state.channel := ReactionState.new()
@@ -1911,17 +1919,17 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                     state.key := candidate.copy()
             bool hasKey = not na(state.key) and state.key.kind > 0 and state.key.dir == state.dir and state.key.knownAt <= ref.start
             bool keyHeld = hasKey and (bullish ? close > state.key.hi : close < state.key.lo)
+            bool renewedRaid = na(state.retiredExtreme) or (bullish ? state.lo <= state.retiredExtreme - sweepSize : state.hi >= state.retiredExtreme + sweepSize)
             if hasKey and not keyHeld
-                state.blocked := true
-                state.status := "E KEY LOST"
-                state.terminalReason := state.status
-            else if not hasKey or not inside
-                state.status := not hasKey ? "E NO KEY" : "E WAIT RECLAIM"
+                state.status := "E WAIT KEY"
+            else if not hasKey or not inside or not renewedRaid
+                state.status := not renewedRaid ? "E WAIT NEW RAID" : not hasKey ? "E NO KEY" : "E WAIT RECLAIM"
             else if na(state.reclaimedAt)
                 state.attempts += 1
                 state.reclaimedAt := time_close
                 state.attemptSl := bullish ? state.lo : state.hi
                 state.channel := ReactionState.new(sourceRoot=ref.c1Time, sourceC2=ref.start, sourceEnd=ref.finish, activatedAt=time_close, phaseAt=time_close)
+                state.channel.everSent := signalCadence == "One per model" and state.emitted
                 state.status := "E TS CLOSED"
                 bool oppositeClose = bullish ? close > open : close < open
                 if oppositeClose
@@ -1969,10 +1977,11 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                 bool earlyCounterSwing = not na(state.channel.p1At) and not na(state.channel.mpsRefAt) and not na(state.channel.p3At) and state.channel.p1At < state.channel.mpsRefAt and state.channel.mpsRefAt < state.channel.p3At and state.channel.p3At <= time and (bullish ? state.lo <= state.channel.p1Ref - sweepSize and close > state.channel.p1Ref : state.hi >= state.channel.p1Ref + sweepSize and close < state.channel.p1Ref)
                 if oppositeClose and earlyCounter and not earlyCounterSwing
                     state.status := "E WAIT CT SWING"
-                if oppositeClose and not state.emitted and (not earlyCounter or earlyCounterSwing) and (not parentActive or parentDirection == state.dir or allowCrtCounter and hasKey) and freshEarlyKey and enableEarlyC2 and permitEntry and biasOk and time_close < ref.finish and not confirmedHit and entryBranches != "FVG / OTE"
+                if oppositeClose and not state.attemptEmitted and (signalCadence != "One per model" or not state.emitted) and (not earlyCounter or earlyCounterSwing) and (not parentActive or parentDirection == state.dir or allowCrtCounter and hasKey) and freshEarlyKey and enableEarlyC2 and permitEntry and biasOk and time_close < ref.finish and not confirmedHit and entryBranches != "FVG / OTE"
                     state.channel.branchMask := 1
                     state.channel.everSent := true
                     state.emitted := true
+                    state.attemptEmitted := true
                     state.lockedSl := state.attemptSl
                     state.lockedTp := target
                     state.status := "E SIGNAL"
@@ -1990,11 +1999,12 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                 deferredTarget := target
     // One call site, with the same branch-specific context and signal budget.
     if not na(deferred)
-        ChannelResult entry = f_stepChannel(deferred, state.channel, lastPivotHigh[1], lastPivotLow[1], na, na, enableEarlyC2 and permitEntry and (not deferredTracking or not state.emitted) and not confirmedHit and time_close < ref.finish, knownHighAt=lastPivotHighTime[1], knownLowAt=lastPivotLowTime[1])
+        ChannelResult entry = f_stepChannel(deferred, state.channel, lastPivotHigh[1], lastPivotLow[1], na, na, enableEarlyC2 and permitEntry and not state.attemptEmitted and (signalCadence != "One per model" or not state.emitted) and not confirmedHit and time_close < ref.finish, knownHighAt=lastPivotHighTime[1], knownLowAt=lastPivotLowTime[1])
         if not deferredTracking
             state.status := confirmedHit ? "E C3 PRIORITY" : "E " + entry.status
-        if entry.hit and (deferredTracking ? not state.emitted : not confirmedHit)
+        if entry.hit and not confirmedHit
             state.emitted := true
+            state.attemptEmitted := true
             state.lockedSl := state.attemptSl
             state.lockedTp := deferredTarget
             state.status := "E SIGNAL"
@@ -2305,9 +2315,9 @@ if entryShort and showEntryTriangles
     f_note(false, sellHint)
 
 if earlyResult.hit and showEntryTriangles and markLimit > 0
-    string earlyHint = "EARLY C2 · EXPERIMENTAL | Not HTF confirmed\n" + (earlyResult.dir == 1 ? "BUY" : "SELL") + " | C1 " + str.format_time(earlyResult.c1Time, "dd/MM HH:mm", NY) + " NY | C2 " + str.format_time(earlyResult.bucket, "dd/MM HH:mm", NY) + " NY | Attempt " + str.tostring(earlyResult.attempt) + "\nReclaim closed " + str.format_time(earlyResult.reclaimedAt, "HH:mm:ss", NY) + " | LTF TS " + str.format_time(earlyResult.confirmTime, "HH:mm", NY) + " | Signal close " + str.format_time(time_close, "HH:mm:ss", NY) + " NY\nSL ref " + str.tostring(earlyResult.inv, format.mintick) + " | TP ref " + str.tostring(earlyResult.cp, format.mintick) + " | Frozen at this signal; not a fill."
+    string earlyHint = "EARLY C2 · EXPERIMENTAL | HTF " + f_tfName(htf) + " | Not HTF confirmed\n" + (earlyResult.dir == 1 ? "BUY" : "SELL") + " | C1 " + str.format_time(earlyResult.c1Time, "dd/MM HH:mm", NY) + " NY | C2 " + str.format_time(earlyResult.bucket, "dd/MM HH:mm", NY) + " NY | Attempt " + str.tostring(earlyResult.attempt) + "\nReclaim closed " + str.format_time(earlyResult.reclaimedAt, "HH:mm:ss", NY) + " | LTF TS " + str.format_time(earlyResult.confirmTime, "HH:mm", NY) + " | Signal close " + str.format_time(time_close, "HH:mm:ss", NY) + " NY\nSL ref " + str.tostring(earlyResult.inv, format.mintick) + " | TP ref " + str.tostring(earlyResult.cp, format.mintick) + " | Frozen at this signal; not a fill."
     earlyHint += "\n" + f_keyProofHint(earlyResult.keyRef, earlyResult.reclaimedAt)
-    array.push(eventLabels, label.new(bar_index, na, "E", xloc=xloc.bar_index, yloc=earlyResult.dir == 1 ? yloc.belowbar : yloc.abovebar, style=earlyResult.dir == 1 ? label.style_label_up : label.style_label_down, color=color.new(earlyResult.dir == 1 ? color.lime : color.red, 88), textcolor=earlyResult.dir == 1 ? color.lime : color.red, size=size.small, force_overlay=true, tooltip=earlyHint))
+    array.push(eventLabels, label.new(bar_index, na, earlyResult.attempt > 1 ? "E" + str.tostring(earlyResult.attempt) : "E", xloc=xloc.bar_index, yloc=earlyResult.dir == 1 ? yloc.belowbar : yloc.abovebar, style=earlyResult.dir == 1 ? label.style_label_up : label.style_label_down, color=color.new(earlyResult.dir == 1 ? color.lime : color.red, 88), textcolor=earlyResult.dir == 1 ? color.lime : color.red, size=size.small, force_overlay=true, tooltip=earlyHint))
     array.push(eventBuckets, bucketCounter)
     while array.size(eventLabels) > markLimit
         f_dropMark(0)
@@ -2375,7 +2385,7 @@ if barstate.islast
         array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (hasModel ? (sDir == 1 ? "BUY" : "SELL") : "-") + " | " + str.tostring(hasModel ? sCount : 0), dirText + " / " + biasTf, hasModel and not na(kCrtKey) and kCrtKey.kind > 0 ? f_keyTag(kCrtKey) : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals) + " H " + str.tostring(higherSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals), (not na(crtState.mpsAt) ? f_tfName(htf) + ":OK" : f_tfName(htf) + ":WAIT") + " / " + (not na(higherState.mpsAt) ? f_tfName(largerTf) + ":OK" : f_tfName(largerTf) + ":WAIT"))
         for row = 0 to 10
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
-            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 0 ? syminfo.tickerid + " | H2/H4 clock: " + (f_topstepClockMarket(ticker.standard(syminfo.main_tickerid)) ? htfClock : "Native") + " | 17:00 America/Chicago regular session; chart-feed prices, not MGC/MNQ. H1/D1 native; holidays may differ." : row == 10 ? "MPS is required for OTE only. TS/FVG can precede it. " + diagnosticSummary : row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | Parent C1 stays until its target is taken. INV ends only this attempt; Only original C3 can replace the raid once, with original key and close inside C1. TRACK after entry window; no automatic C3 expiry. Not fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C2. At most one E per C2; locked reference SL/TP. No Replay certification." : row == 7 ? lastClosedAudit + "\n" + diagnosticSummary + "\nCurrent observation: " + f_barrierNote(crtState) : row == 6 ? "C = main HTF, H = larger HTF. Separate source event counts; a merged marker may count once in each source. Closed LTF in a live CRT attempt; not fills or win-rate." : "")
+            table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 0 ? syminfo.tickerid + " | H2/H4 clock: " + (f_topstepClockMarket(ticker.standard(syminfo.main_tickerid)) ? htfClock : "Native") + " | 17:00 America/Chicago regular session; chart-feed prices, not MGC/MNQ. H1/D1 native; holidays may differ." : row == 10 ? "MPS is required for OTE only. TS/FVG can precede it. " + diagnosticSummary : row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | Parent C1 stays until its target is taken. INV ends only this attempt; Only original C3 can replace the raid once, with original key and close inside C1. TRACK after entry window; no automatic C3 expiry. Not fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C2. One E per qualified attempt in Fresh reaction; One per model keeps the C2 budget. Frozen reference SL/TP per event. No Replay certification." : row == 7 ? lastClosedAudit + "\n" + diagnosticSummary + "\nCurrent observation: " + f_barrierNote(crtState) : row == 6 ? "C = main HTF, H = larger HTF. Separate source event counts; a merged marker may count once in each source. Closed LTF in a live CRT attempt; not fills or win-rate." : "")
 
 // Bounded display renderer. Source data and signals are computed above.
 f_putVisual(array<ClockCandle> candles, ClockCandle item, int afterTime = na) =>
