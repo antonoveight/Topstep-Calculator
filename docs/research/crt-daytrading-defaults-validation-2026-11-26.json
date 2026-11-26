@@ -1,0 +1,99 @@
+{
+    "date":  "2026-11-26",
+    "timezone":  "Asia/Saigon",
+    "source":  "indicators/funded-angler-v6.pine",
+    "sha256":  "14ed80f0b0408d0ea9c07248184ec8dbd6009f1272c481a4f28586797be395fa",
+    "profile":  {
+                    "chart":  "5",
+                    "calc_bars_count":  150,
+                    "htfInput":  "60",
+                    "htfClock":  "TopstepX",
+                    "calculationBudget":  "Light",
+                    "biasTf":  "1D",
+                    "biasMode":  "Auto",
+                    "allowCrtCounter":  false,
+                    "structureMode":  "Chart",
+                    "signalCadence":  "Fresh reaction",
+                    "entryBranches":  "FVG / OTE",
+                    "requireKey":  true,
+                    "keyTypes":  "All",
+                    "smtSymbol":  "",
+                    "smtRelation":  "Direct",
+                    "enableEarlyC2":  true,
+                    "showCluster":  true,
+                    "showLargerCluster":  true,
+                    "largerTfChoice":  "Auto",
+                    "enableLargerSignals":  true,
+                    "clusterFollowCount":  6,
+                    "showArchive":  false,
+                    "clusterOffset":  30,
+                    "clusterWidth":  4,
+                    "showLevels":  true,
+                    "showPanel":  true,
+                    "historyMode":  "History",
+                    "historyMarks":  100,
+                    "recentOnly":  true,
+                    "drawHtfBars":  3,
+                    "chartTextSize":  "Normal",
+                    "dashboardTextSize":  "Small"
+                },
+    "validation":  {
+                       "fullCompiler":  {
+                                            "source":  "indicators/funded-angler-v6.pine",
+                                            "sha256":  "14ed80f0b0408d0ea9c07248184ec8dbd6009f1272c481a4f28586797be395fa",
+                                            "httpStatus":  200,
+                                            "elapsedMs":  46899,
+                                            "fullCompilationPassed":  true,
+                                            "reason":  null,
+                                            "errors":  [
+
+                                                       ],
+                                            "warnings":  [
+                                                             "{\"message\":\"The function \\\"{functionName}\\\" should be called on each calculation for consistency. It is recommended to extract the call from this scope\",\"start\":{\"line\":2182,\"column\":30},\"end\":{\"line\":2182,\"column\":627},\"code\":\"CW10003\",\"ctx\":{\"functionName\":\"f_stepEarly\"}}"
+                                                         ],
+                                            "chartExecutionVerified":  false
+                                        },
+                       "currentSuitesPassed":  35,
+                       "brave":  {
+                                     "symbol":  "STONEXTRADING:USTECH100CFD",
+                                     "smt":  "Reset to default. UI resolves empty symbol to chart feed, explicitly excluded by smtEnabled.",
+                                     "inputsResetToSourceDefaults":  true,
+                                     "cloudScriptSavedOrPublished":  false,
+                                     "observedRuntime":  [
+                                                             "H1 and H4 candle groups",
+                                                             "Both live countdowns",
+                                                             "Dashboard TF 60 / 5 and D1/H4 context",
+                                                             "No runtime error badge observed"
+                                                         ],
+                                     "chartTimeframe":  "5",
+                                     "chartExecutionVerified":  true,
+                                     "windowHandle":  789226,
+                                     "screenshots":  [
+                                                         "output/brave-review/daytrading-defaults-top.png",
+                                                         "output/brave-review/daytrading-defaults-entry.png",
+                                                         "output/brave-review/daytrading-defaults-runtime.png"
+                                                     ],
+                                     "observedInputs":  [
+                                                            "H1",
+                                                            "TopstepX",
+                                                            "Light",
+                                                            "D1 Auto",
+                                                            "Counter off",
+                                                            "Chart structure",
+                                                            "Fresh reaction",
+                                                            "FVG / OTE",
+                                                            "Early C2 on",
+                                                            "Larger signals on",
+                                                            "Require key on",
+                                                            "All key types"
+                                                        ],
+                                     "exactEditorSourceVerified":  true
+                                 }
+                   },
+    "limits":  [
+                   "Workflow-aligned defaults, not a historical profit optimization or cross-market win-rate claim.",
+                   "Light / 150 limits historical chart work; source context remains bounded separately.",
+                   "Existing compiler consistency warning CW10003 for f_stepEarly remains.",
+                   "Native chart smoke check is not Replay or execution backtesting."
+               ]
+}

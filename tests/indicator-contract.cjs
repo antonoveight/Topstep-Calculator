@@ -48,6 +48,6 @@ console.log("PASS CRT detector/channel, 64 confirmed snapshot fields, current-ba
 
 assert.match(source,/if canEmit and emitted > 0/);
 assert.match(source,/priorKey and/);
-assert.match(source,/entryBranches = input.string\("TS \+ FVG \+ OTE"/);
+assert.match(source,/entryBranches = input.string\("FVG \/ OTE"/);
 assert.match(source,/plot\(4, "TFA audit schema"/);
 assert.doesNotMatch(source,/showIrl|requireMps|r1MainLow|r1HigherLow/);
