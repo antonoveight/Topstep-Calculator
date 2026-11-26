@@ -31,7 +31,7 @@ for(const dir of [-1,1]){
  for(const opts of [{confirmed:false},{isLtf:false},{timeAllowed:false},{waveAllowed:false},{bias:0}])assert.deepEqual(test(opts).hits,[]);
  assert.deepEqual(test({}, {crtKey:null}).hits,[]);
  assert.ok(test({requireKey:false},{crtKey:null}).hits.length>0);
- assert.ok(test({bias:-dir}).hits.length>0,'Prior held zone allows optional CRT reversal');
+ assert.ok(test({bias:-dir,allowCrtCounter:true}).hits.length>0,'Prior held zone allows optional CRT reversal');
  assert.deepEqual(test({bias:-dir,allowCrtCounter:false}).hits,[]);
  assert.deepEqual(test({}, {crtKey:{kind:2,dir,hi:114,lo:102,knownAt:102,beforeTime:90}}).hits,[],'No future key');
  assert.ok(test({}, {age:3}).hits.length>0,'A live CRT can continue after C3');

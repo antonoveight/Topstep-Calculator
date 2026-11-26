@@ -31,18 +31,18 @@ for(const dir of [-1,1]){
  // Step 3: qualified parent, base bias and local trigger are distinct evidence.
  const parent={parentLive:true,parentAtKey:true,parentDir:dir,parentConfirmed:90};
  assert.equal(run({},parent).state.biasRole,'CONT');
- assert.equal(run({bias:-dir},parent).state.biasRole,'HTF KEY REV');
- assert.equal(run({bias:-dir}).state.biasRole,'KEY REV');
- assert.equal(run({},{...parent,parentDir:-dir}).state.biasRole,'COUNTER SWING');
+ assert.equal(run({bias:-dir,allowCrtCounter:true},parent).state.biasRole,'HTF KEY REV');
+ assert.equal(run({bias:-dir,allowCrtCounter:true}).state.biasRole,'KEY REV');
+ assert.equal(run({},{...parent,parentDir:-dir}).state.biasRole,'HTF CONFLICT');
  assert.equal(run({allowCrtCounter:false},{...parent,parentDir:-dir}).hits.length,0);
  assert.equal(run({localKeys:[key]},{...parent,parentDir:-dir,crtKey:null}).hits.length,0,'A counter-parent trigger needs a source key as well as a local key');
- assert.ok(run({localKeys:[key]},{...parent,parentDir:-dir,parentAtKey:false,crtKey:null}).hits.length>0,'An unqualified random parent is not a veto');
+ assert.equal(run({localKeys:[key]},{...parent,parentDir:-dir,parentAtKey:false,crtKey:null}).hits.length,0,'Live opposite CRT remains context even without a detected key');
  assert.equal(run({},{...parent,parentConfirmed:200}).state.biasRole,'FLOW','Future parent context is not borrowed');
  assert.equal(run({bias:0},parent).hits.length,0);
  // Step 4: nearest pre-known opposing key ends the old leg, not the HTF parent.
  const barrier=dir===-1?{kind:2,dir:1,lo:98,hi:100,knownAt:80,tf:'60'}:{kind:2,dir:-1,lo:120,hi:122,knownAt:80,tf:'60'};
  const delivered=run({localKeys:[key,barrier]});
- assert.equal(delivered.hits.length,2,'An intermediate key touch does not terminate the CRT leg');
+ assert.equal(delivered.hits.length,1,'After delivery, old-leg pullback entries require a new TS');
  assert.equal(delivered.hits[0].tag,'TS_CLOSE');
  assert.equal(delivered.state.nextObjective,dir===-1?100:120);
  assert.equal(delivered.state.objectiveReached,true);
@@ -53,7 +53,8 @@ for(const dir of [-1,1]){
  const newKey=dir===-1?{...key,lo:106,hi:110}:mirrorKey({...key,dir:-1,lo:106,hi:110});
  const renewed=run(n=>({localKeys:[key,newKey,barrier],...(n===4?(dir===-1?{knownHigh:106,knownHighAt:101,knownLow:99,knownLowAt:102}:{knownLow:114,knownLowAt:101,knownHigh:121,knownHighAt:102}):{})}),{},again);
  assert.equal(renewed.state.confirmTime,101,'An intermediate touch does not reset the TS budget or borrow a later root');
- assert.equal(renewed.out.at(-1).tag,'MPS_OTE','Preserve the later OTE branch without re-emitting consumed TS');
+ assert.equal(renewed.out.at(-1).hit,false,'Do not reuse old OTE after key delivery');
+ assert.equal(renewed.out.at(-1).status,'LEG DONE / NEW TS');
  // Step 5: M15 close is independent from intrabar M5 closes.
  const gated=run(n=>({structureReady:n===4,structureClose:dir===-1?100:120,structurePrior:dir===-1?105:115,structureEnd:104}));
  assert.equal(gated.out[1].legDetected,false,'An intrabar M5 break is not a closed M15 MPS');

@@ -49,7 +49,7 @@ for(const dir of [-1,1]){
 const eth=[b(100,1684,1685,1683,1684.5),b(101,1684.2,1685,1682,1684.86)];
 const oldOb={kind:2,dir:1,lo:1645.23,hi:1667.94,knownAt:80,beforeTime:90,tf:'120'};
 const ethContext={crtKey:oldOb,inv:1665.23,cp:1686.63};
-const ethOptions={bias:-1,htf:'120',knownLow:1683,knownLowAt:95,knownHigh:1685,knownHighAt:98};
+const ethOptions={allowCrtCounter:true,bias:-1,htf:'120',knownLow:1683,knownLowAt:95,knownHigh:1685,knownHighAt:98};
 assert.equal(run(eth,1,ethOptions,ethContext).hits.length,0,'Held old OB does not authorize a distant counter-bias Buy');
 assert.equal(run(eth,1,{...ethOptions,localKeys:[{...oldOb,lo:1681,hi:1683}]},ethContext).hits.length,1,'A genuine local HTF reaction remains possible');
 // Multi-bar raid: peak touches the key, a later smaller candle reclaims P1.

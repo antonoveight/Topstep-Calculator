@@ -1,6 +1,6 @@
 # Cài đặt CRT Key Reactions
 
-Cập nhật 25/11/2026. [Đặc tả hiện hành và nguồn gốc](CRT-FIRST-LEG-SPEC.md). [Cài đặt trước migration](archive/INDICATOR-SETTINGS-before-key-reactions-2026-11-25.md) chỉ dùng đối chiếu lịch sử.
+Cập nhật 26/11/2026. [Đặc tả hiện hành và nguồn gốc](CRT-FIRST-LEG-SPEC.md). [Cài đặt trước migration](archive/INDICATOR-SETTINGS-before-key-reactions-2026-11-25.md) chỉ dùng đối chiếu lịch sử.
 
 Mặc định có 30 input khai báo và ô Calculated bars tích hợp của TradingView. MPS gate chung và sáu ô R1 nhập tay đã bỏ. Không có fibo hay vùng entry LTF tự vẽ.
 
@@ -11,7 +11,7 @@ Calculation budget: Light mặc định tải 24 nến trên mỗi nguồn timef
 | H2 / H4 clock | TopstepX mặc định trên OANDA:XAUUSD và STONEXTRADING:USTECH100CFD: ghép H1 theo phiên 17:00 Chicago có DST. Dùng chung cho C1/C2, key, Early và hai cụm nến. Native để trở về nến của feed; mã khác luôn native. Xem [phạm vi và cách đối chiếu](CRT-TOPSTEP-CLOCK.md). |
 | HTF / chart | H1 / M5 để bắt đầu; HTF có H1/H2/H4/D1. Engine entry ở M1/M3/M5/M15 chia hết HTF. |
 | Bias TF / Bias | D1 / Auto. Bias cấu trúc dùng nến đã đóng; có Long/Short/Neutral chủ động. |
-| CRT reversal at prior HTF key | Bật. Ngược bias cần key bối cảnh trước C2 và TS/P3 trực tiếp tại key HTF; không cho phép mọi TS chỉ vì key cũ còn giữ. Không đổi bias hoặc vượt B0/B0!. |
+| CRT reversal at prior HTF key | **Tắt mặc định.** Ngược bias chỉ quan sát. Bật cần CRT HTF đã đóng tại key hoặc parent cùng hướng đã xác nhận tại key, cộng cấu trúc/key LTF. Không vượt parent còn sống đang ngược hướng hoặc B0. Early không tự cấp quyền đảo chiều HTF. |
 | Entry branches | TS + FVG + OTE. Chọn TS close để chỉ xem nến sweep; FVG / OTE để chỉ xem nhánh hồi. |
 | Structure timeframe | Chart mặc định. Chọn M15 trên chart nhỏ hơn để dùng swing/close M15 xác nhận MPS; entry vẫn trên chart. Không ép một cặp HTF/LTF cố định. |
 | Signal cadence | Fresh reaction: ngân sách riêng từng nhánh/nhịp/attempt. One per model để xem thưa hơn. |
@@ -19,7 +19,7 @@ Calculation budget: Light mặc định tải 24 nến trên mỗi nguồn timef
 | Key types | All. Có thể đối chiếu riêng Swing, Swing + FVG, Swing + OB hoặc Open / Close. |
 | SMT comparison | Trống = tắt. Tự chọn mã so sánh và Direct/Inverse phù hợp; chỉ hiển thị bằng chứng, không tạo tam giác riêng. |
 | Early C2 | Bật thử nghiệm theo yêu cầu. Fresh reaction: một E trên mỗi attempt; sau vô hiệu cần quét sâu thêm ít nhất một tick và reclaim đủ key để có E2/E3. One per model: tối đa một E/C2. Tắt vẫn quan sát và chuyển bằng chứng hợp lệ; không phát hồi tố. |
-| Larger HTF / signals | Auto và bật. H1/H2 → H4, H4 → D1, D1 → W1. Engine Larger chỉ chạy khi khung đó <= Bias TF. |
+| Larger HTF / signals | Auto và bật. H1/H2 → H4, H4 → D1, D1 → W1. Entry Larger chỉ phát khi khung đó <= Bias TF. Tắt phát tín hiệu hoặc ẩn cụm vẫn giữ context Larger trong bộ kiểm tra xung đột. |
 | History / historical signals | History / 100. Latest chỉ giữ sự kiện gần nhất; 0 ẩn marker. |
 | CRT range / target / HTF key | Bật. CRTH/CRTL, EQ, INV, TGT và KEY có loại/khung nguồn; không còn IRL/ERL. |
 | Cluster / follow / last ended | Hai cụm bật; follow 6 nến; LAST mặc định tắt. Không thay logic hiệu lực setup. |
@@ -40,11 +40,11 @@ Early C2 hiện chỉ truyền cấu trúc cho MPS/OTE nếu P1 → P2 → P3 đ
 
 Cập nhật 26/11/2026: Fresh reaction nhận E2/E3 sau khi attempt trước vô hiệu, quét thêm ít nhất một tick và reclaim hợp lệ tại key HTF. Chạm bằng cực trị cũ không mở lại. Mỗi nhịp giữ một E, kể cả nhánh fallback; không mở lại sau target hoặc AMB. Nhãn cũ giữ mức tham chiếu của chính nó. Tooltip E ghi HTF nguồn và số attempt; đây vẫn là tín hiệu trước khi C2 HTF đóng. Mức risk/SL tự điều chỉnh khi giao dịch độc lập với tham chiếu chỉ báo. Xem [nghiệm thu vòng đời TS](research/crt-early-renewal-validation-2026-11-26.json).
 
-Tooltip entry ghi vai trò chuỗi FROM C2 / LOCAL C3 / LOCAL TRACK, bối cảnh FLOW / CONT / KEY REV / HTF KEY REV / COUNTER SWING và key HTF kế tiếp nếu có. Đây là phân loại theo quy ước trong đặc tả, không khẳng định hướng sẽ thắng. Key cản trung gian hiện chỉ là quan sát: tooltip WHY ghi loại, giá và thời điểm chạm; không dùng KEY DELIVERED để hủy leg. Target CRT, INV, giới hạn nhánh và thời gian chờ bằng chứng vẫn được giữ.
+Tooltip entry ghi vai trò chuỗi FROM C2 / LOCAL C3 / LOCAL TRACK và bối cảnh FLOW / CONT / KEY REV / HTF KEY REV. `HTF CONFLICT` chặn entry khi parent còn sống ngược hướng; `COUNTER OBS` là ngược bias khi counter tắt; `WAIT HTF REV` là chưa có xác nhận đảo chiều HTF; `LEG DONE / NEW TS` yêu cầu TS mới sau checkpoint. EQ/cản không đổi TP hoặc buộc chốt một phần; chỉ ngăn tái dùng FVG/OTE của leg đã tới checkpoint. MPS vẫn được quan sát. Xem [nghiệm thu quyền entry](research/crt-context-permission-validation-2026-11-26.json).
 
 Bản sửa sau rà soát nhiều thị trường ngày 25/11/2026:
 
-- Counter D1 hoặc counter parent CRT có key cần cả key bối cảnh, key phản ứng P3 và P1 → P2 → P3 đúng thứ tự, P3 quét P1 rồi đóng lại. Hai nến liền kề đơn lẻ không đủ. WHY có thể ghi WAIT CT SWING; Early có E WAIT CT SWING. Không ép mọi entry phải chờ MPS.
+- Counter D1 cần chủ động bật và có quyền đảo chiều HTF theo chính sách 26/11 ở trên; không được counter CRT cha còn sống đang ngược hướng. Khi được cấp quyền vẫn cần key bối cảnh, key P3 và P1 → P2 → P3 đúng thứ tự. Không ép mọi entry thuận hướng phải chờ MPS.
 - Key types = All đã gồm trung điểm râu trên/dưới của tuần đã đóng; chọn Weekly wick để chỉ xét loại này. Nhãn WW-L50/W1 và WW-H50/W1. Body min/max dùng cả open và close; high/low gồm râu. Tuần đang chạy không được dùng làm nguồn key này. Phản ứng tại midpoint là chạm và đóng lại qua mức; không đòi quét đáy/đỉnh cả tuần.
 - Key tuần dùng cùng feed chart. Bằng chứng reclaim cho entry bị mất khi H1 đã đóng sau phản ứng xuyên ngược mức; cơ chế sticky của nhịp TS vẫn áp dụng. Tham chiếu tuần được thay khi có tuần mới hoàn tất; không tự kéo mức futures sang spot.
 - Cấu hình đối chiếu ban đầu: M5, HTF H1 hoặc H2 tùy setup, Bias D1 Auto, Structure Chart, TS close, Fresh reaction, Require prior HTF key reaction bật. Khi kiểm tra MPS M15 thì đổi riêng Structure M15. Sau đó mới bật thêm FVG/OTE và so sánh từng nguồn main/higher/Early/counter bằng tooltip. Đây là cấu hình chẩn đoán, chưa phải setting đã chứng minh tối ưu lợi nhuận; mặc định All branches không đổi.

@@ -21,7 +21,7 @@ for(const dir of [-1,1]){
  const tape=dir===-1?bars:bars.map(mirror);
  const pair={knownHigh:dir===-1?108:118,knownHighAt:dir===-1?95:98,knownLow:dir===-1?102:112,knownLowAt:dir===-1?98:95};
  function run(opts={},input=tape,extra={}){const context={...ctx,...extra},state=h.state(context),out=[];for(let n=2;n<=input.length;n++)out.push(h.step(context,state,input.slice(0,n),{localKeys:[key],...pair,...opts}));return {state,out,hits:out.filter(x=>x.hit)};}
- assert.ok(run({bias:-dir}).hits.length>0,'Structured prior weekly-key reversal remains possible');
+ assert.ok(run({bias:-dir,allowCrtCounter:true}).hits.length>0,'Structured prior weekly-key reversal remains possible');
  assert.equal(run({bias:-dir,knownHigh:null,knownLow:null}).hits.length,0,'Unstructured adjacent TS cannot counter D1');
  assert.ok(run({knownHigh:null,knownLow:null}).hits.length>0,'Aligned TS does not gain a universal MPS/swing gate');
  assert.equal(run({knownHigh:null,knownLow:null},tape,{parentDir:-dir,parentAtKey:true,parentLive:true,parentConfirmed:90}).hits.length,0,'Opposing qualified parent uses the same swing requirement');
@@ -31,7 +31,7 @@ for(const dir of [-1,1]){
  const ref=dir===-1?{start:100,finish:105,c1Time:90,c1End:100,c1O:110,c1H:120,c1L:90,c1C:115}:{start:100,finish:105,c1Time:90,c1End:100,c1O:110,c1H:130,c1L:100,c1C:105};
  const eKey=early.make('CrtKey',{kind:2,dir,lo:dir===-1?120:95,hi:dir===-1?125:100,knownAt:80,beforeTime:100,tf:'60'});
  const eState=early.state(),eEvents=[];
- for(let n=1;n<=eTape.length;n++) eEvents.push(early.step(ref,eState,eTape.slice(0,n),{bias:-dir,
+ for(let n=1;n<=eTape.length;n++) eEvents.push(early.step(ref,eState,eTape.slice(0,n),{bias:-dir,allowCrtCounter:true,parentDirection:dir,qualifiedParent:true,parentAtKey:true,parentKnownAt:90,
   ...(dir===-1?{sellKey:n===4?eKey:early.make('CrtKey'),knownHigh:124,knownHighAt:95,knownLow:118,knownLowAt:102}:{buyKey:n===4?eKey:early.make('CrtKey'),knownLow:96,knownLowAt:95,knownHigh:102,knownHighAt:102})}));
  assert.equal(eEvents.at(-1).hit,true,'Ordered key-backed Early counter survives; counter entries are not universally banned');
  const barrier={kind:2,dir:-dir,lo:dir===-1?101:116,hi:dir===-1?104:119,knownAt:80,tf:'60'};
@@ -40,10 +40,11 @@ for(const dir of [-1,1]){
  const initial=run({localKeys:[key,barrier]},tape.slice(0,2));
  assert.equal(initial.state.objectiveReached,false,'The TS candle wick is not a subsequent barrier touch');
  assert.equal(observed.state.objectiveReached,true);
- assert.ok(observed.hits.some(x=>x.tag==='MPS_OTE'),'Touch observation does not erase MPS/OTE or replenish TS budget');
+ assert.ok(observed.hits.every(x=>!x.tag.includes('OTE')),'After key delivery observe MPS but require a new TS for entry');
+ assert.ok(observed.state.mpsAt!==null);
  for(const opts of [{bias:-dir},{bias:-dir,knownHigh:null,knownLow:null},{localKeys:[key,barrier]}]){
   const full=run(opts).out;
   for(let n=2;n<=tape.length;n++){prefixes++;assert.deepEqual(run(opts,tape.slice(0,n)).out,full.slice(0,n-1));}
  }
 }
-console.log(`PASS closed-week wick math/availability, structured vs adjacent counter, aligned TS, soft barrier and ${prefixes} immutable prefixes. Synthetic only.`);
+console.log(`PASS closed-week wick math/availability, structured vs adjacent counter, aligned TS, delivery checkpoint and ${prefixes} immutable prefixes. Synthetic only.`);

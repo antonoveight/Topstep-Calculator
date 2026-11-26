@@ -39,7 +39,7 @@ manualBsl = 0.0
 biasTf = input.timeframe("1D", "Bias TF (>= HTF)", options=["60", "120", "240", "1D"], group=G_BIAS, tooltip="Khung bias từ H1 đến D1, phải >= HTF hiệu lực. Mặc định D1; không đồng nghĩa bias cá nhân đọc từ FRVP/day high-low.", display=display.none)
 biasMode = input.string("Auto", "Bias", options=["Auto", "Long", "Short", "Neutral"], group=G_BIAS, tooltip="Auto dùng close phá swing xác nhận trên Bias TF; giữ hướng đến khi cấu trúc đổi. B0! tạm chặn theo close chart xuyên guard ngược hướng, không tự coi là bias đối diện. Long/Short/Neutral là ý kiến chủ động của bạn; reset khi bối cảnh thay đổi.", display=display.none)
 filterBias = true
-allowCrtCounter = input.bool(true, "CRT reversal at prior HTF key", group=G_ENTRY, tooltip="Counter bias/parent requires a prior context key, a local HTF key reaction AND an ordered P1-P2-P3 swing sweep/reclaim. A two-candle adjacent TS alone is insufficient. MPS is still required only for OTE. B0 stays blocked.", display=display.none)
+allowCrtCounter = input.bool(false, "CRT reversal at prior HTF key", group=G_ENTRY, tooltip="Default off: counter-bias reactions are observation only. Opt-in requires a confirmed key-qualified HTF reversal plus local key and ordered P1-P2-P3. A live opposing Larger/Bias CRT always blocks entries; an LTF TS/MPS cannot override it. B0 stays blocked.", display=display.none)
 structureMode = input.string("Chart", "Structure timeframe", options=["Chart", "M15"], group=G_ENTRY, tooltip="Chart keeps existing swing/close timing. M15 uses independently confirmed M15 swings and M15 closes for MPS while TS/FVG/OTE execution stays on M1/M3/M5. A direct M15 chart is also supported. No fixed M15-to-H4 identity is assumed.", display=display.none)
 signalCadence = input.string(DEFAULT_SIGNAL_CADENCE, "Signal cadence", options=["Fresh reaction", "One per model"], group=G_ENTRY, tooltip="Fresh reaction: mỗi nhịp TS có tối đa một dấu cho từng nhánh TS/FVG/OTE. One per model chỉ phát một lần cho mỗi setup.", display=display.none)
 entryBranches = input.string("TS + FVG + OTE", "Entry branches", options=["TS + FVG + OTE", "TS close", "FVG / OTE"], group=G_ENTRY, tooltip="TS: closed sweep/reclaim candle. FVG: a later reaction to a gap formed after TS. OTE: 50–80% of the first leg after a close through pre-TS structure. MPS is required only for OTE.", display=display.none)
@@ -1016,10 +1016,12 @@ f_higherBundle(simple string sourceTf) =>
     KeyMap keys = f_executionFromSource(source)
     ClockPreview frame = f_sourceFrame(sourceTf)
     [model, keys, frame]
+bool higherContextTfValid = timeframe.in_seconds(largerTf) > htfSeconds
 bool higherSignalTfValid = isLtf and timeframe.in_seconds(largerTf) > htfSeconds and timeframe.in_seconds(largerTf) % chartSeconds == 0 and timeframe.in_seconds(biasTf) >= timeframe.in_seconds(largerTf)
 [requestedHigher, executionLarger, largerPreview] = request.security(syminfo.tickerid, f_transportTf(largerTf), f_higherBundle(largerTf), lookahead=f_sourceLookahead(largerTf), calc_bars_count=f_sourceDepth(largerTf))
 HigherSnapshot requestedBiasModel = request.security(syminfo.tickerid, f_transportTf(biasTf), f_higherSnapshot(biasTf), lookahead=f_sourceLookahead(biasTf), calc_bars_count=f_sourceDepth(biasTf))
-HigherSnapshot higher = enableLargerSignals and higherSignalTfValid ? requestedHigher : HigherSnapshot.new()
+// Parent context is independent of entry/display switches.
+HigherSnapshot higher = requestedHigher
 
 f_executionKey(int direction, int knownBefore, float peakHigh, float peakLow, float reclaimClose) =>
     CrtKey found = f_rangeReaction(executionH1, knownBefore, direction, peakHigh, peakLow, reclaimClose)
@@ -1300,12 +1302,14 @@ bool rangeAvailable = not na(sId) and not (focusLife.uid == sId and focusLife.ra
 bool focusAvailable = rangeAvailable and sPhase == 1 and focusLife.uid == sId and focusLife.confirmation == sConfirmed and focusLife.reason == 0
 var FocusLifecycle higherLife = FocusLifecycle.new()
 int higherEndedNow = f_stepFocus(higherLife, higher.id, higher.dir, higher.confirmed, higher.inv, higher.cp, higher.age, time, time_close, high, low, barstate.isconfirmed, higher.phase == 1)
-bool higherAvailable = enableLargerSignals and higherSignalTfValid and not na(higher.id) and higher.phase == 1 and not higherLife.rangeDone and higherLife.uid == higher.id and higherLife.confirmation == higher.confirmed and higherLife.reason == 0
+bool higherContextLive = higherContextTfValid and not na(higher.id) and higher.phase == 1 and not higherLife.rangeDone and higherLife.uid == higher.id and higherLife.confirmation == higher.confirmed and higherLife.reason == 0
+
+bool higherAvailable = enableLargerSignals and higherSignalTfValid and higherContextLive
 
 var FocusLifecycle biasLife = FocusLifecycle.new()
 int biasEndedNow = f_stepFocus(biasLife, biasModel.id, biasModel.dir, biasModel.confirmed, biasModel.inv, biasModel.cp, biasModel.age, time, time_close, high, low, barstate.isconfirmed, biasModel.phase == 1)
 bool biasModelLive = not na(biasModel.id) and biasModel.phase == 1 and biasLife.uid == biasModel.id and not biasLife.rangeDone and biasLife.reason == 0
-bool higherAtKey = higherAvailable and not na(higher.key) and higher.key.kind > 0 and f_executionProofValid(higher.key, higher.confirmed)
+bool higherAtKey = higherContextLive and not na(higher.key) and higher.key.kind > 0 and f_executionProofValid(higher.key, higher.confirmed)
 bool biasAtKey = biasModelLive and not na(biasModel.key) and biasModel.key.kind > 0 and f_executionProofValid(biasModel.key, biasModel.confirmed)
 ModelArchive visibleArchive = f_visibleArchive(focusLife.archived, sArchived)
 int lastSetupEnd = not na(visibleArchive) and not na(visibleArchive.aT) ? visibleArchive.endReason : sReason
@@ -1362,6 +1366,11 @@ type SignalContext
     int c2T = na
     int c2End = na
     int c3End = na
+    bool htfConfirmed = true
+    int outerDir = 0
+    int outerConfirmed = na
+    bool outerLive = false
+    bool outerAtKey = false
     int parentDir = 0
     int parentConfirmed = na
     bool parentLive = false
@@ -1379,6 +1388,18 @@ type SignalContext
     float lo = na
     float inv = na
     float cp = na
+// Closed HTF context grants permission; LTF shapes never override a live
+// opposing parent. Source/key confidence only matters for opt-in reversal.
+f_contextDecision(int direction, int baseDirection, bool counterEnabled, bool sourceClosed, int sourceConfirmed, bool sourceAtKey, int parentDirection, int parentConfirmed, bool parentLive, bool parentAtKey, int outerDirection, int outerConfirmed, bool outerLive, bool outerAtKey, int nowAt) =>
+    bool knownParent = parentLive and parentDirection != 0 and not na(parentConfirmed) and parentConfirmed <= nowAt
+    bool knownOuter = outerLive and outerDirection != 0 and not na(outerConfirmed) and outerConfirmed <= nowAt
+    bool conflict = knownParent and parentDirection != direction or knownOuter and outerDirection != direction
+    bool parentReversal = knownParent and parentDirection == direction and parentAtKey or knownOuter and outerDirection == direction and outerAtKey
+    bool ownReversal = sourceClosed and not na(sourceConfirmed) and sourceConfirmed <= nowAt and sourceAtKey and (not knownParent or sourceConfirmed >= parentConfirmed) and (not knownOuter or sourceConfirmed >= outerConfirmed)
+    conflict ? 1 : baseDirection == 0 ? 2 : baseDirection == direction ? 0 : not counterEnabled ? 3 : ownReversal or parentReversal ? 0 : 4
+f_contextTag(int decision) =>
+    decision == 1 ? "HTF CONFLICT" : decision == 2 ? "B0" : decision == 3 ? "COUNTER OBS" : decision == 4 ? "WAIT HTF REV" : "ALIGNED"
+
 type ReactionState
     int sourceRoot = na
     int sourceC2 = na
@@ -1389,6 +1410,9 @@ type ReactionState
     float nextObjective = na
     bool objectiveReached = false
     int objectiveAt = na
+    float checkpointEq = na
+    bool checkpointReached = false
+    int checkpointAt = na
     string key = ""
     int activatedAt = na
     int phaseAt = na
@@ -1576,6 +1600,10 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             state.confirmTime := time
             state.confirmLevel := hasRaid ? state.p1Ref : bullish ? low[1] : high[1]
             state.localExtreme := hasRaid ? state.raidExtreme : bullish ? low : high
+            float eq = (ctx.hi + ctx.lo) / 2
+            state.checkpointEq := (bullish ? state.localExtreme < eq : state.localExtreme > eq) ? eq : na
+            state.checkpointReached := not na(state.checkpointEq) and (bullish ? close >= eq : close <= eq)
+            state.checkpointAt := state.checkpointReached ? time_close : na
             bool retainedPeakKey = hasRaid and not na(state.p3Key) and f_keyReact(state.p3Key, state.raidAt, ctx.dir, state.p3High, state.p3Low, close)
             state.p3Key := retainedPeakKey ? state.p3Key : f_executionKey(ctx.dir, hasRaid ? state.raidAt : time, hasRaid ? state.p3High : high, hasRaid ? state.p3Low : low, close)
             state.p3KeyBroken := false
@@ -1602,18 +1630,23 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
         if reachedForward and not state.objectiveReached
             state.objectiveReached := true
             state.objectiveAt := time_close
+        bool reachedEq = later and not na(state.checkpointEq) and (bullish ? high >= state.checkpointEq : low <= state.checkpointEq)
+        if reachedEq and not state.checkpointReached
+            state.checkpointReached := true
+            state.checkpointAt := time_close
+        bool legDelivered = state.objectiveReached or state.checkpointReached
         if hasTs and not na(state.p3KeyAt) and not f_executionProofValid(state.p3Key, state.p3KeyAt)
             state.p3KeyBroken := true
         bool localKeyGood = not state.p3KeyBroken and not na(state.p3Key) and state.p3Key.dir == ctx.dir and f_executionProofValid(state.p3Key, state.p3KeyAt)
         bool keyAllowed = not requireKey or localKeyGood
         bool counterStructure = not na(state.p1At) and not na(state.mpsRefAt) and not na(state.p3At) and state.p1At < state.mpsRefAt and state.mpsRefAt < state.p3At and state.p3At <= state.confirmTime and (bullish ? state.localExtreme <= state.p1Ref - sweepSize and close > state.p1Ref : state.localExtreme >= state.p1Ref + sweepSize and close < state.p1Ref)
-        bool counterContext = allowCrtCounter and opposingBias and keyHeld and localKeyGood and counterStructure
-        bool parentKnown = ctx.parentLive and ctx.parentAtKey and ctx.parentDir != 0 and not na(ctx.parentConfirmed) and ctx.parentConfirmed <= time
+        int contextDecision = f_contextDecision(ctx.dir, biasDir, allowCrtCounter, ctx.htfConfirmed, ctx.confirmed, priorKey, ctx.parentDir, ctx.parentConfirmed, ctx.parentLive, ctx.parentAtKey, ctx.outerDir, ctx.outerConfirmed, ctx.outerLive, ctx.outerAtKey, time)
+        bool counterContext = contextDecision == 0 and allowCrtCounter and opposingBias and keyHeld and localKeyGood and counterStructure
+        bool parentKnown = ctx.parentLive and ctx.parentDir != 0 and not na(ctx.parentConfirmed) and ctx.parentConfirmed <= time
         bool againstParent = parentKnown and ctx.parentDir != ctx.dir
-        bool parentReversal = allowCrtCounter and keyHeld and localKeyGood and counterStructure
-        bool contextAllowed = not againstParent or parentReversal
-        bool biasAllowed = (not filterBias or biasDir == ctx.dir or counterContext) and contextAllowed
-        state.biasRole := not biasAllowed ? (biasDir == 0 ? "B0" : againstParent ? "HTF CONFLICT" : "BIAS") : againstParent ? "COUNTER SWING" : counterContext ? (parentKnown ? "HTF KEY REV" : "KEY REV") : parentKnown and ctx.confirmed >= ctx.parentConfirmed and localKeyGood ? "CONT" : "FLOW"
+        bool contextAllowed = contextDecision == 0
+        bool biasAllowed = contextAllowed and (not filterBias or biasDir == ctx.dir or counterContext)
+        state.biasRole := not biasAllowed ? (contextDecision != 0 ? f_contextTag(contextDecision) : "WAIT CT SWING") : againstParent ? "COUNTER SWING" : counterContext ? (parentKnown ? "HTF KEY REV" : "KEY REV") : parentKnown and ctx.confirmed >= ctx.parentConfirmed and localKeyGood ? "CONT" : "FLOW"
         // The source extreme must follow P2, including evidence inherited from
         // Early C2. A whole-C2 high/low from BEFORE P2 cannot become its P3.
         bool mpsOrder = not na(state.p1At) and not na(state.mpsRefAt) and not na(state.p3At) and state.p1At < state.mpsRefAt and state.mpsRefAt < state.p3At and state.p3At <= state.confirmTime
@@ -1638,14 +1671,14 @@ f_stepChannel(SignalContext ctx, ReactionState state, float knownHigh, float kno
             state.gapBroken := true
         bool canEmit = not ended and chainAllowed and keyAllowed and biasAllowed and timeAllowed and waveAllowed and (signalCadence != "One per model" or not state.everSent)
         bool direct = newTs and entryBranches != "FVG / OTE"
-        bool fvgEntry = fvg and entryBranches != "TS close" and not f_has(state.branchMask, 2)
-        bool oteEntry = ote and entryBranches != "TS close" and not f_has(state.branchMask, 4)
+        bool fvgEntry = not legDelivered and fvg and entryBranches != "TS close" and not f_has(state.branchMask, 2)
+        bool oteEntry = not legDelivered and ote and entryBranches != "TS close" and not f_has(state.branchMask, 4)
         int emitted = (direct ? 1 : 0) + (fvgEntry ? 2 : 0) + (oteEntry ? 4 : 0)
         result.tsDetected := localTs
         result.retestDetected := fvg or ote
         result.legDetected := state.mpsEvent
         result.entryDetected := emitted > 0
-        result.status := ended ? (state.localStopTaken ? "INV" : "TGT") : not hasTs ? "WAIT TS" : not keyAllowed ? "WAIT P3 KEY" : not biasAllowed ? ((opposingBias or againstParent) and not counterStructure ? "WAIT CT SWING" : "BIAS") : signalCadence == "One per model" and state.everSent ? "USED" : not na(state.mpsAt) ? "WAIT OTE/FVG" : not localKeyGood ? "MPS NO KEY" : "WAIT FVG/MPS"
+        result.status := ended ? (state.localStopTaken ? "INV" : "TGT") : not hasTs ? "WAIT TS" : not keyAllowed ? "WAIT P3 KEY" : not biasAllowed ? (contextDecision != 0 ? f_contextTag(contextDecision) : "WAIT CT SWING") : legDelivered ? "LEG DONE / NEW TS" : signalCadence == "One per model" and state.everSent ? "USED" : not na(state.mpsAt) ? "WAIT OTE/FVG" : not localKeyGood ? "MPS NO KEY" : "WAIT FVG/MPS"
         if canEmit and emitted > 0
             result.hit := true
             result.tag := (direct ? "TS_CLOSE" : "") + (fvgEntry ? (direct ? "+FVG" : "TS_FVG") : "") + (oteEntry ? (direct or fvgEntry ? "+OTE" : "MPS_OTE") : "")
@@ -1798,7 +1831,7 @@ type EarlyResult
     CrtKey keyRef = na
     string status = "WAIT C2"
 
-f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey, bool buyWave, bool sellWave, bool confirmedHit, bool permitEntry = true, int parentDirection = 0, bool qualifiedParent = false, int parentKnownAt = na) =>
+f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey, bool buyWave, bool sellWave, bool confirmedHit, bool permitEntry = true, int parentDirection = 0, bool qualifiedParent = false, int parentKnownAt = na, bool parentKeyQualified = false, int outerDirection = 0, bool outerLive = false, int outerConfirmed = na, bool outerKeyQualified = false) =>
     EarlyResult result = EarlyResult.new(bucket=ref.start, c1Time=ref.c1Time)
     SignalContext deferred = na
     bool deferredTracking = false
@@ -1895,7 +1928,7 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
             // Observe later closed bars even after the one Early marker was sent.
             // One event per attempt; confirmed parent can inherit this evidence.
             if not state.blocked and not na(state.channel) and not na(state.channel.confirmIndex)
-                SignalContext tracking = SignalContext.new(c1T=ref.c1Time, c2T=ref.start, c2End=ref.finish, parentDir=parentDirection, parentAtKey=qualifiedParent, parentLive=qualifiedParent, parentConfirmed=parentKnownAt, age=0, crtKey=state.key, kind=1, id=ref.c1Time, dir=state.dir, confirmed=state.reclaimedAt, hi=ref.c1H, lo=ref.c1L, inv=state.attemptSl, cp=target)
+                SignalContext tracking = SignalContext.new(htfConfirmed=false, outerDir=outerDirection, outerLive=outerLive, outerConfirmed=outerConfirmed, outerAtKey=outerKeyQualified, c1T=ref.c1Time, c2T=ref.start, c2End=ref.finish, parentDir=parentDirection, parentAtKey=parentKeyQualified, parentLive=qualifiedParent, parentConfirmed=parentKnownAt, age=0, crtKey=state.key, kind=1, id=ref.c1Time, dir=state.dir, confirmed=state.reclaimedAt, hi=ref.c1H, lo=ref.c1L, inv=state.attemptSl, cp=target)
                 deferred := tracking
                 deferredTracking := true
                 deferredTarget := target
@@ -1944,6 +1977,10 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                     state.channel.p3Key := f_executionKey(state.dir, ref.start, state.channel.p3High, state.channel.p3Low, close)
                     state.channel.p3KeyAt := state.channel.p3Key.kind > 0 ? time_close : na
                     state.channel.legExtreme := bullish ? high : low
+                    float earlyEq = (ref.c1H + ref.c1L) / 2
+                    state.channel.checkpointEq := (bullish ? state.attemptSl < earlyEq : state.attemptSl > earlyEq) ? earlyEq : na
+                    state.channel.checkpointReached := not na(state.channel.checkpointEq) and (bullish ? close >= earlyEq : close <= earlyEq)
+                    state.channel.checkpointAt := state.channel.checkpointReached ? time_close : na
                     bool storedPair = not na(state.setupP1At) and not na(state.setupP2At)
                     float sourceP1 = storedPair ? state.setupP1 : knownP1
                     int sourceP1At = storedPair ? state.setupP1At : knownP1At
@@ -1973,11 +2010,14 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                 bool freshEarlyKey = not na(state.channel.p3Key) and state.channel.p3Key.kind > 0 and f_executionProofValid(state.channel.p3Key, state.channel.p3KeyAt)
                 if oppositeClose and not freshEarlyKey
                     state.status := "E WAIT P3 KEY"
+                int earlyDecision = f_contextDecision(state.dir, biasDir, allowCrtCounter, false, state.reclaimedAt, hasKey, parentDirection, parentKnownAt, parentActive, parentKeyQualified, outerDirection, outerConfirmed, outerLive, outerKeyQualified, time)
                 bool earlyCounter = biasDir == -state.dir or parentActive and parentDirection != state.dir
                 bool earlyCounterSwing = not na(state.channel.p1At) and not na(state.channel.mpsRefAt) and not na(state.channel.p3At) and state.channel.p1At < state.channel.mpsRefAt and state.channel.mpsRefAt < state.channel.p3At and state.channel.p3At <= time and (bullish ? state.lo <= state.channel.p1Ref - sweepSize and close > state.channel.p1Ref : state.hi >= state.channel.p1Ref + sweepSize and close < state.channel.p1Ref)
-                if oppositeClose and earlyCounter and not earlyCounterSwing
+                if oppositeClose and earlyDecision != 0
+                    state.status := "E " + f_contextTag(earlyDecision)
+                else if oppositeClose and earlyCounter and not earlyCounterSwing
                     state.status := "E WAIT CT SWING"
-                if oppositeClose and not state.attemptEmitted and (signalCadence != "One per model" or not state.emitted) and (not earlyCounter or earlyCounterSwing) and (not parentActive or parentDirection == state.dir or allowCrtCounter and hasKey) and freshEarlyKey and enableEarlyC2 and permitEntry and biasOk and time_close < ref.finish and not confirmedHit and entryBranches != "FVG / OTE"
+                if oppositeClose and earlyDecision == 0 and not state.attemptEmitted and (signalCadence != "One per model" or not state.emitted) and (not earlyCounter or earlyCounterSwing) and (not parentActive or parentDirection == state.dir or allowCrtCounter and hasKey) and freshEarlyKey and enableEarlyC2 and permitEntry and biasOk and time_close < ref.finish and not confirmedHit and entryBranches != "FVG / OTE"
                     state.channel.branchMask := 1
                     state.channel.everSent := true
                     state.emitted := true
@@ -1994,7 +2034,7 @@ f_stepEarly(EarlyReference ref, EarlyState state, CrtKey buyKey, CrtKey sellKey,
                     result.attempt := state.attempts
                     result.keyRef := state.channel.p3Key
             else
-                SignalContext local = SignalContext.new(age=0, crtKey=state.key, kind=1, id=ref.start, flags=1, phase=1, dir=state.dir, confirmed=state.reclaimedAt, resolved=state.reclaimedAt, hi=ref.c1H, lo=ref.c1L, inv=state.attemptSl, cp=target)
+                SignalContext local = SignalContext.new(htfConfirmed=false, outerDir=outerDirection, outerLive=outerLive, outerConfirmed=outerConfirmed, outerAtKey=outerKeyQualified, parentDir=parentDirection, parentLive=qualifiedParent, parentAtKey=parentKeyQualified, parentConfirmed=parentKnownAt, age=0, crtKey=state.key, kind=1, id=ref.start, flags=1, phase=1, dir=state.dir, confirmed=state.reclaimedAt, resolved=state.reclaimedAt, hi=ref.c1H, lo=ref.c1L, inv=state.attemptSl, cp=target)
                 deferred := local
                 deferredTarget := target
     // One call site, with the same branch-specific context and signal budget.
@@ -2051,7 +2091,7 @@ float hEarlyHigh = higherEarlyState.bucket == largerBucket ? math.max(higherEarl
 float hEarlyLow = higherEarlyState.bucket == largerBucket ? math.min(higherEarlyState.lo, low) : low
 CrtKey hEarlyBuyKey = not na(hEarlyKeys) ? f_matchKeyMap(hEarlyKeys, higherEarlyUnused, largerBucket, 1, hEarlyHigh, hEarlyLow, close) : CrtKey.new()
 CrtKey hEarlySellKey = not na(hEarlyKeys) ? f_matchKeyMap(hEarlyKeys, higherEarlyUnused, largerBucket, -1, hEarlyHigh, hEarlyLow, close) : CrtKey.new()
-EarlyReference higherEarlyRef = EarlyReference.new(start=largerBucket, finish=largerEnd, c1Time=higherSignalTfValid and enableLargerSignals ? hEarlyT : na, c1End=hEarlyEnd, c1O=hEarlyO, c1H=hEarlyH, c1L=hEarlyL, c1C=hEarlyC)
+EarlyReference higherEarlyRef = EarlyReference.new(start=largerBucket, finish=largerEnd, c1Time=higherSignalTfValid ? hEarlyT : na, c1End=hEarlyEnd, c1O=hEarlyO, c1H=hEarlyH, c1L=hEarlyL, c1C=hEarlyC)
 // Per-attempt state survives a focus switch; Main and Larger never share state.
 f_channelState(map<string, ReactionState> records, string token, int activatedAt) =>
     if barstate.isconfirmed and token != "" and not map.contains(records, token)
@@ -2060,7 +2100,7 @@ f_channelState(map<string, ReactionState> records, string token, int activatedAt
             map.remove(records, array.get(map.keys(records), 0))
     map.contains(records, token) ? map.get(records, token) : ReactionState.new()
 var map<string, ReactionState> channelStates = map.new<string, ReactionState>()
-SignalContext ctx = SignalContext.new(age=sModelAge, c1T=sAT, c2T=sBT, c2End=sBEnd, c3End=not na(sCEnd) ? sCEnd : sModelAge == 0 ? bucketEnd : na, parentDir=higherAtKey ? higher.dir : biasModel.dir, parentConfirmed=higherAtKey ? higher.confirmed : biasModel.confirmed, parentLive=higherAtKey or biasAtKey, parentAtKey=higherAtKey or biasAtKey, crtKey=kCrtKey, kind=1, id=focusAvailable ? sId : na, flags=sFlags, phase=sPhase, dir=sDir, confirmed=sConfirmed, resolved=sResolved, hi=sHi, lo=sLo, inv=sInv, cp=sCp)
+SignalContext ctx = SignalContext.new(age=sModelAge, c1T=sAT, c2T=sBT, c2End=sBEnd, c3End=not na(sCEnd) ? sCEnd : sModelAge == 0 ? bucketEnd : na, parentDir=higher.dir, parentConfirmed=higher.confirmed, parentLive=higherContextLive, parentAtKey=higherAtKey, outerDir=biasModel.dir, outerConfirmed=biasModel.confirmed, outerLive=biasModelLive, outerAtKey=biasAtKey, crtKey=kCrtKey, kind=1, id=focusAvailable ? sId : na, flags=sFlags, phase=sPhase, dir=sDir, confirmed=sConfirmed, resolved=sResolved, hi=sHi, lo=sLo, inv=sInv, cp=sCp)
 string modelKey = f_contextKey(focusAvailable ? sId : na, sResolved, sDir)
 ReactionState crtState = f_channelState(channelStates, htf + ":" + modelKey, sConfirmed)
 if barstate.isconfirmed and focusAvailable and na(crtState.confirmIndex) and earlyState.root == sAT and earlyState.dir == sDir and earlyState.bucket == sBT and not earlyState.blocked and not na(earlyState.channel) and earlyState.channel.sourceEnd == sConfirmed and earlyState.channel.localExtreme == sInv and not na(earlyState.channel.confirmIndex)
@@ -2068,7 +2108,7 @@ if barstate.isconfirmed and focusAvailable and na(crtState.confirmIndex) and ear
     crtState.key := htf + ":" + modelKey
     crtState.activatedAt := sConfirmed
     map.put(channelStates, htf + ":" + modelKey, crtState)
-SignalContext higherCtx = SignalContext.new(age=higher.age, c1T=higher.aT, c2T=higher.bT, c2End=higher.bEnd, c3End=not na(higher.cEnd) ? higher.cEnd : higher.age == 0 ? largerEnd : na, parentDir=biasModel.dir, parentConfirmed=biasModel.confirmed, parentLive=biasAtKey, parentAtKey=biasAtKey, crtKey=higher.key, kind=1, id=higherAvailable ? higher.id : na, flags=higher.flags, phase=higher.phase, dir=higher.dir, confirmed=higher.confirmed, resolved=higher.resolved, hi=higher.hi, lo=higher.lo, inv=higher.inv, cp=higher.cp)
+SignalContext higherCtx = SignalContext.new(age=higher.age, c1T=higher.aT, c2T=higher.bT, c2End=higher.bEnd, c3End=not na(higher.cEnd) ? higher.cEnd : higher.age == 0 ? largerEnd : na, parentDir=biasModel.dir, parentConfirmed=biasModel.confirmed, parentLive=biasModelLive, parentAtKey=biasAtKey, crtKey=higher.key, kind=1, id=higherAvailable ? higher.id : na, flags=higher.flags, phase=higher.phase, dir=higher.dir, confirmed=higher.confirmed, resolved=higher.resolved, hi=higher.hi, lo=higher.lo, inv=higher.inv, cp=higher.cp)
 string higherModelKey = f_contextKey(higherAvailable ? higher.id : na, higher.resolved, higher.dir)
 ReactionState higherState = f_channelState(channelStates, largerTf + ":" + higherModelKey, higher.confirmed)
 if barstate.isconfirmed and higherAvailable and na(higherState.confirmIndex) and higherEarlyState.root == higher.aT and higherEarlyState.dir == higher.dir and higherEarlyState.bucket == higher.bT and not higherEarlyState.blocked and not na(higherEarlyState.channel) and higherEarlyState.channel.sourceEnd == higher.confirmed and higherEarlyState.channel.localExtreme == higher.inv and not na(higherEarlyState.channel.confirmIndex)
@@ -2138,7 +2178,7 @@ array<CrtKey> earlyBuyKeys = array.from(earlyBuyKey, hEarlyBuyKey)
 array<CrtKey> earlySellKeys = array.from(earlySellKey, hEarlySellKey)
 array<EarlyResult> earlyOutputs = array.new<EarlyResult>()
 for channel = 0 to 1
-    array.push(earlyOutputs, f_stepEarly(array.get(earlyReferences, channel), array.get(earlyStates, channel), array.get(earlyBuyKeys, channel), array.get(earlySellKeys, channel), channel == 0 ? earlyBuyWave : true, channel == 0 ? earlySellWave : true, channel == 0 ? crtResult.hit : false, channel == 0, channel == 0 and higherAtKey ? higher.dir : biasModel.dir, channel == 0 ? higherAtKey or biasAtKey : biasAtKey, channel == 0 and higherAtKey ? higher.confirmed : biasModel.confirmed))
+    array.push(earlyOutputs, f_stepEarly(array.get(earlyReferences, channel), array.get(earlyStates, channel), array.get(earlyBuyKeys, channel), array.get(earlySellKeys, channel), channel == 0 ? earlyBuyWave : true, channel == 0 ? earlySellWave : true, channel == 0 ? crtResult.hit : false, channel == 0, channel == 0 ? higher.dir : biasModel.dir, channel == 0 ? higherContextLive : biasModelLive, channel == 0 ? higher.confirmed : biasModel.confirmed, channel == 0 ? higherAtKey : biasAtKey, channel == 0 ? biasModel.dir : 0, channel == 0 and biasModelLive, channel == 0 ? biasModel.confirmed : na, channel == 0 and biasAtKey))
 EarlyResult earlyResult = array.get(earlyOutputs, 0)
 EarlyResult higherObservation = array.get(earlyOutputs, 1)
 if earlyResult.hit and earlyResult.dir == 1
@@ -2382,7 +2422,7 @@ if barstate.islast
         string dirText = biasPaused ? "B0!" : biasDir == 1 ? "B+" : biasDir == -1 ? "B-" : "B0"
         string stateText = not hasModel ? "SEARCH" : not focusAvailable ? "WATCH" : sModelAge > 0 ? "TRACK" : alreadyEmitted ? "SIGNAL" : "ENTRY"
         array<string> headings = array.from("TF", "CRT", "BIAS", "REF", "T", "ENTRY", "N", "WHY", "DATA", "EARLY", "MPS")
-        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (hasModel ? (sDir == 1 ? "BUY" : "SELL") : "-") + " | " + str.tostring(hasModel ? sCount : 0), dirText + " / " + biasTf, hasModel and not na(kCrtKey) and kCrtKey.kind > 0 ? f_keyTag(kCrtKey) : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals) + " H " + str.tostring(higherSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals), (not na(crtState.mpsAt) ? f_tfName(htf) + ":OK" : f_tfName(htf) + ":WAIT") + " / " + (not na(higherState.mpsAt) ? f_tfName(largerTf) + ":OK" : f_tfName(largerTf) + ":WAIT"))
+        array<string> values = array.from(htf + " / " + timeframe.period + (overviewMode ? " VIEW" : ""), (hasModel ? (sDir == 1 ? "BUY" : "SELL") : "-") + " | " + str.tostring(hasModel ? sCount : 0), dirText + " / " + biasTf + " | " + f_tfName(largerTf) + (higherContextLive ? (higher.dir == 1 ? "+" : "-") : "?"), hasModel and not na(kCrtKey) and kCrtKey.kind > 0 ? f_keyTag(kCrtKey) : "-", crtTimeText, stateText, "C " + str.tostring(crtSignals) + " H " + str.tostring(higherSignals), lastClosedStatus + (barstate.isconfirmed ? "" : " *"), str.format_time(dataStart, "dd/MM", NY) + "-" + str.format_time(time, "dd/MM", NY), earlyResult.status + " | " + str.tostring(earlySignals), (not na(crtState.mpsAt) ? f_tfName(htf) + ":OK" : f_tfName(htf) + ":WAIT") + " / " + (not na(higherState.mpsAt) ? f_tfName(largerTf) + ":OK" : f_tfName(largerTf) + ":WAIT"))
         for row = 0 to 10
             table.cell(panel, 0, row, " " + array.get(headings, row) + " ", text_color=color.silver, text_size=dashboardFont)
             table.cell(panel, 1, row, " " + array.get(values, row) + " ", text_color=row == 2 ? (biasDir == 1 ? color.teal : biasDir == -1 ? color.orange : color.silver) : color.silver, text_size=dashboardFont, tooltip=row == 0 ? syminfo.tickerid + " | H2/H4 clock: " + (f_topstepClockMarket(ticker.standard(syminfo.main_tickerid)) ? htfClock : "Native") + " | 17:00 America/Chicago regular session; chart-feed prices, not MGC/MNQ. H1/D1 native; holidays may differ." : row == 10 ? "MPS is required for OTE only. TS/FVG can precede it. " + diagnosticSummary : row == 1 ? "Last model end: " + f_endTag(lastSetupEnd) + " | Parent C1 stays until its target is taken. INV ends only this attempt; Only original C3 can replace the raid once, with original key and close inside C1. TRACK after entry window; no automatic C3 expiry. Not fills." : row == 2 ? "Confirmed structure: " + str.tostring(structureBias) + " | Guard H " + str.tostring(autoGuardHigh, format.mintick) + " L " + str.tostring(autoGuardLow, format.mintick) + (biasPaused ? " | paused by closed chart bar; no opposite bias assumed" : "") : row == 9 ? "Experimental C2, not HTF confirmed. Key on same HTF before C2. One E per qualified attempt in Fresh reaction; One per model keeps the C2 budget. Frozen reference SL/TP per event. No Replay certification." : row == 7 ? lastClosedAudit + "\n" + diagnosticSummary + "\nCurrent observation: " + f_barrierNote(crtState) : row == 6 ? "C = main HTF, H = larger HTF. Separate source event counts; a merged marker may count once in each source. Closed LTF in a live CRT attempt; not fills or win-rate." : "")

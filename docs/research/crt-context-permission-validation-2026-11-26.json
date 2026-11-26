@@ -1,0 +1,125 @@
+{
+  "date": "2026-11-26",
+  "source": "indicators/funded-angler-v6.pine",
+  "sha256": "4196e24da89b230dc53a3606869d00a9b4ca94468ad458cfea40977759b522e9",
+  "hashNormalization": "UTF-8 with CRLF normalized to LF and outer whitespace trimmed",
+  "mirrorExact": true,
+  "scope": "HTF context permission and EQ/opposing-key checkpoints; no website/journal/order or personal risk changes",
+  "policy": {
+    "defaultCounter": false,
+    "parentContextIndependentOf": [
+      "Larger entry toggle",
+      "Cluster visibility",
+      "Bias/chart restrictions on Larger entries",
+      "Automatic recognition of a parent key"
+    ],
+    "largerEntryRestrictionsRetained": true,
+    "mainChecksBothParentContexts": true,
+    "liveOpposingParentIsHardEntryVeto": true,
+    "observationContinuesWhileEntryBlocked": true,
+    "optInCounterNeeds": "A confirmed key-backed HTF source not older than known parents, or a confirmed same-direction key-backed higher reversal; all local key/swing/B0 gates remain. Early alone is not HTF confirmation.",
+    "checkpoints": "EQ ahead from the TS extreme, and nearest frozen opposing key. After delivery, no old-leg FVG/OTE; a fresh TS can open another leg. Does not change user TP or mandate partial exits."
+  },
+  "tests": {
+    "runner": "node tools/check-crt.cjs",
+    "suites": 35,
+    "passed": true,
+    "newSuite": "tests/crt-context-permission.cjs",
+    "permissionCases": 40,
+    "actualChannelRuns": 24,
+    "earlyRuns": 8,
+    "immutablePrefixes": 8,
+    "legacyComparison": {
+      "cases": 1579,
+      "scope": "Aligned non-invalidating prefixes through first Early event; intentionally changed counter/checkpoint behavior tested separately"
+    }
+  },
+  "fullCompiler": {
+    "source": "indicators/funded-angler-v6.pine",
+    "sha256": "4196e24da89b230dc53a3606869d00a9b4ca94468ad458cfea40977759b522e9",
+    "httpStatus": 200,
+    "elapsedMs": 70271,
+    "fullCompilationPassed": true,
+    "reason": null,
+    "errors": [],
+    "warnings": [
+      "{\"message\":\"The function \\\"{functionName}\\\" should be called on each calculation for consistency. It is recommended to extract the call from this scope\",\"start\":{\"line\":2181,\"column\":30},\"end\":{\"line\":2181,\"column\":627},\"code\":\"CW10003\",\"ctx\":{\"functionName\":\"f_stepEarly\"}}"
+    ],
+    "chartExecutionVerified": false
+  },
+  "native": {
+    "symbol": "STONEXTRADING:USTECH100CFD",
+    "chart": "M5",
+    "budget": "Light",
+    "calculatedChartBars": 150,
+    "clock": "TopstepX",
+    "sourceVerifiedByEditorCopy": true,
+    "counter": false,
+    "observations": [],
+    "savedToCloud": false,
+    "published": false,
+    "ordersPlaced": false,
+    "passed": true,
+    "finalSourceSha256": "4196e24da89b230dc53a3606869d00a9b4ca94468ad458cfea40977759b522e9",
+    "configs": [
+      {
+        "htf": "H1",
+        "bias": "D1 Auto",
+        "larger": "H4",
+        "largerSignals": true,
+        "time": "2026-11-26 18:28 UTC+7",
+        "screenshot": "output/brave-review/context-policy-final-h1.png",
+        "observed": [
+          "No runtime error icon observed",
+          "Dashboard and both groups visible",
+          "Bias row shows D1 structural direction and live H4 direction",
+          "MPS observation remains visible; earlier local Buy marks in the inspected countertrend segment are filtered"
+        ]
+      },
+      {
+        "htf": "H2",
+        "bias": "D1 Auto",
+        "larger": "H4",
+        "largerSignals": true,
+        "time": "2026-11-26 18:28 UTC+7",
+        "screenshot": "output/brave-review/context-policy-final-h2.png",
+        "observed": [
+          "No runtime error icon observed",
+          "H2/H4 groups and countdown visible",
+          "Structural D1 sell and active H4 sell remain in dashboard"
+        ]
+      }
+    ],
+    "switchRegression": {
+      "sourceSha256": "ede81c8f33ec28d989cf7b3414319815376197b962265660e972a3edd261196b",
+      "differenceFromFinal": "Final additionally restores the separate Larger entry TF validity guard; the observed H2/M5 D1 configuration satisfies it in both versions",
+      "time": "2026-11-26 18:24 UTC+7",
+      "largerSignals": false,
+      "observed": "Higher signal count dropped to zero and H4 MPS entry-channel status cleared, while H4 sell context remained on bias row",
+      "screenshot": "output/brave-review/context-policy-larger-off.png"
+    },
+    "settingsScreenshot": "output/brave-review/context-policy-inputs.png",
+    "notes": "Existing SMT comparison was not changed. No claim that MNQ executions or every chart setting were replayed."
+  },
+  "sources": [
+    {
+      "url": "https://www.youtube.com/watch?v=n2GF8kCpgVg&t=860s",
+      "access": "Previously stored primary YouTube transcript reviewed locally",
+      "point": "Select the HTF candle before entry models"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=p8UYOgVn1-g&t=720s",
+      "access": "Previously stored primary YouTube transcript reviewed locally",
+      "point": "Small opposing CRT shapes can form during the journey to a key"
+    }
+  ],
+  "limits": [
+    "This permission hierarchy is a personal mechanical policy, not a complete verbatim Romeo algorithm",
+    "Screenshot reviews and constructed tests do not establish MNQ/CFD OHLC equality or improved profitability",
+    "No full market Replay, universal no-repaint or all-symbol assurance",
+    "Existing CW10003 warning remains at the Early loop call site; no compiler errors",
+    "Light source history can omit older context or initialize bias differently from Full",
+    "Full budget and all timeframe combinations were not retested",
+    "Output screenshots are ignored local files"
+  ]
+}

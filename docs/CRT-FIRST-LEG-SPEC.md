@@ -1,6 +1,6 @@
 # CRT: key HTF, TS và ba nhánh entry
 
-Cập nhật thực thi 25/11/2026. Đây là đặc tả hiện hành của Pine. Bản MPS chung/R1 nhập tay trước đây nằm trong [bản lưu](archive/CRT-FIRST-LEG-SPEC-before-key-reactions-2026-11-25.md). Không áp dụng các điều kiện cũ đồng thời với bản này.
+Cập nhật thực thi 26/11/2026. Đây là đặc tả hiện hành của Pine. Bản MPS chung/R1 nhập tay trước đây nằm trong [bản lưu](archive/CRT-FIRST-LEG-SPEC-before-key-reactions-2026-11-25.md). Không áp dụng các điều kiện cũ đồng thời với bản này.
 
 Cập nhật hạn mức chạy: mặc định hiện là Light (24 nến mỗi nguồn) và Calculated bars 150 trên chart; Full giữ nguồn 600. Các đoạn mô tả cửa sổ 600 bên dưới là giới hạn Full, không phải dữ liệu được bảo đảm trong Light. Snapshot model đã gộp và bỏ trường legacy luôn rỗng, không thay công thức entry. Xem [hướng dẫn cài đặt](INDICATOR-SETTINGS.md) và [kết quả full compiler + native runtime](research/crt-compile-runtime-validation-2026-11-25.json).
 
@@ -19,6 +19,19 @@ Trong ví dụ gốc, previous high và giá mở của down-close candle đư�
 SMT so sánh các thị trường liên hệ: một bên lấy high/low, bên kia không lấy mốc tương ứng. Tác giả yêu cầu xác nhận giá; Model 1 là xác nhận đầu, cấu trúc dịch chuyển hỗ trợ kỳ vọng mở rộng. SMT cũng có ứng dụng liên quan FVG. [SMT, 02:09–03:41, 13:11–13:42 và 27:31–31:59](https://www.youtube.com/watch?v=3IWgc52Dqsg&t=129s).
 
 Chọn cây nến HTF đang giao dịch trước khi tìm entry là trình tự trong [Candle anatomy, 04:57–09:30](https://www.youtube.com/watch?v=n2GF8kCpgVg&t=297s). Video giới thiệu H4/D/W; H1/H2 là lựa chọn cá nhân của hệ thống này, không gán thành khuyến nghị nguyên bản. [Metadata, phạm vi đã đọc và hash bản chép lời](research/crt-key-level-review-2026-11-25.json).
+
+## Quyền entry theo bối cảnh HTF · 26/11/2026
+
+Phần này thay thế các ngoại lệ counter-parent và chính sách cản chỉ quan sát của ngày 25. Đây là quy ước triển khai day trading cho hệ thống này, không phải thuật toán nguyên văn hoàn chỉnh của Romeo. Cơ sở nghiên cứu: chọn cây nến đang giao dịch trước entry trong [Candle anatomy, 14:20](https://www.youtube.com/watch?v=n2GF8kCpgVg&t=860s); các CRT tăng vẫn có thể xuất hiện trên đường giảm tới key trong [Key level, 12:00–14:00](https://www.youtube.com/watch?v=p8UYOgVn1-g&t=720s).
+
+1. Tách quan sát và quyền phát entry. TS/MPS đúng hình thái vẫn được thu thập và có thể hiển thị MPS, nhưng tam giác/E cần qua bộ cấp quyền chung. `MPS H4:OK` là MPS LTF trong context H4, không phải kết luận trend H4 đã đảo chiều.
+2. Theo dõi CRT Larger độc lập với `Larger HTF signals`, việc hiện cụm và điều kiện Bias TF dùng cho phát tín hiệu Larger. CRT còn sống khi source/confirmation khớp và chưa INV/TGT; key không được máy nhận diện không làm CRT biến mất khỏi kiểm tra xung đột. Nhánh Larger entry vẫn chỉ phát khi bật và thỏa giới hạn TF/Bias riêng.
+3. Main kiểm tra đồng thời CRT Larger và CRT Bias TF lớn hơn Larger, không chọn một rồi bỏ context còn lại. Bất kỳ CRT cha đang sống, đã xác nhận trước lúc entry, có hướng ngược thì chặn entry (`HTF CONFLICT`), dù bật counter hay key của parent chưa được xác nhận. Hai context cha xung đột thì chờ một context hết hiệu lực hoặc cùng hướng. Nến cha còn chạy không được dùng làm xác nhận tương lai.
+4. Mặc định `CRT reversal at prior HTF key = Off`: ngược bias cấu trúc là quan sát (`COUNTER OBS`). Bật chủ động chỉ cho phép khi có CRT HTF đã đóng tại key, hoặc parent cùng hướng đã đóng và có key. Nguồn đảo chiều riêng phải không cũ hơn các parent đang biết. Early không được tự coi close LTF của nó là xác nhận HTF; muốn counter phải có parent lớn đã đảo chiều tại key từ trước. Các điều kiện key bối cảnh, key P3, P1→P2→P3, reclaim, B0, source/INV/TGT vẫn giữ. Bật counter không thể vượt CRT cha còn sống đang ngược hướng.
+5. Context không phải dự báo chắc thắng. Nếu CRT cha đã INV/TGT, nó thôi cấp quyền/chặn; hệ thống xét các context đang sống khác và bias hiện tại. Không dùng nhịp giảm sau entry để sửa hướng của một tín hiệu đã phát trước đó.
+6. Sau TS, EQ ở phía trước từ cực trị phản ứng và key ngược gần nhất trước TGT là checkpoint của leg đầu. Chạm ở nến sau TS sẽ ghi nhận; nếu close TS đã qua EQ thì checkpoint EQ được ghi ngay bằng close, không suy đoán thứ tự râu intrabar. Sau checkpoint, giữ MPS để quan sát nhưng không phát FVG/OTE của leg cũ (`LEG DONE / NEW TS`); cần TS mới đủ điều kiện để mở leg mới. Không làm CRT cha hết hiệu lực, không sửa TP hoặc yêu cầu chốt một phần. TS trực tiếp vẫn là nhánh độc lập; không bắt mọi entry chờ MPS.
+
+Dashboard ghi thêm hướng CRT Larger cạnh bias. Tín hiệu lịch sử có thể ít hơn bản trước vì chính sách quyền entry thay đổi; đây không phải chứng minh tỷ lệ thắng tăng. [Báo cáo nghiệm thu theo hash](research/crt-context-permission-validation-2026-11-26.json).
 
 ## Bộ key được mã hóa
 
@@ -144,12 +157,12 @@ Kiểm tra bổ sung: tests/crt-fractal-workflow.cjs dùng thân hàm nguồn ch
 
 ## Quy tắc hiện hành sau rà soát nhiều thị trường — 25/11/2026
 
-Phần này thay thế chính sách KEY DELIVERED và chuẩn counter ở đợt 5 bước phía trên. Đây là quy ước mã hóa cá nhân, không gán là công thức nguyên văn của Romeo.
+Đây là ghi nhận cập nhật ngày 25/11. Các mục counter và cản trung gian đã được chính sách quyền entry ngày 26/11 ở phía trên thay thế; bộ key tuần vẫn giữ. Đây là quy ước mã hóa cá nhân, không gán là công thức nguyên văn của Romeo.
 
-1. Key ngược hướng gần nhất được đóng băng khi TS đóng là cản quan sát, không phải target CRT hoặc điều kiện kết thúc leg. Chỉ xét chạm ở nến sau TS close, lưu thời điểm chạm trong tooltip WHY/entry. Không xóa MPS/P1/P2, không khóa entry hồi và không cấp lại ngân sách nhánh chỉ vì chạm cản này. INV/TGT thực, mất key, mất nguồn, hết thời gian chờ 36 nến và ngân sách TS/FVG/OTE vẫn có hiệu lực.
-2. Counter bias hoặc qualified parent vẫn cần key bối cảnh có trước C2 và key phản ứng ở P3. Bổ sung thứ tự P1 < P2 < P3 <= TS confirm, quét giá P1 tối thiểu một tick và close reclaim P1. TS chỉ từ hai nến liền kề thiếu cặp swing không đủ counter. Áp dụng cả direct Early, nhánh theo dõi Early, main và higher. Flow cùng hướng vẫn cho TS close độc lập; MPS bắt buộc cho OTE, không bắt buộc cho mọi TS/FVG.
+1. Hiện hành từ 26/11: key ngược hướng gần nhất vẫn được đóng băng khi TS đóng và không phải target CRT. Sau chạm cản này hoặc EQ, không dùng lại FVG/OTE của leg cũ; giữ MPS quan sát và đợi TS mới. INV/TGT thực và thời gian chờ 36 nến vẫn độc lập.
+2. Hiện hành từ 26/11: counter mặc định tắt. Bật chỉ với xác nhận HTF/key như phần quyền entry; không được vượt parent còn sống đang ngược hướng. P1 < P2 < P3, key P3 và reclaim vẫn bắt buộc cho counter đã được cấp quyền; không ép mọi entry thuận hướng chờ MPS.
 3. Key kind 6 là midpoint râu của tuần đã đóng: lower = (low + min(open, close))/2, dir Buy; upper = (high + max(open, close))/2, dir Sell. Râu phải dài hơn một tick. knownAt là weekly close, anchor là weekly open; request W1 dùng snapshot [1] + lookahead_on. Không dùng high/low/close tuần đang chạy. Key tuần được ghép vào model references và execution snapshots sau offset của nguồn local, tránh chậm thêm một nến hoặc lùi hai tuần. Key bối cảnh ghi beforeTime đúng đầu C2. Một key chỉ usable nếu knownAt <= thời điểm trước raid.
 4. Kind 6 là mức phản ứng, không phải thanh khoản ngoài range: chạm midpoint và close reclaim mức. Kiểm tra giữ reclaim bằng H1 close đã hoàn tất sau phản ứng; local proof bị mất sẽ latch như các key khác. Danh mục giữ hai mức của tuần đóng gần nhất, không hồi sinh mức tuần xa hoặc dùng SMT thay price key. All bật kind 6; Weekly wick chỉ giữ kind 6; các lựa chọn lọc cũ không tự bật nó.
 5. Nhãn key ngắn WW-L50/W1 và WW-H50/W1. Chi tiết loại/giá/knownAt/touchAt của cản nằm trong tooltip, không thêm bảng hoặc chữ dài phủ chart. Màu/size/anchor tam giác giữ nguyên. Không đổi bias thành đối hướng theo một nến live, không chọn công thức riêng cho XAUUSD.
 
-Kiểm tra: tests/crt-weekly-and-counter.cjs chạy thân hàm nguồn cho công thức wick, candle màu ngược, không râu/không close, key tương lai, counter có/không swing, counter parent, Early có cấu trúc, cản trên nến TS và OTE sau cản; 24 immutable prefixes đối xứng. tests/crt-cross-market-audit.cjs bảo vệ hành vi chẩn đoán nhiều nhánh. Chưa phải dữ liệu thị trường hoặc chứng minh độ chính xác setup trong ảnh.
+Kiểm tra hiện hành: tests/crt-weekly-and-counter.cjs chạy thân hàm nguồn cho công thức wick, candle màu ngược, không râu/không close, key tương lai, counter đã được cấp quyền có/không swing, parent xung đột, Early theo parent đảo chiều tại key, cản trên nến TS và khóa OTE sau cản; 24 immutable prefixes đối xứng. tests/crt-context-permission.cjs kiểm tra riêng quyền context/Early/checkpoint theo chính sách 26/11. Chưa phải dữ liệu thị trường hoặc chứng minh độ chính xác setup trong ảnh.

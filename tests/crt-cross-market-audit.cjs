@@ -20,7 +20,7 @@ for (const dir of [-1,1]) {
     }));
     return {state,out,hits:out.filter(x=>x.hit)};
   }
-  const counter=run({bias:-dir}),disabled=run({bias:-dir,allowCrtCounter:false});
+  const counter=run({bias:-dir,allowCrtCounter:true}),disabled=run({bias:-dir,allowCrtCounter:false});
   assert.ok(counter.hits.length>0);
   assert.ok(counter.hits.every(x=>x.counterBias));
   assert.equal(counter.state.biasRole,'KEY REV');
