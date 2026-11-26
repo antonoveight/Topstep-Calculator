@@ -1,0 +1,291 @@
+{
+  "date": "2026-11-26",
+  "source": "indicators/funded-angler-v6.pine",
+  "sha256": "14ed80f0b0408d0ea9c07248184ec8dbd6009f1272c481a4f28586797be395fa",
+  "sourceChanged": false,
+  "settingsChanged": false,
+  "scope": "H2/H4 candle-shape isolation on supported OANDA:XAUUSD and STONEXTRADING:USTECH100CFD feeds; H1/M5 execution workflow.",
+  "result": "No native-H2/H4 model fallback found in the audited main/larger/bias/key/Early/display routing. Reconstructed shape is the model source.",
+  "validation": {
+    "currentSuitesPassed": 36,
+    "shapeCases": 12,
+    "deterministicTrials": 95,
+    "immutablePrefixes": 84,
+    "actualBodies": [
+      "f_ingestAligned",
+      "f_patterns"
+    ],
+    "routingAssertions": [
+      "main source/model/key/frame bundle",
+      "larger source/frame bundle",
+      "bias model request and structural bias reconstructed candles",
+      "bias execution keys",
+      "main/larger Early C1",
+      "main/larger live bucket timestamps",
+      "registry excludes native global OHLC"
+    ],
+    "sourceCompilation": "Unchanged Pine hash matches prior full compiler and native H1/M5 validation; no new compilation or reload performed.",
+    "priorValidation": "crt-daytrading-defaults-validation-2026-11-26.json"
+  },
+  "limits": [
+    "Constructed H1 data; no full TopstepX market Replay or registry/request.security runtime emulation in the new shape test.",
+    "H1/M5 and D1/W1 remain native by the agreed scope.",
+    "No guarantee CFD extrema equal futures extrema; this review concerns grouping and source ownership.",
+    "Independent H1 setups remain possible when H4 has no CRT.",
+    "Regular sessions only; holidays and early closes require direct comparison."
+  ],
+  "evidence": [
+    {
+      "tf": "120",
+      "kind": "native-only",
+      "alignedDirection": 0,
+      "nativeDirection": 1,
+      "aligned": [
+        {
+          "t": 1795561200000,
+          "e": 1795568400000,
+          "o": 95.74488213751465,
+          "h": 101.1028802394867,
+          "l": 88.34433054737747,
+          "c": 97.95145451650023
+        },
+        {
+          "t": 1795568400000,
+          "e": 1795575600000,
+          "o": 97.95145451650023,
+          "h": 105.16500241775066,
+          "l": 96.87122404947877,
+          "c": 103.68117031734437
+        }
+      ],
+      "native": [
+        {
+          "t": 1795557600000,
+          "e": 1795564800000,
+          "o": 100,
+          "h": 102.25758741609752,
+          "l": 88.89325977768749,
+          "c": 92.19015647564083
+        },
+        {
+          "t": 1795564800000,
+          "e": 1795572000000,
+          "o": 92.19015647564083,
+          "h": 101.1028802394867,
+          "l": 88.34433054737747,
+          "c": 98.99399792961776
+        }
+      ]
+    },
+    {
+      "tf": "120",
+      "kind": "aligned-only",
+      "alignedDirection": 1,
+      "nativeDirection": 0,
+      "aligned": [
+        {
+          "t": 1795561200000,
+          "e": 1795568400000,
+          "o": 102.21722817793489,
+          "h": 102.9674564935267,
+          "l": 91.00875513721257,
+          "c": 92.97476495150477
+        },
+        {
+          "t": 1795568400000,
+          "e": 1795575600000,
+          "o": 92.97476495150477,
+          "h": 93.87772293481976,
+          "l": 87.73643188923597,
+          "c": 91.96706218458712
+        }
+      ],
+      "native": [
+        {
+          "t": 1795557600000,
+          "e": 1795564800000,
+          "o": 100,
+          "h": 103.73912575747818,
+          "l": 94.13743223622441,
+          "c": 96.86871458869427
+        },
+        {
+          "t": 1795564800000,
+          "e": 1795572000000,
+          "o": 96.86871458869427,
+          "h": 98.30637219175696,
+          "l": 87.77893272507936,
+          "c": 91.26598476059735
+        }
+      ]
+    },
+    {
+      "tf": "120",
+      "kind": "opposite",
+      "alignedDirection": -1,
+      "nativeDirection": 1,
+      "aligned": [
+        {
+          "t": 1795561200000,
+          "e": 1795568400000,
+          "o": 94.34891048260033,
+          "h": 97.16287146136165,
+          "l": 86.38564245123416,
+          "c": 89.23533828090876
+        },
+        {
+          "t": 1795568400000,
+          "e": 1795575600000,
+          "o": 89.23533828090876,
+          "h": 98.56708692852408,
+          "l": 88.48972116038203,
+          "c": 95.76627124845982
+        }
+      ],
+      "native": [
+        {
+          "t": 1795557600000,
+          "e": 1795564800000,
+          "o": 100,
+          "h": 103.0179553302005,
+          "l": 89.41742015443742,
+          "c": 90.7598647242412
+        },
+        {
+          "t": 1795564800000,
+          "e": 1795572000000,
+          "o": 90.7598647242412,
+          "h": 92.74115371145308,
+          "l": 86.38564245123416,
+          "c": 91.92082130350173
+        }
+      ]
+    },
+    {
+      "tf": "240",
+      "kind": "native-only",
+      "alignedDirection": 0,
+      "nativeDirection": -1,
+      "aligned": [
+        {
+          "t": 1795561200000,
+          "e": 1795575600000,
+          "o": 103.42615463212132,
+          "h": 117.43954552803189,
+          "l": 101.70902744401246,
+          "c": 114.67666926421225
+        },
+        {
+          "t": 1795575600000,
+          "e": 1795590000000,
+          "o": 114.67666926421225,
+          "h": 115.6715028937906,
+          "l": 103.06679917406291,
+          "c": 104.84336794912815
+        }
+      ],
+      "native": [
+        {
+          "t": 1795557600000,
+          "e": 1795572000000,
+          "o": 100,
+          "h": 112.05405689030886,
+          "l": 97.779103057459,
+          "c": 109.8392030466348
+        },
+        {
+          "t": 1795572000000,
+          "e": 1795586400000,
+          "o": 109.8392030466348,
+          "h": 117.43954552803189,
+          "l": 103.06679917406291,
+          "c": 103.76596404984593
+        }
+      ]
+    },
+    {
+      "tf": "240",
+      "kind": "aligned-only",
+      "alignedDirection": -1,
+      "nativeDirection": 0,
+      "aligned": [
+        {
+          "t": 1795561200000,
+          "e": 1795575600000,
+          "o": 100.47627623938024,
+          "h": 102.55441167578101,
+          "l": 86.95141187682748,
+          "c": 90.05300192907453
+        },
+        {
+          "t": 1795575600000,
+          "e": 1795590000000,
+          "o": 90.05300192907453,
+          "h": 104.0125808082521,
+          "l": 87.00393878947943,
+          "c": 101.12254619784653
+        }
+      ],
+      "native": [
+        {
+          "t": 1795557600000,
+          "e": 1795572000000,
+          "o": 100,
+          "h": 102.55441167578101,
+          "l": 93.6476589133963,
+          "c": 93.71712247468531
+        },
+        {
+          "t": 1795572000000,
+          "e": 1795586400000,
+          "o": 93.71712247468531,
+          "h": 104.0125808082521,
+          "l": 86.95141187682748,
+          "c": 101.22399008646607
+        }
+      ]
+    },
+    {
+      "tf": "240",
+      "kind": "opposite",
+      "alignedDirection": 1,
+      "nativeDirection": -1,
+      "aligned": [
+        {
+          "t": 1795561200000,
+          "e": 1795575600000,
+          "o": 105.90598288550973,
+          "h": 113.3987847128883,
+          "l": 101.91885094810277,
+          "c": 110.21682617999613
+        },
+        {
+          "t": 1795575600000,
+          "e": 1795590000000,
+          "o": 110.21682617999613,
+          "h": 111.97330016456544,
+          "l": 100.69929550774395,
+          "c": 106.6778327524662
+        }
+      ],
+      "native": [
+        {
+          "t": 1795557600000,
+          "e": 1795572000000,
+          "o": 100,
+          "h": 112.33653074130416,
+          "l": 98.73804101534188,
+          "c": 109.351915942505
+        },
+        {
+          "t": 1795572000000,
+          "e": 1795586400000,
+          "o": 109.351915942505,
+          "h": 113.3987847128883,
+          "l": 100.69929550774395,
+          "c": 103.29080714657903
+        }
+      ]
+    }
+  ]
+}

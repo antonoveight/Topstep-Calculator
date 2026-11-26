@@ -1,5 +1,15 @@
 # Đồng hồ H2/H4 cho XAUUSD và US Tech 100
 
+## Rà soát hình thái xuyên suốt · 26/11/2026
+
+Chế độ TopstepX chọn **nguồn hình thái**, không chỉ đổi giờ đóng nến hiển thị. Trong phạm vi H2/H4 trên hai feed hỗ trợ, SourcePacket, CRT main/Larger/Bias, key HTF, bias cấu trúc nếu chọn H2/H4, C1 của Early và cụm nến đều đi qua nguồn H1 ghép theo phiên. Không phát hiện fallback sang CRT H2/H4 native khi nguồn đã ghép không có model. Không có setup vẫn được giữ là không có; không thay bằng setup native để tăng số tín hiệu.
+
+Đã bổ sung `tests/crt-clock-shape-isolation.cjs`: cùng chuỗi H1, hai cách nhóm lệch một giờ tạo ba trường hợp native có CRT nhưng nguồn TopstepX không có, trường hợp ngược lại và hai nguồn cho hướng đối lập. Cả Buy/Sell, H2/H4 được kiểm tra bằng hàm ghép và detector thực tế; kiểm tra routing của các request ngăn đọc nhầm nguồn. Đây là kiểm tra công thức và kết nối nguồn, chưa phải chạy toàn bộ registry/request.security trên lịch sử TopstepX thực.
+
+H1/M5 vẫn native theo phạm vi đã thống nhất vì mốc nến đang khớp. D1/W1 vẫn native; không mở rộng session grouping sang hai khung này khi chưa có sai lệch được xác nhận. Entry TS/MPS/FVG/OTE đọc cấu trúc M5 (hoặc M15 nếu chọn), dưới quyền CRT/context từ nguồn HTF đã chọn. Không có CRT H4 không tự hủy một CRT H1 độc lập; nhưng CRT H4 native ngoài nguồn đã chọn không được cấp quyền hoặc chặn H1.
+
+Không cần đổi thuật toán Pine trong lần rà soát này. Nâng cấp là bộ kiểm tra chống đọc lẫn hình thái và ghi rõ phạm vi áp dụng; giữ nguyên setting và marker hiện tại. [Báo cáo theo hash nguồn](research/crt-clock-shape-isolation-2026-11-26.json).
+
 Cập nhật 25/11/2026. Mục tiêu: dùng chart CFD M5 để tham khảo khi giao dịch MGC/MNQ trên TopstepX, với H1 là khung chính; khi đổi anchor C1 sang H2 thì engine và cụm H2 bên phải phải cùng đọc nến đã ghép.
 
 ## Cách dùng
